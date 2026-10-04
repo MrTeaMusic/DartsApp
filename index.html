@@ -150,6 +150,11 @@ table{border-collapse:collapse;width:100%}
 .tile .k{font-size:.74rem;color:var(--text-2)}
 .tile .v{font-size:1.35rem;font-weight:800;font-variant-numeric:tabular-nums}
 .hist-item{cursor:pointer}
+.mp{border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-top:10px;background:var(--surface-2)}
+.mp input{background:var(--surface)}
+.mp .field{margin:8px 0 6px}
+.mp-grid{display:grid;grid-template-columns:1fr 0.8fr 1.6fr;gap:8px}
+@media (max-width:420px){.mp-grid{grid-template-columns:1fr 1fr}.mp-grid .field:last-child{grid-column:span 2}}
 .hist-item .hd{display:flex;gap:8px;align-items:baseline}
 .hist-item .hd b{flex:1}
 .bars .b{display:grid;grid-template-columns:44px 1fr 84px;gap:8px;align-items:center;font-size:.85rem;margin:3px 0}
@@ -385,6 +390,7 @@ const X01 = {
   stats(s) {
     return s.players.map((pl, pi) => {
       let pts = 0, darts = 0, f9p = 0, f9d = 0, hi = 0, hiCo = 0, s180 = 0, s140 = 0, s100 = 0, best = null, legs = 0, cos = 0;
+      const hf = [];
       for (const l of s.legs) {
         let k = 0, ld = 0;
         for (const t of l.turns) {
@@ -395,11 +401,11 @@ const X01 = {
           k++;
           hi = Math.max(hi, sc);
           if (sc === 180) s180++; else if (sc >= 140) s140++; else if (sc >= 100) s100++;
-          if (t.checkout) { hiCo = Math.max(hiCo, sc); cos++; }
+          if (t.checkout) { hiCo = Math.max(hiCo, sc); cos++; if (sc >= 100) hf.push(sc); }
         }
         if (l.winner === pi) { legs++; best = best == null ? ld : Math.min(best, ld); }
       }
-      return { id: pl.id, name: pl.name, avg: darts ? pts / darts * 3 : null, first9: f9d ? f9p / f9d * 3 : null, darts, pts, hi, hiCo, s180, s140, s100, bestLeg: best, legs, cos };
+      return { id: pl.id, name: pl.name, avg: darts ? pts / darts * 3 : null, first9: f9d ? f9p / f9d * 3 : null, darts, pts, hi, hiCo, s180, s140, s100, bestLeg: best, legs, cos, hf };
     });
   }
 };
@@ -870,7 +876,7 @@ function histItem(e) {
   return `<div class="card hist-item" data-act="toggle-entry" data-id="${e.id}">
     <div class="hd"><b>${esc(entryTitle(e))}</b><span class="tag ${e.kind === 'match' ? 'acc' : ''}">${e.kind === 'match' ? 'Spiel' : 'Training'}</span>${e.incomplete ? '<span class="tag warn">abgebrochen</span>' : ''}</div>
     <div class="small muted">${fmtDate(e.date, !e.manual)}${e.end && !e.manual ? ' · ' + fmtDur(new Date(e.end) - new Date(e.date)) : ''}</div>
-    <div style="margin-top:4px">${entrySummary(e)}</div>
+    <div style="margin-top:4px">${entrySummary(e)}</div>${highlights(e)}
     ${open ? `<div style="margin-top:10px" data-stop="1">${entryDetail(e)}<div class="row" style="margin-top:10px"><span class="spacer"></span><button class="btn sm danger" data-act="del-entry" data-id="${e.id}">Eintrag löschen</button></div></div>` : ''}
   </div>`;
 }
@@ -885,12 +891,15 @@ function entryDetail(e) {
     if (ps.some(p => S(p.id).darts != null)) h += row('Darts', s => s.darts ?? '–');
     if (ps.some(p => S(p.id).hits != null)) h += row('Treffer', s => s.hits ?? '–');
     if (ps.some(p => S(p.id).score != null)) h += row('Punkte', s => s.score ?? '–');
+    if (ps.some(p => S(p.id).mpr != null)) h += row('MPR', s => f1(s.mpr));
     if (ps.some(p => S(p.id).hiCo)) h += row('Höchstes Checkout', s => s.hiCo || '–');
+    if (ps.some(p => S(p.id).s180 != null)) h += row('180', s => s.s180 ?? '–');
+    if (ps.some(p => (S(p.id).hf || []).length)) h += row('Highfinishes', hfCell);
   } else if (e.mode === 'x01') {
     if (e.kind === 'match') h += row('Legs', s => `<b>${s.legs}</b>`);
     h += row('3-Dart-Ø', s => `<b>${f1(s.avg)}</b>`) + row('First 9 Ø', s => f1(s.first9)) + row('Darts', s => s.darts)
       + row('Bestes Leg', s => s.bestLeg ? s.bestLeg + ' Darts' : '–') + row('Höchstes Checkout', s => s.hiCo || '–')
-      + row('Höchste Aufnahme', s => s.hi) + row('180', s => s.s180) + row('140+', s => s.s140) + row('100+', s => s.s100);
+      + row('Höchste Aufnahme', s => s.hi) + row('180', s => s.s180) + row('Highfinishes', hfCell) + row('140+', s => s.s140) + row('100+', s => s.s100);
   } else if (e.mode === 'cricket') {
     h += row('Legs', s => `<b>${s.legs}</b>`) + row('MPR', s => `<b>${f1(s.mpr)}</b>`) + row('Marks', s => s.marks) + row('Darts', s => s.darts);
   } else if (e.mode === 'atc') {
@@ -910,6 +919,19 @@ function entryDetail(e) {
   if (e.legs && e.legs.length > 1 && e.kind === 'match') h += `<p class="small muted" style="margin-top:8px">Legs: ${e.legs.map((l, i) => `${i + 1}. ${esc((e.players.find(p => p.id === l.w) || {}).name)} (${l.darts})`).join(' · ')}</p>`;
   if (e.note) h += `<p class="small" style="margin-top:8px">📝 ${esc(e.note)}</p>`;
   return h;
+}
+function hfCell(s) { return s.hf && s.hf.length ? s.hf.map(n => n === 170 ? '<b>170 🐟</b>' : n).join(', ') : '–'; }
+/** Kurze Highlights-Zeile (180er, Highfinishes) für Listen */
+function highlights(e) {
+  const parts = [];
+  for (const p of e.players) {
+    const st = (e.stats || {})[p.id] || {};
+    const bits = [];
+    if (st.s180) bits.push('180' + (st.s180 > 1 ? ' ×' + st.s180 : ''));
+    if (st.hf && st.hf.length) bits.push('HF ' + st.hf.map(n => n === 170 ? '170 🐟' : n).join(', '));
+    if (bits.length) parts.push((e.players.length > 1 ? esc(p.name) + ': ' : '') + bits.join(' · '));
+  }
+  return parts.length ? `<div class="small" style="margin-top:3px">🔥 ${parts.join(' &nbsp;|&nbsp; ')}</div>` : '';
 }
 function doubleBar(n, hits, darts) {
   const r = darts ? hits / darts : 0;
@@ -944,17 +966,26 @@ function viewManual() {
       : [['x01-501', '501 Solo'], ['x01-301', '301 Solo'], ['scoring', 'Scoring-Training'], ['atc', 'Around the Clock'], ['dbl', 'Doppel-Training'], ['bobs', "Bob's 27"], ['other', 'Sonstiges']]
     ).map(([v, l]) => `<option value="${v}" ${m.mode === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>`;
   if (kind === 'match') {
-    h += `<div class="field"><span class="small muted">Spieler antippen · Sieger mit 🏆 markieren · Average optional</span></div>${playerPicker(m.players, true)}`;
-    if (m.players.length) {
-      h += `<table class="st" style="margin-top:10px"><thead><tr><th>Spieler</th><th>Ø (opt.)</th><th>Sieger</th></tr></thead><tbody>${m.players.map(id => `<tr><td>${esc(playerById(id).name)}</td><td><input type="number" name="avg-${id}" step="0.01" min="0" max="180" style="max-width:110px;margin-left:auto"></td>
-        <td><button type="button" class="btn sm ${m.winner === id ? 'primary' : ''}" data-act="manual-winner" data-id="${id}">🏆</button></td></tr>`).join('')}</tbody></table>`;
-    }
+    h += `<div class="field"><span class="small muted">Spieler antippen · Sieger mit 🏆 markieren · Rest optional</span></div>${playerPicker(m.players, true)}`;
+    const x01ish = m.mode !== 'cricket';
+    h += m.players.map(id => `<div class="mp">
+        <div class="row"><b class="spacer">${esc(playerById(id).name)}</b><button type="button" class="btn sm ${m.winner === id ? 'primary' : ''}" data-act="manual-winner" data-id="${id}">🏆 ${m.winner === id ? 'Sieger' : 'Sieger?'}</button></div>
+        <div class="${x01ish ? 'mp-grid' : ''}">
+          <label class="field"><span>${m.mode === 'cricket' ? 'MPR' : 'Average'}</span><input type="number" name="avg-${id}" step="0.01" min="0" max="180" inputmode="decimal"></label>
+          ${x01ish ? `<label class="field"><span>180er</span><input type="number" name="s180-${id}" min="0" max="99" inputmode="numeric" placeholder="0"></label>
+          <label class="field"><span>Highfinishes</span><input type="text" name="hf-${id}" placeholder="z. B. 121, 170" inputmode="numeric" autocomplete="off"></label>` : ''}
+        </div>
+        ${x01ish ? `<div class="row wrap"><button type="button" class="btn sm" data-act="add-180" data-id="${id}">＋ 180</button><button type="button" class="btn sm" data-act="add-hf" data-id="${id}" data-v="170">＋ 170 Big Fish</button><span class="small muted">Highfinish = Checkout ab 100</span></div>` : ''}
+      </div>`).join('');
     h += `<label class="field"><span>Ergebnis (z. B. 3:1)</span><input type="text" name="result" maxlength="30"></label>`;
   } else {
     h += `<div class="field"><span class="small muted">Spieler</span></div>${playerPicker(m.players, false)}`;
     const fld = (name, label, extra = '') => `<label class="field"><span>${label}</span><input type="number" name="${name}" ${extra.includes('min=') ? '' : 'min="0"'} ${extra}></label>`;
     if (['x01-501', 'x01-301', 'scoring', 'other'].includes(m.mode)) h += fld('avg', '3-Dart-Average', 'step="0.01" max="180"');
-    if (['x01-501', 'x01-301'].includes(m.mode)) h += fld('bestLeg', 'Bestes Leg (Darts, optional)', 'max="200"') + fld('hiCo', 'Höchstes Checkout (optional)', 'max="170"');
+    if (['x01-501', 'x01-301'].includes(m.mode)) h += fld('bestLeg', 'Bestes Leg (Darts, optional)', 'max="200"') + fld('hiCo', 'Höchstes Checkout (optional)', 'max="170"')
+      + fld('s180-' + m.players[0], '180er', 'max="99" placeholder="0"')
+      + `<label class="field"><span>Highfinishes (Checkouts ab 100)</span><input type="text" name="hf-${m.players[0]}" placeholder="z. B. 121, 170" inputmode="numeric" autocomplete="off"></label>
+         <div class="row wrap"><button type="button" class="btn sm" data-act="add-180" data-id="${m.players[0]}">＋ 180</button><button type="button" class="btn sm" data-act="add-hf" data-id="${m.players[0]}" data-v="170">＋ 170 Big Fish</button></div>`;
     if (m.mode === 'scoring') h += fld('visits', 'Anzahl Aufnahmen');
     if (m.mode === 'atc') h += fld('darts', 'Benötigte Darts', 'required');
     if (m.mode === 'dbl') h += `<div class="grid2">${fld('hits', 'Treffer', 'required')}${fld('darts', 'Würfe', 'required')}</div>`;
@@ -965,6 +996,26 @@ function viewManual() {
   return h;
 }
 
+/** Highfinishes ("121, 170") parsen – null bei ungültiger Eingabe */
+function parseHF(str) {
+  const parts = String(str || '').split(/[\s,;+\/]+/).filter(Boolean);
+  const out = [];
+  for (const x of parts) {
+    const n = Number(x);
+    if (!Number.isInteger(n) || n < 100 || n > 170 || !checkout(n, 3, true)) return { bad: x };
+    out.push(n);
+  }
+  return { list: out.sort((a, b) => b - a) };
+}
+/** 180er + Highfinishes aus dem Formular übernehmen */
+function readExtras(fd, id, st, name) {
+  const v = fd.get('s180-' + id);
+  if (v !== null && v !== '') st.s180 = Math.max(0, Math.floor(Number(v)) || 0);
+  const hf = parseHF(fd.get('hf-' + id));
+  if (hf.bad) { toast(`${name}: „${hf.bad}“ ist kein gültiges Highfinish (100–170, checkbar)`); return false; }
+  if (hf.list.length) { st.hf = hf.list; st.hiCo = Math.max(st.hiCo || 0, hf.list[0]); }
+  return true;
+}
 function saveManual(form) {
   const fd = new FormData(form);
   const m = ui.manual;
@@ -981,14 +1032,19 @@ function saveManual(form) {
     e.players = m.players.map(id => ({ id, name: playerById(id).name }));
     e.winner = m.winner;
     e.result = (fd.get('result') || '').trim() || undefined;
-    m.players.forEach(id => { const a = num('avg-' + id); e.stats[id] = a != null ? { avg: a } : {}; });
+    for (const id of m.players) {
+      const st = {}, a = num('avg-' + id);
+      if (a != null) { if (mode === 'cricket') st.mpr = a; else st.avg = a; }
+      if (mode !== 'cricket' && !readExtras(fd, id, st, playerById(id).name)) return;
+      e.stats[id] = st;
+    }
   } else {
     const id = m.players[0];
     if (!id) { toast('Bitte Spieler wählen'); return; }
     e.players = [{ id, name: playerById(id).name }];
     const st = {};
     if (['x01', 'scoring', 'other'].includes(mode)) st.avg = num('avg');
-    if (mode === 'x01') { st.bestLeg = num('bestLeg'); st.hiCo = num('hiCo'); }
+    if (mode === 'x01') { st.bestLeg = num('bestLeg'); st.hiCo = num('hiCo'); if (!readExtras(fd, id, st, playerById(id).name)) return; }
     if (mode === 'scoring') st.visits = num('visits');
     if (mode === 'atc') { st.darts = num('darts'); st.finished = true; }
     if (mode === 'dbl') { st.hits = num('hits'); st.darts = num('darts'); if (st.hits > st.darts) { toast('Mehr Treffer als Würfe?'); return; } st.rate = st.darts ? st.hits / st.darts : null; }
@@ -1008,7 +1064,7 @@ function saveManual(form) {
 
 /* ---------- Statistik ---------- */
 function aggregate(pid) {
-  const a = { played: 0, won: 0, trainings: 0, x01: [], scoring: [], hiCo: 0, s180: 0, s140: 0, s100: 0, bestLeg: null, atcBest: null, bobsBest: null, dbl: {}, dblHits: 0, dblDarts: 0, h2h: {}, cricketMpr: [] };
+  const a = { played: 0, won: 0, trainings: 0, x01: [], scoring: [], hiCo: 0, s180: 0, s140: 0, s100: 0, bestLeg: null, atcBest: null, bobsBest: null, dbl: {}, dblHits: 0, dblDarts: 0, h2h: {}, cricketMpr: [], hf: [] };
   for (const e of db.history) {
     const st = e.stats && e.stats[pid];
     if (!st) continue;
@@ -1028,8 +1084,10 @@ function aggregate(pid) {
       if (st.avg != null && (st.darts == null || st.darts > 0)) a.x01.push({ t: new Date(e.date).getTime(), y: st.avg, kind: e.kind, label: entryTitle(e) });
       a.hiCo = Math.max(a.hiCo, st.hiCo || 0);
       a.s180 += st.s180 || 0; a.s140 += st.s140 || 0; a.s100 += st.s100 || 0;
+      (st.hf || []).forEach(v => a.hf.push({ v, t: new Date(e.date).getTime() }));
       if (st.bestLeg) a.bestLeg = a.bestLeg == null ? st.bestLeg : Math.min(a.bestLeg, st.bestLeg);
     }
+    if (e.mode === 'other') { a.s180 += st.s180 || 0; a.hiCo = Math.max(a.hiCo, st.hiCo || 0); (st.hf || []).forEach(v => a.hf.push({ v, t: new Date(e.date).getTime() })); }
     if (e.mode === 'scoring' && st.avg != null) { a.scoring.push({ t: new Date(e.date).getTime(), y: st.avg }); a.s180 += st.s180 || 0; }
     if (e.mode === 'cricket' && st.mpr != null) a.cricketMpr.push(st.mpr);
     if (e.mode === 'atc' && (st.finished) && st.darts) a.atcBest = a.atcBest == null ? st.darts : Math.min(a.atcBest, st.darts);
@@ -1054,7 +1112,12 @@ function viewStats() {
   const tile = (k, v) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div></div>`;
   h += `<h2>Spiele</h2><div class="tiles">${tile('Gespielt', a.played)}${tile('Gewonnen', a.won)}${tile('Siegquote', pct(a.won, a.played))}</div>`;
   h += `<h2>X01</h2><div class="tiles">${tile('Ø letzte 10', f1(a.recentAvg))}${tile('Bester Ø', f1(a.bestAvg))}${tile('Bestes Leg', a.bestLeg ? a.bestLeg + ' D' : '–')}
-    ${tile('High Checkout', a.hiCo || '–')}${tile('180er', a.s180)}${tile('140+ / 100+', a.s140 + ' / ' + a.s100)}</div>`;
+    ${tile('High Checkout', a.hiCo || '–')}${tile('180er', a.s180)}${tile('140+ / 100+', a.s140 + ' / ' + a.s100)}
+    ${tile('Highfinishes', a.hf.length)}${tile('170er 🐟', a.hf.filter(x => x.v === 170).length)}${tile('Ø Highfinish', a.hf.length ? Math.round(sum(a.hf.map(x => x.v)) / a.hf.length) : '–')}</div>`;
+  if (a.hf.length) {
+    const top = a.hf.slice().sort((x, y) => y.v - x.v || y.t - x.t).slice(0, 10);
+    h += `<div class="card" style="margin-top:12px"><h3>Top Highfinishes</h3><div class="row wrap">${top.map(x => `<span class="tag ${x.v === 170 ? 'acc' : ''}" title="${fmtDate(new Date(x.t).toISOString(), false)}">${x.v}${x.v === 170 ? ' 🐟' : ''} · ${new Date(x.t).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' })}</span>`).join('')}</div></div>`;
+  }
   h += `<div class="card" style="margin-top:12px"><h3>3-Dart-Average Verlauf (X01)</h3>${a.x01.length >= 2 ? lineChart('c1', a.x01) : `<div class="empty small">Mindestens 2 X01-Einträge nötig.</div>`}</div>`;
   h += `<h2>Training</h2><div class="tiles">${tile('Einheiten', a.trainings)}${tile('ATC Bestwert', a.atcBest ? a.atcBest + ' D' : '–')}${tile("Bob's 27 Best", a.bobsBest ?? '–')}
     ${tile('Scoring Ø', a.scoring.length ? f1(sum(a.scoring.map(p => p.y)) / a.scoring.length) : '–')}${tile('Doppelquote', pct(a.dblHits, a.dblDarts))}${tile('Cricket MPR', a.cricketMpr.length ? f1(sum(a.cricketMpr) / a.cricketMpr.length) : '–')}</div>`;
@@ -1268,6 +1331,8 @@ const actions = {
   'toggle-entry': (d, el, ev) => { if (ev.target.closest('[data-stop]')) return; ui.openEntry = ui.openEntry === d.id ? null : d.id; render(); },
   'del-entry': d => confirmBox('Eintrag wirklich löschen?', 'Löschen', () => { db.history = db.history.filter(e => e.id !== d.id); save(); render(); }),
   manual: d => { ui.manual = null; go('manual', d.v); },
+  'add-180': d => { const i = document.querySelector(`[name="s180-${d.id}"]`); if (i) { i.value = (Number(i.value) || 0) + 1; toast('180 eingetragen 🎯'); } },
+  'add-hf': d => { const i = document.querySelector(`[name="hf-${d.id}"]`); if (i) { i.value = i.value.trim() ? i.value.trim().replace(/,$/, '') + ', ' + d.v : d.v; } },
   'manual-winner': d => { ui.manual.winner = d.id; keepForm(() => render()); },
   'rename-player': d => {
     const p = playerById(d.id);
