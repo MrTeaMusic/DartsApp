@@ -70,7 +70,7 @@ p{margin:6px 0}
 .seg button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.18)}
 label.field{display:block;margin:10px 0}
 label.field>span{display:block;font-size:.85rem;color:var(--text-2);margin-bottom:4px}
-input[type=text],input[type=number],input[type=date],select,textarea{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;min-height:44px}
+input[type=text],input[type=number],input[type=date],input[type=time],select,textarea{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;min-height:44px}
 textarea{min-height:70px;resize:vertical}
 .tag{display:inline-block;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--surface-2);color:var(--text-2)}
 .tag.acc{background:var(--accent-soft);color:var(--accent)}
@@ -581,12 +581,12 @@ function render() {
   const playing = view === 'play';
   nav.style.display = playing ? 'none' : '';
   $app.classList.toggle('play', playing);
-  const base = ['setup-training', 'setup-match'].includes(view) ? (view === 'setup-training' ? 'training' : 'match') : (view === 'players' || view === 'result' || view === 'manual' ? null : view);
+  const base = ['setup-training', 'setup-match'].includes(view) ? (view === 'setup-training' ? 'training' : 'match') : (view === 'players' || view === 'result' || view === 'manual' ? null : view === 'edit' ? 'history' : view);
   nav.innerHTML = `<div class="in">${TABS.map(([k, l]) => `<button class="${base === k ? 'on' : ''}" data-act="nav" data-v="${k}"><svg viewBox="0 0 24 24">${ICONS[k]}</svg>${l}</button>`).join('')}</div>`;
   if (view === 'play' && !db.active) view = 'home';
   const r = {
     home: viewHome, training: viewTrainingSetup, match: viewMatchSetup, history: viewHistory, stats: viewStats,
-    players: viewPlayers, play: viewPlay, result: viewResult, manual: viewManual
+    players: viewPlayers, play: viewPlay, result: viewResult, manual: viewManual, edit: viewEdit
   }[view] || viewHome;
   $app.innerHTML = r();
   if (view === 'stats') bindCharts();
@@ -874,10 +874,10 @@ function entrySummary(e) {
 function histItem(e) {
   const open = ui.openEntry === e.id;
   return `<div class="card hist-item" data-act="toggle-entry" data-id="${e.id}">
-    <div class="hd"><b>${esc(entryTitle(e))}</b><span class="tag ${e.kind === 'match' ? 'acc' : ''}">${e.kind === 'match' ? 'Spiel' : 'Training'}</span>${e.incomplete ? '<span class="tag warn">abgebrochen</span>' : ''}</div>
+    <div class="hd"><b>${esc(entryTitle(e))}</b><span class="tag ${e.kind === 'match' ? 'acc' : ''}">${e.kind === 'match' ? 'Spiel' : 'Training'}</span>${e.incomplete ? '<span class="tag warn">abgebrochen</span>' : ''}${e.edited ? '<span class="tag" title="Nachträglich bearbeitet">bearbeitet</span>' : ''}</div>
     <div class="small muted">${fmtDate(e.date, !e.manual)}${e.end && !e.manual ? ' · ' + fmtDur(new Date(e.end) - new Date(e.date)) : ''}</div>
     <div style="margin-top:4px">${entrySummary(e)}</div>${highlights(e)}
-    ${open ? `<div style="margin-top:10px" data-stop="1">${entryDetail(e)}<div class="row" style="margin-top:10px"><span class="spacer"></span><button class="btn sm danger" data-act="del-entry" data-id="${e.id}">Eintrag löschen</button></div></div>` : ''}
+    ${open ? `<div style="margin-top:10px" data-stop="1">${entryDetail(e)}<div class="row" style="margin-top:10px"><span class="spacer"></span><button class="btn sm" data-act="edit-entry" data-id="${e.id}">✏️ Bearbeiten</button><button class="btn sm danger" data-act="del-entry" data-id="${e.id}">Eintrag löschen</button></div></div>` : ''}
   </div>`;
 }
 function entryDetail(e) {
@@ -1016,6 +1016,97 @@ function readExtras(fd, id, st, name) {
   if (hf.list.length) { st.hf = hf.list; st.hiCo = Math.max(st.hiCo || 0, hf.list[0]); }
   return true;
 }
+/* ---------- Eintrag bearbeiten ---------- */
+const EDIT_FIELDS = {
+  x01: [['avg', 'Average', 'dec'], ['s180', '180er', 'int'], ['hf', 'Highfinishes', 'hf'], ['hiCo', 'Höchstes Checkout', 'int'], ['bestLeg', 'Bestes Leg (Darts)', 'int']],
+  cricket: [['mpr', 'MPR', 'dec']],
+  scoring: [['avg', 'Average', 'dec'], ['visits', 'Aufnahmen', 'int'], ['s180', '180er', 'int']],
+  atc: [['darts', 'Benötigte Darts', 'int']],
+  dbl: [['hits', 'Treffer', 'int'], ['darts', 'Würfe', 'int']],
+  bobs: [['score', 'Punkte', 'neg']],
+  other: [['avg', 'Average', 'dec'], ['s180', '180er', 'int'], ['hf', 'Highfinishes', 'hf']]
+};
+function localParts(iso) {
+  const d = new Date(iso), z = new Date(d - d.getTimezoneOffset() * 60000).toISOString();
+  return [z.slice(0, 10), z.slice(11, 16)];
+}
+function viewEdit() {
+  const e = db.history.find(x => x.id === viewArg);
+  if (!e) return viewHistory();
+  if (!ui.edit || ui.edit.id !== e.id) ui.edit = { id: e.id, winner: e.winner || null };
+  const [d, t] = localParts(e.date);
+  const fields = EDIT_FIELDS[e.mode] || EDIT_FIELDS.other;
+  let h = `<div class="topbar"><button class="btn ghost sm" data-act="nav" data-v="history">← Zurück</button><div class="title">Eintrag bearbeiten</div><span style="width:70px"></span></div>
+    <form class="card" data-form="edit" data-id="${e.id}">
+    <p><b>${esc(entryTitle(e))}</b> <span class="tag ${e.kind === 'match' ? 'acc' : ''}">${e.kind === 'match' ? 'Spiel' : 'Training'}</span></p>
+    <div class="grid2"><label class="field"><span>Datum</span><input type="date" name="date" value="${d}" required></label>
+    <label class="field"><span>Uhrzeit</span><input type="time" name="time" value="${t}"></label></div>`;
+  for (const p of e.players) {
+    const st = e.stats[p.id] || {}, i = e.players.indexOf(p);
+    h += `<div class="mp"><div class="row"><b class="spacer">${esc(p.name)}</b>${e.kind === 'match' ? `<button type="button" class="btn sm ${ui.edit.winner === p.id ? 'primary' : ''}" data-act="edit-winner" data-id="${p.id}">🏆 ${ui.edit.winner === p.id ? 'Sieger' : 'Sieger?'}</button>` : ''}</div><div class="grid2">`;
+    if (e.score) h += `<label class="field"><span>Legs gewonnen</span><input type="number" name="legs-${p.id}" min="0" max="99" value="${e.score[i] ?? 0}"></label>`;
+    for (const [k, label, type] of fields) {
+      if (type === 'hf') h += `<label class="field" style="grid-column:1/-1"><span>${label} (100–170)</span><input type="text" name="hf-${p.id}" value="${esc((st.hf || []).join(', '))}" placeholder="z. B. 121, 170" autocomplete="off"></label>`;
+      else h += `<label class="field"><span>${label}</span><input type="number" name="${k}-${p.id}" ${type === 'dec' ? 'step="0.01" min="0" max="180"' : type === 'neg' ? 'step="1"' : 'step="1" min="0"'} value="${st[k] == null ? '' : type === 'dec' ? Math.round(st[k] * 100) / 100 : st[k]}"></label>`;
+    }
+    h += `</div>${fields.some(f => f[0] === 'hf') ? `<div class="row wrap"><button type="button" class="btn sm" data-act="add-180" data-id="${p.id}">＋ 180</button><button type="button" class="btn sm" data-act="add-hf" data-id="${p.id}" data-v="170">＋ 170 Big Fish</button></div>` : ''}</div>`;
+  }
+  if (e.kind === 'match' && (e.manual || e.result)) h += `<label class="field"><span>Ergebnis (z. B. 3:1)</span><input type="text" name="result" maxlength="30" value="${esc(e.result || '')}"></label>`;
+  h += `<label class="field"><span>Notiz</span><textarea name="note" maxlength="300" placeholder="Optional">${esc(e.note || '')}</textarea></label>
+    ${e.incomplete ? `<label class="row small" style="margin:8px 0"><input type="checkbox" name="incomplete" checked style="width:20px;height:20px"> Als „abgebrochen“ markiert</label>` : ''}
+    <p class="small muted">Detailwerte von aufgezeichneten Spielen (z. B. First 9, 140+) bleiben unverändert.</p>
+    <div class="grid2"><button type="button" class="btn" data-act="nav" data-v="history">Abbrechen</button><button class="btn primary">Speichern</button></div></form>`;
+  return h;
+}
+function saveEdit(form) {
+  const e = db.history.find(x => x.id === form.dataset.id);
+  if (!e) return;
+  const fd = new FormData(form);
+  const fields = EDIT_FIELDS[e.mode] || EDIT_FIELDS.other;
+  const newStats = {};
+  for (const p of e.players) {
+    const st = Object.assign({}, e.stats[p.id] || {});
+    for (const [k, , type] of fields) {
+      if (type === 'hf') {
+        const hf = parseHF(fd.get('hf-' + p.id));
+        if (hf.bad) { toast(`${p.name}: „${hf.bad}“ ist kein gültiges Highfinish (100–170, checkbar)`); return; }
+        if (hf.list.length) st.hf = hf.list; else delete st.hf;
+        continue;
+      }
+      const v = fd.get(k + '-' + p.id);
+      if (v === null || v === '') delete st[k];
+      else st[k] = type === 'dec' ? Number(v) : Math.round(Number(v));
+    }
+    if (st.hf && st.hf.length) st.hiCo = Math.max(st.hiCo || 0, st.hf[0]);
+    if (e.mode === 'dbl') {
+      if ((st.hits || 0) > (st.darts || 0)) { toast(`${p.name}: Mehr Treffer als Würfe?`); return; }
+      st.rate = st.darts ? (st.hits || 0) / st.darts : null;
+    }
+    if (e.mode === 'atc' && !e.manual && st.darts) st.rate = st.hits != null ? st.hits / st.darts : st.rate;
+    newStats[p.id] = st;
+  }
+  if (e.score) {
+    e.score = e.players.map(p => Math.max(0, Math.round(Number(fd.get('legs-' + p.id)) || 0)));
+    e.players.forEach((p, i) => { if (newStats[p.id].legs != null || e.mode === 'x01' || e.mode === 'cricket') newStats[p.id].legs = e.score[i]; });
+  }
+  const incomplete = e.incomplete ? fd.get('incomplete') === 'on' : false;
+  if (e.kind === 'match' && !incomplete && !ui.edit.winner) { toast('Bitte den Sieger markieren'); return; }
+  // Datum/Uhrzeit (Dauer bleibt erhalten)
+  const nd = new Date(fd.get('date') + 'T' + (fd.get('time') || '12:00') + ':00');
+  if (isNaN(nd)) { toast('Ungültiges Datum'); return; }
+  if (e.end) e.end = new Date(new Date(e.end).getTime() + (nd - new Date(e.date))).toISOString();
+  e.date = nd.toISOString();
+  e.stats = newStats;
+  if (e.kind === 'match') e.winner = ui.edit.winner || null;
+  if (fd.has('result')) e.result = (fd.get('result') || '').trim() || undefined;
+  e.note = (fd.get('note') || '').trim() || undefined;
+  e.incomplete = incomplete;
+  e.edited = new Date().toISOString();
+  db.history.sort((a, b) => new Date(b.date) - new Date(a.date));
+  ui.edit = null; ui.openEntry = e.id;
+  save(); toast('Änderungen gespeichert'); go('history');
+}
+
 function saveManual(form) {
   const fd = new FormData(form);
   const m = ui.manual;
@@ -1333,6 +1424,8 @@ const actions = {
   manual: d => { ui.manual = null; go('manual', d.v); },
   'add-180': d => { const i = document.querySelector(`[name="s180-${d.id}"]`); if (i) { i.value = (Number(i.value) || 0) + 1; toast('180 eingetragen 🎯'); } },
   'add-hf': d => { const i = document.querySelector(`[name="hf-${d.id}"]`); if (i) { i.value = i.value.trim() ? i.value.trim().replace(/,$/, '') + ', ' + d.v : d.v; } },
+  'edit-entry': d => { ui.edit = null; go('edit', d.id); },
+  'edit-winner': d => { ui.edit.winner = ui.edit.winner === d.id ? null : d.id; keepForm(() => render(), 'edit'); },
   'manual-winner': d => { ui.manual.winner = d.id; keepForm(() => render()); },
   'rename-player': d => {
     const p = playerById(d.id);
@@ -1358,12 +1451,13 @@ const actions = {
 };
 
 /** Formularwerte beim Neu-Rendern erhalten (für "Nachtragen") */
-function keepForm(fn) {
-  const f = document.querySelector('form[data-form="manual"]');
+function keepForm(fn, form = 'manual') {
+  const f = document.querySelector(`form[data-form="${form}"]`);
   const vals = f ? Object.fromEntries(new FormData(f)) : {};
   fn();
-  const nf = document.querySelector('form[data-form="manual"]');
-  if (nf) for (const [k, v] of Object.entries(vals)) { const el = nf.elements[k]; if (el && k !== 'mode') el.value = v; }
+  const nf = document.querySelector(`form[data-form="${form}"]`);
+  if (nf) for (const [k, v] of Object.entries(vals)) { const el = nf.elements[k]; if (el && k !== 'mode' && el.type !== 'checkbox') el.value = v; }
+  if (nf && f) nf.querySelectorAll('input[type=checkbox]').forEach(c => { c.checked = !!vals[c.name]; });
 }
 
 document.addEventListener('click', ev => {
@@ -1419,6 +1513,7 @@ document.addEventListener('submit', ev => {
       p.name = n; save(); closeModal(); render(); break;
     }
     case 'manual': saveManual(f); break;
+    case 'edit': saveEdit(f); break;
   }
 });
 

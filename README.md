@@ -22,6 +22,7 @@ Einfach `index.html` im Browser öffnen (am Handy z. B. über GitHub Pages und d
 - Alle Trainings und Spiele mit Datum, Dauer und Detail-Statistiken
 - **Nachtragen**: Trainings oder Spiele, die ohne App gespielt wurden, manuell eintragen
 - Statistik pro Spieler: Average-Verlauf (Diagramm), Bestwerte, 180er, Checkouts, Doppelquote pro Feld, Bilanz gegen jeden Freund
+- Einträge nachträglich **bearbeiten** (Datum, Sieger, Legs, Average, 180er, Highfinishes, Notiz …) oder löschen
 - Backup als JSON exportieren/importieren
 
 ## Daten
