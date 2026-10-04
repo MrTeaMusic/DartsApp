@@ -1,0 +1,1378 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#121413">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="DartsApp">
+<title>DartsApp</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23121413'/%3E%3Ccircle cx='50' cy='50' r='34' fill='%23d9433a'/%3E%3Ccircle cx='50' cy='50' r='22' fill='%23f2ead3'/%3E%3Ccircle cx='50' cy='50' r='10' fill='%231baf7a'/%3E%3C/svg%3E">
+<style>
+:root{
+  color-scheme: light;
+  --bg:#f3f2ee; --surface:#fcfcfb; --surface-2:#ecebe6; --border:#d9d7cf;
+  --text:#0b0b0b; --text-2:#52514e; --muted:#7d7c76;
+  --accent:#12895f; --accent-ink:#ffffff; --accent-soft:#d6efe4;
+  --danger:#c4352c; --danger-soft:#f8dedb; --warn:#a96d00;
+  --series-1:#2a78d6; --grid:#e4e2dc;
+  --shadow:0 1px 2px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --bg:#121413; --surface:#1b1d1c; --surface-2:#252826; --border:#343836;
+    --text:#ffffff; --text-2:#c3c2b7; --muted:#8f8e86;
+    --accent:#1baf7a; --accent-ink:#06150f; --accent-soft:#163a2c;
+    --danger:#e5574d; --danger-soft:#3d1f1d; --warn:#e0a526;
+    --series-1:#3987e5; --grid:#2c302e;
+    --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --bg:#121413; --surface:#1b1d1c; --surface-2:#252826; --border:#343836;
+  --text:#ffffff; --text-2:#c3c2b7; --muted:#8f8e86;
+  --accent:#1baf7a; --accent-ink:#06150f; --accent-soft:#163a2c;
+  --danger:#e5574d; --danger-soft:#3d1f1d; --warn:#e0a526;
+  --series-1:#3987e5; --grid:#2c302e;
+  --shadow:none;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent;min-height:100vh}
+button,input,select,textarea{font:inherit;color:inherit}
+#app{max-width:680px;margin:0 auto;padding:12px 16px calc(84px + env(safe-area-inset-bottom))}
+#app.play{padding-bottom:16px}
+h1{font-size:1.5rem;margin:8px 0 14px}
+h2{font-size:1.1rem;margin:22px 0 10px}
+h3{font-size:1rem;margin:0 0 6px}
+p{margin:6px 0}
+.muted{color:var(--muted)} .small{font-size:.85rem} .tc{text-align:center} .tr{text-align:right}
+.num{font-variant-numeric:tabular-nums}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow)}
+.row{display:flex;gap:10px;align-items:center}
+.row.wrap{flex-wrap:wrap}
+.spacer{flex:1}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.btn{appearance:none;border:1px solid var(--border);background:var(--surface-2);border-radius:11px;padding:11px 14px;cursor:pointer;font-weight:600;min-height:44px;touch-action:manipulation}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.danger{background:var(--danger-soft);border-color:transparent;color:var(--danger)}
+.btn.ghost{background:transparent}
+.btn.block{width:100%}
+.btn.sm{min-height:34px;padding:6px 10px;font-size:.9rem}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.seg{display:flex;background:var(--surface-2);border-radius:11px;padding:3px;gap:3px;flex-wrap:wrap}
+.seg button{flex:1;border:0;background:transparent;border-radius:9px;padding:8px 6px;font-weight:600;cursor:pointer;min-height:38px;color:var(--text-2)}
+.seg button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.18)}
+label.field{display:block;margin:10px 0}
+label.field>span{display:block;font-size:.85rem;color:var(--text-2);margin-bottom:4px}
+input[type=text],input[type=number],input[type=date],select,textarea{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;min-height:44px}
+textarea{min-height:70px;resize:vertical}
+.tag{display:inline-block;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--surface-2);color:var(--text-2)}
+.tag.acc{background:var(--accent-soft);color:var(--accent)}
+.tag.warn{color:var(--warn)}
+/* nav */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--border);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom);z-index:20}
+nav.tabs .in{display:flex;max-width:680px;width:100%}
+nav.tabs button{flex:1;border:0;background:none;padding:8px 2px 9px;cursor:pointer;color:var(--muted);font-size:.72rem;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav.tabs button svg{width:24px;height:24px}
+nav.tabs button.on{color:var(--accent)}
+/* mode cards */
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mode{border:2px solid var(--border);background:var(--surface);border-radius:14px;padding:12px;text-align:left;cursor:pointer}
+.mode.on{border-color:var(--accent);background:var(--accent-soft)}
+.mode b{display:block;margin-bottom:3px}
+.mode span{font-size:.82rem;color:var(--text-2)}
+/* players picker */
+.plist{display:flex;flex-wrap:wrap;gap:8px}
+.pchip{border:2px solid var(--border);background:var(--surface);border-radius:99px;padding:8px 14px;cursor:pointer;font-weight:600;display:flex;gap:6px;align-items:center}
+.pchip.on{border-color:var(--accent);background:var(--accent-soft)}
+.pchip i{font-style:normal;background:var(--accent);color:var(--accent-ink);border-radius:99px;width:20px;height:20px;font-size:.75rem;display:grid;place-items:center}
+/* play */
+.topbar{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.topbar .title{flex:1;font-weight:700;text-align:center;font-size:.95rem}
+.pcards{display:grid;gap:8px;margin-bottom:10px}
+.pcard{background:var(--surface);border:2px solid var(--border);border-radius:14px;padding:10px 12px;position:relative}
+.pcard.on{border-color:var(--accent);background:var(--accent-soft)}
+.pcard .nm{font-weight:700;display:flex;gap:6px;align-items:center;font-size:.95rem}
+.pcard .rem{font-size:2.6rem;font-weight:800;line-height:1.05;font-variant-numeric:tabular-nums}
+.pcard .meta{font-size:.78rem;color:var(--text-2);font-variant-numeric:tabular-nums}
+.pcard .co{font-size:.85rem;font-weight:700;color:var(--accent);min-height:1.2em}
+.legdots{display:inline-flex;gap:3px}
+.legdots b{width:9px;height:9px;border-radius:9px;border:1.5px solid var(--accent);display:inline-block}
+.legdots b.w{background:var(--accent)}
+.entry{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:8px 14px;margin-bottom:8px;min-height:58px}
+.entry .val{font-size:2rem;font-weight:800;font-variant-numeric:tabular-nums}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.keypad button{min-height:56px;font-size:1.35rem;font-weight:700;border-radius:12px;border:1px solid var(--border);background:var(--surface);cursor:pointer;touch-action:manipulation}
+.keypad button:active{background:var(--surface-2)}
+.keypad .ok{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.quick{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:7px}
+.quick button{min-height:40px;border-radius:10px;border:1px solid var(--border);background:var(--surface-2);font-weight:700;cursor:pointer}
+.dartpad{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.dartpad button{min-height:48px;border-radius:10px;border:1px solid var(--border);background:var(--surface);font-weight:700;font-size:1.05rem;cursor:pointer;touch-action:manipulation}
+.dartpad button.wide{grid-column:span 2}
+.mults{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:6px}
+.mults button{min-height:44px;border-radius:10px;border:2px solid var(--border);background:var(--surface-2);font-weight:800;cursor:pointer}
+.mults button.on{border-color:var(--accent);background:var(--accent);color:var(--accent-ink)}
+.darts3{display:flex;gap:6px;justify-content:center;margin:6px 0 8px}
+.darts3 span{min-width:64px;padding:6px 8px;border-radius:9px;background:var(--surface-2);text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+.darts3 span.empty{color:var(--muted);font-weight:400}
+.visits{font-size:.82rem;color:var(--text-2);display:flex;flex-wrap:wrap;gap:4px 10px;margin:4px 0 10px;max-height:70px;overflow:auto}
+.big-target{font-size:4.2rem;font-weight:800;text-align:center;line-height:1}
+.progress{height:8px;background:var(--surface-2);border-radius:8px;overflow:hidden;margin:10px 0}
+.progress>div{height:100%;background:var(--accent);border-radius:8px}
+.hitbtns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hitbtns button{min-height:84px;font-size:1.3rem;font-weight:800;border-radius:14px;cursor:pointer;border:1px solid var(--border)}
+.hitbtns .hit{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.hitbtns .miss{background:var(--surface)}
+.cnt4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.cnt4 button{min-height:76px;font-size:1.6rem;font-weight:800;border-radius:14px;cursor:pointer;border:1px solid var(--border);background:var(--surface)}
+/* cricket */
+table{border-collapse:collapse;width:100%}
+.crt td,.crt th{padding:5px 4px;text-align:center;border-bottom:1px solid var(--border)}
+.crt th{font-size:.85rem}
+.crt th.on{color:var(--accent)}
+.crt td.n{font-weight:800;width:56px;background:var(--surface-2)}
+.crt tr.closed td{opacity:.35}
+.crt .mk{font-size:1.35rem;font-weight:800;line-height:1}
+.crt .pts{font-size:1.4rem;font-weight:800}
+/* stats tables */
+.st td,.st th{padding:6px 6px;border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums}
+.st th{text-align:left;font-size:.8rem;color:var(--text-2);font-weight:600}
+.st td:not(:first-child),.st th:not(:first-child){text-align:right}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px}
+.tile .k{font-size:.74rem;color:var(--text-2)}
+.tile .v{font-size:1.35rem;font-weight:800;font-variant-numeric:tabular-nums}
+.hist-item{cursor:pointer}
+.hist-item .hd{display:flex;gap:8px;align-items:baseline}
+.hist-item .hd b{flex:1}
+.bars .b{display:grid;grid-template-columns:44px 1fr 84px;gap:8px;align-items:center;font-size:.85rem;margin:3px 0}
+.bars .track{height:14px;background:var(--surface-2);border-radius:4px;overflow:hidden}
+.bars .fill{height:100%;background:var(--series-1);border-radius:0 4px 4px 0}
+.chart-wrap{position:relative}
+.chart-wrap svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:5px 8px;font-size:.8rem;box-shadow:0 2px 10px rgba(0,0,0,.2);white-space:nowrap;display:none;z-index:2}
+/* modal & toast */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.modal{background:var(--surface);border-radius:16px;padding:18px;width:100%;max-width:420px;max-height:90vh;overflow:auto}
+.modal h3{font-size:1.15rem;margin-bottom:12px}
+#toast{position:fixed;left:50%;top:16px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;z-index:60;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw;text-align:center}
+#toast.show{opacity:1}
+.win-banner{text-align:center;padding:18px 10px}
+.win-banner .t{font-size:2rem}
+.win-banner .n{font-size:1.5rem;font-weight:800}
+.empty{color:var(--muted);text-align:center;padding:26px 10px}
+@media (max-width:380px){
+  .pcard .rem{font-size:2.1rem}
+  .tiles{grid-template-columns:repeat(2,1fr)}
+}
+@media (min-width:520px){
+  .pcards.two{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<nav class="tabs" id="nav"></nav>
+<div id="toast"></div>
+<div id="modal-root"></div>
+
+<script>
+'use strict';
+/* =========================================================
+   DartsApp – Training, Spiele mit Freunden, Historie, Statistik
+   Alle Daten liegen lokal im Browser (localStorage).
+   ========================================================= */
+
+const KEY = 'dartsapp.v1';
+const IMPOSSIBLE = new Set([163, 166, 169, 172, 173, 175, 176, 178, 179]);
+const CR_NUMS = [20, 19, 18, 17, 16, 15, 25];
+const MODE_LABEL = {
+  x01: 'X01', cricket: 'Cricket', atc: 'Around the Clock', dbl: 'Doppel-Training',
+  bobs: "Bob's 27", scoring: 'Scoring-Training', other: 'Sonstiges'
+};
+
+const $app = document.getElementById('app');
+let db = load();
+let view = 'home';
+let viewArg = null;
+const ui = { histFilter: 'all', openEntry: null, statsPlayer: null, setup: null, manual: null };
+
+/* ---------- Persistenz ---------- */
+function load() {
+  try {
+    const d = JSON.parse(localStorage.getItem(KEY));
+    if (d && Array.isArray(d.players)) {
+      d.history = d.history || [];
+      d.settings = d.settings || {};
+      return d;
+    }
+  } catch (e) { /* ignore */ }
+  return { players: [], history: [], active: null, settings: {} };
+}
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(db)); }
+  catch (e) { toast('Speichern fehlgeschlagen – Speicher voll?'); }
+}
+
+/* ---------- Helfer ---------- */
+const uid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const f1 = n => (n == null || isNaN(n)) ? '–' : (Math.round(n * 100) / 100).toFixed(2).replace('.', ',');
+const pct = (a, b) => b ? Math.round(a / b * 100) + '%' : '–';
+const sum = a => a.reduce((x, y) => x + y, 0);
+function fmtDate(iso, withTime = true) {
+  const d = new Date(iso);
+  const o = { day: '2-digit', month: '2-digit', year: 'numeric' };
+  if (withTime) { o.hour = '2-digit'; o.minute = '2-digit'; }
+  return d.toLocaleString('de-DE', o);
+}
+function fmtDur(ms) {
+  const m = Math.round(ms / 60000);
+  return m < 60 ? m + ' min' : Math.floor(m / 60) + ' h ' + (m % 60) + ' min';
+}
+function playerById(id) { return db.players.find(p => p.id === id); }
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 1800);
+}
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+/* ---------- Modal ---------- */
+let modalHandlers = {};
+function openModal(html, handlers = {}) {
+  modalHandlers = handlers;
+  document.getElementById('modal-root').innerHTML = `<div class="overlay" data-act="modal-bg"><div class="modal" role="dialog">${html}</div></div>`;
+}
+function closeModal() { document.getElementById('modal-root').innerHTML = ''; modalHandlers = {}; }
+function confirmBox(text, okLabel, onOk, danger = true) {
+  openModal(`<h3>${esc(text)}</h3><div class="grid2"><button class="btn" data-act="m" data-k="no">Abbrechen</button><button class="btn ${danger ? 'danger' : 'primary'}" data-act="m" data-k="ok">${esc(okLabel)}</button></div>`,
+    { ok: () => { closeModal(); onOk(); }, no: closeModal });
+}
+
+/* ---------- Checkout-Rechner ---------- */
+const SEGS = (() => {
+  const a = [];
+  for (let n = 20; n >= 1; n--) a.push({ m: 3, n }, { m: 1, n }, { m: 2, n });
+  a.push({ m: 1, n: 25 }, { m: 2, n: 25 });
+  return a;
+})();
+const segVal = s => s.m * s.n;
+function segLabel(s) {
+  if (s.n === 0) return '–';
+  if (s.n === 25) return s.m === 2 ? 'Bull' : '25';
+  return (s.m === 3 ? 'T' : s.m === 2 ? 'D' : '') + s.n;
+}
+const DBL_PREF = [20, 16, 8, 10, 12, 18, 4, 6, 14, 2, 25, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19];
+function setupPen(s) {
+  if (s.n === 25) return s.m === 2 ? 7 : 5;
+  if (s.m === 1) return (20 - s.n) * 0.01;
+  if (s.m === 3) return 2 + (20 - s.n) * 0.05;
+  return 4;
+}
+function finalPen(s, dOut) { return dOut ? DBL_PREF.indexOf(s.n) * 0.3 : setupPen(s); }
+const coCache = new Map();
+/** Liefert den bevorzugten Checkout-Weg (Array von Segmenten) für Rest r mit max. `darts` Darts. */
+function checkout(r, darts = 3, dOut = true) {
+  const key = r + '|' + darts + '|' + dOut;
+  if (coCache.has(key)) return coCache.get(key);
+  let res = null;
+  if (r >= (dOut ? 2 : 1) && r <= 180) {
+    const finals = dOut ? SEGS.filter(s => s.m === 2) : SEGS;
+    for (let nd = 1; nd <= darts && !res; nd++) {
+      let best = null, bestPen = Infinity;
+      const test = (path) => {
+        const p = path.slice(0, -1).reduce((a, s) => a + setupPen(s), 0) + finalPen(path[path.length - 1], dOut);
+        if (p < bestPen) { bestPen = p; best = path; }
+      };
+      if (nd === 1) { for (const f of finals) if (segVal(f) === r) test([f]); }
+      else if (nd === 2) { for (const a of SEGS) { const rest = r - segVal(a); if (rest <= 0) continue; for (const f of finals) if (segVal(f) === rest) test([a, f]); } }
+      else { for (const a of SEGS) for (const b of SEGS) { const rest = r - segVal(a) - segVal(b); if (rest <= 0) continue; for (const f of finals) if (segVal(f) === rest) test([a, b, f]); } }
+      res = best;
+    }
+  }
+  coCache.set(key, res);
+  return res;
+}
+const coText = path => path ? path.map(segLabel).join(' · ') : '';
+
+/* =========================================================
+   X01 (Spiel & Training)
+   ========================================================= */
+const X01 = {
+  create(o) {
+    return {
+      type: 'x01', id: uid(), training: !!o.training, start: o.start, doubleIn: !!o.doubleIn, doubleOut: o.doubleOut !== false,
+      firstTo: o.firstTo || 1, input: o.input || 'total', players: o.players,
+      legs: [{ starter: 0, turns: [], winner: null }], pending: [], mult: 1, buf: '', startedAt: Date.now()
+    };
+  },
+  leg: s => s.legs[s.legs.length - 1],
+  cur(s) { const l = X01.leg(s); return (l.starter + l.turns.length) % s.players.length; },
+  rem(s, l, pi) { let r = s.start; for (const t of l.turns) if (t.p === pi && !t.bust) r -= t.score; return r; },
+  opened(s, l, pi) { return !s.doubleIn || l.turns.some(t => t.p === pi && !t.bust && t.score > 0); },
+  wins(s, pi) { return s.legs.filter(l => l.winner === pi).length; },
+
+  total(s, score) {
+    if (!(score >= 0 && score <= 180) || IMPOSSIBLE.has(score)) { toast(score + ' ist mit 3 Darts nicht möglich'); return; }
+    const l = X01.leg(s), p = X01.cur(s), r = X01.rem(s, l, p);
+    if (score === r) {
+      const co = checkout(r, 3, s.doubleOut);
+      if (!co) { toast('Überworfen! (' + r + ' ist so nicht checkbar)'); return X01.push(s, { p, score: 0, darts: 3, bust: true, raw: score }); }
+      if (co.length === 3) return X01.push(s, { p, score, darts: 3, checkout: true });
+      const opts = [1, 2, 3].filter(d => d >= co.length);
+      openModal(`<h3>Check-out ${score}! Mit wie vielen Darts?</h3><div class="grid3">${opts.map(d => `<button class="btn primary" data-act="m" data-k="d${d}">${d}</button>`).join('')}</div>
+        <button class="btn ghost block" style="margin-top:10px" data-act="m" data-k="no">Abbrechen</button>`,
+        Object.assign({ no: closeModal }, ...opts.map(d => ({ ['d' + d]: () => { closeModal(); X01.push(s, { p, score, darts: d, checkout: true }); } }))));
+      return;
+    }
+    if (score > r || (s.doubleOut && r - score === 1)) { toast('Überworfen!'); return X01.push(s, { p, score: 0, darts: 3, bust: true, raw: score }); }
+    X01.push(s, { p, score, darts: 3 });
+  },
+
+  dart(s, m, n) {
+    if (n === 25 && m === 3) { toast('Kein Triple-Bull'); return; }
+    if (n === 0) m = 1;
+    s.pending.push({ m, n }); s.mult = 1;
+    const l = X01.leg(s), p = X01.cur(s), r = X01.rem(s, l, p);
+    let opened = X01.opened(s, l, p), tot = 0;
+    for (const d of s.pending) {
+      if (!opened) { if (d.m === 2 && d.n > 0) opened = true; else continue; }
+      tot += d.m * d.n;
+    }
+    const left = r - tot, last = s.pending[s.pending.length - 1], d = s.pending.slice();
+    if (left < 0 || (s.doubleOut && left === 1) || (left === 0 && s.doubleOut && last.m !== 2)) {
+      toast('Überworfen!'); s.pending = [];
+      return X01.push(s, { p, score: 0, darts: d.length, bust: true, raw: tot, d });
+    }
+    if (left === 0) { s.pending = []; return X01.push(s, { p, score: tot, darts: d.length, checkout: true, d }); }
+    if (d.length === 3) { s.pending = []; return X01.push(s, { p, score: tot, darts: 3, d }); }
+    persistRender();
+  },
+
+  push(s, t) {
+    const l = X01.leg(s);
+    l.turns.push(t); s.buf = '';
+    if (t.checkout) {
+      l.winner = t.p;
+      if (X01.wins(s, t.p) >= s.firstTo) return finishGame(false);
+      toast(s.training ? 'Leg geschafft in ' + legDarts(l, t.p) + ' Darts!' : 'Leg für ' + s.players[t.p].name + '!');
+      s.legs.push({ starter: (l.starter + 1) % s.players.length, turns: [], winner: null });
+    }
+    persistRender();
+  },
+
+  undo(s) {
+    if (s.input === 'darts' && s.pending.length) { s.pending.pop(); return true; }
+    if (s.buf) { s.buf = ''; return true; }
+    let l = X01.leg(s);
+    if (!l.turns.length) {
+      if (s.legs.length <= 1) return false;
+      s.legs.pop(); l = X01.leg(s);
+    }
+    const t = l.turns.pop(); l.winner = null;
+    if (t.d && s.input === 'darts') s.pending = t.d.slice(0, -1);
+    return true;
+  },
+
+  stats(s) {
+    return s.players.map((pl, pi) => {
+      let pts = 0, darts = 0, f9p = 0, f9d = 0, hi = 0, hiCo = 0, s180 = 0, s140 = 0, s100 = 0, best = null, legs = 0, cos = 0;
+      for (const l of s.legs) {
+        let k = 0, ld = 0;
+        for (const t of l.turns) {
+          if (t.p !== pi) continue;
+          const sc = t.bust ? 0 : t.score;
+          pts += sc; darts += t.darts; ld += t.darts;
+          if (k < 3) { f9p += sc; f9d += t.darts; }
+          k++;
+          hi = Math.max(hi, sc);
+          if (sc === 180) s180++; else if (sc >= 140) s140++; else if (sc >= 100) s100++;
+          if (t.checkout) { hiCo = Math.max(hiCo, sc); cos++; }
+        }
+        if (l.winner === pi) { legs++; best = best == null ? ld : Math.min(best, ld); }
+      }
+      return { id: pl.id, name: pl.name, avg: darts ? pts / darts * 3 : null, first9: f9d ? f9p / f9d * 3 : null, darts, pts, hi, hiCo, s180, s140, s100, bestLeg: best, legs, cos };
+    });
+  }
+};
+function legDarts(l, pi) { return sum(l.turns.filter(t => t.p === pi).map(t => t.darts)); }
+
+/* =========================================================
+   Cricket
+   ========================================================= */
+const CR = {
+  create(o) {
+    return { type: 'cricket', id: uid(), firstTo: o.firstTo || 1, players: o.players, legs: [{ starter: 0, turns: [], winner: null }], pending: [], mult: 1, startedAt: Date.now() };
+  },
+  leg: s => s.legs[s.legs.length - 1],
+  cur(s) { const l = CR.leg(s); return (l.starter + l.turns.length) % s.players.length; },
+  wins(s, pi) { return s.legs.filter(l => l.winner === pi).length; },
+  /** Spielstand des Legs (inkl. noch offener Darts) neu berechnen */
+  board(s, l, withPending = true) {
+    const n = s.players.length;
+    const marks = s.players.map(() => Object.fromEntries(CR_NUMS.map(x => [x, 0])));
+    const pts = Array(n).fill(0);
+    const apply = (p, d) => {
+      if (!CR_NUMS.includes(d.n)) return;
+      for (let i = 0; i < d.m; i++) {
+        if (marks[p][d.n] < 3) marks[p][d.n]++;
+        else if (marks.some((mk, q) => q !== p && mk[d.n] < 3)) pts[p] += d.n;
+      }
+    };
+    l.turns.forEach(t => t.d.forEach(d => apply(t.p, d)));
+    if (withPending && l === CR.leg(s)) s.pending.forEach(d => apply(CR.cur(s), d));
+    return { marks, pts };
+  },
+  isWinner(b, p) {
+    return CR_NUMS.every(x => b.marks[p][x] >= 3) && b.pts.every((v, q) => q === p || b.pts[p] >= v);
+  },
+  dart(s, m, n) {
+    if (n === 25 && m === 3) { toast('Kein Triple-Bull'); return; }
+    if (n === 0) m = 1;
+    s.pending.push({ m, n }); s.mult = 1;
+    const l = CR.leg(s), p = CR.cur(s), b = CR.board(s, l);
+    if (CR.isWinner(b, p)) return CR.endTurn(s, true);
+    if (s.pending.length >= 3) return CR.endTurn(s);
+    persistRender();
+  },
+  endTurn(s, won = false) {
+    const l = CR.leg(s), p = CR.cur(s);
+    const d = s.pending.slice();
+    let pad = 0;
+    if (!won) while (d.length < 3) { d.push({ m: 1, n: 0 }); pad++; }
+    l.turns.push({ p, d, pad }); s.pending = [];
+    if (won) {
+      l.winner = p;
+      if (CR.wins(s, p) >= s.firstTo) return finishGame(false);
+      toast('Leg für ' + s.players[p].name + '!');
+      s.legs.push({ starter: (l.starter + 1) % s.players.length, turns: [], winner: null });
+    }
+    persistRender();
+  },
+  undo(s) {
+    if (s.pending.length) { s.pending.pop(); return true; }
+    let l = CR.leg(s);
+    if (!l.turns.length) { if (s.legs.length <= 1) return false; s.legs.pop(); l = CR.leg(s); }
+    const t = l.turns.pop(); l.winner = null;
+    const d = t.d.slice(0, t.d.length - (t.pad || 0)); // aufgefüllte Fehlwürfe entfernen
+    s.pending = t.pad ? d : d.slice(0, -1);
+    return true;
+  },
+  stats(s) {
+    return s.players.map((pl, pi) => {
+      let marks = 0, darts = 0;
+      for (const l of s.legs) for (const t of l.turns) if (t.p === pi) for (const d of t.d) { darts++; if (CR_NUMS.includes(d.n)) marks += d.m; }
+      return { id: pl.id, name: pl.name, marks, darts, mpr: darts ? marks / darts * 3 : null, legs: CR.wins(s, pi) };
+    });
+  }
+};
+
+/* =========================================================
+   Trainingsmodi
+   ========================================================= */
+const ATC_SEQ = [...Array(20)].map((_, i) => i + 1).concat(25);
+const DBL_SEQ = ATC_SEQ;
+const tLabel = n => n === 25 ? 'Bull' : String(n);
+const dLabel = n => n === 25 ? 'Bull' : 'D' + n;
+
+function bobsScore(s) {
+  let sc = 27;
+  s.rounds.forEach((h, i) => { const v = (DBL_SEQ[i] === 25 ? 50 : DBL_SEQ[i] * 2); sc += h ? h * v : -v; });
+  return sc;
+}
+
+/* =========================================================
+   Spiel starten / beenden
+   ========================================================= */
+function startGame(state) {
+  db.active = state; save();
+  go('play');
+}
+function persistRender() { save(); render(); }
+
+function finishGame(incomplete) {
+  const s = db.active;
+  if (!s) return;
+  const e = makeEntry(s, incomplete);
+  db.history.unshift(e);
+  db.active = null;
+  save();
+  closeModal();
+  go('result', e.id);
+}
+
+function makeEntry(s, incomplete) {
+  const e = {
+    id: uid(), mode: s.type, kind: 'training',
+    date: new Date(s.startedAt).toISOString(), end: new Date().toISOString(),
+    players: s.players.map(p => ({ id: p.id, name: p.name })), incomplete: !!incomplete, stats: {}
+  };
+  if (s.type === 'x01') {
+    e.kind = s.training ? 'training' : 'match';
+    e.settings = { start: s.start, doubleIn: s.doubleIn, doubleOut: s.doubleOut, firstTo: s.firstTo };
+    X01.stats(s).forEach(st => { e.stats[st.id] = st; });
+    e.score = s.players.map((p, i) => X01.wins(s, i));
+    e.legs = s.legs.filter(l => l.winner != null).map(l => ({ w: s.players[l.winner].id, darts: legDarts(l, l.winner) }));
+    if (!s.training && !incomplete) { const w = e.score.findIndex(x => x >= s.firstTo); e.winner = w >= 0 ? s.players[w].id : null; }
+  } else if (s.type === 'cricket') {
+    e.kind = 'match';
+    e.settings = { firstTo: s.firstTo };
+    CR.stats(s).forEach(st => { e.stats[st.id] = st; });
+    e.score = s.players.map((p, i) => CR.wins(s, i));
+    if (!incomplete) { const w = e.score.findIndex(x => x >= s.firstTo); e.winner = w >= 0 ? s.players[w].id : null; }
+  } else if (s.type === 'atc') {
+    const hits = s.darts.filter(Boolean).length;
+    e.stats[s.players[0].id] = { darts: s.darts.length, hits, rate: s.darts.length ? hits / s.darts.length : null, reached: hits, finished: hits >= ATC_SEQ.length };
+  } else if (s.type === 'dbl') {
+    const per = {};
+    s.darts.forEach((h, i) => { const t = s.targets[Math.floor(i / s.per)]; per[t] = per[t] || [0, 0]; per[t][1]++; if (h) per[t][0]++; });
+    const hits = s.darts.filter(Boolean).length;
+    e.settings = { per: s.per, order: s.order };
+    e.stats[s.players[0].id] = { darts: s.darts.length, hits, rate: s.darts.length ? hits / s.darts.length : null, per };
+  } else if (s.type === 'bobs') {
+    const sc = bobsScore(s);
+    e.stats[s.players[0].id] = { score: sc, rounds: s.rounds.length, hits: sum(s.rounds), finished: s.rounds.length >= DBL_SEQ.length && sc > 0, bustAt: sc <= 0 ? DBL_SEQ[s.rounds.length - 1] : null };
+  } else if (s.type === 'scoring') {
+    const pts = sum(s.scores);
+    e.settings = { visits: s.visits };
+    e.stats[s.players[0].id] = { avg: s.scores.length ? pts / s.scores.length : null, visits: s.scores.length, pts, hi: Math.max(0, ...s.scores), s100: s.scores.filter(x => x >= 100).length, s180: s.scores.filter(x => x === 180).length };
+  }
+  return e;
+}
+
+function gameTitle(s) {
+  if (s.type === 'x01') return `${s.start} ${s.doubleIn ? 'DI/' : ''}${s.doubleOut ? 'DO' : 'SO'}` + (s.training ? ' · Training' : ` · First to ${s.firstTo}`);
+  if (s.type === 'cricket') return `Cricket · First to ${s.firstTo}`;
+  if (s.type === 'dbl') return `Doppel-Training · ${s.per} Darts/Ziel`;
+  if (s.type === 'scoring') return `Scoring · ${s.visits} Aufnahmen`;
+  return MODE_LABEL[s.type];
+}
+
+/* =========================================================
+   Rendering
+   ========================================================= */
+const ICONS = {
+  home: '<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
+  training: '<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/>',
+  match: '<circle cx="8" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="16.5" cy="9" r="2.6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2.5 20c.5-3.6 2.8-5.5 5.5-5.5s5 1.9 5.5 5.5M14 14.6c.8-.4 1.6-.6 2.5-.6 2.4 0 4.3 1.7 4.8 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  history: '<path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8v4l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  stats: '<path d="M4 20V10M10 20V4M16 20v-7M21 20H3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'
+};
+const TABS = [['home', 'Start'], ['training', 'Training'], ['match', 'Spiel'], ['history', 'Historie'], ['stats', 'Statistik']];
+
+function go(v, arg = null) { view = v; viewArg = arg; closeModal(); render(); window.scrollTo(0, 0); }
+
+function render() {
+  const nav = document.getElementById('nav');
+  const playing = view === 'play';
+  nav.style.display = playing ? 'none' : '';
+  $app.classList.toggle('play', playing);
+  const base = ['setup-training', 'setup-match'].includes(view) ? (view === 'setup-training' ? 'training' : 'match') : (view === 'players' || view === 'result' || view === 'manual' ? null : view);
+  nav.innerHTML = `<div class="in">${TABS.map(([k, l]) => `<button class="${base === k ? 'on' : ''}" data-act="nav" data-v="${k}"><svg viewBox="0 0 24 24">${ICONS[k]}</svg>${l}</button>`).join('')}</div>`;
+  if (view === 'play' && !db.active) view = 'home';
+  const r = {
+    home: viewHome, training: viewTrainingSetup, match: viewMatchSetup, history: viewHistory, stats: viewStats,
+    players: viewPlayers, play: viewPlay, result: viewResult, manual: viewManual
+  }[view] || viewHome;
+  $app.innerHTML = r();
+  if (view === 'stats') bindCharts();
+}
+
+/* ---------- Start ---------- */
+function viewHome() {
+  let h = `<h1>🎯 DartsApp</h1>`;
+  if (!db.players.length) {
+    h += `<div class="card"><h3>Willkommen!</h3><p class="muted">Lege zuerst dich selbst als Spieler an. Freunde kannst du jederzeit hinzufügen.</p>
+      <form data-form="first-player" class="row" style="margin-top:10px"><input type="text" name="name" placeholder="Dein Name" required maxlength="24"><button class="btn primary">Los</button></form></div>`;
+    return h;
+  }
+  if (db.active) {
+    const s = db.active;
+    h += `<div class="card" style="border-color:var(--accent)"><div class="row"><div class="spacer"><b>Laufendes ${s.type === 'x01' && !s.training || s.type === 'cricket' ? 'Spiel' : 'Training'}</b><div class="small muted">${esc(gameTitle(s))} · ${esc(s.players.map(p => p.name).join(', '))}</div></div>
+      <button class="btn primary" data-act="nav" data-v="play">Fortsetzen</button></div></div>`;
+  }
+  h += `<div class="grid2">
+    <button class="btn primary block" style="min-height:64px" data-act="nav" data-v="training">🎯 Training starten</button>
+    <button class="btn primary block" style="min-height:64px" data-act="nav" data-v="match">👥 Spiel mit Freunden</button>
+  </div>
+  <div class="grid2" style="margin-top:10px">
+    <button class="btn block" data-act="manual" data-v="training">✏️ Training nachtragen</button>
+    <button class="btn block" data-act="manual" data-v="match">✏️ Spiel nachtragen</button>
+  </div>`;
+
+  // Kurzstatistik Hauptspieler
+  const me = db.players[0];
+  const agg = aggregate(me.id);
+  h += `<h2>Überblick – ${esc(me.name)}</h2><div class="tiles">
+    <div class="tile"><div class="k">Ø X01 (letzte 10)</div><div class="v">${f1(agg.recentAvg)}</div></div>
+    <div class="tile"><div class="k">Trainings</div><div class="v">${agg.trainings}</div></div>
+    <div class="tile"><div class="k">Spiele / Siege</div><div class="v">${agg.played} / ${agg.won}</div></div></div>`;
+
+  const recent = db.history.slice(0, 5);
+  h += `<h2>Zuletzt</h2>`;
+  h += recent.length ? recent.map(histItem).join('') + `<button class="btn ghost block" data-act="nav" data-v="history">Ganze Historie anzeigen</button>` : `<div class="empty">Noch keine Einträge. Zeit für ein paar Darts! 🎯</div>`;
+  h += `<h2>Einstellungen</h2><div class="card">
+    <div class="row wrap"><button class="btn" data-act="nav" data-v="players">👤 Spieler verwalten (${db.players.length})</button>
+    <button class="btn" data-act="export">⬇️ Backup exportieren</button>
+    <button class="btn" data-act="import">⬆️ Backup importieren</button></div>
+    <div class="row" style="margin-top:10px"><span class="small muted spacer">Design</span><div class="seg" style="flex:2">${[['auto', 'Auto'], ['light', 'Hell'], ['dark', 'Dunkel']].map(([k, l]) => `<button class="${(db.settings.theme || 'auto') === k ? 'on' : ''}" data-act="theme" data-v="${k}">${l}</button>`).join('')}</div></div>
+    <input type="file" id="import-file" accept="application/json,.json" hidden></div>`;
+  return h;
+}
+
+/* ---------- Spieler ---------- */
+function viewPlayers() {
+  let h = `<div class="topbar"><button class="btn ghost sm" data-act="nav" data-v="home">← Zurück</button><div class="title">Spieler</div><span style="width:70px"></span></div>`;
+  h += `<form class="card row" data-form="add-player"><input type="text" name="name" placeholder="Name des Spielers" required maxlength="24"><button class="btn primary">Hinzufügen</button></form>`;
+  h += db.players.map((p, i) => `<div class="card row"><b class="spacer">${esc(p.name)}${i === 0 ? ' <span class="tag acc">Hauptspieler</span>' : ''}</b>
+    ${i > 0 ? `<button class="btn sm" data-act="main-player" data-id="${p.id}" title="Als Hauptspieler setzen">★</button>` : ''}
+    <button class="btn sm" data-act="rename-player" data-id="${p.id}">Umbenennen</button>
+    <button class="btn sm danger" data-act="del-player" data-id="${p.id}">Löschen</button></div>`).join('');
+  h += `<p class="small muted">Gelöschte Spieler bleiben in der Historie mit ihrem Namen erhalten.</p>`;
+  return h;
+}
+
+function playerPicker(sel, multi) {
+  return `<div class="plist">${db.players.map(p => {
+    const i = sel.indexOf(p.id);
+    return `<button class="pchip ${i >= 0 ? 'on' : ''}" data-act="pick" data-id="${p.id}" data-multi="${multi ? 1 : 0}">${multi && i >= 0 ? `<i>${i + 1}</i>` : ''}${esc(p.name)}</button>`;
+  }).join('')}<button class="pchip" data-act="quick-player" data-multi="${multi ? 1 : 0}">＋ Neu</button></div>`;
+}
+function seg(name, opts, val) {
+  return `<div class="seg">${opts.map(([v, l]) => `<button class="${String(val) === String(v) ? 'on' : ''}" data-act="opt" data-k="${name}" data-v="${v}">${l}</button>`).join('')}</div>`;
+}
+
+/* ---------- Training Setup ---------- */
+const TRAININGS = [
+  ['x01', '501 Solo', 'Checkout-Spiel allein, Average & Darts pro Leg'],
+  ['scoring', 'Scoring', 'Nur Punkte werfen – Average über feste Aufnahmen'],
+  ['atc', 'Around the Clock', '1 bis 20 und Bull der Reihe nach'],
+  ['dbl', 'Doppel-Training', 'Trefferquote auf jedes Doppel'],
+  ['bobs', "Bob's 27", 'Klassiker fürs Doppeltraining (Start: 27 Punkte)']
+];
+function viewTrainingSetup() {
+  if (!db.players.length) return viewHome();
+  const st = ui.setup && ui.setup.kind === 'training' ? ui.setup : (ui.setup = Object.assign({ kind: 'training', mode: 'x01', player: db.players[0].id, start: 501, doubleOut: 1, legs: 1, input: 'total', visits: 10, per: 3, order: 'seq' }, db.settings.lastTraining || {}, { kind: 'training' }));
+  if (!playerById(st.player)) st.player = db.players[0].id;
+  let h = `<h1>Training</h1><div class="modes">${TRAININGS.map(([k, t, d]) => `<button class="mode ${st.mode === k ? 'on' : ''}" data-act="opt" data-k="mode" data-v="${k}"><b>${t}</b><span>${d}</span></button>`).join('')}</div>`;
+  h += `<h2>Spieler</h2>${playerPicker([st.player], false)}`;
+  h += `<h2>Optionen</h2><div class="card">`;
+  if (st.mode === 'x01') {
+    h += `<label class="field"><span>Startpunkte</span>${seg('start', [[301, '301'], [501, '501'], [701, '701']], st.start)}</label>
+      <label class="field"><span>Checkout</span>${seg('doubleOut', [[1, 'Double Out'], [0, 'Single Out']], st.doubleOut)}</label>
+      <label class="field"><span>Anzahl Legs</span>${seg('legs', [[1, '1'], [3, '3'], [5, '5'], [10, '10']], st.legs)}</label>
+      <label class="field"><span>Eingabe</span>${seg('input', [['total', 'Aufnahme (Summe)'], ['darts', 'Einzelne Darts']], st.input)}</label>`;
+  } else if (st.mode === 'scoring') {
+    h += `<label class="field"><span>Anzahl Aufnahmen (à 3 Darts)</span>${seg('visits', [[10, '10'], [20, '20'], [33, '33 (99 Darts)'], [50, '50']], st.visits)}</label>`;
+  } else if (st.mode === 'dbl') {
+    h += `<label class="field"><span>Darts pro Doppel</span>${seg('per', [[3, '3'], [6, '6'], [9, '9']], st.per)}</label>
+      <label class="field"><span>Reihenfolge</span>${seg('order', [['seq', 'D1 → Bull'], ['rand', 'Zufällig']], st.order)}</label>`;
+  } else if (st.mode === 'atc') {
+    h += `<p class="muted small">Triff 1, 2, 3 … 20 und zum Schluss Bull. Jeder Treffer im Segment zählt. Gezählt werden die benötigten Darts.</p>`;
+  } else if (st.mode === 'bobs') {
+    h += `<p class="muted small">Du startest mit 27 Punkten. Pro Runde 3 Darts auf D1, D2 … D20, Bull. Jeder Treffer bringt den Doppelwert, kein Treffer zieht ihn ab. Bei 0 oder weniger ist Schluss.</p>`;
+  }
+  h += `</div><button class="btn primary block" style="min-height:56px" data-act="start-training">Training starten</button>`;
+  if (db.active) h += `<p class="small muted tc">Achtung: Es läuft bereits ein Spiel/Training – es wird beim Start ersetzt (vorher fragen wir nach).</p>`;
+  return h;
+}
+
+/* ---------- Match Setup ---------- */
+function viewMatchSetup() {
+  if (!db.players.length) return viewHome();
+  const st = ui.setup && ui.setup.kind === 'match' ? ui.setup : (ui.setup = Object.assign({ kind: 'match', game: 'x01', start: 501, doubleIn: 0, doubleOut: 1, firstTo: 1, input: 'total', players: [] }, db.settings.lastMatch || {}, { kind: 'match' }));
+  st.players = st.players.filter(id => playerById(id));
+  let h = `<h1>Spiel mit Freunden</h1>`;
+  h += `<div class="modes"><button class="mode ${st.game === 'x01' ? 'on' : ''}" data-act="opt" data-k="game" data-v="x01"><b>X01</b><span>301 / 501 / 701, Double In/Out, Legs</span></button>
+    <button class="mode ${st.game === 'cricket' ? 'on' : ''}" data-act="opt" data-k="game" data-v="cricket"><b>Cricket</b><span>15–20 & Bull schließen, Punkte sammeln</span></button></div>`;
+  h += `<h2>Spieler <span class="small muted">(Reihenfolge = Wurfreihenfolge)</span></h2>${playerPicker(st.players, true)}
+    <div class="row" style="margin-top:8px"><button class="btn sm" data-act="shuffle-players" ${st.players.length < 2 ? 'disabled' : ''}>🔀 Zufällige Reihenfolge</button></div>`;
+  h += `<h2>Optionen</h2><div class="card">`;
+  if (st.game === 'x01') {
+    h += `<label class="field"><span>Startpunkte</span>${seg('start', [[301, '301'], [501, '501'], [701, '701']], st.start)}</label>
+      <label class="field"><span>Double In</span>${seg('doubleIn', [[0, 'Aus'], [1, 'An']], st.doubleIn)}</label>
+      <label class="field"><span>Checkout</span>${seg('doubleOut', [[1, 'Double Out'], [0, 'Single Out']], st.doubleOut)}</label>`;
+  }
+  h += `<label class="field"><span>Legs zum Sieg (First to)</span>${seg('firstTo', [[1, '1'], [2, '2'], [3, '3'], [4, '4'], [5, '5']], st.firstTo)}</label>`;
+  if (st.game === 'x01') h += `<label class="field"><span>Eingabe</span>${seg('input', [['total', 'Aufnahme (Summe)'], ['darts', 'Einzelne Darts']], st.input)}</label>`;
+  h += `</div><button class="btn primary block" style="min-height:56px" data-act="start-match" ${st.players.length < 2 ? 'disabled' : ''}>${st.players.length < 2 ? 'Mindestens 2 Spieler wählen' : 'Spiel starten'}</button>`;
+  return h;
+}
+
+/* ---------- Play ---------- */
+function viewPlay() {
+  const s = db.active;
+  const top = `<div class="topbar"><button class="btn sm ghost" data-act="nav" data-v="home" title="Pausieren">← Pause</button><div class="title">${esc(gameTitle(s))}</div><button class="btn sm" data-act="undo">↶ Undo</button><button class="btn sm danger" data-act="quit">✕</button></div>`;
+  return top + ({ x01: playX01, cricket: playCricket, atc: playATC, dbl: playDbl, bobs: playBobs, scoring: playScoring })[s.type](s);
+}
+
+function keypad(buf, quick = true) {
+  return `<div class="entry"><span class="muted">Punkte der Aufnahme</span><span class="val">${buf === '' ? '<span class="muted">0</span>' : esc(buf)}</span></div>
+    ${quick ? `<div class="quick">${[26, 41, 45, 60, 81, 85, 100, 121, 140, 180].map(v => `<button data-act="quick" data-v="${v}">${v}</button>`).join('')}</div>` : ''}
+    <div class="keypad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(d => `<button data-act="key" data-v="${d}">${d}</button>`).join('')}
+    <button data-act="key" data-v="del">⌫</button><button data-act="key" data-v="0">0</button><button class="ok" data-act="key" data-v="ok">OK</button></div>`;
+}
+function dartpad(s, cricket) {
+  const nums = cricket ? [15, 16, 17, 18, 19, 20] : [...Array(20)].map((_, i) => i + 1);
+  return `<div class="mults">${[[1, 'Single'], [2, 'Double'], [3, 'Triple']].map(([m, l]) => `<button class="${s.mult === m ? 'on' : ''}" data-act="mult" data-v="${m}">${l}</button>`).join('')}</div>
+    <div class="dartpad">${nums.map(n => `<button data-act="dart" data-v="${n}">${s.mult === 3 ? 'T' : s.mult === 2 ? 'D' : ''}${n}</button>`).join('')}
+    <button class="wide" data-act="dart" data-v="25">${s.mult === 2 ? 'Bull (50)' : 'Bull (25)'}</button>
+    <button class="${cricket ? '' : 'wide'}" data-act="dart" data-v="0">Miss</button>
+    ${cricket ? `<button class="wide" data-act="cr-end">Aufnahme beenden</button>` : ''}</div>`;
+}
+function pendingRow(p) {
+  return `<div class="darts3">${[0, 1, 2].map(i => p[i] ? `<span>${segLabel(p[i]) === '–' ? 'Miss' : segLabel(p[i])}</span>` : `<span class="empty">Dart ${i + 1}</span>`).join('')}</div>`;
+}
+function legDotsHtml(w, n) {
+  if (n <= 1) return '';
+  return `<span class="legdots">${[...Array(n)].map((_, i) => `<b class="${i < w ? 'w' : ''}"></b>`).join('')}</span>`;
+}
+
+function playX01(s) {
+  const l = X01.leg(s), cp = X01.cur(s), stats = X01.stats(s);
+  let h = `<div class="pcards ${s.players.length === 2 ? 'two' : ''}">`;
+  s.players.forEach((p, i) => {
+    let r = X01.rem(s, l, i);
+    const isCur = i === cp;
+    let pendTot = 0;
+    if (isCur && s.input === 'darts' && s.pending.length) {
+      let opened = X01.opened(s, l, i);
+      for (const d of s.pending) { if (!opened) { if (d.m === 2 && d.n > 0) opened = true; else continue; } pendTot += d.m * d.n; }
+    }
+    const shown = r - pendTot;
+    const dartsLeft = isCur && s.input === 'darts' ? 3 - s.pending.length : 3;
+    const co = X01.opened(s, l, i) || pendTot ? checkout(shown, dartsLeft, s.doubleOut) : null;
+    const last = [...l.turns].reverse().find(t => t.p === i);
+    const ld = legDarts(l, i);
+    h += `<div class="pcard ${isCur ? 'on' : ''}">
+      <div class="nm">${isCur ? '🎯' : ''}${esc(p.name)} <span class="spacer"></span>${s.firstTo > 1 ? legDotsHtml(X01.wins(s, i), s.firstTo) : ''}</div>
+      <div class="rem">${shown}</div>
+      <div class="co">${co && shown <= 170 ? coText(co) : (s.doubleIn && !X01.opened(s, l, i) ? 'Double In nötig' : '')}</div>
+      <div class="meta">Ø ${f1(stats[i].avg)} · Darts ${ld}${last ? ' · Letzte: ' + (last.bust ? 'Bust' : last.score) : ''}</div></div>`;
+  });
+  h += `</div>`;
+  const myTurns = l.turns.filter(t => t.p === cp).map(t => t.bust ? '<s>' + (t.raw ?? 'Bust') + '</s>' : t.score);
+  if (myTurns.length) h += `<div class="visits"><b>Aufnahmen ${esc(s.players[cp].name)}:</b> ${myTurns.join(' · ')}</div>`;
+  h += `<div class="row" style="margin-bottom:8px"><span class="small muted spacer">Leg ${s.legs.length}${s.players.length > 1 ? ' · Anwurf: ' + esc(s.players[l.starter].name) : ''}</span>
+    <div class="seg" style="flex:0 0 auto"><button class="${s.input === 'total' ? 'on' : ''}" data-act="input" data-v="total">Summe</button><button class="${s.input === 'darts' ? 'on' : ''}" data-act="input" data-v="darts">Darts</button></div></div>`;
+  h += s.input === 'total' ? keypad(s.buf) : pendingRow(s.pending) + dartpad(s, false);
+  return h;
+}
+
+function playCricket(s) {
+  const l = CR.leg(s), cp = CR.cur(s), b = CR.board(s, l), stats = CR.stats(s);
+  const mk = n => n <= 0 ? '' : n === 1 ? '/' : n === 2 ? '✕' : 'Ⓧ';
+  let h = `<div class="card" style="padding:8px"><table class="crt"><thead><tr><td class="n"></td>${s.players.map((p, i) => `<th class="${i === cp ? 'on' : ''}">${i === cp ? '🎯 ' : ''}${esc(p.name)}<br>${legDotsHtml(CR.wins(s, i), s.firstTo)}</th>`).join('')}</tr></thead><tbody>`;
+  for (const n of CR_NUMS) {
+    const closedAll = b.marks.every(m => m[n] >= 3);
+    h += `<tr class="${closedAll ? 'closed' : ''}"><td class="n">${n === 25 ? 'Bull' : n}</td>${s.players.map((p, i) => `<td class="mk">${mk(b.marks[i][n])}</td>`).join('')}</tr>`;
+  }
+  h += `<tr><td class="n">Pkt</td>${s.players.map((p, i) => `<td class="pts num">${b.pts[i]}</td>`).join('')}</tr>
+    <tr><td class="n small">MPR</td>${stats.map(st => `<td class="small muted num">${f1(st.mpr)}</td>`).join('')}</tr></tbody></table></div>`;
+  h += `<p class="small muted tc" style="margin:2px 0">Leg ${s.legs.length} · ${esc(s.players[cp].name)} ist dran</p>`;
+  h += pendingRow(s.pending) + dartpad(s, true);
+  return h;
+}
+
+function playATC(s) {
+  const hits = s.darts.filter(Boolean).length;
+  const target = ATC_SEQ[hits];
+  return `<div class="card tc"><div class="muted">Ziel</div><div class="big-target">${tLabel(target)}</div>
+    <div class="progress"><div style="width:${hits / ATC_SEQ.length * 100}%"></div></div>
+    <div class="small muted num">${hits}/${ATC_SEQ.length} geschafft · ${s.darts.length} Darts · Trefferquote ${pct(hits, s.darts.length)} · Dart ${s.darts.length % 3 + 1} der Aufnahme</div></div>
+    <div class="hitbtns"><button class="miss" data-act="hit" data-v="0">✕ Daneben</button><button class="hit" data-act="hit" data-v="1">✓ Treffer</button></div>
+    <p class="small muted tc" style="margin-top:14px">${esc(s.players[0].name)}</p>`;
+}
+
+function playDbl(s) {
+  const idx = Math.floor(s.darts.length / s.per);
+  const target = s.targets[idx];
+  const inT = s.darts.slice(idx * s.per);
+  const hits = s.darts.filter(Boolean).length;
+  return `<div class="card tc"><div class="muted">Ziel</div><div class="big-target">${dLabel(target)}</div>
+    <div class="darts3">${[...Array(s.per)].map((_, i) => `<span class="${inT[i] == null ? 'empty' : ''}" style="min-width:34px">${inT[i] == null ? '·' : inT[i] ? '✓' : '✕'}</span>`).join('')}</div>
+    <div class="progress"><div style="width:${idx / s.targets.length * 100}%"></div></div>
+    <div class="small muted num">Ziel ${idx + 1}/${s.targets.length} · ${hits}/${s.darts.length} Treffer (${pct(hits, s.darts.length)})</div></div>
+    <div class="hitbtns"><button class="miss" data-act="hit" data-v="0">✕ Daneben</button><button class="hit" data-act="hit" data-v="1">✓ Treffer</button></div>`;
+}
+
+function playBobs(s) {
+  const sc = bobsScore(s), t = DBL_SEQ[s.rounds.length];
+  return `<div class="card tc"><div class="muted">Punkte</div><div class="big-target">${sc}</div>
+    <div style="font-size:1.4rem;font-weight:800;margin-top:8px">Ziel: ${dLabel(t)} <span class="muted small">(${t === 25 ? 50 : t * 2} pro Treffer)</span></div>
+    <div class="progress"><div style="width:${s.rounds.length / DBL_SEQ.length * 100}%"></div></div>
+    <div class="small muted">Runde ${s.rounds.length + 1}/${DBL_SEQ.length}</div></div>
+    <p class="tc muted small">Wie viele Darts von 3 haben ${dLabel(t)} getroffen?</p>
+    <div class="cnt4">${[0, 1, 2, 3].map(n => `<button data-act="bobs" data-v="${n}">${n}</button>`).join('')}</div>
+    <div class="visits" style="margin-top:12px">${s.rounds.map((r, i) => `${dLabel(DBL_SEQ[i])}: ${r}`).join(' · ')}</div>`;
+}
+
+function playScoring(s) {
+  const pts = sum(s.scores);
+  return `<div class="pcard on" style="margin-bottom:10px"><div class="nm">${esc(s.players[0].name)}<span class="spacer"></span>Aufnahme ${s.scores.length + 1}/${s.visits}</div>
+    <div class="rem">${f1(s.scores.length ? pts / s.scores.length : null)}</div>
+    <div class="meta">3-Dart-Average · ${pts} Punkte · Höchste ${s.scores.length ? Math.max(...s.scores) : '–'}</div>
+    <div class="progress"><div style="width:${s.scores.length / s.visits * 100}%"></div></div></div>
+    ${s.scores.length ? `<div class="visits">${s.scores.join(' · ')}</div>` : ''}${keypad(s.buf)}`;
+}
+
+/* ---------- Ergebnis ---------- */
+function viewResult() {
+  const e = db.history.find(x => x.id === viewArg);
+  if (!e) return viewHome();
+  let h = '';
+  if (e.kind === 'match' && e.winner) {
+    const w = e.players.find(p => p.id === e.winner);
+    h += `<div class="card win-banner"><div class="t">🏆</div><div class="n">${esc(w ? w.name : '')} gewinnt!</div><div class="muted">${esc(entryTitle(e))}</div></div>`;
+  } else {
+    const out = e.mode === 'bobs' && !(e.stats[e.players[0].id] || {}).finished;
+    h += `<div class="card win-banner"><div class="t">${e.incomplete ? '💾' : out ? '💥' : '✅'}</div><div class="n">${e.incomplete ? 'Gespeichert' : out ? 'Ausgeschieden' : 'Geschafft!'}</div><div class="muted">${esc(entryTitle(e))}</div></div>`;
+  }
+  h += entryDetail(e);
+  h += `<div class="grid2" style="margin-top:12px"><button class="btn primary" data-act="rematch" data-id="${e.id}">${e.kind === 'match' ? 'Revanche' : 'Nochmal'}</button><button class="btn" data-act="nav" data-v="home">Fertig</button></div>`;
+  return h;
+}
+
+/* ---------- Historie ---------- */
+function entryTitle(e) {
+  if (e.manual) return (e.title || MODE_LABEL[e.mode] || 'Eintrag') + ' (nachgetragen)';
+  if (e.mode === 'x01') return `${e.settings.start} ${e.settings.doubleIn ? 'DI/' : ''}${e.settings.doubleOut ? 'DO' : 'SO'}` + (e.kind === 'training' ? ' Solo' : ` · First to ${e.settings.firstTo}`);
+  if (e.mode === 'cricket') return `Cricket · First to ${e.settings.firstTo}`;
+  return MODE_LABEL[e.mode];
+}
+function entrySummary(e) {
+  const ps = e.players;
+  if (e.kind === 'match') {
+    if (e.score) return ps.map((p, i) => `${e.winner === p.id ? '🏆 ' : ''}${esc(p.name)} <b>${e.score[i]}</b>`).join(' : ');
+    return ps.map(p => `${e.winner === p.id ? '🏆 ' : ''}${esc(p.name)}`).join(' vs. ') + (e.result ? ` · <b>${esc(e.result)}</b>` : '');
+  }
+  const st = e.stats[ps[0].id] || {};
+  const who = esc(ps[0].name) + ' · ';
+  switch (e.mode) {
+    case 'x01': return who + `Ø <b>${f1(st.avg)}</b>` + (st.bestLeg ? ` · Bestes Leg ${st.bestLeg} Darts` : '') + (st.hiCo ? ` · Checkout ${st.hiCo}` : '');
+    case 'scoring': return who + `Ø <b>${f1(st.avg)}</b> · ${st.visits ?? '?'} Aufnahmen`;
+    case 'atc': return who + (st.finished || e.manual ? `<b>${st.darts ?? '–'} Darts</b>` : `bis ${st.reached}/21 · ${st.darts} Darts`) + (st.rate != null ? ` · ${Math.round(st.rate * 100)}% Treffer` : '');
+    case 'dbl': return who + `<b>${st.hits ?? '–'}/${st.darts ?? '–'}</b> Treffer` + (st.rate != null ? ` (${Math.round(st.rate * 100)}%)` : '');
+    case 'bobs': return who + `<b>${st.score ?? '–'} Punkte</b>` + (st.bustAt ? ` · raus bei ${dLabel(st.bustAt)}` : '');
+    default: return who + (st.avg != null ? `Ø <b>${f1(st.avg)}</b>` : esc(e.note || ''));
+  }
+}
+function histItem(e) {
+  const open = ui.openEntry === e.id;
+  return `<div class="card hist-item" data-act="toggle-entry" data-id="${e.id}">
+    <div class="hd"><b>${esc(entryTitle(e))}</b><span class="tag ${e.kind === 'match' ? 'acc' : ''}">${e.kind === 'match' ? 'Spiel' : 'Training'}</span>${e.incomplete ? '<span class="tag warn">abgebrochen</span>' : ''}</div>
+    <div class="small muted">${fmtDate(e.date, !e.manual)}${e.end && !e.manual ? ' · ' + fmtDur(new Date(e.end) - new Date(e.date)) : ''}</div>
+    <div style="margin-top:4px">${entrySummary(e)}</div>
+    ${open ? `<div style="margin-top:10px" data-stop="1">${entryDetail(e)}<div class="row" style="margin-top:10px"><span class="spacer"></span><button class="btn sm danger" data-act="del-entry" data-id="${e.id}">Eintrag löschen</button></div></div>` : ''}
+  </div>`;
+}
+function entryDetail(e) {
+  const ps = e.players;
+  const S = id => e.stats[id] || {};
+  const row = (label, fn) => `<tr><td>${label}</td>${ps.map(p => `<td>${fn(S(p.id))}</td>`).join('')}</tr>`;
+  let h = `<table class="st"><thead><tr><th></th>${ps.map(p => `<th>${esc(p.name)}</th>`).join('')}</tr></thead><tbody>`;
+  if (e.manual) {
+    if (e.result) h += `<tr><td>Ergebnis</td><td colspan="${ps.length}">${esc(e.result)}</td></tr>`;
+    if (ps.some(p => S(p.id).avg != null)) h += row('3-Dart-Ø', s => f1(s.avg));
+    if (ps.some(p => S(p.id).darts != null)) h += row('Darts', s => s.darts ?? '–');
+    if (ps.some(p => S(p.id).hits != null)) h += row('Treffer', s => s.hits ?? '–');
+    if (ps.some(p => S(p.id).score != null)) h += row('Punkte', s => s.score ?? '–');
+    if (ps.some(p => S(p.id).hiCo)) h += row('Höchstes Checkout', s => s.hiCo || '–');
+  } else if (e.mode === 'x01') {
+    if (e.kind === 'match') h += row('Legs', s => `<b>${s.legs}</b>`);
+    h += row('3-Dart-Ø', s => `<b>${f1(s.avg)}</b>`) + row('First 9 Ø', s => f1(s.first9)) + row('Darts', s => s.darts)
+      + row('Bestes Leg', s => s.bestLeg ? s.bestLeg + ' Darts' : '–') + row('Höchstes Checkout', s => s.hiCo || '–')
+      + row('Höchste Aufnahme', s => s.hi) + row('180', s => s.s180) + row('140+', s => s.s140) + row('100+', s => s.s100);
+  } else if (e.mode === 'cricket') {
+    h += row('Legs', s => `<b>${s.legs}</b>`) + row('MPR', s => `<b>${f1(s.mpr)}</b>`) + row('Marks', s => s.marks) + row('Darts', s => s.darts);
+  } else if (e.mode === 'atc') {
+    h += row('Darts', s => `<b>${s.darts}</b>`) + row('Erreicht', s => s.reached + '/21') + row('Trefferquote', s => s.rate != null ? Math.round(s.rate * 100) + '%' : '–');
+  } else if (e.mode === 'dbl') {
+    h += row('Treffer', s => `<b>${s.hits}/${s.darts}</b>`) + row('Quote', s => s.rate != null ? Math.round(s.rate * 100) + '%' : '–');
+    h += `</tbody></table>`;
+    const per = S(ps[0].id).per || {};
+    h += `<div class="bars" style="margin-top:10px">${DBL_SEQ.filter(n => per[n]).map(n => doubleBar(n, per[n][0], per[n][1])).join('')}</div>`;
+    return h;
+  } else if (e.mode === 'bobs') {
+    h += row('Punkte', s => `<b>${s.score}</b>`) + row('Runden', s => s.rounds + '/21') + row('Treffer', s => s.hits);
+  } else if (e.mode === 'scoring') {
+    h += row('3-Dart-Ø', s => `<b>${f1(s.avg)}</b>`) + row('Aufnahmen', s => s.visits) + row('Punkte', s => s.pts) + row('Höchste', s => s.hi) + row('100+', s => s.s100) + row('180', s => s.s180);
+  }
+  h += `</tbody></table>`;
+  if (e.legs && e.legs.length > 1 && e.kind === 'match') h += `<p class="small muted" style="margin-top:8px">Legs: ${e.legs.map((l, i) => `${i + 1}. ${esc((e.players.find(p => p.id === l.w) || {}).name)} (${l.darts})`).join(' · ')}</p>`;
+  if (e.note) h += `<p class="small" style="margin-top:8px">📝 ${esc(e.note)}</p>`;
+  return h;
+}
+function doubleBar(n, hits, darts) {
+  const r = darts ? hits / darts : 0;
+  return `<div class="b" title="${dLabel(n)}: ${hits} von ${darts} (${Math.round(r * 100)}%)"><span>${dLabel(n)}</span><div class="track"><div class="fill" style="width:${Math.max(r * 100, r ? 2 : 0)}%"></div></div><span class="tr num small">${Math.round(r * 100)}% <span class="muted">(${hits}/${darts})</span></span></div>`;
+}
+
+function viewHistory() {
+  let list = db.history;
+  if (ui.histFilter !== 'all') list = list.filter(e => e.kind === ui.histFilter);
+  let h = `<h1>Historie</h1><div class="seg" style="margin-bottom:12px">${[['all', 'Alle'], ['training', 'Training'], ['match', 'Spiele']].map(([k, l]) => `<button class="${ui.histFilter === k ? 'on' : ''}" data-act="hist-filter" data-v="${k}">${l}</button>`).join('')}</div>
+    <div class="grid2" style="margin-bottom:12px"><button class="btn sm" data-act="manual" data-v="training">✏️ Training nachtragen</button><button class="btn sm" data-act="manual" data-v="match">✏️ Spiel nachtragen</button></div>`;
+  if (!list.length) return h + `<div class="empty">Noch nichts eingetragen.</div>`;
+  let lastDay = '';
+  for (const e of list) {
+    const day = new Date(e.date).toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+    if (day !== lastDay) { h += `<h3 class="muted small" style="margin:16px 0 6px">${day}</h3>`; lastDay = day; }
+    h += histItem(e);
+  }
+  return h;
+}
+
+/* ---------- Manuell nachtragen ---------- */
+function viewManual() {
+  const kind = viewArg === 'match' ? 'match' : 'training';
+  const m = ui.manual && ui.manual.kind === kind ? ui.manual : (ui.manual = { kind, players: kind === 'match' ? [] : [db.players[0].id], winner: null, mode: kind === 'match' ? 'x01-501' : 'x01-501' });
+  const now = new Date(), today = new Date(now - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  let h = `<div class="topbar"><button class="btn ghost sm" data-act="nav" data-v="${kind === 'match' ? 'history' : 'history'}">← Zurück</button><div class="title">${kind === 'match' ? 'Spiel' : 'Training'} nachtragen</div><span style="width:70px"></span></div>`;
+  h += `<form class="card" data-form="manual" data-mode="${m.mode}">
+    <label class="field"><span>Datum</span><input type="date" name="date" value="${today}" max="${today}" required></label>
+    <label class="field"><span>Modus</span><select name="mode" data-change="manual-mode">${(kind === 'match'
+      ? [['x01-501', '501'], ['x01-301', '301'], ['x01-701', '701'], ['cricket', 'Cricket'], ['other', 'Sonstiges']]
+      : [['x01-501', '501 Solo'], ['x01-301', '301 Solo'], ['scoring', 'Scoring-Training'], ['atc', 'Around the Clock'], ['dbl', 'Doppel-Training'], ['bobs', "Bob's 27"], ['other', 'Sonstiges']]
+    ).map(([v, l]) => `<option value="${v}" ${m.mode === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>`;
+  if (kind === 'match') {
+    h += `<div class="field"><span class="small muted">Spieler antippen · Sieger mit 🏆 markieren · Average optional</span></div>${playerPicker(m.players, true)}`;
+    if (m.players.length) {
+      h += `<table class="st" style="margin-top:10px"><thead><tr><th>Spieler</th><th>Ø (opt.)</th><th>Sieger</th></tr></thead><tbody>${m.players.map(id => `<tr><td>${esc(playerById(id).name)}</td><td><input type="number" name="avg-${id}" step="0.01" min="0" max="180" style="max-width:110px;margin-left:auto"></td>
+        <td><button type="button" class="btn sm ${m.winner === id ? 'primary' : ''}" data-act="manual-winner" data-id="${id}">🏆</button></td></tr>`).join('')}</tbody></table>`;
+    }
+    h += `<label class="field"><span>Ergebnis (z. B. 3:1)</span><input type="text" name="result" maxlength="30"></label>`;
+  } else {
+    h += `<div class="field"><span class="small muted">Spieler</span></div>${playerPicker(m.players, false)}`;
+    const fld = (name, label, extra = '') => `<label class="field"><span>${label}</span><input type="number" name="${name}" ${extra.includes('min=') ? '' : 'min="0"'} ${extra}></label>`;
+    if (['x01-501', 'x01-301', 'scoring', 'other'].includes(m.mode)) h += fld('avg', '3-Dart-Average', 'step="0.01" max="180"');
+    if (['x01-501', 'x01-301'].includes(m.mode)) h += fld('bestLeg', 'Bestes Leg (Darts, optional)', 'max="200"') + fld('hiCo', 'Höchstes Checkout (optional)', 'max="170"');
+    if (m.mode === 'scoring') h += fld('visits', 'Anzahl Aufnahmen');
+    if (m.mode === 'atc') h += fld('darts', 'Benötigte Darts', 'required');
+    if (m.mode === 'dbl') h += `<div class="grid2">${fld('hits', 'Treffer', 'required')}${fld('darts', 'Würfe', 'required')}</div>`;
+    if (m.mode === 'bobs') h += fld('score', 'Endpunktzahl', 'min="-9999" required');
+  }
+  h += `<label class="field"><span>Notiz</span><textarea name="note" maxlength="300" placeholder="Optional"></textarea></label>
+    <button class="btn primary block">Speichern</button></form>`;
+  return h;
+}
+
+function saveManual(form) {
+  const fd = new FormData(form);
+  const m = ui.manual;
+  const num = k => { const v = fd.get(k); return v === null || v === '' ? null : Number(v); };
+  const modeRaw = fd.get('mode');
+  const mode = modeRaw.startsWith('x01') ? 'x01' : modeRaw;
+  const date = new Date(fd.get('date') + 'T12:00:00');
+  const e = { id: uid(), manual: true, kind: m.kind, mode, date: date.toISOString(), stats: {}, note: (fd.get('note') || '').trim() || undefined };
+  if (mode === 'x01') e.title = modeRaw.split('-')[1] + (m.kind === 'training' ? ' Solo' : '');
+  else e.title = MODE_LABEL[mode];
+  if (m.kind === 'match') {
+    if (m.players.length < 2) { toast('Mindestens 2 Spieler wählen'); return; }
+    if (!m.winner || !m.players.includes(m.winner)) { toast('Bitte den Sieger markieren'); return; }
+    e.players = m.players.map(id => ({ id, name: playerById(id).name }));
+    e.winner = m.winner;
+    e.result = (fd.get('result') || '').trim() || undefined;
+    m.players.forEach(id => { const a = num('avg-' + id); e.stats[id] = a != null ? { avg: a } : {}; });
+  } else {
+    const id = m.players[0];
+    if (!id) { toast('Bitte Spieler wählen'); return; }
+    e.players = [{ id, name: playerById(id).name }];
+    const st = {};
+    if (['x01', 'scoring', 'other'].includes(mode)) st.avg = num('avg');
+    if (mode === 'x01') { st.bestLeg = num('bestLeg'); st.hiCo = num('hiCo'); }
+    if (mode === 'scoring') st.visits = num('visits');
+    if (mode === 'atc') { st.darts = num('darts'); st.finished = true; }
+    if (mode === 'dbl') { st.hits = num('hits'); st.darts = num('darts'); if (st.hits > st.darts) { toast('Mehr Treffer als Würfe?'); return; } st.rate = st.darts ? st.hits / st.darts : null; }
+    if (mode === 'bobs') st.score = num('score');
+    Object.keys(st).forEach(k => st[k] == null && delete st[k]);
+    e.stats[id] = st;
+  }
+  // chronologisch einsortieren
+  db.history.push(e);
+  db.history.sort((a, b) => new Date(b.date) - new Date(a.date));
+  ui.manual = null;
+  save();
+  toast('Eintrag gespeichert');
+  ui.openEntry = e.id;
+  go('history');
+}
+
+/* ---------- Statistik ---------- */
+function aggregate(pid) {
+  const a = { played: 0, won: 0, trainings: 0, x01: [], scoring: [], hiCo: 0, s180: 0, s140: 0, s100: 0, bestLeg: null, atcBest: null, bobsBest: null, dbl: {}, dblHits: 0, dblDarts: 0, h2h: {}, cricketMpr: [] };
+  for (const e of db.history) {
+    const st = e.stats && e.stats[pid];
+    if (!st) continue;
+    if (e.kind === 'match') {
+      if (!e.incomplete) {
+        a.played++;
+        if (e.winner === pid) a.won++;
+        for (const o of e.players) {
+          if (o.id === pid) continue;
+          const r = a.h2h[o.id] = a.h2h[o.id] || { name: o.name, w: 0, l: 0 };
+          r.name = (playerById(o.id) || o).name;
+          if (e.winner === pid) r.w++; else if (e.winner === o.id) r.l++;
+        }
+      }
+    } else a.trainings++;
+    if (e.mode === 'x01') {
+      if (st.avg != null && (st.darts == null || st.darts > 0)) a.x01.push({ t: new Date(e.date).getTime(), y: st.avg, kind: e.kind, label: entryTitle(e) });
+      a.hiCo = Math.max(a.hiCo, st.hiCo || 0);
+      a.s180 += st.s180 || 0; a.s140 += st.s140 || 0; a.s100 += st.s100 || 0;
+      if (st.bestLeg) a.bestLeg = a.bestLeg == null ? st.bestLeg : Math.min(a.bestLeg, st.bestLeg);
+    }
+    if (e.mode === 'scoring' && st.avg != null) { a.scoring.push({ t: new Date(e.date).getTime(), y: st.avg }); a.s180 += st.s180 || 0; }
+    if (e.mode === 'cricket' && st.mpr != null) a.cricketMpr.push(st.mpr);
+    if (e.mode === 'atc' && (st.finished) && st.darts) a.atcBest = a.atcBest == null ? st.darts : Math.min(a.atcBest, st.darts);
+    if (e.mode === 'bobs' && st.score != null) a.bobsBest = a.bobsBest == null ? st.score : Math.max(a.bobsBest, st.score);
+    if (e.mode === 'dbl') {
+      a.dblHits += st.hits || 0; a.dblDarts += st.darts || 0;
+      for (const [n, [h, d]] of Object.entries(st.per || {})) { a.dbl[n] = a.dbl[n] || [0, 0]; a.dbl[n][0] += h; a.dbl[n][1] += d; }
+    }
+  }
+  a.x01.sort((p, q) => p.t - q.t);
+  const last = a.x01.slice(-10);
+  a.recentAvg = last.length ? sum(last.map(p => p.y)) / last.length : null;
+  a.bestAvg = a.x01.length ? Math.max(...a.x01.map(p => p.y)) : null;
+  return a;
+}
+
+function viewStats() {
+  if (!db.players.length) return viewHome();
+  if (!playerById(ui.statsPlayer)) ui.statsPlayer = db.players[0].id;
+  const pid = ui.statsPlayer, a = aggregate(pid);
+  let h = `<h1>Statistik</h1>${playerPicker([pid], false).replace(/data-act="pick"/g, 'data-act="stats-player"').replace(/<button class="pchip" data-act="quick-player"[^>]*>[^<]*<\/button>/, '')}`;
+  const tile = (k, v) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div></div>`;
+  h += `<h2>Spiele</h2><div class="tiles">${tile('Gespielt', a.played)}${tile('Gewonnen', a.won)}${tile('Siegquote', pct(a.won, a.played))}</div>`;
+  h += `<h2>X01</h2><div class="tiles">${tile('Ø letzte 10', f1(a.recentAvg))}${tile('Bester Ø', f1(a.bestAvg))}${tile('Bestes Leg', a.bestLeg ? a.bestLeg + ' D' : '–')}
+    ${tile('High Checkout', a.hiCo || '–')}${tile('180er', a.s180)}${tile('140+ / 100+', a.s140 + ' / ' + a.s100)}</div>`;
+  h += `<div class="card" style="margin-top:12px"><h3>3-Dart-Average Verlauf (X01)</h3>${a.x01.length >= 2 ? lineChart('c1', a.x01) : `<div class="empty small">Mindestens 2 X01-Einträge nötig.</div>`}</div>`;
+  h += `<h2>Training</h2><div class="tiles">${tile('Einheiten', a.trainings)}${tile('ATC Bestwert', a.atcBest ? a.atcBest + ' D' : '–')}${tile("Bob's 27 Best", a.bobsBest ?? '–')}
+    ${tile('Scoring Ø', a.scoring.length ? f1(sum(a.scoring.map(p => p.y)) / a.scoring.length) : '–')}${tile('Doppelquote', pct(a.dblHits, a.dblDarts))}${tile('Cricket MPR', a.cricketMpr.length ? f1(sum(a.cricketMpr) / a.cricketMpr.length) : '–')}</div>`;
+  const dblKeys = DBL_SEQ.filter(n => a.dbl[n]);
+  if (dblKeys.length) h += `<div class="card" style="margin-top:12px"><h3>Trefferquote pro Doppel</h3><div class="bars">${dblKeys.map(n => doubleBar(n, a.dbl[n][0], a.dbl[n][1])).join('')}</div></div>`;
+  const h2h = Object.values(a.h2h);
+  if (h2h.length) {
+    h += `<h2>Gegen Freunde</h2><div class="card"><table class="st"><thead><tr><th>Gegner</th><th>Siege</th><th>Niederl.</th><th>Quote</th></tr></thead><tbody>
+      ${h2h.sort((x, y) => (y.w + y.l) - (x.w + x.l)).map(r => `<tr><td>${esc(r.name)}</td><td>${r.w}</td><td>${r.l}</td><td>${pct(r.w, r.w + r.l)}</td></tr>`).join('')}</tbody></table></div>`;
+  }
+  return h;
+}
+
+/* ---------- Liniendiagramm (SVG, mit Hover) ---------- */
+const charts = {};
+function lineChart(id, pts) {
+  const W = 600, H = 220, L = 40, R = 12, T = 12, B = 26;
+  const ys = pts.map(p => p.y);
+  let lo = Math.floor(Math.min(...ys) / 10) * 10, hi = Math.ceil(Math.max(...ys) / 10) * 10;
+  if (hi - lo < 20) { hi = lo + 20; }
+  const n = pts.length;
+  const x = i => L + (n === 1 ? (W - L - R) / 2 : i * (W - L - R) / (n - 1));
+  const y = v => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);
+  const step = (hi - lo) / 4;
+  let g = '';
+  for (let k = 0; k <= 4; k++) {
+    const v = lo + k * step, yy = y(v);
+    g += `<line x1="${L}" x2="${W - R}" y1="${yy}" y2="${yy}" stroke="var(--grid)" stroke-width="1"/><text x="${L - 6}" y="${yy + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${Math.round(v)}</text>`;
+  }
+  const d = pts.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(p.y).toFixed(1)}`).join('');
+  const fmt = t => new Date(t).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+  const labels = `<text x="${x(0)}" y="${H - 6}" font-size="11" fill="var(--muted)" text-anchor="start">${fmt(pts[0].t)}</text><text x="${x(n - 1)}" y="${H - 6}" font-size="11" fill="var(--muted)" text-anchor="end">${fmt(pts[n - 1].t)}</text>`;
+  const dots = n <= 40 ? pts.map((p, i) => `<circle cx="${x(i)}" cy="${y(p.y)}" r="4" fill="var(--series-1)" stroke="var(--surface)" stroke-width="2"/>`).join('') : '';
+  charts[id] = { pts, x, y, W, H, T, B };
+  return `<div class="chart-wrap" data-chart="${id}"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Verlauf des 3-Dart-Average">${g}${labels}
+    <path d="${d}" fill="none" stroke="var(--series-1)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>${dots}
+    <line class="xh" x1="0" x2="0" y1="${T}" y2="${H - B}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="3 3" visibility="hidden"/>
+    <circle class="hd" r="6" fill="var(--series-1)" stroke="var(--surface)" stroke-width="2" visibility="hidden"/>
+    <rect x="0" y="0" width="${W}" height="${H}" fill="transparent"/></svg><div class="tip"></div></div>
+    <p class="small muted" style="margin:6px 0 0">${n} Einträge · Start ${f1(pts[0].y)} → zuletzt ${f1(pts[n - 1].y)}</p>`;
+}
+function bindCharts() {
+  document.querySelectorAll('[data-chart]').forEach(wrap => {
+    const c = charts[wrap.dataset.chart]; if (!c) return;
+    const svg = wrap.querySelector('svg'), tip = wrap.querySelector('.tip'), xh = svg.querySelector('.xh'), hd = svg.querySelector('.hd');
+    const move = ev => {
+      const r = svg.getBoundingClientRect();
+      const sx = (ev.clientX - r.left) / r.width * c.W;
+      let best = 0, bd = Infinity;
+      c.pts.forEach((p, i) => { const dd = Math.abs(c.x(i) - sx); if (dd < bd) { bd = dd; best = i; } });
+      const p = c.pts[best], px = c.x(best), py = c.y(p.y);
+      xh.setAttribute('x1', px); xh.setAttribute('x2', px); xh.setAttribute('visibility', 'visible');
+      hd.setAttribute('cx', px); hd.setAttribute('cy', py); hd.setAttribute('visibility', 'visible');
+      tip.innerHTML = `<b>Ø ${f1(p.y)}</b><br><span class="muted">${fmtDate(new Date(p.t).toISOString(), false)} · ${esc(p.label || '')}</span>`;
+      tip.style.display = 'block';
+      const left = px / c.W * r.width, tw = tip.offsetWidth;
+      tip.style.left = Math.min(Math.max(0, left - tw / 2), r.width - tw) + 'px';
+      tip.style.top = Math.max(0, py / c.H * r.height - 58) + 'px';
+    };
+    const leave = () => { tip.style.display = 'none'; xh.setAttribute('visibility', 'hidden'); hd.setAttribute('visibility', 'hidden'); };
+    svg.addEventListener('pointermove', move);
+    svg.addEventListener('pointerdown', move);
+    svg.addEventListener('pointerleave', leave);
+  });
+}
+
+/* =========================================================
+   Aktionen (Event-Delegation)
+   ========================================================= */
+function playerSelect(id, multi) {
+  if (view === 'manual') {
+    const m = ui.manual;
+    if (m.kind === 'match') { const i = m.players.indexOf(id); i >= 0 ? m.players.splice(i, 1) : m.players.push(id); if (!m.players.includes(m.winner)) m.winner = null; }
+    else m.players = [id];
+    return;
+  }
+  const st = ui.setup;
+  if (!st) return;
+  if (multi) { const i = st.players.indexOf(id); i >= 0 ? st.players.splice(i, 1) : st.players.push(id); }
+  else st.player = id;
+}
+function addPlayer(name) {
+  name = (name || '').trim().slice(0, 24);
+  if (!name) return null;
+  if (db.players.some(p => p.name.toLowerCase() === name.toLowerCase())) { toast('Name existiert schon'); return null; }
+  const p = { id: uid(), name, created: new Date().toISOString() };
+  db.players.push(p); save();
+  return p;
+}
+function applyTheme() {
+  const t = db.settings.theme || 'auto';
+  if (t === 'auto') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', t);
+}
+function guardActive(fn) {
+  if (db.active) confirmBox('Laufendes Spiel/Training verwerfen?', 'Verwerfen & starten', () => { db.active = null; fn(); });
+  else fn();
+}
+function startTrainingFromSetup(st) {
+  const p = playerById(st.player);
+  if (!p) { toast('Bitte Spieler wählen'); return; }
+  const players = [{ id: p.id, name: p.name }];
+  db.settings.lastTraining = Object.assign({}, st);
+  let s;
+  if (st.mode === 'x01') s = X01.create({ training: true, start: +st.start, doubleOut: !!+st.doubleOut, firstTo: +st.legs, input: st.input, players });
+  else if (st.mode === 'atc') s = { type: 'atc', id: uid(), players, darts: [], startedAt: Date.now() };
+  else if (st.mode === 'dbl') s = { type: 'dbl', id: uid(), players, per: +st.per, order: st.order, targets: st.order === 'rand' ? shuffle(DBL_SEQ) : DBL_SEQ.slice(), darts: [], startedAt: Date.now() };
+  else if (st.mode === 'bobs') s = { type: 'bobs', id: uid(), players, rounds: [], startedAt: Date.now() };
+  else if (st.mode === 'scoring') s = { type: 'scoring', id: uid(), players, visits: +st.visits, scores: [], buf: '', startedAt: Date.now() };
+  startGame(s);
+}
+function startMatchFromSetup(st) {
+  const players = st.players.map(id => playerById(id)).filter(Boolean).map(p => ({ id: p.id, name: p.name }));
+  if (players.length < 2) { toast('Mindestens 2 Spieler'); return; }
+  db.settings.lastMatch = Object.assign({}, st, { players: st.players.slice() });
+  const s = st.game === 'cricket' ? CR.create({ firstTo: +st.firstTo, players })
+    : X01.create({ start: +st.start, doubleIn: !!+st.doubleIn, doubleOut: !!+st.doubleOut, firstTo: +st.firstTo, input: st.input, players });
+  startGame(s);
+}
+function keyInput(v) {
+  const s = db.active; if (!s || !('buf' in s)) return;
+  if (v === 'del') s.buf = s.buf.slice(0, -1);
+  else if (v === 'ok') {
+    if (s.buf === '') { submitScore(s, 0); return; }
+    submitScore(s, Number(s.buf)); return;
+  } else {
+    const nb = (s.buf === '0' ? '' : s.buf) + v;
+    if (Number(nb) > 180) { toast('Maximal 180'); return; }
+    s.buf = nb;
+  }
+  render();
+}
+function submitScore(s, v) {
+  if (s.type === 'x01') { s.buf = ''; X01.total(s, v); return; }
+  if (s.type === 'scoring') {
+    if (v > 180 || IMPOSSIBLE.has(v)) { toast(v + ' ist mit 3 Darts nicht möglich'); return; }
+    s.scores.push(v); s.buf = '';
+    if (s.scores.length >= s.visits) return finishGame(false);
+    persistRender();
+  }
+}
+
+const actions = {
+  nav: d => { if (d.v === 'play' && !db.active) return; if (['training', 'match'].includes(d.v)) ui.setup = null; go(d.v); },
+  m: d => modalHandlers[d.k] && modalHandlers[d.k](),
+  opt: d => { const st = ui.setup; st[d.k] = isNaN(d.v) ? d.v : Number(d.v); render(); },
+  pick: d => { playerSelect(d.id, d.multi === '1'); render(); },
+  'quick-player': d => {
+    openModal(`<h3>Neuer Spieler</h3><form data-form="quick-player" data-multi="${d.multi}"><input type="text" name="name" placeholder="Name" required maxlength="24" autofocus>
+      <div class="grid2" style="margin-top:12px"><button type="button" class="btn" data-act="m" data-k="no">Abbrechen</button><button class="btn primary">Hinzufügen</button></div></form>`, { no: closeModal });
+    setTimeout(() => { const i = document.querySelector('.modal input'); i && i.focus(); }, 30);
+  },
+  'shuffle-players': () => { ui.setup.players = shuffle(ui.setup.players); render(); },
+  'start-training': () => guardActive(() => startTrainingFromSetup(ui.setup)),
+  'start-match': () => guardActive(() => startMatchFromSetup(ui.setup)),
+  'stats-player': d => { ui.statsPlayer = d.id; render(); },
+  key: d => keyInput(d.v),
+  quick: d => { const s = db.active; s.buf = ''; submitScore(s, Number(d.v)); },
+  input: d => { const s = db.active; if (s.pending.length) { toast('Erst Aufnahme beenden oder rückgängig machen'); return; } s.input = d.v; s.buf = ''; persistRender(); },
+  mult: d => { const s = db.active; s.mult = s.mult === +d.v ? 1 : +d.v; render(); },
+  dart: d => { const s = db.active; (s.type === 'cricket' ? CR : X01).dart(s, s.mult, +d.v); },
+  'cr-end': () => CR.endTurn(db.active),
+  hit: d => {
+    const s = db.active; s.darts.push(d.v === '1');
+    if (s.type === 'atc' && s.darts.filter(Boolean).length >= ATC_SEQ.length) return finishGame(false);
+    if (s.type === 'dbl' && s.darts.length >= s.targets.length * s.per) return finishGame(false);
+    persistRender();
+  },
+  bobs: d => {
+    const s = db.active; s.rounds.push(+d.v);
+    const sc = bobsScore(s);
+    if (sc <= 0) { toast('Ausgeschieden bei ' + dLabel(DBL_SEQ[s.rounds.length - 1])); return finishGame(false); }
+    if (s.rounds.length >= DBL_SEQ.length) return finishGame(false);
+    persistRender();
+  },
+  undo: () => {
+    const s = db.active; let ok = true;
+    if (s.type === 'x01') ok = X01.undo(s);
+    else if (s.type === 'cricket') ok = CR.undo(s);
+    else if (s.type === 'atc' || s.type === 'dbl') ok = s.darts.pop() !== undefined;
+    else if (s.type === 'bobs') ok = s.rounds.pop() !== undefined;
+    else if (s.type === 'scoring') { if (s.buf) s.buf = ''; else ok = s.scores.pop() !== undefined; }
+    if (!ok) toast('Nichts rückgängig zu machen');
+    persistRender();
+  },
+  quit: () => {
+    openModal(`<h3>Beenden?</h3><p class="muted">Du kannst den aktuellen Stand speichern (als „abgebrochen“ markiert) oder verwerfen.</p>
+      <div style="display:grid;gap:8px;margin-top:12px"><button class="btn primary" data-act="m" data-k="save">Stand speichern & beenden</button>
+      <button class="btn danger" data-act="m" data-k="drop">Verwerfen</button><button class="btn" data-act="m" data-k="no">Weiterspielen</button></div>`,
+      { save: () => finishGame(true), drop: () => { db.active = null; save(); go('home'); }, no: closeModal });
+  },
+  rematch: d => {
+    const e = db.history.find(x => x.id === d.id); if (!e) return;
+    const players = e.players.map(p => playerById(p.id)).filter(Boolean).map(p => ({ id: p.id, name: p.name }));
+    if (!players.length) return go('home');
+    if (e.kind === 'match') {
+      // Reihenfolge rotieren, damit ein anderer anwirft
+      const rot = players.slice(1).concat(players.slice(0, 1));
+      if (rot.length < 2) return go('match');
+      if (e.mode === 'cricket') startGame(CR.create({ firstTo: e.settings.firstTo, players: rot }));
+      else startGame(X01.create({ start: e.settings.start, doubleIn: e.settings.doubleIn, doubleOut: e.settings.doubleOut, firstTo: e.settings.firstTo, input: (db.settings.lastMatch || {}).input, players: rot }));
+    } else {
+      const st = Object.assign({}, db.settings.lastTraining || {}, { mode: e.mode, player: players[0].id });
+      if (e.mode === 'x01') { st.start = e.settings.start; st.doubleOut = e.settings.doubleOut ? 1 : 0; st.legs = e.settings.firstTo; }
+      if (e.mode === 'dbl') { st.per = e.settings.per; st.order = e.settings.order; }
+      if (e.mode === 'scoring') st.visits = e.settings.visits;
+      startTrainingFromSetup(st);
+    }
+  },
+  'hist-filter': d => { ui.histFilter = d.v; render(); },
+  'toggle-entry': (d, el, ev) => { if (ev.target.closest('[data-stop]')) return; ui.openEntry = ui.openEntry === d.id ? null : d.id; render(); },
+  'del-entry': d => confirmBox('Eintrag wirklich löschen?', 'Löschen', () => { db.history = db.history.filter(e => e.id !== d.id); save(); render(); }),
+  manual: d => { ui.manual = null; go('manual', d.v); },
+  'manual-winner': d => { ui.manual.winner = d.id; keepForm(() => render()); },
+  'rename-player': d => {
+    const p = playerById(d.id);
+    openModal(`<h3>Umbenennen</h3><form data-form="rename" data-id="${p.id}"><input type="text" name="name" value="${esc(p.name)}" required maxlength="24">
+      <div class="grid2" style="margin-top:12px"><button type="button" class="btn" data-act="m" data-k="no">Abbrechen</button><button class="btn primary">Speichern</button></div></form>`, { no: closeModal });
+  },
+  'main-player': d => { const i = db.players.findIndex(p => p.id === d.id); const [p] = db.players.splice(i, 1); db.players.unshift(p); save(); render(); },
+  'del-player': d => {
+    const p = playerById(d.id);
+    if (db.active && db.active.players.some(x => x.id === d.id)) { toast('Spieler ist im laufenden Spiel'); return; }
+    confirmBox(`${p.name} löschen?`, 'Löschen', () => { db.players = db.players.filter(x => x.id !== d.id); save(); render(); });
+  },
+  theme: d => { db.settings.theme = d.v; save(); applyTheme(); render(); },
+  export: () => {
+    const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'darts-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  },
+  import: () => document.getElementById('import-file').click()
+};
+
+/** Formularwerte beim Neu-Rendern erhalten (für "Nachtragen") */
+function keepForm(fn) {
+  const f = document.querySelector('form[data-form="manual"]');
+  const vals = f ? Object.fromEntries(new FormData(f)) : {};
+  fn();
+  const nf = document.querySelector('form[data-form="manual"]');
+  if (nf) for (const [k, v] of Object.entries(vals)) { const el = nf.elements[k]; if (el && k !== 'mode') el.value = v; }
+}
+
+document.addEventListener('click', ev => {
+  const el = ev.target.closest('[data-act]');
+  if (!el) return;
+  const fn = actions[el.dataset.act];
+  if (!fn) return;
+  if (el.dataset.act === 'modal-bg') { if (ev.target === el) closeModal(); return; }
+  ev.preventDefault();
+  if (view === 'manual' && (el.dataset.act === 'pick')) { keepForm(() => fn(el.dataset, el, ev)); return; }
+  fn(el.dataset, el, ev);
+});
+
+document.addEventListener('change', ev => {
+  const t = ev.target;
+  if (t.dataset.change === 'manual-mode') { ui.manual.mode = t.value; keepForm(() => render()); }
+  if (t.id === 'import-file' && t.files[0]) {
+    const r = new FileReader();
+    r.onload = () => {
+      try {
+        const d = JSON.parse(r.result);
+        if (!d || !Array.isArray(d.players) || !Array.isArray(d.history)) throw new Error('format');
+        confirmBox(`Backup mit ${d.players.length} Spielern und ${d.history.length} Einträgen laden? Aktuelle Daten werden ersetzt.`, 'Laden', () => {
+          db = { players: d.players, history: d.history, active: d.active || null, settings: d.settings || {} };
+          save(); applyTheme(); toast('Backup geladen'); go('home');
+        }, false);
+      } catch (e) { toast('Ungültige Backup-Datei'); }
+      t.value = '';
+    };
+    r.readAsText(t.files[0]);
+  }
+});
+
+document.addEventListener('submit', ev => {
+  const f = ev.target; ev.preventDefault();
+  const name = f.elements.name ? f.elements.name.value : '';
+  switch (f.dataset.form) {
+    case 'first-player':
+    case 'add-player': if (addPlayer(name)) { toast('Spieler angelegt'); render(); } break;
+    case 'quick-player': {
+      const p = addPlayer(name);
+      if (p) {
+        closeModal();
+        if (view === 'manual') keepForm(() => { playerSelect(p.id, f.dataset.multi === '1'); render(); });
+        else { playerSelect(p.id, f.dataset.multi === '1'); render(); }
+      }
+      break;
+    }
+    case 'rename': {
+      const p = playerById(f.dataset.id), n = name.trim().slice(0, 24);
+      if (!n) break;
+      if (db.players.some(x => x.id !== p.id && x.name.toLowerCase() === n.toLowerCase())) { toast('Name existiert schon'); break; }
+      p.name = n; save(); closeModal(); render(); break;
+    }
+    case 'manual': saveManual(f); break;
+  }
+});
+
+// Tastatur: Ziffern / Enter / Backspace im Punkte-Keypad, Z = Undo
+document.addEventListener('keydown', ev => {
+  if (view !== 'play' || !db.active || document.querySelector('.overlay')) return;
+  if (ev.target.matches('input,textarea,select')) return;
+  const s = db.active;
+  if ('buf' in s && (s.type === 'scoring' || (s.type === 'x01' && s.input === 'total'))) {
+    if (/^[0-9]$/.test(ev.key)) { keyInput(ev.key); ev.preventDefault(); }
+    else if (ev.key === 'Enter') { keyInput('ok'); ev.preventDefault(); }
+    else if (ev.key === 'Backspace') { keyInput('del'); ev.preventDefault(); }
+  }
+  if ((ev.key === 'z' && (ev.ctrlKey || ev.metaKey)) || ev.key === 'u') { actions.undo(); ev.preventDefault(); }
+});
+
+applyTheme();
+if (db.active) view = 'play';
+render();
+</script>
+</body>
+</html>
