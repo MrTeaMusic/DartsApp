@@ -25,6 +25,14 @@ Einfach `index.html` im Browser öffnen (am Handy z. B. über GitHub Pages und d
 - Einträge nachträglich **bearbeiten** (Datum, Sieger, Legs, Average, 180er, Highfinishes, Notiz …) oder löschen
 - Backup als JSON exportieren/importieren
 
+## Autodarts-Anbindung (experimentell)
+Unter **Start → Autodarts** die IP des Boards (Board Manager 2, Port 3180) eintragen und die Wurf-Übernahme einschalten.
+Die App liest `http://<IP>:3180/api/state` und übernimmt jeden erkannten Dart ins laufende Spiel
+(X01, Cricket, Around the Clock, Doppel-Training, Bob's 27, Scoring). Beim Entnehmen der Darts wird die Aufnahme abgeschlossen.
+- Inoffizielle Schnittstelle, das Format kann sich ändern. Unter „Diagnose“ stehen die Rohdaten.
+- Blockiert der Browser die Verbindung (CORS), `node autodarts-bridge.js <Board-IP>` auf einem Rechner im Netz starten und dessen Adresse mit Port 3181 eintragen.
+- Die App muss als Datei oder über http geöffnet sein (eine https-Seite darf keine http-Verbindung öffnen).
+
 ## Daten
 Alle Daten werden lokal im Browser gespeichert (`localStorage`). Zum Gerätewechsel oder als Sicherung
 unter **Start → Einstellungen → Backup exportieren** eine Datei sichern und auf dem anderen Gerät importieren.

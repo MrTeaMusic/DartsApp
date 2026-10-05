@@ -631,6 +631,7 @@ function viewHome() {
     <button class="btn" data-act="import">⬆️ Backup importieren</button></div>
     <div class="row" style="margin-top:10px"><span class="small muted spacer">Design</span><div class="seg" style="flex:2">${[['auto', 'Auto'], ['light', 'Hell'], ['dark', 'Dunkel']].map(([k, l]) => `<button class="${(db.settings.theme || 'auto') === k ? 'on' : ''}" data-act="theme" data-v="${k}">${l}</button>`).join('')}</div></div>
     <input type="file" id="import-file" accept="application/json,.json" hidden></div>`;
+  h += adCard();
   return h;
 }
 
@@ -716,7 +717,7 @@ function viewMatchSetup() {
 /* ---------- Play ---------- */
 function viewPlay() {
   const s = db.active;
-  const top = `<div class="topbar"><button class="btn sm ghost" data-act="nav" data-v="home" title="Pausieren">← Pause</button><div class="title">${esc(gameTitle(s))}</div><button class="btn sm" data-act="undo">↶ Undo</button><button class="btn sm danger" data-act="quit">✕</button></div>`;
+  const top = `<div class="topbar"><button class="btn sm ghost" data-act="nav" data-v="home" title="Pausieren">← Pause</button><div class="title">${esc(gameTitle(s))}${AD.cfg.auto ? ` <span id="ad-dot" title="Autodarts">${AD.ok ? '📡' : '⚠️'}</span>` : ''}</div><button class="btn sm" data-act="undo">↶ Undo</button><button class="btn sm danger" data-act="quit">✕</button></div>`;
   return top + ({ x01: playX01, cricket: playCricket, atc: playATC, dbl: playDbl, bobs: playBobs, scoring: playScoring })[s.type](s);
 }
 
@@ -1439,6 +1440,8 @@ const actions = {
     confirmBox(`${p.name} löschen?`, 'Löschen', () => { db.players = db.players.filter(x => x.id !== d.id); save(); render(); });
   },
   theme: d => { db.settings.theme = d.v; save(); applyTheme(); render(); },
+  'ad-toggle': () => { AD.cfg.auto = !AD.cfg.auto; db.settings.autodarts = AD.cfg; save(); adRestart(); render(); },
+  'ad-test': () => { adSaveForm(); adRestart(true); },
   export: () => {
     const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
@@ -1514,6 +1517,7 @@ document.addEventListener('submit', ev => {
     }
     case 'manual': saveManual(f); break;
     case 'edit': saveEdit(f); break;
+    case 'autodarts': adSaveForm(); adRestart(true); toast('Autodarts-Einstellungen gespeichert'); break;
   }
 });
 
@@ -1530,7 +1534,131 @@ document.addEventListener('keydown', ev => {
   if ((ev.key === 'z' && (ev.ctrlKey || ev.metaKey)) || ev.key === 'u') { actions.undo(); ev.preventDefault(); }
 });
 
+/* =========================================================
+   Autodarts-Anbindung (Board Manager im Heimnetz, Port 3180)
+   Liest /api/state und füttert die Darts in das laufende Spiel.
+   Inoffizielle Schnittstelle – Format wird tolerant ausgewertet.
+   ========================================================= */
+const AD = { cfg: Object.assign({ host: '', port: 3180, auto: false }, db.settings.autodarts || {}), ok: false, err: '', raw: null, last: null, inTakeout: false, timer: null, busy: false, acc: { n: 0, hits: 0, sum: 0 } };
+
+function adBase() {
+  let h = (AD.cfg.host || '').trim();
+  if (!h) return '';
+  if (!/^https?:\/\//i.test(h)) h = 'http://' + h.replace(/\/+$/, '') + ':' + (AD.cfg.port || 3180);
+  return h.replace(/\/+$/, '');
+}
+function adCard() {
+  const c = AD.cfg;
+  return `<h2>Autodarts</h2><div class="card"><form data-form="autodarts">
+    <p class="small muted" style="margin-top:0">Würfe vom Autodarts-Board automatisch ins laufende Spiel übernehmen (Board Manager im selben WLAN, ohne Cloud-Konto). Eingabe wechselt dabei auf „Darts“.</p>
+    <div class="grid2"><label class="field"><span>IP / Adresse des Boards</span><input type="text" name="host" value="${esc(c.host)}" placeholder="z. B. 192.168.1.50" autocapitalize="off" autocomplete="off"></label>
+    <label class="field"><span>Port</span><input type="number" name="port" value="${esc(c.port)}"></label></div>
+    <div class="row wrap"><button class="btn">Speichern & testen</button>
+    <button type="button" class="btn ${c.auto ? 'primary' : ''}" data-act="ad-toggle">${c.auto ? '● Aktiv – ausschalten' : 'Wurf-Übernahme einschalten'}</button></div>
+    <p class="small" style="margin:10px 0 4px">Status: <b id="ad-status">${adStatusText()}</b></p>
+    <details><summary class="small muted">Diagnose (Rohdaten)</summary><pre id="ad-raw" class="small" style="white-space:pre-wrap;word-break:break-all;max-height:220px;overflow:auto;background:var(--surface-2);padding:8px;border-radius:8px">${esc(AD.raw ? JSON.stringify(AD.raw, null, 1).slice(0, 3000) : '–')}</pre></details>
+  </form></div>`;
+}
+function adStatusText() {
+  if (!AD.cfg.auto && !AD.testing) return 'aus';
+  if (AD.ok) return 'verbunden · ' + (AD.status || 'bereit');
+  return AD.err || 'verbinde …';
+}
+function adSaveForm() {
+  const f = document.querySelector('form[data-form="autodarts"]');
+  if (f) { AD.cfg.host = f.elements.host.value.trim(); AD.cfg.port = Number(f.elements.port.value) || 3180; }
+  db.settings.autodarts = AD.cfg; save();
+}
+function adUi() {
+  const st = document.getElementById('ad-status'); if (st) st.textContent = adStatusText();
+  const raw = document.getElementById('ad-raw'); if (raw) raw.textContent = AD.raw ? JSON.stringify(AD.raw, null, 1).slice(0, 3000) : '–';
+  const dot = document.getElementById('ad-dot'); if (dot) dot.textContent = AD.ok ? '📡' : '⚠️';
+}
+function adRestart(test) {
+  clearInterval(AD.timer); AD.timer = null; AD.ok = false; AD.err = ''; AD.last = null; AD.testing = !!test;
+  if ((AD.cfg.auto || test) && adBase()) { adPoll(); AD.timer = setInterval(adPoll, 400); }
+  else { AD.err = adBase() ? '' : 'Bitte Adresse eintragen'; adUi(); }
+}
+async function adPoll() {
+  if (AD.busy) return; AD.busy = true;
+  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 2500);
+  try {
+    const r = await fetch(adBase() + '/api/state', { cache: 'no-store', signal: ctl.signal });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const j = await r.json();
+    AD.raw = j; AD.ok = true; AD.err = '';
+    adHandle(j);
+  } catch (e) {
+    AD.ok = false;
+    const mixed = location.protocol === 'https:' && adBase().startsWith('http:');
+    AD.err = mixed ? 'Blockiert: https-Seite darf keine http-Verbindung öffnen – App als Datei/über http öffnen'
+      : e.name === 'AbortError' ? 'Keine Antwort (Adresse/Port prüfen)'
+      : 'Nicht erreichbar – Adresse falsch oder vom Browser blockiert (CORS). Siehe autodarts-bridge.js';
+  } finally { clearTimeout(to); AD.busy = false; adUi(); }
+}
+function adFindThrows(o, depth = 0) {
+  if (!o || typeof o !== 'object' || depth > 4) return null;
+  if (Array.isArray(o.throws)) return o.throws;
+  for (const v of Object.values(o)) { const r = adFindThrows(v, depth + 1); if (r) return r; }
+  return null;
+}
+/** Autodarts-Segment → {m, n}; n=0 = daneben */
+function adSeg(t) {
+  const sg = (t && t.segment) || t || {};
+  let n = sg.number, m = sg.multiplier;
+  const name = String(sg.name ?? t.name ?? '').trim();
+  if (typeof n !== 'number' || typeof m !== 'number') {
+    const mm = /^([SDT])?(\d{1,2})$/i.exec(name);
+    if (mm) { n = +mm[2]; m = { S: 1, D: 2, T: 3 }[(mm[1] || 'S').toUpperCase()]; }
+    else if (/^bull$/i.test(name)) { n = 25; m = 2; }
+    else { n = 0; m = 1; }
+  }
+  if (!n || !m || n < 0 || n > 25) return { m: 1, n: 0 };
+  if (n === 25 && m === 3) m = 2;
+  return { m, n };
+}
+function adHandle(j) {
+  const th = adFindThrows(j) || [];
+  const status = String(j.status ?? j.event ?? '');
+  AD.status = status;
+  const takeout = /takeout/i.test(status);
+  const s = db.active, live = !!(s && view === 'play');
+  if (AD.last === null || !live) { AD.last = takeout ? 0 : th.length; AD.inTakeout = takeout; if (!live) AD.acc = { n: 0, hits: 0, sum: 0 }; return; }
+  if (takeout || th.length < AD.last) {
+    if (!AD.inTakeout) adTakeout();
+    AD.inTakeout = true; AD.last = takeout ? 0 : th.length; return;
+  }
+  AD.inTakeout = false;
+  while (AD.last < th.length && db.active) { adFeed(adSeg(th[AD.last])); AD.last++; }
+}
+function adFeed(d) {
+  const s = db.active; if (!s) return;
+  if (s.type === 'x01') {
+    if (s.input !== 'darts') { s.input = 'darts'; s.buf = ''; }
+    if (d.n === 25 && d.m === 3) return;
+    X01.dart(s, d.m, d.n);
+  } else if (s.type === 'cricket') CR.dart(s, d.m, d.n);
+  else if (s.type === 'atc') actions.hit({ v: d.n === ATC_SEQ[s.darts.filter(Boolean).length] ? '1' : '0' });
+  else if (s.type === 'dbl') actions.hit({ v: d.m === 2 && d.n === s.targets[Math.floor(s.darts.length / s.per)] ? '1' : '0' });
+  else if (s.type === 'bobs') {
+    AD.acc.n++; if (d.m === 2 && d.n === DBL_SEQ[s.rounds.length]) AD.acc.hits++;
+    if (AD.acc.n >= 3) { const h = AD.acc.hits; AD.acc = { n: 0, hits: 0, sum: 0 }; actions.bobs({ v: h }); }
+  } else if (s.type === 'scoring') {
+    AD.acc.n++; AD.acc.sum += d.m * d.n;
+    if (AD.acc.n >= 3) { const v = AD.acc.sum; AD.acc = { n: 0, hits: 0, sum: 0 }; submitScore(s, v); }
+  }
+}
+/** Darts entfernt: angefangene Aufnahme mit Fehlwürfen auffüllen und abschließen */
+function adTakeout() {
+  const s = db.active; if (!s) return;
+  if (s.type === 'x01') { let g = 4; while (db.active === s && s.pending.length && g-- > 0) X01.dart(s, 1, 0); }
+  else if (s.type === 'cricket') { if (s.pending.length) CR.endTurn(s); }
+  else if (s.type === 'bobs') { if (AD.acc.n) { const h = AD.acc.hits; AD.acc = { n: 0, hits: 0, sum: 0 }; actions.bobs({ v: h }); } }
+  else if (s.type === 'scoring') { if (AD.acc.n) { const v = AD.acc.sum; AD.acc = { n: 0, hits: 0, sum: 0 }; submitScore(s, v); } }
+}
+
 applyTheme();
+if (AD.cfg.auto) adRestart();
 if (db.active) view = 'play';
 render();
 </script>
