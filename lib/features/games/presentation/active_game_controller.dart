@@ -6,6 +6,8 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../board/domain/segment.dart';
+import '../../board/presentation/live_visit_controller.dart';
 import '../../dart_source/data/local_dart_source.dart';
 import '../../dart_source/domain/dart_event.dart';
 import '../../dart_source/presentation/dart_source_providers.dart';
@@ -131,6 +133,27 @@ class ActiveGameController extends Notifier<ActiveGame?> {
     final source = ref.read(dartSourceProvider);
     if (source is LocalDartSource && source.undoLast()) return;
     handle(DartUndone(DateTime.now()));
+  }
+
+  /// Korrigiert einen falsch erkannten oder eingegebenen Dart. [index] zählt
+  /// alle Darts dieses Spiels (wie `session.records`). Das Spiel wird neu
+  /// durchgerechnet, die gespeicherten Würfe ersetzt.
+  bool correct(int index, Segment segment) {
+    final current = state;
+    if (current == null || current.ended) return false;
+    final records = current.session.records;
+    if (index < 0 || index >= records.length) return false;
+    final old = records[index].dart;
+    if (old.segment == segment) return false;
+    // Die Position gehörte zum falschen Feld, deshalb ohne Koordinaten.
+    final dart = DartThrow(segment: segment, timestamp: old.timestamp, source: old.source, raw: old.raw);
+    if (!current.session.correctAt(index, dart)) return false;
+    final live = ref.read(liveVisitProvider);
+    final liveStart = records.length - live.visit.length;
+    if (index >= liveStart) ref.read(liveVisitProvider.notifier).replaceDart(index - liveStart, dart);
+    _persistAll(current);
+    _afterInput(current);
+    return true;
   }
 
   /// Nächste Aufnahme (Takeout) auslösen.

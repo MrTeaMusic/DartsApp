@@ -116,6 +116,17 @@ void main() {
       expect(s.correctDart(5, d('T5')), isFalse);
     });
 
+    test('Korrektur eines älteren Darts rechnet das ganze Spiel neu', () {
+      final s = session();
+      for (final n in ['S20', 'S20', 'S20', 'S1', 'S5']) {
+        s.addDart(d(n));
+      }
+      expect(s.correctAt(0, d('T20')), isTrue);
+      expect((s.game as HighscoreHunt).visitScores.first, 100);
+      expect(s.records.first.dart.segment.name, 'T20');
+      expect(s.correctAt(9, d('T20')), isFalse);
+    });
+
     test('Config wird mit Standardwerten aufgefüllt', () {
       final s = GameSession(definition: TargetPractice.definition, config: const {}, seed: 1);
       expect(s.config['number'], 20);
