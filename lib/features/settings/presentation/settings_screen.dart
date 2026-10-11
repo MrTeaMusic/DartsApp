@@ -8,8 +8,10 @@ import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/settings/app_settings.dart';
+import '../../backup/presentation/backup_card.dart';
 import '../../dart_source/domain/dart_event.dart';
 import '../../dart_source/presentation/source_status_badge.dart';
+import '../../profiles/presentation/profiles_card.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -28,6 +30,9 @@ class SettingsScreen extends ConsumerWidget {
           child: ListView(
             padding: const EdgeInsets.all(AppSpacing.page),
             children: [
+              SectionHeader(l10n.profilesTitle),
+              const ProfilesCard(),
+              const SizedBox(height: AppSpacing.xl),
               SectionHeader(l10n.settingsAppearance),
               SegmentedButton<ThemeMode>(
                 key: const Key('theme-selector'),
@@ -93,6 +98,9 @@ class SettingsScreen extends ConsumerWidget {
                   ],
                 ),
               ),
+              const SizedBox(height: AppSpacing.xl),
+              SectionHeader(l10n.backupTitle),
+              const BackupCard(),
               const SizedBox(height: AppSpacing.xl),
               SectionHeader(l10n.settingsDeveloper),
               AppCard(

@@ -62,7 +62,19 @@ class Throws extends Table {
   TextColumn get rawJson => text().nullable()();
 }
 
-@DriftDatabase(tables: [Players, Sessions, Throws])
+/// Persönliche Ziele eines Spielers, z. B. "5 Sessions pro Woche".
+@DataClassName('GoalRow')
+class Goals extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get playerId => integer().references(Players, #id, onDelete: KeyAction.cascade)();
+
+  /// Art des Ziels, siehe `GoalKind`.
+  TextColumn get kind => text()();
+  RealColumn get target => real()();
+  DateTimeColumn get createdAt => dateTime()();
+}
+
+@DriftDatabase(tables: [Players, Sessions, Throws, Goals])
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
@@ -71,7 +83,7 @@ class AppDatabase extends _$AppDatabase {
 
   /// Bei Schemaänderungen erhöhen und in [migration] einen Schritt ergänzen.
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -84,8 +96,8 @@ class AppDatabase extends _$AppDatabase {
           ));
         },
         onUpgrade: (m, from, to) async {
-          // Noch keine Migrationen. Beispiel für Version 2:
-          // if (from < 2) await m.addColumn(sessions, sessions.notes);
+          // Version 2: Ziele.
+          if (from < 2) await m.createTable(goals);
         },
         beforeOpen: (details) async {
           await customStatement('PRAGMA foreign_keys = ON');

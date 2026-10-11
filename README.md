@@ -6,7 +6,7 @@ Würfe kommen live vom Autodarts-Board, aus einem Simulator oder per manueller E
 > Die Datei `index.html` im Repo-Wurzelordner ist der frühere Web-Prototyp und bleibt vorerst
 > unverändert liegen. Die Flutter-App ist davon unabhängig.
 
-## Stand: Phase 3
+## Stand: Phase 4
 
 | Bereich | Status |
 |---|---|
@@ -23,11 +23,16 @@ Würfe kommen live vom Autodarts-Board, aus einem Simulator oder per manueller E
 | Checkout-Training, Around the Clock, Bullseye-Drill, T20-Training, Score-Ziel, Highscore-Jagd | fertig |
 | Lokale Datenbank (drift/SQLite): Sessions und jeder einzelne Wurf | fertig |
 | Cricket (Solo), 121, Bob's 27, Drei-Treffer-Runde, Around the World mit Überspringen | fertig |
-| Statistiken, Export/Import, Profile | Phase 4 |
+| Statistik (Average, Quoten, Verlauf, Darts pro Tag, Heatmap, Treffer pro Zahl) | fertig |
+| Ziele und Serien | fertig |
+| Mehrere Profile | fertig |
+| Export/Import (JSON-Backup, CSV) | fertig |
+| Autodarts-Feinschliff, Build-Anleitung | Phase 5 |
 
 Was über das Autodarts-Protokoll bekannt und was offen ist: [docs/autodarts-protokoll.md](docs/autodarts-protokoll.md).
 Regeln und Optionen der Trainingsspiele: [docs/trainingsspiele.md](docs/trainingsspiele.md).
 Regeln der zwei eigenen Spiele: [docs/spielregeln.md](docs/spielregeln.md).
+Wie Statistiken berechnet werden, Ziele, Profile, Export-Formate: [docs/statistik-und-daten.md](docs/statistik-und-daten.md).
 
 ## Starten
 
@@ -72,13 +77,20 @@ lib/
       domain/games/  ein Spiel = eine Klasse + GameDefinition, registriert in game_catalog.dart
       data/          GameRepository (Speichern, Verlauf, schwache Checkouts)
       presentation/  Spielauswahl, Einstellungen, Spielbildschirm, ActiveGameController
-    home/ simulator/ stats/ settings/   Bildschirme
+    stats/
+      domain/        StatsCalculator, Ziele (reine Berechnung)
+      data/          StatsRepository
+      presentation/  Statistik-Bildschirm mit fl_chart, Ziele-Karte
+    profiles/        Profile und aktives Profil
+    backup/          JSON/CSV-Export, Import, Dateidialoge
+    home/ simulator/ settings/   Bildschirme
   l10n/            app_de.arb (Vorlage), app_en.arb
 ```
 
 **Neues Spiel:** Klasse von `TrainingGame` ableiten, eine `GameDefinition` mit Standardwerten und
 Optionen anlegen und in `GameCatalog.all` eintragen. Das Einstellungsformular entsteht aus den Optionen.
-Nach Änderungen an Tabellen: `dart run build_runner build`.
+Nach Änderungen an Tabellen: `dart run build_runner build`, `schemaVersion` erhöhen und einen
+Migrationsschritt in `app_database.dart` ergänzen.
 
 **Regel:** Spiele sprechen nur mit `DartSource` (über `dartEventsProvider`), nie direkt mit Autodarts.
 Ändert sich das Protokoll, wird nur `AutodartsStateMapper` bzw. `AutodartsLocalSource` angepasst.

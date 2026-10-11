@@ -163,9 +163,9 @@ class GameRepository {
           .get();
 
   /// Abgeschlossene Sessions, neueste zuerst.
-  Stream<List<SessionSummary>> watchRecent({int limit = 20}) {
+  Stream<List<SessionSummary>> watchRecent({int limit = 20, int? playerId}) {
     final q = db.select(db.sessions)
-      ..where((s) => s.endedAt.isNotNull())
+      ..where((s) => s.endedAt.isNotNull() & (playerId == null ? const Constant(true) : s.playerId.equals(playerId)))
       ..orderBy([(s) => OrderingTerm.desc(s.startedAt)])
       ..limit(limit);
     return q.watch().map((rows) => [for (final r in rows) _summary(r)]);
@@ -187,9 +187,12 @@ class GameRepository {
 
   /// Checkout-Werte mit der schlechtesten Quote (mindestens [minAttempts]
   /// Versuche), schlechteste zuerst.
-  Future<List<int>> weakCheckoutTargets({int limit = 15, int minAttempts = 2}) async {
+  Future<List<int>> weakCheckoutTargets({int limit = 15, int minAttempts = 2, int? playerId}) async {
     final rows = await (db.select(db.sessions)
-          ..where((s) => s.gameId.equals(CheckoutTraining.id) & s.resultJson.isNotNull()))
+          ..where((s) =>
+              s.gameId.equals(CheckoutTraining.id) &
+              s.resultJson.isNotNull() &
+              (playerId == null ? const Constant(true) : s.playerId.equals(playerId))))
         .get();
     final tries = <int, int>{};
     final hits = <int, int>{};

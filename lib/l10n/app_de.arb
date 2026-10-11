@@ -33,7 +33,7 @@
   "homeSessionDarts": "Darts",
   "homeSessionAverage": "3-Dart-Average",
   "homeLastDart": "Letzter Dart",
-  "homePhaseNote": "Phase 3: Elf Trainingsspiele sind spielbar, darunter Cricket, 121, Bob's 27 und deine zwei eigenen Spiele. Jeder Dart wird lokal gespeichert. Statistiken, Ziele und Export folgen in Phase 4.",
+  "homePhaseNote": "Phase 4: Statistiken mit Verlauf und Heatmap, Ziele, Serien, mehrere Profile sowie Export und Import sind da. Phase 5 bringt den Feinschliff für Autodarts und die Build-Anleitung.",
   "gamesTitle": "Training",
   "gamesPhase": "Phase {phase}",
   "@gamesPhase": {
@@ -101,8 +101,127 @@
   "triple": "Triple",
   "autodartsUnverified": "Hinweis: Das Autodarts-Protokoll ist nicht offiziell dokumentiert. Das Mapping ist noch nicht am echten Board getestet.",
   "statsTitle": "Statistik",
-  "statsComingTitle": "Statistiken kommen in Phase 4",
-  "statsComingText": "Averages, Quoten, Heatmap, Verlauf, Ziele und Streaks. Jeder Wurf wird ab Phase 2 mit Rohdaten gespeichert, damit sich alles später neu berechnen lässt.",
+  "statsEmptyTitle": "Noch keine Daten",
+  "statsEmptyText": "Spiel ein Training in diesem Zeitraum, dann erscheinen hier deine Werte.",
+  "statsPeriodWeek": "7 Tage",
+  "statsPeriodMonth": "30 Tage",
+  "statsPeriodQuarter": "90 Tage",
+  "statsPeriodAll": "Alles",
+  "statsAllGames": "Alle Spiele",
+  "statsSessions": "Sessions",
+  "statsPracticeDays": "Trainingstage",
+  "statsAverageCaption": "aus den Scoring-Drills",
+  "statsAttempts": "{count} Versuche",
+  "@statsAttempts": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsStreak": "Serie",
+  "statsDays": "{count, plural, =1{1 Tag} other{{count} Tage}}",
+  "@statsDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsLongest": "Rekord: {count}",
+  "@statsLongest": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsTrainedToday": "Heute trainiert",
+  "statsNotTrainedToday": "Heute noch offen",
+  "statsActivity": "Darts pro Tag",
+  "statsTrend": "Verlauf",
+  "statsTrendEmpty": "Für dieses Spiel gibt es im Zeitraum noch keinen Verlauf.",
+  "statsHeatmap": "Heatmap",
+  "statsHeatmapHint": "Darts ohne Koordinaten (manuelle Eingabe) liegen in der Mitte ihres Feldes.",
+  "statsNumbers": "Treffer pro Zahl",
+  "statsGames": "Spiele",
+  "statsBest": "Bestwert",
+  "goalsTitle": "Ziele",
+  "goalsEmpty": "Noch keine Ziele. Setz dir eins, z. B. 5 Sessions pro Woche.",
+  "goalsAdd": "Ziel hinzufügen",
+  "goalsSave": "Speichern",
+  "goalsDelete": "Löschen",
+  "goalTarget": "Ziel",
+  "goalWeeklySessions": "Sessions pro Woche",
+  "goalWeeklyDarts": "Darts pro Woche",
+  "goalStreakDays": "Tage am Stück",
+  "goalScoringAverage": "3-Dart-Average (30 Tage)",
+  "goalCheckoutRate": "Checkout-Quote (30 Tage)",
+  "goalDoubleRate": "Double-Quote (30 Tage)",
+  "gameCancelShort": "Abbrechen",
+  "profilesTitle": "Profile",
+  "profileAdd": "Profil hinzufügen",
+  "profileRename": "Umbenennen",
+  "profileDelete": "Löschen",
+  "profileName": "Name",
+  "profileDeleteTitle": "„{name}“ löschen?",
+  "@profileDeleteTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "profileDeleteText": "Alle Sessions, Würfe und Ziele dieses Profils werden gelöscht. Exportiere vorher ein Backup, wenn du sie behalten willst.",
+  "backupTitle": "Daten",
+  "backupExportJson": "Backup exportieren (JSON)",
+  "backupExportJsonHint": "Alle Profile, Sessions, Würfe und Ziele. Lässt sich wieder importieren.",
+  "backupExportThrows": "Würfe als CSV",
+  "backupExportSessions": "Sessions als CSV",
+  "backupCsvHint": "Für Excel oder Numbers, nur Export.",
+  "backupImport": "Backup importieren",
+  "backupImportHint": "Führt ein JSON-Backup mit den vorhandenen Daten zusammen, doppelte Sessions werden übersprungen.",
+  "backupSaved": "Gespeichert: {path}",
+  "@backupSaved": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "backupImported": "Importiert: {sessions} Sessions, {throws} Würfe, {players} neue Profile ({skipped} schon vorhanden).",
+  "@backupImported": {
+    "placeholders": {
+      "sessions": {
+        "type": "int"
+      },
+      "throws": {
+        "type": "int"
+      },
+      "players": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      }
+    }
+  },
+  "backupInvalid": "Datei nicht lesbar: {message}",
+  "@backupInvalid": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "backupFailed": "Fehlgeschlagen: {error}",
+  "@backupFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "settingsTitle": "Einstellungen",
   "settingsAppearance": "Darstellung",
   "themeDark": "Dunkel",
