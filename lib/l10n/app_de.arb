@@ -609,6 +609,225 @@
       }
     }
   },
+  "gameX01": "X01-Solo",
+  "gameX01Desc": "Ein Leg 501 (oder 101 bis 1001) allein: Average, First 9, Checkout-Quote. Mit Double-In, Double-/Master-Out und Dart-Limit.",
+  "gameHalveIt": "Halve-It",
+  "gameHalveItDesc": "Bermuda-Dreieck: eine Aufnahme pro Ziel. Wer das Ziel nicht trifft, verliert die Hälfte seiner Punkte.",
+  "gameCatch40": "Catch 40",
+  "gameCatch40Desc": "Finishes 61 bis 100 der Reihe nach. 2 Darts = 3 Punkte, 3 Darts = 2, mehr = 1. Maximum 120.",
+  "gameJdc": "JDC-Challenge",
+  "gameJdcDesc": "Prüfungsroutine der Junior Darts Corporation: Shanghai 10–15, alle Doubles, Shanghai 15–20. 57 Darts.",
+  "gameShanghai": "Shanghai",
+  "gameShanghaiDesc": "Eine Aufnahme pro Zahl. Single, Double und Triple derselben Zahl in einer Aufnahme ist ein Shanghai.",
+  "gameGolf": "Darts-Golf",
+  "gameGolfDesc": "Loch n = Zahl n. Double ist ein Hole-in-One, nach jedem Dart darfst du aufhören. Par 3 pro Loch.",
+  "gameDoubles420": "420",
+  "gameDoubles420Desc": "Doppel-Countdown: Start bei 420, jeder Treffer auf das aktuelle Double zieht ab. 0 heißt jedes Double genau einmal.",
+  "gameFrustration": "Frustration",
+  "gameFrustrationDesc": "Erst mit zwei Darts mindestens 80 scoren, dann mit dem dritten das Double. D1 bis Bull.",
+  "gameSwitchDrill": "Ziel-Wechsel",
+  "gameSwitchDrillDesc": "Pro Dart ein anderes Ziel, z. B. T20, T19, Bullseye (167). Übt den Wechsel zwischen Feldern.",
+  "gameDoublesLadder": "Doppel-Leiter",
+  "gameDoublesLadderDesc": "Doubles von D1 aufwärts. Genug Treffer: eine Stufe hoch, zu wenige: zurück.",
+  "gameExactScore": "Genau 100",
+  "gameExactScoreDesc": "Mit höchstens 9 Darts genau 100 Punkte erreichen, nicht mehr und nicht weniger.",
+  "gameThreeInABed": "Drei im Bett",
+  "gameThreeInABedDesc": "Alle drei Darts einer Aufnahme auf dieselbe Zahl, dann geht es zur nächsten.",
+  "gameSetupShot": "Stellen",
+  "gameSetupShotDesc": "Mit einem Dart den Rest auf ein Lieblings-Double stellen, z. B. 57 mit S17 auf 40.",
+  "optInMode": "Einstieg",
+  "optOutMode": "Ausstieg",
+  "optLegs": "Legs",
+  "optDartLimit": "Dart-Limit pro Leg (0 = aus)",
+  "optPreset": "Folge",
+  "optRounding": "Halbieren bei ungeradem Stand",
+  "optDartsPerTarget": "Darts pro Ziel",
+  "optFrom": "Von",
+  "optTo": "Bis",
+  "optShanghaiWins": "Shanghai beendet das Spiel",
+  "optShanghaiBonus": "Bonus für Shanghai",
+  "optHoles": "Löcher",
+  "optScoring": "Wertung",
+  "optCounts": "Es zählt",
+  "optSequence": "Ziele",
+  "optSetupMin": "Mindestens mit zwei Darts",
+  "optMaxVisits": "Höchstens Aufnahmen (0 = unbegrenzt)",
+  "optDifficulty": "Schwierigkeit",
+  "optVisitsPerAttempt": "Aufnahmen pro Versuch",
+  "optOvershoot": "Überworfen",
+  "optLeaves": "Erlaubte Reste",
+  "optDarts": "Darts",
+  "optBedMode": "Modus",
+  "optExactTarget": "Zielwert",
+  "optSwitchRounds": "Aufnahmen",
+  "optMinRest": "Kleinster Rest",
+  "optMaxRest": "Größter Rest",
+  "valStraight": "Straight",
+  "valMaster": "Master",
+  "valBermuda": "Bermuda (13 Runden)",
+  "valShortHalveIt": "Kurz (9 Runden)",
+  "valRoundDown": "Abrunden",
+  "valRoundUp": "Aufrunden",
+  "valClassicGolf": "Klassisch (inneres Single 3)",
+  "valSimple": "Einfach",
+  "valLast": "Letzter Dart",
+  "valBest": "Bester Dart",
+  "valFull": "D1 bis Bull",
+  "valShortFrustration": "D20 bis D10",
+  "valNormal": "Normal",
+  "valPro": "Profi",
+  "valFail": "Versuch gescheitert",
+  "valBust": "Bust (Aufnahme zählt nicht)",
+  "valClassicLeaves": "40, 32, 16",
+  "valGood": "40, 32, 36, 24, 16, 20, 8",
+  "valAnyDouble": "Jedes Double",
+  "valWedge": "Zahl (S/D/T gemischt)",
+  "valSegment": "Gleiches Feld",
+  "val167": "167 (T20, T19, Bull)",
+  "valTrebles": "Triples (T20, T19, T18)",
+  "valDoubles": "Doubles (D20, D16, D8)",
+  "valScoring": "Scoring (T20, T19, T20)",
+  "statLegDarts": "Darts im Leg",
+  "statLegsWon": "Legs gewonnen",
+  "statFirst9Average": "First-9-Average",
+  "statBestLegDarts": "Bestes Leg (Darts)",
+  "statHighestFinish": "Höchstes Finish",
+  "statScores100": "100+ / 140+ / 180",
+  "statDoubleToStart": "Double zum Einstieg",
+  "statHalvings": "Halbierungen",
+  "statBestRound": "Beste Runde",
+  "statCleanRounds": "Runden ohne Halbierung",
+  "statThreePointers": "3-Punkte-Finishes",
+  "statPart": "Teil",
+  "statPartPoints": "Punkte im Teil",
+  "statPart1": "Teil 1 (Shanghai 10–15)",
+  "statPart2": "Teil 2 (Doubles)",
+  "statPart3": "Teil 3 (Shanghai 15–20)",
+  "statShanghais": "Shanghais",
+  "statTriples": "Triples",
+  "statHole": "Loch",
+  "statStrokes": "Schläge",
+  "statToPar": "Zum Par",
+  "statHoleValue": "Lochwert",
+  "statHolesInOne": "Hole-in-One",
+  "statAveragePerHole": "Ø Schläge pro Loch",
+  "statMissedDoubles": "Doubles ohne Treffer",
+  "statVisits": "Aufnahmen",
+  "statSetupScore": "Aufbau",
+  "statSetupRate": "Aufbau-Quote",
+  "statPerfectRounds": "Perfekte Runden",
+  "statRateOf": "Quote",
+  "statLevel": "Stufe",
+  "statHighestLevel": "Höchste Stufe",
+  "statVisitsLeft": "Aufnahmen übrig",
+  "statAverageDarts": "Ø Darts bei Erfolg",
+  "statAverageGap": "Ø Abstand bei Fehlversuch",
+  "statIdeal": "Ideal gestellt",
+  "statIdealRate": "Ideal-Quote",
+  "evShanghai": "Shanghai auf {value}!",
+  "@evShanghai": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "evHalved": "Halbiert auf {value}",
+  "@evHalved": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "evLevelDown": "Zurück auf {value}",
+  "@evLevelDown": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "evPartComplete": "Teil {value} geschafft",
+  "@evPartComplete": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "evLegComplete": "Leg {value} beendet",
+  "@evLegComplete": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "visitLabel": "Aufnahme",
+  "visitRoute": "Checkout-Weg",
+  "fixOpen": "Würfe korrigieren",
+  "fixHint": "Einen Dart antippen und das richtige Feld wählen. Das Spiel wird neu berechnet.",
+  "fixTitle": "Dart {number} korrigieren",
+  "@fixTitle": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "fixTitleAny": "Dart korrigieren",
+  "fixCurrent": "Erkannt: {segment}",
+  "@fixCurrent": {
+    "placeholders": {
+      "segment": {
+        "type": "String"
+      }
+    }
+  },
+  "fixVisit": "Aufn. {number}",
+  "@fixVisit": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "fullscreenEnter": "Vollbild (F11)",
+  "fullscreenExit": "Vollbild beenden (Esc)",
+  "homeHello": "Hallo, {name}",
+  "@homeHello": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeContinue": "Weiter: {game}",
+  "@homeContinue": {
+    "placeholders": {
+      "game": {
+        "type": "String"
+      }
+    }
+  },
+  "homeAllStats": "Alle Statistiken",
+  "homeToday": "Heute, {time}",
+  "@homeToday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "homeYesterday": "Gestern, {time}",
+  "@homeYesterday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "plansTitle": "Trainingspläne",
   "plansEntryText": "Mehrere Spiele hintereinander: feste Pläne oder eigene.",
   "plansBuiltin": "Feste Pläne",
@@ -722,69 +941,5 @@
   "planBackToPlans": "Zu den Plänen",
   "planNotFound": "Diesen Plan gibt es nicht mehr.",
   "optOn": "an",
-  "optOff": "aus",
-  "visitLabel": "Aufnahme",
-  "visitRoute": "Checkout-Weg",
-  "fixOpen": "Würfe korrigieren",
-  "fixHint": "Einen Dart antippen und das richtige Feld wählen. Das Spiel wird neu berechnet.",
-  "fixTitle": "Dart {number} korrigieren",
-  "@fixTitle": {
-    "placeholders": {
-      "number": {
-        "type": "int"
-      }
-    }
-  },
-  "fixTitleAny": "Dart korrigieren",
-  "fixCurrent": "Erkannt: {segment}",
-  "@fixCurrent": {
-    "placeholders": {
-      "segment": {
-        "type": "String"
-      }
-    }
-  },
-  "fixVisit": "Aufn. {number}",
-  "@fixVisit": {
-    "placeholders": {
-      "number": {
-        "type": "int"
-      }
-    }
-  },
-  "fullscreenEnter": "Vollbild (F11)",
-  "fullscreenExit": "Vollbild beenden (Esc)",
-  "homeHello": "Hallo, {name}",
-  "@homeHello": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "homeContinue": "Weiter: {game}",
-  "@homeContinue": {
-    "placeholders": {
-      "game": {
-        "type": "String"
-      }
-    }
-  },
-  "homeAllStats": "Alle Statistiken",
-  "homeToday": "Heute, {time}",
-  "@homeToday": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "homeYesterday": "Gestern, {time}",
-  "@homeYesterday": {
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  }
+  "optOff": "aus"
 }

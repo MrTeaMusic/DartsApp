@@ -34,6 +34,21 @@ enum GameEventType {
 
   /// Spiel ist vorbei.
   finished,
+
+  /// Single, Double und Triple einer Zahl in einer Aufnahme (Shanghai, JDC).
+  shanghai,
+
+  /// Stand halbiert (Halve-It).
+  halved,
+
+  /// Eine Stufe zurück (Doppel-Leiter).
+  levelDown,
+
+  /// Teil einer mehrteiligen Routine fertig (JDC).
+  partComplete,
+
+  /// Leg beendet (X01).
+  legComplete,
 }
 
 class GameEvent {

@@ -291,6 +291,7 @@ class _PlanStepEditorState extends State<PlanStepEditor> {
                       GameOptionField(
                         key: ValueKey('${def.id}-${o.key}'),
                         option: o,
+                        gameId: def.id,
                         value: _config[o.key],
                         onChanged: (v) => setState(() => _config = {..._config, o.key: v}),
                       ),

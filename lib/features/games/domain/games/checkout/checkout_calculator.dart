@@ -19,20 +19,26 @@ class CheckoutCalculator {
     Segment.outerBull,
   ];
 
-  static final Map<(int, int, bool), List<Segment>?> _cache = {};
+  static final Map<(int, int, bool, bool), List<Segment>?> _cache = {};
 
   /// Bester Weg für [remaining] Punkte mit höchstens [darts] Darts.
   /// `null`, wenn kein Finish möglich ist.
-  static List<Segment>? suggest(int remaining, {int darts = 3, bool doubleOut = true}) {
+  ///
+  /// [masterOut] erlaubt zusätzlich Triples als letzten Dart (Master-Out)
+  /// und hat Vorrang vor [doubleOut].
+  static List<Segment>? suggest(int remaining, {int darts = 3, bool doubleOut = true, bool masterOut = false}) {
     if (remaining <= 0 || darts <= 0) return null;
-    if (doubleOut && remaining < 2) return null;
+    if ((doubleOut || masterOut) && remaining < 2) return null;
     final d = darts > 3 ? 3 : darts;
-    return _cache.putIfAbsent((remaining, d, doubleOut), () => _search(remaining, d, doubleOut));
+    return _cache.putIfAbsent(
+      (remaining, d, doubleOut, masterOut),
+      () => _search(remaining, d, doubleOut: doubleOut, masterOut: masterOut),
+    );
   }
 
   /// Kann [remaining] mit [darts] Darts gecheckt werden?
-  static bool isCheckout(int remaining, {int darts = 3, bool doubleOut = true}) =>
-      suggest(remaining, darts: darts, doubleOut: doubleOut) != null;
+  static bool isCheckout(int remaining, {int darts = 3, bool doubleOut = true, bool masterOut = false}) =>
+      suggest(remaining, darts: darts, doubleOut: doubleOut, masterOut: masterOut) != null;
 
   /// Alle checkbaren Werte bis 170 (für Zufallsziele).
   static List<int> checkoutTargets({int min = 2, int max = maxCheckout, bool doubleOut = true}) => [
@@ -40,15 +46,15 @@ class CheckoutCalculator {
           if (isCheckout(v, doubleOut: doubleOut)) v,
       ];
 
-  static List<Segment>? _search(int remaining, int maxDarts, bool doubleOut) {
-    bool finisher(Segment s) => doubleOut ? s.isDouble : true;
+  static List<Segment>? _search(int remaining, int maxDarts, {required bool doubleOut, required bool masterOut}) {
+    bool finisher(Segment s) => masterOut ? s.isDouble || s.isTriple : (doubleOut ? s.isDouble : true);
     final finishers = _all.where(finisher).toList();
 
     for (var n = 1; n <= maxDarts; n++) {
       List<Segment>? best;
       var bestCost = double.infinity;
       void consider(List<Segment> setups, Segment last) {
-        final cost = setups.fold<double>(0, (c, s) => c + _setupCost(s)) + _finishCost(last, doubleOut);
+        final cost = setups.fold<double>(0, (c, s) => c + _setupCost(s)) + _finishCost(last, doubleOut: doubleOut, masterOut: masterOut);
         if (cost < bestCost) {
           bestCost = cost;
           best = [...setups, last];
@@ -112,8 +118,10 @@ class CheckoutCalculator {
     };
   }
 
-  static double _finishCost(Segment s, bool doubleOut) {
-    if (!doubleOut) return s.isTriple ? 1 : 0;
+  static double _finishCost(Segment s, {required bool doubleOut, bool masterOut = false}) {
+    // Master-Out: Doubles wie beim Double-Out, Triples etwas teurer.
+    if (masterOut && s.isTriple) return 1.5 + (20 - s.number) * 0.05;
+    if (!doubleOut && !masterOut) return s.isTriple ? 1 : 0;
     if (s.bed == Bed.innerBull) return 2.5;
     return switch (s.number) {
       20 => 0,
