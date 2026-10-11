@@ -1424,5 +1424,42 @@
       }
     }
   },
-  "cpuTooFew": "Für ein Turnier braucht es 15 Gegner; fehlende werden aus der Standardliste ergänzt."
+  "cpuTooFew": "Für ein Turnier braucht es 15 Gegner; fehlende werden aus der Standardliste ergänzt.",
+  "autoPlanTitle": "Plan für mich",
+  "autoPlanCardTitle": "Plan für mich erstellen",
+  "autoPlanCardText": "Aus deiner Statistik: mehr Training für das, was noch nicht sitzt, z. B. dein schwächstes Doppel.",
+  "autoPlanLength": "Dauer",
+  "autoPlanMinutes": "{minutes} min",
+  "@autoPlanMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "autoPlanAbout": "ca. {minutes} min",
+  "@autoPlanAbout": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "autoPlanFocus": "Schwerpunkte",
+  "autoPlanGoal": "Ziel: {goal}",
+  "@autoPlanGoal": {
+    "placeholders": {
+      "goal": {
+        "type": "String"
+      }
+    }
+  },
+  "autoPlanRoleWarmup": "Aufwärmen",
+  "autoPlanRoleFocus": "Schwerpunkt",
+  "autoPlanRoleFinish": "Abschluss",
+  "autoPlanRegenerate": "Neu vorschlagen",
+  "autoPlanSave": "Als eigenen Plan speichern",
+  "autoPlanSaved": "Als eigener Plan gespeichert. Über „Bearbeiten“ kannst du ihn anpassen.",
+  "autoPlanHint": "Lass dir aus diesen Zahlen einen Trainingsplan vorschlagen.",
+  "autoPlanHintAction": "Plan für mich"
 }
