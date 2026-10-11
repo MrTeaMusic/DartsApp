@@ -827,5 +827,119 @@
         "type": "String"
       }
     }
-  }
+  },
+  "plansTitle": "Trainingspläne",
+  "plansEntryText": "Mehrere Spiele hintereinander: feste Pläne oder eigene.",
+  "plansBuiltin": "Feste Pläne",
+  "plansCustom": "Eigene Pläne",
+  "plansCustomEmpty": "Noch keine eigenen Pläne. Lege einen an oder kopiere einen festen Plan.",
+  "planNew": "Neuer Plan",
+  "planStepCount": "{count, plural, =1{1 Schritt} other{{count} Schritte}}",
+  "@planStepCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "planStart": "Plan starten",
+  "planResume": "Fortsetzen (Schritt {step} von {total})",
+  "@planResume": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "planRestart": "Neu starten",
+  "planEdit": "Bearbeiten",
+  "planDuplicate": "Als eigenen Plan kopieren",
+  "planCopyName": "{name} (Kopie)",
+  "@planCopyName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "planDelete": "Löschen",
+  "planDeleteTitle": "Plan löschen?",
+  "planDeleteText": "„{name}“ wird gelöscht, auch auf den anderen Geräten.",
+  "@planDeleteText": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "planName": "Name",
+  "planDescription": "Beschreibung (optional)",
+  "planSteps": "Schritte",
+  "planAddStep": "Schritt hinzufügen",
+  "planSave": "Speichern",
+  "planNameMissing": "Bitte einen Namen eingeben.",
+  "planStepsMissing": "Mindestens einen Schritt hinzufügen.",
+  "planEditTitle": "Plan bearbeiten",
+  "planStepTitle": "Schritt",
+  "planStepApply": "Übernehmen",
+  "planStepGame": "Spiel",
+  "planStepNote": "Hinweis (optional)",
+  "planStepDefaults": "Standardeinstellungen",
+  "planStepUnavailable": "Nicht verfügbar",
+  "planStepUnavailableText": "Das Spiel „{id}“ gibt es in dieser App-Version nicht. Der Schritt wird beim Spielen übersprungen.",
+  "@planStepUnavailableText": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "planSomeUnavailable": "{count, plural, =1{1 Schritt ist in dieser App-Version nicht verfügbar.} other{{count} Schritte sind in dieser App-Version nicht verfügbar.}}",
+  "@planSomeUnavailable": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "planMoveUp": "Nach oben",
+  "planMoveDown": "Nach unten",
+  "planRemoveStep": "Schritt entfernen",
+  "planLabel": "Trainingsplan",
+  "planProgress": "Schritt {step} von {total}",
+  "@planProgress": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "planNextStep": "Nächster Schritt",
+  "planFinish": "Plan abschließen",
+  "planSummaryTitle": "Plan-Ergebnis",
+  "planSummaryPlayed": "{done} von {total} Schritten gespielt",
+  "@planSummaryPlayed": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "planStatusDone": "gespielt",
+  "planStatusAborted": "abgebrochen",
+  "planStatusUnavailable": "nicht verfügbar",
+  "planStatusOpen": "offen",
+  "planBackToPlans": "Zu den Plänen",
+  "planNotFound": "Diesen Plan gibt es nicht mehr.",
+  "optOn": "an",
+  "optOff": "aus"
 }
