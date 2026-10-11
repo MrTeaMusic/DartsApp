@@ -26,13 +26,14 @@ Future<void> tapVisible(WidgetTester tester, Finder f) async {
 Future<void> addStep(WidgetTester tester, String gameId, {int minus = 0}) async {
   await tapVisible(tester, find.byKey(const Key('plan-add-step')));
   await tester.pumpAndSettle();
-  await tester.tap(find.byKey(Key('step-game-$gameId')));
+  // Mit vielen Spielen liegen Chips und Einstellungen außerhalb des Fensters.
+  await tapVisible(tester, find.byKey(Key('step-game-$gameId')));
   await tester.pumpAndSettle();
   for (var i = 0; i < minus; i++) {
-    await tester.tap(find.byKey(const Key('opt-visits-minus')));
+    await tapVisible(tester, find.byKey(const Key('opt-visits-minus')));
     await tester.pump();
   }
-  await tester.tap(find.byKey(const Key('step-save')));
+  await tapVisible(tester, find.byKey(const Key('step-save')));
   await tester.pumpAndSettle();
 }
 
