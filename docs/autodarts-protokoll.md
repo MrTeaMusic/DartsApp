@@ -54,6 +54,24 @@ Mitschnitten vom echten Board abgeglichen ist.
 Achtung: Diese Antworten enthalten den Board-API-Key. DartLab ruft sie deshalb nicht ab und
 loggt sie nicht.
 
+## Bestätigt am echten Board (Board Manager 2.0.2, Windows, 11.10.2026)
+
+Mitschnitt: `test/fixtures/autodarts/board-manager-2.0.2-windows.jsonl` (läuft als Regressionstest).
+
+* **Würfe kommen lokal an.** Der WebSocket `/api/events` schickt bei jedem Dart und beim Takeout
+  eine `state`-Nachricht mit der vollständigen `throws`-Liste. Die Cloud wird dafür nicht gebraucht.
+* Ablauf einer Aufnahme: `Throw detected` (numThrows 1, 2, 3; beim dritten `status: "Takeout"`),
+  dann `Takeout started` / `Takeout in progress`, dann `Takeout finished` mit `numThrows: 0`.
+* **Ohne Dart im Board fehlt das Feld `throws` ganz** (nicht leere Liste). Das ist normal.
+* Ohne Änderung am Board sendet der WebSocket nichts. Stille heißt nicht Fehler.
+* Jeder Wurf hat `segment` (`name`, `number`, `bed`, `multiplier`), `coords` (`x`, `y`) und `bouncer`.
+* Daneben: `bed: "Outside"`, `multiplier: 0`, `name` z. B. `"M12"` (Zahl des Sektors). DartLab wertet das als Fehlwurf.
+* `bed` unterscheidet `SingleInner` und `SingleOuter`.
+* **Koordinaten bestätigt:** Mitte (0, 0), Radius 1 = Außenkante Double-Ring, y zeigt zur 20,
+  x nach rechts (T5 und S12 haben negatives x). 6 von 6 Darts passen, Kalibrierung nicht nötig.
+
+Noch nicht gesehen: Bull/25, Doubles, eine Korrektur am Board, ein Dart mit `bouncer: true`.
+
 ## Wie DartLab das umsetzt (`AutodartsLocalSource`)
 
 1. WebSocket `/api/events` öffnen, `state`-Nachrichten auswerten.
@@ -66,22 +84,18 @@ loggt sie nicht.
 
 ## Offene Punkte (am echten Board klären)
 
-1. **Kommen bei deiner Board-Manager-Version überhaupt Würfe lokal an?** Die ioBroker-Doku sagt, ab
-   Autodarts v2.0 liefere die lokale API keine `throws` mehr (nur noch Cloud). Die
-   Home-Assistant-Integration von Dennis-Otto wertet dagegen lokal Würfe von Board Manager 2.0.x aus.
-   Widersprüchlich, also unbedingt testen (Ben nutzt v2.0.2). Der Verbindungstest zeigt das direkt
-   unter „Würfe im Status enthalten“. Falls lokal nichts kommt, wäre eine Cloud-Anbindung der Weg;
-   die ist noch nicht gebaut.
-2. Schickt der WebSocket bei jeder Änderung ein `state`, oder nur gelegentlich? Falls nur
-   gelegentlich, zusätzlich pollen.
-3. Koordinaten: Maßstab und Ausrichtung wie oben beschrieben? Die Mitschnitt-Prüfung misst das und
-   schlägt bei Bedarf eine Kalibrierung vor (siehe unten).
+1. ~~Kommen bei deiner Board-Manager-Version überhaupt Würfe lokal an?~~ **Ja, bei 2.0.2 bestätigt**
+   (siehe oben). Die ioBroker-Doku behauptet für v2.0+ das Gegenteil; das trifft hier nicht zu.
+2. ~~Schickt der WebSocket bei jeder Änderung ein `state`?~~ **Ja**, bei jedem Dart und Takeout.
+3. ~~Koordinaten: Maßstab und Ausrichtung?~~ **Bestätigt**, keine Kalibrierung nötig. Die
+   Kalibrierung bleibt für andere Board-Manager-Versionen.
 4. Wie sieht eine **Korrektur** am Board aus (Segment eines Darts ändert sich, oder Liste wird neu
    aufgebaut)? DartLab meldet derzeit `DartCorrected`, wenn sich das Feld an einer Position ändert.
 5. Wie heißen Bull und Single Bull genau (`bed`, `name`)? DartLab verlässt sich primär auf
    `number` (25) und `multiplier` (1/2).
-6. Verlangt der WebSocket bei manchen Versionen eine Anmeldung (HTTP 401/403)?
+6. Verlangt der WebSocket bei manchen Versionen eine Anmeldung (HTTP 401/403)? Bei 2.0.2 nicht.
 7. Passen die Befehlspfade (`/api/reset` usw.) zu deiner Version?
+8. Was bedeutet `bouncer: true` (abgeprallter Dart)? DartLab ignoriert das Feld derzeit und zählt das gemeldete Feld.
 
 ## Werkzeuge in DartLab
 

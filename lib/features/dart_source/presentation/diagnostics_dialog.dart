@@ -29,8 +29,10 @@ extension DiagnosticTexts on AppLocalizations {
         CheckReason.httpStatus => diagHttpStatus(c.detail),
         CheckReason.notJson => diagNotJson,
         CheckReason.missingThrows => diagMissingThrows,
+        CheckReason.boardEmpty => diagBoardEmpty,
         CheckReason.stopped => diagStopped,
         CheckReason.noMessages => diagNoMessages,
+        CheckReason.quiet => diagQuiet,
         CheckReason.other => diagOther(c.detail),
       };
 }

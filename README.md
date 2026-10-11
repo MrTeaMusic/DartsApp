@@ -16,7 +16,7 @@ Würfe kommen live vom Autodarts-Board, aus einem Simulator oder per manueller E
 | `DartSource`-Schnittstelle | fertig |
 | `SimulatorSource` (klickbares Board, optionale Streuung) | fertig |
 | `ManualSource` (Tastenfeld oder Board antippen) | fertig |
-| `AutodartsLocalSource` (WebSocket, HTTP-Fallback, Wiederverbindung, Status) | gebaut, **nicht am echten Board getestet** |
+| `AutodartsLocalSource` (WebSocket, HTTP-Fallback, Wiederverbindung, Status) | Würfe, Takeout und Koordinaten am echten Board bestätigt (BM 2.0.2); Bull, Korrektur und Bouncer noch offen |
 | Debug-Bildschirm mit Live-Rohdaten und Datei-Log | fertig |
 | Animiertes Dartboard (CustomPainter, Treffer, Aufleuchten, Heatmap-Overlay) | fertig |
 | Spiel-Engine (Aufnahmen, Rückgängig, Korrektur, Wiederholbarkeit per Seed) | fertig |
@@ -27,7 +27,7 @@ Würfe kommen live vom Autodarts-Board, aus einem Simulator oder per manueller E
 | Ziele und Serien | fertig |
 | Mehrere Profile | fertig |
 | Export/Import (JSON-Backup, CSV) | fertig |
-| Autodarts-Verbindungstest, Mitschnitt-Prüfung, Koordinaten-Kalibrierung | fertig, **Mapping weiter ungeprüft am echten Board** |
+| Autodarts-Verbindungstest, Mitschnitt-Prüfung, Koordinaten-Kalibrierung | fertig |
 | Build-Anleitung, native Builds in GitHub Actions | fertig |
 
 Was über das Autodarts-Protokoll bekannt und was offen ist: [docs/autodarts-protokoll.md](docs/autodarts-protokoll.md).
@@ -106,4 +106,4 @@ Migrationsschritt in `app_database.dart` ergänzen.
 ### Board-Koordinaten
 
 `BoardPoint(x, y)`: Mitte (0, 0), Radius 1.0 = Außenkante Double-Ring (170 mm), y zeigt zur 20.
-Das ist die Konvention, die Community-Projekte für Autodarts beschreiben (noch zu bestätigen).
+Das ist die Konvention von Autodarts, am echten Board bestätigt (Board Manager 2.0.2).

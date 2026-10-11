@@ -99,7 +99,7 @@
   "single": "Single",
   "double": "Double",
   "triple": "Triple",
-  "autodartsUnverified": "Hinweis: Das Autodarts-Protokoll ist nicht offiziell dokumentiert. Das Mapping ist noch nicht am echten Board getestet.",
+  "autodartsUnverified": "Hinweis: Das Autodarts-Protokoll ist nicht offiziell dokumentiert. Getestet mit Board Manager 2.0.2. Bei Problemen hilft „Verbindung testen“.",
   "statsTitle": "Statistik",
   "statsEmptyTitle": "Noch keine Daten",
   "statsEmptyText": "Spiel ein Training in diesem Zeitraum, dann erscheinen hier deine Werte.",
@@ -517,5 +517,7 @@
         "type": "String"
       }
     }
-  }
+  },
+  "diagBoardEmpty": "Gerade steckt kein Dart, deshalb schickt der Board Manager keine Wurfliste. Einen Dart werfen und erneut testen.",
+  "diagQuiet": "Verbunden. Der Board Manager sendet nur, wenn sich am Board etwas ändert."
 }
