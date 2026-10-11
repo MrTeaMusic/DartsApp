@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/dart_source/domain/coordinate_calibration.dart';
 import '../../features/dart_source/domain/dart_event.dart';
+import '../../features/sync/domain/sync_role.dart';
 
 /// Einstellungen der App. Unveränderlich, Änderungen über [SettingsNotifier].
 @immutable
@@ -17,6 +18,10 @@ class AppSettings {
     this.hapticsEnabled = true,
     this.logRawToFile = false,
     this.coordCalibration = CoordinateCalibration.identity,
+    this.syncRole = SyncRole.off,
+    this.syncHost = '',
+    this.syncPort = defaultSyncPort,
+    this.syncKey = '',
   });
 
   final ThemeMode themeMode;
@@ -32,6 +37,13 @@ class AppSettings {
   /// Umrechnung der Autodarts-Koordinaten (Standard: keine).
   final CoordinateCalibration coordCalibration;
 
+  /// Abgleich im Heimnetz: Rolle, Adresse des Hubs (nur Client), Port und
+  /// Kopplungscode (beide Seiten gleich).
+  final SyncRole syncRole;
+  final String syncHost;
+  final int syncPort;
+  final String syncKey;
+
   AppSettings copyWith({
     ThemeMode? themeMode,
     DartSourceKind? sourceKind,
@@ -41,6 +53,10 @@ class AppSettings {
     bool? hapticsEnabled,
     bool? logRawToFile,
     CoordinateCalibration? coordCalibration,
+    SyncRole? syncRole,
+    String? syncHost,
+    int? syncPort,
+    String? syncKey,
   }) =>
       AppSettings(
         themeMode: themeMode ?? this.themeMode,
@@ -51,6 +67,10 @@ class AppSettings {
         hapticsEnabled: hapticsEnabled ?? this.hapticsEnabled,
         logRawToFile: logRawToFile ?? this.logRawToFile,
         coordCalibration: coordCalibration ?? this.coordCalibration,
+        syncRole: syncRole ?? this.syncRole,
+        syncHost: syncHost ?? this.syncHost,
+        syncPort: syncPort ?? this.syncPort,
+        syncKey: syncKey ?? this.syncKey,
       );
 
   static const _kTheme = 'settings.themeMode';
@@ -61,6 +81,10 @@ class AppSettings {
   static const _kHaptics = 'settings.haptics';
   static const _kLogFile = 'settings.logRawToFile';
   static const _kCalibration = 'settings.coordCalibration';
+  static const _kSyncRole = 'sync.role';
+  static const _kSyncHost = 'sync.host';
+  static const _kSyncPort = 'sync.port';
+  static const _kSyncKey = 'sync.key';
 
   static AppSettings load(SharedPreferences prefs) {
     const d = AppSettings();
@@ -75,6 +99,10 @@ class AppSettings {
       hapticsEnabled: prefs.getBool(_kHaptics) ?? d.hapticsEnabled,
       logRawToFile: prefs.getBool(_kLogFile) ?? d.logRawToFile,
       coordCalibration: CoordinateCalibration.decode(prefs.getString(_kCalibration)),
+      syncRole: byName(SyncRole.values, prefs.getString(_kSyncRole), d.syncRole),
+      syncHost: prefs.getString(_kSyncHost) ?? d.syncHost,
+      syncPort: prefs.getInt(_kSyncPort) ?? d.syncPort,
+      syncKey: prefs.getString(_kSyncKey) ?? d.syncKey,
     );
   }
 
@@ -87,6 +115,10 @@ class AppSettings {
     await prefs.setBool(_kHaptics, hapticsEnabled);
     await prefs.setBool(_kLogFile, logRawToFile);
     await prefs.setString(_kCalibration, coordCalibration.encode());
+    await prefs.setString(_kSyncRole, syncRole.name);
+    await prefs.setString(_kSyncHost, syncHost);
+    await prefs.setInt(_kSyncPort, syncPort);
+    await prefs.setString(_kSyncKey, syncKey);
   }
 }
 

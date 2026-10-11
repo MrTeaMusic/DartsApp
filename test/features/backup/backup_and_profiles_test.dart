@@ -8,9 +8,10 @@ import 'package:dartlab/features/games/domain/engine/game_display.dart';
 import 'package:dartlab/features/profiles/data/profile_repository.dart';
 import 'package:dartlab/features/stats/data/stats_repository.dart';
 import 'package:dartlab/features/stats/domain/goals.dart';
-import 'package:drift/drift.dart' show driftRuntimeOptions;
+import 'package:drift/drift.dart' show Value, driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sqlite3/sqlite3.dart';
 
 import '../../helpers/darts.dart';
 
@@ -168,5 +169,72 @@ void main() {
     expect((await v2.select(v2.sessions).get()).length, 1);
     await StatsRepository(v2).addGoal(player, GoalKind.streakDays, 7);
     expect((await v2.select(v2.goals).get()).single.kind, 'streakDays');
+  });
+
+  test('Migration von Version 2: eindeutige IDs, Standardprofil mit fester ID', () async {
+    final dir = await Directory.systemTemp.createTemp('dartlab');
+    addTearDown(() => dir.delete(recursive: true));
+    final file = File('${dir.path}/db.sqlite');
+
+    // Schema von Version 2 (Phase 4), von Hand angelegt.
+    final raw = sqlite3.open(file.path);
+    raw.execute("""
+      CREATE TABLE players (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL,
+        is_default INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL);
+      CREATE TABLE sessions (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, player_id INTEGER NOT NULL REFERENCES players (id),
+        game_id TEXT NOT NULL, config_json TEXT NOT NULL, seed INTEGER NOT NULL, started_at INTEGER NOT NULL,
+        ended_at INTEGER NULL, finished INTEGER NOT NULL DEFAULT 0, result_json TEXT NULL, dart_count INTEGER NOT NULL DEFAULT 0);
+      CREATE TABLE throws (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, session_id INTEGER NOT NULL REFERENCES sessions (id) ON DELETE CASCADE,
+        player_id INTEGER NOT NULL REFERENCES players (id), game_id TEXT NOT NULL, seq INTEGER NOT NULL, visit_index INTEGER NOT NULL,
+        counted INTEGER NOT NULL DEFAULT 1, segment TEXT NOT NULL, number INTEGER NOT NULL, multiplier INTEGER NOT NULL, bed TEXT NOT NULL,
+        score INTEGER NOT NULL, x REAL NULL, y REAL NULL, source TEXT NOT NULL, timestamp INTEGER NOT NULL, raw_json TEXT NULL);
+      CREATE TABLE goals (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, player_id INTEGER NOT NULL REFERENCES players (id) ON DELETE CASCADE,
+        kind TEXT NOT NULL, target REAL NOT NULL, created_at INTEGER NOT NULL);
+      INSERT INTO players (name, is_default, created_at) VALUES ('Lisa', 0, 1760000000), ('Ich', 1, 1760000000);
+      INSERT INTO sessions (player_id, game_id, config_json, seed, started_at, ended_at) VALUES (2, 'checkout', '{}', 1, 1760000100, 1760000200);
+      INSERT INTO sessions (player_id, game_id, config_json, seed, started_at, ended_at) VALUES (1, 'checkout', '{}', 2, 1760000300, 1760000400);
+      INSERT INTO goals (player_id, kind, target, created_at) VALUES (2, 'streakDays', 7, 1760000000);
+      PRAGMA user_version = 2;
+    """);
+    raw.close();
+
+    final db = AppDatabase(NativeDatabase(file));
+    addTearDown(db.close);
+    final players = await db.select(db.players).get();
+    expect(players.firstWhere((p) => p.isDefault).uid, defaultPlayerUid);
+    expect(players.firstWhere((p) => !p.isDefault).uid, hasLength(32));
+    final sessions = await db.select(db.sessions).get();
+    expect(sessions.map((s) => s.uid).toSet(), hasLength(2));
+    final goal = (await db.select(db.goals).get()).single;
+    expect(goal.uid, hasLength(32));
+    expect(goal.deletedAt, isNull);
+    // Neue Zeilen bekommen eigene IDs, die Eindeutigkeit wird erzwungen.
+    final id = await ProfileRepository(db).create('Max');
+    final max = await (db.select(db.players)..where((p) => p.id.equals(id))).getSingle();
+    expect(max.uid, isNot(anyOf(defaultPlayerUid, players.first.uid)));
+    expect(
+      () => db.into(db.players).insert(PlayersCompanion.insert(name: 'X', createdAt: DateTime.now(), uid: Value(max.uid))),
+      throwsA(anything),
+    );
+  });
+
+  test('Profil löschen hinterlässt eine Markierung, Standardprofil bleibt eindeutig', () async {
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+    final profiles = ProfileRepository(db);
+    final me = await profiles.resolve(null);
+    final lisa = await profiles.create('Lisa');
+    expect(await profiles.delete(me), isTrue);
+    expect((await profiles.players()).map((p) => p.name), ['Lisa']);
+    final all = await db.select(db.players).get();
+    final gone = all.firstWhere((p) => p.id == me);
+    expect(gone.deletedAt, isNotNull);
+    expect(gone.uid, defaultPlayerUid);
+    expect((await profiles.players()).single.isDefault, isTrue);
+    expect(await profiles.delete(lisa), isFalse, reason: 'letztes aktives Profil');
+    // Ein neues Standardprofil darf die vergebene feste ID nicht noch einmal nehmen.
+    final again = await db.insertDefaultPlayer();
+    final row = await (db.select(db.players)..where((p) => p.id.equals(again))).getSingle();
+    expect(row.uid, isNot(defaultPlayerUid));
   });
 }
