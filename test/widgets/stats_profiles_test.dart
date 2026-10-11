@@ -128,6 +128,9 @@ void main() {
 
     await tester.tap(find.byKey(const Key('stats-game')));
     await tester.pumpAndSettle();
+    // Mit vielen Spielen ist die Liste länger als das Fenster.
+    await tester.ensureVisible(find.text("Bob's 27").last);
+    await tester.pumpAndSettle();
     await tester.tap(find.text("Bob's 27").last);
     await tester.pumpAndSettle();
     // Bob's 27 hat keinen Average, aber eine Double-Quote.
@@ -142,6 +145,9 @@ void main() {
     expect(tester.widget<ChoiceChip>(find.byKey(const Key('metric-hits'))).selected, isTrue);
 
     await tester.tap(find.byKey(const Key('stats-game')));
+    await tester.pumpAndSettle();
+    // Mit vielen Spielen ist die Liste länger als das Fenster.
+    await tester.ensureVisible(find.text('Alle Spiele').last);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Alle Spiele').last);
     await tester.pumpAndSettle();
