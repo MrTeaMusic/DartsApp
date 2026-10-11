@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../design/dart_colors.dart';
 import '../design/tokens.dart';
 import '../l10n.dart';
+import 'fullscreen_button.dart';
 
 /// Hülle um alle Hauptbereiche: Seitenleiste auf Desktop/iPad quer,
 /// Bottom-Navigation auf schmalen Geräten.
@@ -53,6 +54,12 @@ class AdaptiveScaffold extends StatelessWidget {
             leading: Padding(
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.l),
               child: _Logo(extended: extended),
+            ),
+            trailing: const Expanded(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(padding: EdgeInsets.only(bottom: AppSpacing.l), child: FullscreenButton()),
+              ),
             ),
             destinations: [
               for (final (icon, selected, label) in destinations)

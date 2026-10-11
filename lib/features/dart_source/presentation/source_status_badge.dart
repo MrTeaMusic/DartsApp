@@ -26,7 +26,10 @@ extension DartSourceKindLabel on DartSourceKind {
 
 /// Zeigt Quelle und Verbindungsstatus. Tippen öffnet die Debug-Ansicht.
 class SourceStatusBadge extends ConsumerWidget {
-  const SourceStatusBadge({super.key});
+  const SourceStatusBadge({super.key, this.compact = false});
+
+  /// Nur der Status ohne Quelle, für schmale Kopfzeilen.
+  final bool compact;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -37,7 +40,7 @@ class SourceStatusBadge extends ConsumerWidget {
     final (label, color, pulsing) = describe(status, l10n, colors);
     return StatusPill(
       key: const Key('source-status'),
-      label: '${source.kind.label(l10n)} · $label',
+      label: compact ? label : '${source.kind.label(l10n)} · $label',
       color: color,
       pulsing: pulsing,
       onTap: () => context.go(Routes.debug),

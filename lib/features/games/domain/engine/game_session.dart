@@ -94,6 +94,19 @@ class GameSession {
     return true;
   }
 
+  /// Ersetzt den Dart an Position [dartIndex] aller Darts dieses Spiels
+  /// (wie [records]) und rechnet das Spiel neu durch.
+  bool correctAt(int dartIndex, DartThrow dart) {
+    final dartPositions = [
+      for (var i = 0; i < _inputs.length; i++)
+        if (_inputs[i] is DartInput) i,
+    ];
+    if (dartIndex < 0 || dartIndex >= dartPositions.length) return false;
+    _inputs[dartPositions[dartIndex]] = DartInput(dart);
+    _replay();
+    return true;
+  }
+
   void _replay() {
     final game = _fresh();
     _records.clear();

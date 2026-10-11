@@ -6,10 +6,14 @@ import 'tokens.dart';
 /// Typografie: große, gut lesbare Zahlen mit festen Ziffernbreiten,
 /// damit Scores aus 2–3 m Abstand lesbar sind und nicht "springen".
 abstract final class AppTypography {
+  /// Mitgelieferte Schrift (assets/fonts), damit alle Plattformen gleich aussehen.
+  static const String family = 'Inter';
+
   static const List<FontFeature> tabular = [FontFeature.tabularFigures()];
 
   /// Riesige Zahl, z. B. Restpunkte in der Spielansicht.
   static const TextStyle scoreHuge = TextStyle(
+    fontFamily: family,
     fontSize: 112,
     height: 1.0,
     fontWeight: FontWeight.w800,
@@ -18,6 +22,7 @@ abstract final class AppTypography {
   );
 
   static const TextStyle scoreLarge = TextStyle(
+    fontFamily: family,
     fontSize: 64,
     height: 1.05,
     fontWeight: FontWeight.w800,
@@ -26,6 +31,7 @@ abstract final class AppTypography {
   );
 
   static const TextStyle scoreMedium = TextStyle(
+    fontFamily: family,
     fontSize: 36,
     height: 1.1,
     fontWeight: FontWeight.w700,
@@ -111,11 +117,12 @@ abstract final class AppTheme {
       outline: outline,
       outlineVariant: outline,
     );
-    final textTheme = AppTypography.textTheme(text, muted);
+    final textTheme = AppTypography.textTheme(text, muted).apply(fontFamily: AppTypography.family);
     final shape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.m));
 
     return ThemeData(
       useMaterial3: true,
+      fontFamily: AppTypography.family,
       brightness: brightness,
       colorScheme: scheme,
       scaffoldBackgroundColor: background,

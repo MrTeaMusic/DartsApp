@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/design/app_theme.dart';
 import 'core/feedback.dart';
+import 'core/fullscreen.dart';
 import 'core/l10n.dart';
 import 'core/router/app_router.dart';
 import 'core/settings/app_settings.dart';
@@ -33,6 +35,7 @@ class DartLabApp extends ConsumerWidget {
       darkTheme: AppTheme.dark(),
       themeMode: themeMode,
       routerConfig: router,
+      builder: (context, child) => _FullscreenShortcuts(child: child ?? const SizedBox()),
       locale: const Locale('de'),
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const [
@@ -41,6 +44,25 @@ class DartLabApp extends ConsumerWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
+    );
+  }
+}
+
+/// F11 schaltet das Vollbild um, Esc beendet es.
+class _FullscreenShortcuts extends ConsumerWidget {
+  const _FullscreenShortcuts({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final fullscreen = ref.watch(fullscreenProvider);
+    final notifier = ref.read(fullscreenProvider.notifier);
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.f11): notifier.toggle,
+        if (fullscreen) const SingleActivator(LogicalKeyboardKey.escape): () => notifier.set(false),
+      },
+      child: Focus(autofocus: true, child: child),
     );
   }
 }
