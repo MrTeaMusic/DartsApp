@@ -26,14 +26,13 @@
   },
   "statusError": "Fehler",
   "homeGreeting": "Bereit fürs Training?",
-  "homeSubtitle": "Teste das Board im Simulator oder verbinde dein Autodarts-Board.",
+  "homeSubtitle": "Wähle ein Trainingsspiel oder wirf dich auf dem Board ein.",
   "homeOpenBoard": "Board öffnen",
   "homeOpenGames": "Trainingsspiele",
   "homeSession": "Diese Sitzung",
   "homeSessionDarts": "Darts",
   "homeSessionAverage": "3-Dart-Average",
   "homeLastDart": "Letzter Dart",
-  "homePhaseNote": "Phase 5: Verbindungstest, Mitschnitt-Prüfung und Koordinaten-Kalibrierung für Autodarts sind da. Die Build-Anleitung liegt im Ordner docs.",
   "gamesTitle": "Training",
   "gamesPhase": "Phase {phase}",
   "@gamesPhase": {
@@ -723,5 +722,69 @@
   "planBackToPlans": "Zu den Plänen",
   "planNotFound": "Diesen Plan gibt es nicht mehr.",
   "optOn": "an",
-  "optOff": "aus"
+  "optOff": "aus",
+  "visitLabel": "Aufnahme",
+  "visitRoute": "Checkout-Weg",
+  "fixOpen": "Würfe korrigieren",
+  "fixHint": "Einen Dart antippen und das richtige Feld wählen. Das Spiel wird neu berechnet.",
+  "fixTitle": "Dart {number} korrigieren",
+  "@fixTitle": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "fixTitleAny": "Dart korrigieren",
+  "fixCurrent": "Erkannt: {segment}",
+  "@fixCurrent": {
+    "placeholders": {
+      "segment": {
+        "type": "String"
+      }
+    }
+  },
+  "fixVisit": "Aufn. {number}",
+  "@fixVisit": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "fullscreenEnter": "Vollbild (F11)",
+  "fullscreenExit": "Vollbild beenden (Esc)",
+  "homeHello": "Hallo, {name}",
+  "@homeHello": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeContinue": "Weiter: {game}",
+  "@homeContinue": {
+    "placeholders": {
+      "game": {
+        "type": "String"
+      }
+    }
+  },
+  "homeAllStats": "Alle Statistiken",
+  "homeToday": "Heute, {time}",
+  "@homeToday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "homeYesterday": "Gestern, {time}",
+  "@homeYesterday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -23,6 +23,8 @@ class DartColors extends ThemeExtension<DartColors> {
     required this.surfaceHigh,
     required this.heatCold,
     required this.heatHot,
+    required this.tripleHit,
+    required this.doubleHit,
   });
 
   final Color boardBlack;
@@ -42,6 +44,12 @@ class DartColors extends ThemeExtension<DartColors> {
   final Color heatCold;
   final Color heatHot;
 
+  /// Treffer im Triple-Ring (lila, damit es nicht wie ein Fehler aussieht).
+  final Color tripleHit;
+
+  /// Treffer im Double-Ring.
+  final Color doubleHit;
+
   static const DartColors dark = DartColors(
     boardBlack: AppPalette.boardBlack,
     boardCream: AppPalette.boardCream,
@@ -59,6 +67,8 @@ class DartColors extends ThemeExtension<DartColors> {
     surfaceHigh: AppPalette.darkSurfaceHigh,
     heatCold: Color(0xFF3D8BEF),
     heatHot: Color(0xFFFF4D3D),
+    tripleHit: Color(0xFFB18CFF),
+    doubleHit: Color(0xFF35D69C),
   );
 
   static const DartColors light = DartColors(
@@ -78,6 +88,8 @@ class DartColors extends ThemeExtension<DartColors> {
     surfaceHigh: AppPalette.lightSurfaceHigh,
     heatCold: Color(0xFF2A78D6),
     heatHot: Color(0xFFE5392B),
+    tripleHit: Color(0xFF7A4FE0),
+    doubleHit: Color(0xFF128A5F),
   );
 
   @override
@@ -98,6 +110,8 @@ class DartColors extends ThemeExtension<DartColors> {
         surfaceHigh: surfaceHigh,
         heatCold: heatCold,
         heatHot: heatHot,
+        tripleHit: tripleHit,
+        doubleHit: doubleHit,
       );
 
   @override
@@ -121,6 +135,8 @@ class DartColors extends ThemeExtension<DartColors> {
       surfaceHigh: l(surfaceHigh, other.surfaceHigh),
       heatCold: l(heatCold, other.heatCold),
       heatHot: l(heatHot, other.heatHot),
+      tripleHit: l(tripleHit, other.tripleHit),
+      doubleHit: l(doubleHit, other.doubleHit),
     );
   }
 }

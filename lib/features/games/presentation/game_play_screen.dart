@@ -18,9 +18,9 @@ import '../../dart_source/presentation/dart_source_providers.dart';
 import '../../dart_source/presentation/source_status_badge.dart';
 import '../../plans/presentation/plan_run_panel.dart';
 import '../../simulator/presentation/manual_keypad.dart';
-import '../../board/domain/segment.dart';
+import '../../simulator/presentation/segment_picker.dart';
+import '../../../core/widgets/fullscreen_button.dart';
 import '../domain/engine/game_display.dart';
-import '../domain/games/checkout/checkout_training.dart';
 import 'active_game_controller.dart';
 import 'game_texts.dart';
 
@@ -97,8 +97,11 @@ class GamePlayScreen extends ConsumerWidget {
             onPressed: () => _leave(context, ref),
           ),
           title: Text(l10n.gameTitle(active.gameId)),
-          actions: const [
-            Padding(padding: EdgeInsets.only(right: AppSpacing.l), child: SourceStatusBadge()),
+          actions: [
+            SourceStatusBadge(compact: MediaQuery.sizeOf(context).width < 600),
+            const SizedBox(width: AppSpacing.xs),
+            const FullscreenButton(),
+            const SizedBox(width: AppSpacing.s),
           ],
         ),
         body: SafeArea(
@@ -150,13 +153,17 @@ class _Headline extends StatelessWidget {
     final theme = Theme.of(context);
     final display = active.game.display;
     final style = large ? AppTypography.scoreHuge.copyWith(fontSize: 140) : AppTypography.scoreLarge;
+    // Nach dem Spiel steht die wichtigste Kennzahl oben statt des Spielstands.
+    final summary = active.ended ? active.game.result.summary : const <GameStat>[];
+    final label = summary.isNotEmpty ? '${l10n.gameResult} · ${l10n.statLabel(summary.first.key)}' : l10n.statLabel(display.headlineKey);
+    final headline = summary.isNotEmpty ? summary.first.value : display.headline;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Expanded(child: Text(l10n.statLabel(display.headlineKey).toUpperCase(), style: theme.textTheme.labelMedium)),
+              Expanded(child: Text(label.toUpperCase(), style: theme.textTheme.labelMedium)),
               if (display.progressLabel != null) Text(display.progressLabel!, style: theme.textTheme.titleMedium),
             ],
           ),
@@ -170,8 +177,8 @@ class _Headline extends StatelessWidget {
                 child: SlideTransition(position: Tween(begin: const Offset(0, 0.15), end: Offset.zero).animate(a), child: child),
               ),
               child: Text(
-                display.headline,
-                key: ValueKey(display.headline),
+                headline,
+                key: ValueKey(headline),
                 style: style.copyWith(color: theme.colorScheme.onSurface),
               ),
             ),
@@ -208,7 +215,6 @@ class _GamePanel extends ConsumerWidget {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final source = ref.watch(dartSourceProvider);
-    final live = ref.watch(liveVisitProvider);
     final controller = ref.read(activeGameProvider.notifier);
     final display = active.game.display;
 
@@ -220,21 +226,7 @@ class _GamePanel extends ConsumerWidget {
           const SizedBox(height: AppSpacing.m),
         ],
         _EventBanner(active: active),
-        if (!active.ended && active.game is CheckoutTraining && (active.game as CheckoutTraining).showSuggestion) ...[
-          _Suggestion(suggestion: display.suggestion),
-          const SizedBox(height: AppSpacing.m),
-        ],
-        Row(
-          children: [
-            for (var i = 0; i < 3; i++)
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
-                  child: FittedBox(child: DartChip(segment: i < live.visit.length ? live.visit[i].segment : null, large: true)),
-                ),
-              ),
-          ],
-        ),
+        _VisitCard(active: active, large: large),
         const SizedBox(height: AppSpacing.m),
         _StatsGrid(stats: active.ended ? active.game.result.summary : display.stats),
         const SizedBox(height: AppSpacing.m),
@@ -266,46 +258,30 @@ class _GamePanel extends ConsumerWidget {
             ],
           ),
         if (!active.ended) ...[
-          const SizedBox(height: AppSpacing.m),
-          TextButton.icon(
-            key: const Key('end-game'),
-            onPressed: controller.end,
-            icon: const Icon(Icons.flag_outlined),
-            label: Text(l10n.gameEnd),
-            style: TextButton.styleFrom(foregroundColor: theme.colorScheme.onSurfaceVariant),
+          const SizedBox(height: AppSpacing.s),
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: AppSpacing.s,
+            children: [
+              if (active.session.records.isNotEmpty)
+                TextButton.icon(
+                  key: const Key('open-corrections'),
+                  onPressed: () => showCorrectionsSheet(context),
+                  icon: const Icon(Icons.edit_note_rounded),
+                  label: Text(l10n.fixOpen),
+                  style: TextButton.styleFrom(foregroundColor: theme.colorScheme.onSurfaceVariant),
+                ),
+              TextButton.icon(
+                key: const Key('end-game'),
+                onPressed: controller.end,
+                icon: const Icon(Icons.flag_outlined),
+                label: Text(l10n.gameEnd),
+                style: TextButton.styleFrom(foregroundColor: theme.colorScheme.onSurfaceVariant),
+              ),
+            ],
           ),
         ],
       ],
-    );
-  }
-}
-
-class _Suggestion extends StatelessWidget {
-  const _Suggestion({required this.suggestion});
-  final List<Segment>? suggestion;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-    final s = suggestion;
-    return AppCard(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l, vertical: AppSpacing.m),
-      child: Row(
-        children: [
-          Text(l10n.gameSuggestion.toUpperCase(), style: theme.textTheme.labelMedium),
-          const SizedBox(width: AppSpacing.l),
-          Expanded(
-            child: s == null || s.isEmpty
-                ? Text(l10n.gameNoCheckout, style: theme.textTheme.bodySmall)
-                : Text(
-                    s.map((e) => e.name).join('  ·  '),
-                    key: const Key('checkout-suggestion'),
-                    style: theme.textTheme.headlineSmall?.copyWith(color: context.dartColors.highlight),
-                  ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -415,6 +391,193 @@ class _ResultActions extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Die drei Darts der laufenden Aufnahme. Noch offene Plätze zeigen bei
+/// Checkout-Spielen den besten Weg in Gelb. Geworfene Darts lassen sich
+/// antippen und korrigieren.
+class _VisitCard extends ConsumerWidget {
+  const _VisitCard({required this.active, required this.large});
+  final ActiveGame active;
+  final bool large;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final colors = context.dartColors;
+    final live = ref.watch(liveVisitProvider);
+    final game = active.game;
+    final thrown = live.visit.length;
+    // Nach Bust/Checkout gilt der Weg erst wieder für die nächste Aufnahme.
+    final route = active.ended || (game.visitClosed && thrown > 0) ? null : game.display.suggestion;
+    final records = active.session.records;
+    final liveStart = records.length - thrown;
+
+    Future<void> fix(int slot) async {
+      final index = liveStart + slot;
+      if (index < 0 || index >= records.length) return;
+      final picked = await showSegmentPicker(
+        context,
+        title: l10n.fixTitle(slot + 1),
+        subtitle: l10n.fixCurrent(records[index].dart.segment.name),
+      );
+      if (picked != null) ref.read(activeGameProvider.notifier).correct(index, picked);
+    }
+
+    return AppCard(
+      padding: const EdgeInsets.fromLTRB(AppSpacing.m, AppSpacing.m, AppSpacing.m, AppSpacing.m),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+            child: Row(
+              children: [
+                Text(l10n.visitLabel.toUpperCase(), style: theme.textTheme.labelMedium),
+                const SizedBox(width: AppSpacing.s),
+                if (route != null && route.isNotEmpty)
+                  Flexible(
+                    child: Text(
+                      l10n.visitRoute,
+                      key: const Key('checkout-route-label'),
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.labelMedium?.copyWith(color: colors.highlight),
+                    ),
+                  )
+                else if (route != null && thrown == 0)
+                  Flexible(
+                    child: Text(l10n.gameNoCheckout, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodySmall),
+                  ),
+                const Spacer(),
+                Text(
+                  '${live.visitScore}',
+                  key: const Key('visit-score'),
+                  style: theme.textTheme.titleLarge?.copyWith(fontFeatures: AppTypography.tabular),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.s),
+          Row(
+            children: [
+              for (var i = 0; i < 3; i++)
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
+                    child: FittedBox(
+                      child: DartChip(
+                        key: Key('dart-slot-$i'),
+                        segment: i < thrown ? live.visit[i].segment : null,
+                        planned: route != null && i >= thrown && i - thrown < route.length ? route[i - thrown] : null,
+                        label: '${i + 1}',
+                        large: true,
+                        onTap: !active.ended && i < thrown ? () => fix(i) : null,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Liste der Aufnahmen dieses Spiels; jeder Dart lässt sich korrigieren.
+Future<void> showCorrectionsSheet(BuildContext context) {
+  return showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    showDragHandle: true,
+    constraints: const BoxConstraints(maxWidth: 560),
+    builder: (context) => const _CorrectionsSheet(),
+  );
+}
+
+class _CorrectionsSheet extends ConsumerWidget {
+  const _CorrectionsSheet();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final active = ref.watch(activeGameProvider);
+    if (active == null) return const SizedBox.shrink();
+    final records = active.session.records;
+    final visits = <int, List<int>>{};
+    for (var i = 0; i < records.length; i++) {
+      visits.putIfAbsent(records[i].visitIndex, () => []).add(i);
+    }
+    final order = visits.keys.toList()..sort((a, b) => b.compareTo(a));
+
+    Future<void> fix(int index) async {
+      final picked = await showSegmentPicker(
+        context,
+        title: l10n.fixTitleAny,
+        subtitle: l10n.fixCurrent(records[index].dart.segment.name),
+      );
+      if (picked != null) ref.read(activeGameProvider.notifier).correct(index, picked);
+    }
+
+    return SafeArea(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.75),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.xs),
+              child: Text(l10n.fixOpen, style: theme.textTheme.titleLarge),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.m),
+              child: Text(l10n.fixHint, style: theme.textTheme.bodySmall),
+            ),
+            Flexible(
+              child: ListView(
+                shrinkWrap: true,
+                padding: const EdgeInsets.fromLTRB(AppSpacing.l, 0, AppSpacing.l, AppSpacing.l),
+                children: [
+                  for (final v in order)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.s),
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            width: 72,
+                            child: Text(l10n.fixVisit(v + 1), style: theme.textTheme.labelMedium),
+                          ),
+                          for (final i in visits[v]!)
+                            Padding(
+                              padding: const EdgeInsets.only(right: AppSpacing.s),
+                              child: Opacity(
+                                opacity: records[i].counted ? 1 : 0.45,
+                                child: DartChip(
+                                  key: Key('fix-dart-$i'),
+                                  segment: records[i].dart.segment,
+                                  onTap: () => fix(i),
+                                ),
+                              ),
+                            ),
+                          const Spacer(),
+                          Text(
+                            '${visits[v]!.where((i) => records[i].counted).fold<int>(0, (s, i) => s + records[i].dart.score)}',
+                            style: theme.textTheme.titleMedium?.copyWith(fontFeatures: AppTypography.tabular),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

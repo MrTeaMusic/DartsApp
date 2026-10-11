@@ -27,6 +27,10 @@ Würfe kommen live vom Autodarts-Board, aus einem Simulator oder per manueller E
 | Ziele und Serien | fertig |
 | Mehrere Profile | fertig |
 | Export/Import (JSON-Backup, CSV) | fertig |
+| Neues Design: Schrift Inter, Startseite, Spielansicht mit Aufnahme-Leiste, Triple lila | fertig |
+| Checkout-Weg gelb in den freien Dart-Feldern (alle Spiele mit Wurfvorschlag) | fertig |
+| Darts korrigieren (antippen, auch frühere Aufnahmen) | fertig |
+| Vollbild (Knopf, F11, Esc) | fertig |
 | Trainingspläne (feste und eigene, Fortschritt merken, Zusammenfassung) | fertig |
 | Sync im Heimnetz (Desktop-App als Hub, iPhone/iPad gleichen automatisch ab) | fertig, am echten Heimnetz noch nicht getestet |
 | Autodarts-Verbindungstest, Mitschnitt-Prüfung, Koordinaten-Kalibrierung | fertig |

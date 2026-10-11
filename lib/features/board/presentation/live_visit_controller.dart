@@ -86,6 +86,17 @@ class LiveVisitController extends Notifier<LiveVisitState> {
     };
   }
 
+  /// Ersetzt einen Dart der laufenden Aufnahme nur in der Anzeige (nach einer
+  /// Korrektur in der App, die die Quelle nicht kennt).
+  void replaceDart(int index, DartThrow dart) {
+    final s = state;
+    if (index < 0 || index >= s.visit.length) return;
+    state = s.copyWith(
+      visit: [...s.visit]..[index] = dart,
+      history: _replaceLast(s.history, s.visit[index], dart),
+    );
+  }
+
   void clearHistory() => state = const LiveVisitState();
 
   static List<DartThrow> _limit(List<DartThrow> list) =>

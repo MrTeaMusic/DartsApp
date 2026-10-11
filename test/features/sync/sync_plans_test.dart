@@ -194,7 +194,7 @@ void main() {
         'plans': [
           {'uid': 'p1', 'name': '', 'stepsJson': '[]'},
           {'name': 'ohne uid', 'stepsJson': '[]'},
-          {'uid': 'p2', 'name': 'ok', 'stepsJson': '[{"gameId":"x01"}]', 'createdAt': '2026-10-01T10:00:00.000Z'},
+          {'uid': 'p2', 'name': 'ok', 'stepsJson': '[{"gameId":"game_from_the_future"}]', 'createdAt': '2026-10-01T10:00:00.000Z'},
         ],
       }));
       expect(r.plans, 1);
