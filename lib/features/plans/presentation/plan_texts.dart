@@ -48,7 +48,8 @@ class PlanStepTile extends StatelessWidget {
   final Widget? trailing;
   final VoidCallback? onTap;
 
-  /// Nur im Durchlauf: Status des Schritts.
+  /// Status des Schritts im Durchlauf oder seine Rolle im automatischen
+  /// Plan („Aufwärmen“).
   final String? status;
 
   @override

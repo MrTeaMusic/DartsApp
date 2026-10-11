@@ -9,7 +9,6 @@ import 'package:dartlab/features/games/domain/game_catalog.dart';
 import 'package:dartlab/features/games/presentation/active_game_controller.dart';
 import 'package:dartlab/features/plans/presentation/plan_routes.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

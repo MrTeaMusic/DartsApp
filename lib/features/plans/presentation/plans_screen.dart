@@ -10,6 +10,7 @@ import '../../../core/l10n.dart';
 import '../data/plan_repository.dart';
 import '../domain/builtin_plans.dart';
 import '../domain/training_plan.dart';
+import 'auto_plan_screen.dart';
 import 'plan_routes.dart';
 
 /// Übersicht: feste und eigene Trainingspläne.
@@ -42,8 +43,11 @@ class PlansScreen extends ConsumerWidget {
               children: [for (final p in plans) PlanCard(plan: p)],
             );
         return ListView(
+          key: const Key('plans-list'),
           padding: EdgeInsets.fromLTRB(page, AppSpacing.s, page, 96),
           children: [
+            const AutoPlanCard(),
+            const SectionGap(),
             SectionHeader(l10n.plansBuiltin),
             grid(BuiltinPlans.all),
             const SectionGap(),

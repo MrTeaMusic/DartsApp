@@ -10,6 +10,7 @@ import 'core/l10n.dart';
 import 'core/router/app_router.dart';
 import 'core/settings/app_settings.dart';
 import 'features/board/presentation/live_visit_controller.dart';
+import 'features/caller/presentation/training_game_caller.dart';
 import 'features/dart_source/presentation/dart_source_providers.dart';
 import 'features/sync/presentation/sync_controller.dart';
 
@@ -26,6 +27,7 @@ class DartLabApp extends ConsumerWidget {
     // jeweilige Bildschirm nicht offen ist.
     ref
       ..watch(dartFeedbackProvider)
+      ..watch(trainingGameCallerProvider)
       ..watch(liveVisitProvider.select((_) => null))
       ..watch(rawLogProvider.select((_) => null))
       ..watch(syncControllerProvider.select((_) => null));

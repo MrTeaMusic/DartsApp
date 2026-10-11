@@ -11,6 +11,7 @@ import '../../../core/router/app_router.dart';
 import '../../../core/app_version.dart';
 import '../../../core/settings/app_settings.dart';
 import '../../backup/presentation/backup_card.dart';
+import '../../caller/presentation/caller_settings_card.dart';
 import '../../dart_source/domain/coordinate_calibration.dart';
 import '../../dart_source/domain/dart_event.dart';
 import '../../dart_source/presentation/diagnostics_dialog.dart';
@@ -107,6 +108,9 @@ class SettingsScreen extends ConsumerWidget {
                   ],
                 ),
               ),
+              const SectionGap(),
+              SectionHeader(l10n.callerTitle),
+              const CallerSettingsCard(),
               const SectionGap(),
               SectionHeader(l10n.syncTitle),
               const SyncCard(),

@@ -1,6 +1,8 @@
 import 'package:dartlab/app.dart';
 import 'package:dartlab/core/database/app_database.dart';
 import 'package:dartlab/core/settings/app_settings.dart';
+import 'package:dartlab/features/caller/caller.dart';
+import 'package:dartlab/features/caller/data/speech_engine.dart';
 import 'package:dartlab/features/dart_source/data/manual_source.dart';
 import 'package:dartlab/features/dart_source/data/simulator_source.dart';
 import 'package:dartlab/features/dart_source/domain/dart_event.dart';
@@ -12,6 +14,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'fake_speech_engine.dart';
 
 /// Quellen ohne Timer, damit Widget-Tests deterministisch bleiben.
 DartSource testSourceFactory(DartSourceKind kind, String host, int port) => switch (kind) {
@@ -25,6 +29,7 @@ Future<ProviderContainer> pumpApp(
   Map<String, Object> prefs = const {},
   DartSourceFactory factory = testSourceFactory,
   List<Override> overrides = const [],
+  SpeechEngine? speech,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -37,6 +42,8 @@ Future<ProviderContainer> pumpApp(
     sharedPreferencesProvider.overrideWithValue(sp),
     appDatabaseProvider.overrideWithValue(db),
     dartSourceFactoryProvider.overrideWithValue(factory),
+    // Nie das echte Text-to-Speech-Plugin im Test.
+    speechEngineProvider.overrideWithValue(speech ?? FakeSpeechEngine()),
     ...overrides,
   ]);
   addTearDown(container.dispose);

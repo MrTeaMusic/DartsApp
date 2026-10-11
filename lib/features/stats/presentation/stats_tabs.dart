@@ -9,6 +9,7 @@ import '../../../core/l10n.dart';
 import '../../board/presentation/dartboard_view.dart';
 import '../../games/domain/engine/game_display.dart';
 import '../../games/presentation/game_texts.dart';
+import '../../plans/presentation/auto_plan_screen.dart';
 import '../domain/game_metrics.dart';
 import '../domain/stats_calculator.dart';
 import 'goals_card.dart';
@@ -145,6 +146,7 @@ class OverviewTab extends StatelessWidget {
             const SizedBox(height: AppSpacing.s),
             Text(l10n.statsCompareHint(view.period.days!), style: Theme.of(context).textTheme.bodySmall),
           ],
+          const AutoPlanHint(),
           _gap,
           _ActivityCard(report: r, period: view.period),
           _gap,
