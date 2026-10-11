@@ -52,6 +52,10 @@ abstract class TrainingGame {
   int get physicalDartsInVisit => _needNewVisit ? 0 : _physicalInVisit;
   bool get visitClosed => _visitClosed;
 
+  /// Darts, die in der laufenden Aufnahme noch geworfen werden können
+  /// (nach einem vorzeitigen Ende zählt die nächste, volle Aufnahme).
+  int get dartsLeftInVisit => _visitClosed ? dartsPerVisit : dartsPerVisit - visit.length;
+
   /// Wird der nächste Dart gezählt?
   bool get acceptsDarts =>
       !finished && (!_visitClosed || _needNewVisit || _physicalInVisit >= dartsPerVisit);

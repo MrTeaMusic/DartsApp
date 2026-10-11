@@ -27,6 +27,19 @@ class PrimaryMetric {
     'bobs_27': PrimaryMetric('score', format: MetricFormat.integer),
     'three_hits': PrimaryMetric('darts', higherIsBetter: false, format: MetricFormat.integer, onlyCompleted: true),
     'skip_world': PrimaryMetric('points', format: MetricFormat.integer),
+    'x01': PrimaryMetric('average'),
+    'halve_it': PrimaryMetric('score', format: MetricFormat.integer),
+    'catch_40': PrimaryMetric('points', format: MetricFormat.integer, onlyCompleted: true),
+    'jdc_challenge': PrimaryMetric('score', format: MetricFormat.integer, onlyCompleted: true),
+    'shanghai': PrimaryMetric('score', format: MetricFormat.integer),
+    'golf': PrimaryMetric('averagePerHole', higherIsBetter: false),
+    'doubles_420': PrimaryMetric('score', higherIsBetter: false, format: MetricFormat.integer, onlyCompleted: true),
+    'frustration': PrimaryMetric('visits', higherIsBetter: false, format: MetricFormat.integer, onlyCompleted: true),
+    'switch_drill': PrimaryMetric('hitRate', format: MetricFormat.percent),
+    'doubles_ladder': PrimaryMetric('highestLevel', format: MetricFormat.integer),
+    'exact_score': PrimaryMetric('successRate', format: MetricFormat.percent),
+    'three_in_a_bed': PrimaryMetric('visits', higherIsBetter: false, format: MetricFormat.integer, onlyCompleted: true),
+    'setup_shot': PrimaryMetric('successRate', format: MetricFormat.percent),
   };
 
   /// Hauptkennzahl eines Spiels. Spiele ohne Eintrag (z. B. neu

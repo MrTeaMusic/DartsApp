@@ -84,4 +84,34 @@ void main() {
     expect(find.text('20 geschlossen!'), findsOneWidget);
     expect(find.text('19'), findsWidgets);
   });
+  testWidgets('X01: Einstellungen der neuen Spiele, Start und Rest nach dem ersten Dart', (tester) async {
+    final container = await pumpApp(tester);
+    await tester.tap(find.text('Training').first);
+    await tester.pumpAndSettle();
+    // Die letzte der 24 Karten ist erreichbar.
+    await tester.scrollUntilVisible(find.byKey(const Key('game-setup_shot')), 200, scrollable: find.byType(Scrollable).last);
+    await tester.scrollUntilVisible(find.byKey(const Key('game-x01')), -200, scrollable: find.byType(Scrollable).last);
+    await tester.ensureVisible(find.byKey(const Key('game-x01')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('game-x01')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('X01-Solo'), findsWidgets);
+    expect(find.byKey(const Key('opt-inMode-double')), findsOneWidget);
+    expect(find.text('Einstieg'), findsOneWidget);
+    expect(find.text('Master'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('opt-startScore-170')));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.byKey(const Key('start-game')), 300, scrollable: find.byType(Scrollable).last);
+    await tester.tap(find.byKey(const Key('start-game')));
+    await pumpFrames(tester);
+    expect(container.read(activeGameProvider)?.gameId, 'x01');
+    expect(find.text('170'), findsWidgets);
+
+    final source = container.read(dartSourceProvider) as SimulatorSource;
+    source.throwAt(BoardGeometry.centerOf(Segment.triple(20)));
+    await pumpFrames(tester);
+    expect(find.text('110'), findsWidgets);
+    expect(container.read(activeGameProvider)!.game.display.suggestion, [Segment.triple(20), Segment.bull]);
+  });
 }
