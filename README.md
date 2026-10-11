@@ -6,7 +6,7 @@ Würfe kommen live vom Autodarts-Board, aus einem Simulator oder per manueller E
 > Die Datei `index.html` im Repo-Wurzelordner ist der frühere Web-Prototyp und bleibt vorerst
 > unverändert liegen. Die Flutter-App ist davon unabhängig.
 
-## Stand: Phase 1
+## Stand: Phase 5
 
 | Bereich | Status |
 |---|---|
@@ -19,10 +19,21 @@ Würfe kommen live vom Autodarts-Board, aus einem Simulator oder per manueller E
 | `AutodartsLocalSource` (WebSocket, HTTP-Fallback, Wiederverbindung, Status) | gebaut, **nicht am echten Board getestet** |
 | Debug-Bildschirm mit Live-Rohdaten und Datei-Log | fertig |
 | Animiertes Dartboard (CustomPainter, Treffer, Aufleuchten, Heatmap-Overlay) | fertig |
-| Spiele, Datenbank, Statistiken | Phase 2 bis 4 |
+| Spiel-Engine (Aufnahmen, Rückgängig, Korrektur, Wiederholbarkeit per Seed) | fertig |
+| Checkout-Training, Around the Clock, Bullseye-Drill, T20-Training, Score-Ziel, Highscore-Jagd | fertig |
+| Lokale Datenbank (drift/SQLite): Sessions und jeder einzelne Wurf | fertig |
+| Cricket (Solo), 121, Bob's 27, Drei-Treffer-Runde, Around the World mit Überspringen | fertig |
+| Statistik (Average, Quoten, Verlauf, Darts pro Tag, Heatmap, Treffer pro Zahl) | fertig |
+| Ziele und Serien | fertig |
+| Mehrere Profile | fertig |
+| Export/Import (JSON-Backup, CSV) | fertig |
+| Autodarts-Verbindungstest, Mitschnitt-Prüfung, Koordinaten-Kalibrierung | fertig, **Mapping weiter ungeprüft am echten Board** |
+| Build-Anleitung, native Builds in GitHub Actions | fertig |
 
 Was über das Autodarts-Protokoll bekannt und was offen ist: [docs/autodarts-protokoll.md](docs/autodarts-protokoll.md).
-Geplante Regeln der zwei eigenen Spiele: [docs/spielregeln.md](docs/spielregeln.md).
+Regeln und Optionen der Trainingsspiele: [docs/trainingsspiele.md](docs/trainingsspiele.md).
+Regeln der zwei eigenen Spiele: [docs/spielregeln.md](docs/spielregeln.md).
+Wie Statistiken berechnet werden, Ziele, Profile, Export-Formate: [docs/statistik-und-daten.md](docs/statistik-und-daten.md).
 
 ## Starten
 
@@ -42,13 +53,15 @@ flutter analyze
 flutter test
 ```
 
-Die ausführliche Build- und Installationsanleitung für alle drei Plattformen kommt mit Phase 5.
+Ausführliche Build- und Installationsanleitung für alle drei Plattformen (inkl. iPhone mit kostenloser
+Apple-ID): [docs/build-anleitung.md](docs/build-anleitung.md).
 
 ## Architektur
 
 ```
 lib/
   core/
+    database/      drift-Datenbank (Spieler, Sessions, Würfe)
     design/        Tokens, Theme, DartColors, wiederverwendbare Komponenten
     router/        go_router mit StatefulShellRoute
     settings/      AppSettings (shared_preferences) + Riverpod-Notifier
@@ -61,9 +74,25 @@ lib/
       domain/      DartSource, DartEvent, DartThrow, SourceStatus
       data/        Simulator-, Manual-, AutodartsLocal-Quelle, Mapper, RawMessageLog
       presentation/Provider, Statusanzeige, Debug-Bildschirm
-    home/ games/ simulator/ stats/ settings/   Bildschirme
+    games/
+      domain/engine/ TrainingGame, GameDefinition, GameSession (reine Dart-Klassen)
+      domain/games/  ein Spiel = eine Klasse + GameDefinition, registriert in game_catalog.dart
+      data/          GameRepository (Speichern, Verlauf, schwache Checkouts)
+      presentation/  Spielauswahl, Einstellungen, Spielbildschirm, ActiveGameController
+    stats/
+      domain/        StatsCalculator, Ziele (reine Berechnung)
+      data/          StatsRepository
+      presentation/  Statistik-Bildschirm mit fl_chart, Ziele-Karte
+    profiles/        Profile und aktives Profil
+    backup/          JSON/CSV-Export, Import, Dateidialoge
+    home/ simulator/ settings/   Bildschirme
   l10n/            app_de.arb (Vorlage), app_en.arb
 ```
+
+**Neues Spiel:** Klasse von `TrainingGame` ableiten, eine `GameDefinition` mit Standardwerten und
+Optionen anlegen und in `GameCatalog.all` eintragen. Das Einstellungsformular entsteht aus den Optionen.
+Nach Änderungen an Tabellen: `dart run build_runner build`, `schemaVersion` erhöhen und einen
+Migrationsschritt in `app_database.dart` ergänzen.
 
 **Regel:** Spiele sprechen nur mit `DartSource` (über `dartEventsProvider`), nie direkt mit Autodarts.
 Ändert sich das Protokoll, wird nur `AutodartsStateMapper` bzw. `AutodartsLocalSource` angepasst.

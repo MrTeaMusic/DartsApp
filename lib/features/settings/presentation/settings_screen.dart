@@ -7,9 +7,15 @@ import '../../../core/design/dart_colors.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/app_version.dart';
 import '../../../core/settings/app_settings.dart';
+import '../../backup/presentation/backup_card.dart';
+import '../../dart_source/domain/coordinate_calibration.dart';
 import '../../dart_source/domain/dart_event.dart';
+import '../../dart_source/presentation/diagnostics_dialog.dart';
+import '../../dart_source/presentation/recording_sheet.dart';
 import '../../dart_source/presentation/source_status_badge.dart';
+import '../../profiles/presentation/profiles_card.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -28,6 +34,9 @@ class SettingsScreen extends ConsumerWidget {
           child: ListView(
             padding: const EdgeInsets.all(AppSpacing.page),
             children: [
+              SectionHeader(l10n.profilesTitle),
+              const ProfilesCard(),
+              const SizedBox(height: AppSpacing.xl),
               SectionHeader(l10n.settingsAppearance),
               SegmentedButton<ThemeMode>(
                 key: const Key('theme-selector'),
@@ -94,6 +103,9 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.xl),
+              SectionHeader(l10n.backupTitle),
+              const BackupCard(),
+              const SizedBox(height: AppSpacing.xl),
               SectionHeader(l10n.settingsDeveloper),
               AppCard(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
@@ -118,7 +130,7 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.xl),
-              Center(child: Text(l10n.settingsVersion('0.1.0 · Phase 1'), style: Theme.of(context).textTheme.bodySmall)),
+              Center(child: Text(l10n.settingsVersion(appVersion), style: Theme.of(context).textTheme.bodySmall)),
             ],
           ),
         ),
@@ -145,6 +157,11 @@ class _AutodartsConnectionCardState extends ConsumerState<_AutodartsConnectionCa
     _host.dispose();
     _port.dispose();
     super.dispose();
+  }
+
+  void _test() {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    showDiagnosticsDialog(context, host: _host.text.trim(), port: int.parse(_port.text.trim()));
   }
 
   void _apply() {
@@ -199,9 +216,45 @@ class _AutodartsConnectionCardState extends ConsumerState<_AutodartsConnectionCa
             const SizedBox(height: AppSpacing.m),
             Text(l10n.autodartsUnverified, style: theme.textTheme.bodySmall?.copyWith(color: context.dartColors.warning)),
             const SizedBox(height: AppSpacing.m),
-            Align(
-              alignment: Alignment.centerRight,
-              child: FilledButton(key: const Key('apply-connection'), onPressed: _apply, child: Text(l10n.settingsApply)),
+            Wrap(
+              alignment: WrapAlignment.end,
+              spacing: AppSpacing.s,
+              runSpacing: AppSpacing.s,
+              children: [
+                OutlinedButton.icon(
+                  key: const Key('test-connection'),
+                  onPressed: _test,
+                  icon: const Icon(Icons.network_check_rounded),
+                  label: Text(l10n.diagButton),
+                ),
+                FilledButton(key: const Key('apply-connection'), onPressed: _apply, child: Text(l10n.settingsApply)),
+              ],
+            ),
+            const Divider(height: AppSpacing.xl),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(l10n.calibTitle, style: theme.textTheme.titleSmall),
+                      Text(
+                        describeCalibration(l10n, widget.settings.coordCalibration),
+                        key: const Key('calibration-value'),
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+                if (!widget.settings.coordCalibration.isIdentity)
+                  TextButton(
+                    key: const Key('reset-calibration'),
+                    onPressed: () => ref
+                        .read(settingsProvider.notifier)
+                        .update((x) => x.copyWith(coordCalibration: CoordinateCalibration.identity)),
+                    child: Text(l10n.calibReset),
+                  ),
+              ],
             ),
           ],
         ),

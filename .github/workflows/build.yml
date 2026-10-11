@@ -1,0 +1,61 @@
+name: Native Builds
+
+# Baut die App für Windows, macOS und iOS (ohne Signatur), damit Build-Fehler
+# auf den Zielplattformen früh auffallen. Die Ergebnisse liegen als Artefakte
+# am jeweiligen Lauf.
+on:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.7
+          cache: true
+      - run: flutter pub get
+      - run: flutter build windows --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dartlab-windows
+          path: build/windows/x64/runner/Release/
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.7
+          cache: true
+      - run: flutter pub get
+      - run: flutter build macos --release
+      - name: App packen
+        run: ditto -c -k --keepParent build/macos/Build/Products/Release/DartLab.app dartlab-macos.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dartlab-macos
+          path: dartlab-macos.zip
+
+  ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.7
+          cache: true
+      - run: flutter pub get
+      # Ohne Signatur nur zur Kontrolle, dass der Build durchläuft. Auf ein
+      # Gerät kommt die App über Xcode (siehe docs/build-anleitung.md).
+      - run: flutter build ios --release --no-codesign

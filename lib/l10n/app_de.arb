@@ -33,7 +33,7 @@
   "homeSessionDarts": "Darts",
   "homeSessionAverage": "3-Dart-Average",
   "homeLastDart": "Letzter Dart",
-  "homePhaseNote": "Phase 1: Grundgerüst mit Design-System, Navigation, Datenquellen und Board. Spiele, Datenbank und Statistiken folgen in den nächsten Phasen.",
+  "homePhaseNote": "Phase 5: Verbindungstest, Mitschnitt-Prüfung und Koordinaten-Kalibrierung für Autodarts sind da. Die Build-Anleitung liegt im Ordner docs.",
   "gamesTitle": "Training",
   "gamesPhase": "Phase {phase}",
   "@gamesPhase": {
@@ -48,17 +48,17 @@
   "gameAroundClock": "Around the Clock",
   "gameAroundClockDesc": "Alle Zahlen von 1 bis 20 der Reihe nach, optional mit Bull.",
   "gameBullDrill": "Bullseye-Drills",
-  "gameBullDrillDesc": "Gezieltes Training auf 25 und Bull.",
+  "gameBullDrillDesc": "Feste Anzahl Aufnahmen nur auf Bull. Single Bull 25, Bullseye 50 Punkte.",
   "gameScoring": "Scoring-Drills",
   "gameScoringDesc": "T20-Training, Score-Aufgaben (100/140/180) und Highscore-Jagd.",
   "gameCricket": "Cricket",
-  "gameCricketDesc": "15 bis 20 und Bull schließen, Punkte sammeln.",
+  "gameCricketDesc": "Solo-Cricket: 20 bis 15 und Bull schließen, frei oder der Reihe nach. Wertung in Marks pro Aufnahme.",
   "game121": "121",
-  "game121Desc": "Checkout-Leiter ab 121 mit begrenzter Dartzahl.",
+  "game121Desc": "Checkout-Leiter ab 121: geschafft heißt eins höher, verpasst je nach Einstellung zurück.",
   "gameBobs27": "Bob's 27",
-  "gameBobs27Desc": "Doubles-Training von D1 bis Bull, Start mit 27 Punkten.",
+  "gameBobs27Desc": "Doubles von D1 bis Bull. Treffer bringen Punkte, eine leere Aufnahme kostet. Unter 0 ist Schluss.",
   "gameThreeHits": "Drei-Treffer-Runde",
-  "gameThreeHitsDesc": "Around the World mit Pflicht: erst nach 3 Treffern zur nächsten Zahl.",
+  "gameThreeHitsDesc": "Around the World mit Pflicht: erst nach 3 Treffern geht es zur nächsten Zahl.",
   "gameSkip": "Around the World mit Überspringen",
   "gameSkipDesc": "Punkte pro Zahl (S=1, D=2, T=3). Ab 4 Punkten in einer Aufnahme wird die nächste Zahl übersprungen.",
   "boardTitle": "Board",
@@ -101,8 +101,127 @@
   "triple": "Triple",
   "autodartsUnverified": "Hinweis: Das Autodarts-Protokoll ist nicht offiziell dokumentiert. Das Mapping ist noch nicht am echten Board getestet.",
   "statsTitle": "Statistik",
-  "statsComingTitle": "Statistiken kommen in Phase 4",
-  "statsComingText": "Averages, Quoten, Heatmap, Verlauf, Ziele und Streaks. Jeder Wurf wird ab Phase 2 mit Rohdaten gespeichert, damit sich alles später neu berechnen lässt.",
+  "statsEmptyTitle": "Noch keine Daten",
+  "statsEmptyText": "Spiel ein Training in diesem Zeitraum, dann erscheinen hier deine Werte.",
+  "statsPeriodWeek": "7 Tage",
+  "statsPeriodMonth": "30 Tage",
+  "statsPeriodQuarter": "90 Tage",
+  "statsPeriodAll": "Alles",
+  "statsAllGames": "Alle Spiele",
+  "statsSessions": "Sessions",
+  "statsPracticeDays": "Trainingstage",
+  "statsAverageCaption": "aus den Scoring-Drills",
+  "statsAttempts": "{count} Versuche",
+  "@statsAttempts": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsStreak": "Serie",
+  "statsDays": "{count, plural, =1{1 Tag} other{{count} Tage}}",
+  "@statsDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsLongest": "Rekord: {count}",
+  "@statsLongest": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsTrainedToday": "Heute trainiert",
+  "statsNotTrainedToday": "Heute noch offen",
+  "statsActivity": "Darts pro Tag",
+  "statsTrend": "Verlauf",
+  "statsTrendEmpty": "Für dieses Spiel gibt es im Zeitraum noch keinen Verlauf.",
+  "statsHeatmap": "Heatmap",
+  "statsHeatmapHint": "Darts ohne Koordinaten (manuelle Eingabe) liegen in der Mitte ihres Feldes.",
+  "statsNumbers": "Treffer pro Zahl",
+  "statsGames": "Spiele",
+  "statsBest": "Bestwert",
+  "goalsTitle": "Ziele",
+  "goalsEmpty": "Noch keine Ziele. Setz dir eins, z. B. 5 Sessions pro Woche.",
+  "goalsAdd": "Ziel hinzufügen",
+  "goalsSave": "Speichern",
+  "goalsDelete": "Löschen",
+  "goalTarget": "Ziel",
+  "goalWeeklySessions": "Sessions pro Woche",
+  "goalWeeklyDarts": "Darts pro Woche",
+  "goalStreakDays": "Tage am Stück",
+  "goalScoringAverage": "3-Dart-Average (30 Tage)",
+  "goalCheckoutRate": "Checkout-Quote (30 Tage)",
+  "goalDoubleRate": "Double-Quote (30 Tage)",
+  "gameCancelShort": "Abbrechen",
+  "profilesTitle": "Profile",
+  "profileAdd": "Profil hinzufügen",
+  "profileRename": "Umbenennen",
+  "profileDelete": "Löschen",
+  "profileName": "Name",
+  "profileDeleteTitle": "„{name}“ löschen?",
+  "@profileDeleteTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "profileDeleteText": "Alle Sessions, Würfe und Ziele dieses Profils werden gelöscht. Exportiere vorher ein Backup, wenn du sie behalten willst.",
+  "backupTitle": "Daten",
+  "backupExportJson": "Backup exportieren (JSON)",
+  "backupExportJsonHint": "Alle Profile, Sessions, Würfe und Ziele. Lässt sich wieder importieren.",
+  "backupExportThrows": "Würfe als CSV",
+  "backupExportSessions": "Sessions als CSV",
+  "backupCsvHint": "Für Excel oder Numbers, nur Export.",
+  "backupImport": "Backup importieren",
+  "backupImportHint": "Führt ein JSON-Backup mit den vorhandenen Daten zusammen, doppelte Sessions werden übersprungen.",
+  "backupSaved": "Gespeichert: {path}",
+  "@backupSaved": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "backupImported": "Importiert: {sessions} Sessions, {throws} Würfe, {players} neue Profile ({skipped} schon vorhanden).",
+  "@backupImported": {
+    "placeholders": {
+      "sessions": {
+        "type": "int"
+      },
+      "throws": {
+        "type": "int"
+      },
+      "players": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      }
+    }
+  },
+  "backupInvalid": "Datei nicht lesbar: {message}",
+  "@backupInvalid": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "backupFailed": "Fehlgeschlagen: {error}",
+  "@backupFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "settingsTitle": "Einstellungen",
   "settingsAppearance": "Darstellung",
   "themeDark": "Dunkel",
@@ -165,6 +284,237 @@
     "placeholders": {
       "count": {
         "type": "int"
+      }
+    }
+  },
+  "gameTargetPractice": "T20-Training",
+  "gameTargetPracticeDesc": "Eine Aufnahme nach der anderen auf das Triple einer Zahl. Misst Triple- und Zahl-Quote.",
+  "gameScoreTarget": "Score-Aufgabe",
+  "gameScoreTargetDesc": "Jede Aufnahme soll eine Vorgabe schaffen, z. B. 100, 140 oder 180.",
+  "gameHighscore": "Highscore-Jagd",
+  "gameHighscoreDesc": "So viele Punkte wie möglich in einer festen Anzahl Aufnahmen.",
+  "optMode": "Zielauswahl",
+  "optMin": "Kleinstes Finish",
+  "optMax": "Größtes Finish",
+  "optAttempts": "Versuche",
+  "optDartsPerAttempt": "Darts pro Versuch",
+  "optShowSuggestion": "Wurfvorschlag anzeigen",
+  "optDoubleOut": "Double-Out",
+  "optOrder": "Reihenfolge",
+  "optRing": "Zählender Ring",
+  "optIncludeBull": "Bull am Ende",
+  "optMultiplierAdvances": "Double/Triple springt 2/3 Zahlen weiter",
+  "optVisits": "Aufnahmen",
+  "optNumber": "Zahl",
+  "optTarget": "Vorgabe pro Aufnahme",
+  "optCricketOrder": "Zahlen",
+  "optMarksToClose": "Marks zum Schließen",
+  "optStart": "Startwert",
+  "optRounds": "Ziele",
+  "optFailRule": "Bei Fehlversuch",
+  "optStartScore": "Startpunkte",
+  "optAllowNegative": "Unter 0 weiterspielen",
+  "optHitsRequired": "Treffer pro Zahl",
+  "optMultiplierCounts": "Double zählt 2, Triple 3 Treffer",
+  "optSkipThreshold": "Punkte zum Überspringen",
+  "optBullSkippable": "Bull darf übersprungen werden",
+  "valFree": "Frei",
+  "valSequential": "Der Reihe nach",
+  "valBack": "Zurück zum letzten Erfolg",
+  "valStay": "Gleiches Ziel",
+  "valDown": "Eins runter",
+  "valRandom": "Zufällig",
+  "valDescending": "Absteigend",
+  "valWeak": "Meine schwachen",
+  "valAscending": "1 bis 20",
+  "valClockwise": "Im Uhrzeigersinn",
+  "valAny": "Alle",
+  "statTarget": "Ziel",
+  "statCheckouts": "Checkouts",
+  "statCheckoutRate": "Checkout-Quote",
+  "statAvgDartsPerCheckout": "Ø Darts pro Checkout",
+  "statHighestCheckout": "Höchstes Finish",
+  "statDarts": "Darts",
+  "statHitRate": "Trefferquote",
+  "statNext": "Danach",
+  "statProgress": "Fortschritt",
+  "statPoints": "Punkte",
+  "statBullHits": "Bullseyes",
+  "statOuterBullHits": "Single Bulls",
+  "statBullRate": "Bullseye-Quote",
+  "statAverage": "3-Dart-Average",
+  "statTrebleRate": "Triple-Quote",
+  "statNumberRate": "Zahl-Quote",
+  "statBestVisit": "Beste Aufnahme",
+  "statScoreTarget": "Vorgabe",
+  "statSuccesses": "Geschafft",
+  "statSuccessRate": "Erfolgsquote",
+  "statVisitScore": "Aufnahme",
+  "statTons": "Aufnahmen ab 100",
+  "statRemaining": "Rest",
+  "statOpenNumbers": "Offene Zahlen",
+  "statMpr": "Marks pro Aufnahme",
+  "statClosedNumbers": "Geschlossen",
+  "statAttemptDarts": "Darts für dieses Ziel",
+  "statDoubleHits": "Double-Treffer",
+  "statDoubleRate": "Double-Quote",
+  "statHitsOnTarget": "Treffer",
+  "statSkips": "Übersprungen",
+  "statPointsPerNumber": "Ø Punkte pro Zahl",
+  "evBust": "Bust!",
+  "evCheckout": "Checkout {value}!",
+  "@evCheckout": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "evFailed": "Nicht geschafft",
+  "evHit": "{value}",
+  "@evHit": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "evAdvanced": "Weiter!",
+  "evVisitSuccess": "Geschafft: {value}",
+  "@evVisitSuccess": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "evVisitMissed": "Nur {value}",
+  "@evVisitMissed": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "evBest": "Neuer Bestwert: {value}",
+  "@evBest": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "evFinished": "Spiel beendet",
+  "evClosed": "{value} geschlossen!",
+  "@evClosed": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "evSkipped": "{value} übersprungen!",
+  "@evSkipped": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "gameStart": "Spiel starten",
+  "gameSettings": "Einstellungen",
+  "gameEnd": "Beenden",
+  "gameEndTitle": "Spiel beenden?",
+  "gameEndText": "Der bisherige Stand wird gespeichert.",
+  "gameCancel": "Weiterspielen",
+  "gameAgain": "Nochmal",
+  "gameDone": "Fertig",
+  "gameResult": "Ergebnis",
+  "gameSuggestion": "Vorschlag",
+  "gameNoCheckout": "Kein Finish mit den restlichen Darts",
+  "gamesPlayable": "Spielbar",
+  "gameRecent": "Zuletzt gespielt",
+  "gameRecentEmpty": "Noch keine Spiele gespeichert.",
+  "gameAborted": "abgebrochen",
+  "gameWeakHint": "Nutzt deine bisherigen Checkout-Versuche. Ohne genug Daten wird zufällig gewählt.",
+  "diagButton": "Verbindung testen",
+  "diagTitle": "Verbindungstest {target}",
+  "@diagTitle": {
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "diagRunning": "Prüfe Board Manager…",
+  "diagAgain": "Erneut testen",
+  "diagHttp": "Board Manager erreichbar (HTTP)",
+  "diagFormat": "Statusformat erkannt",
+  "diagThrows": "Würfe im Status enthalten",
+  "diagDetection": "Erkennung läuft",
+  "diagWebSocket": "Live-Verbindung (WebSocket)",
+  "diagRefused": "Verbindung abgelehnt. Läuft der Board Manager, und stimmt der Port (normal 3180)?",
+  "diagTimeout": "Keine Antwort. IP-Adresse prüfen und ob beide Geräte im selben Netz sind. Auf iOS muss „Lokales Netzwerk“ für DartLab erlaubt sein.",
+  "diagHostNotFound": "Adresse nicht gefunden. Am besten die IP-Adresse des Board-Rechners eintragen.",
+  "diagUnauthorized": "Der Board Manager verlangt eine Anmeldung. Das wird lokal bisher nicht unterstützt.",
+  "diagHttpStatus": "Unerwartete Antwort: {detail}",
+  "@diagHttpStatus": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "diagNotJson": "Die Antwort ist kein JSON. Läuft unter dieser Adresse wirklich der Board Manager?",
+  "diagMissingThrows": "Der Status enthält keine Würfe. Möglicherweise liefert deine Board-Manager-Version Würfe nur noch über die Cloud. Bitte einen Mitschnitt aufnehmen und prüfen.",
+  "diagStopped": "Die Erkennung ist gestoppt. Im Board Manager „Start“ drücken.",
+  "diagNoMessages": "Keine Live-Nachrichten empfangen. Einen Dart werfen und erneut testen. Ohne WebSocket fragt DartLab den Status automatisch regelmäßig ab.",
+  "diagOther": "Fehler: {detail}",
+  "@diagOther": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "recCheckLog": "Mitschnitt prüfen",
+  "recCheckFile": "Datei prüfen…",
+  "recTitle": "Mitschnitt-Auswertung",
+  "recLines": "Zeilen",
+  "recStates": "Statusmeldungen",
+  "recDarts": "Erkannte Darts",
+  "recTakeouts": "Takeouts",
+  "recCorrections": "Korrekturen",
+  "recTypes": "Nachrichtentypen",
+  "recThrowsField": "Feld „throws“ vorhanden",
+  "recYes": "ja",
+  "recNo": "nein",
+  "recAgreement": "Koordinaten passen zum Feld",
+  "recWarnings": "Warnungen",
+  "recSuggestion": "Vorschlag: Kalibrierung mit {percent} Übereinstimmung",
+  "@recSuggestion": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "recApply": "Übernehmen",
+  "recDartList": "Darts im Mitschnitt",
+  "recNoDarts": "Im Mitschnitt wurden keine Darts gefunden.",
+  "recNoCoords": "ohne Koordinaten",
+  "recEmpty": "Noch keine Rohdaten aufgezeichnet.",
+  "calibTitle": "Koordinaten-Kalibrierung",
+  "calibReset": "Zurücksetzen",
+  "calibNone": "Keine (Standard)",
+  "calibSwap": "Achsen getauscht",
+  "calibMirrorX": "x gespiegelt",
+  "calibMirrorY": "y gespiegelt",
+  "calibScale": "Skalierung {value}",
+  "@calibScale": {
+    "placeholders": {
+      "value": {
+        "type": "String"
       }
     }
   }

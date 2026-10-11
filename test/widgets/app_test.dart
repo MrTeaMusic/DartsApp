@@ -77,6 +77,7 @@ void main() {
     await pumpApp(tester);
     await tester.tap(find.text('Optionen').first);
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.byKey(const Key('open-debug')), 300, scrollable: find.byType(Scrollable).last);
     await tester.tap(find.byKey(const Key('open-debug')));
     await tester.pumpAndSettle();
     expect(find.text('Debug: Rohdaten'), findsWidgets);
