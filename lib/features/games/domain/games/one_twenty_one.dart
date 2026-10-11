@@ -4,6 +4,7 @@ import '../engine/game_definition.dart';
 import '../engine/game_display.dart';
 import '../engine/training_game.dart';
 import 'checkout/checkout_calculator.dart';
+import 'checkout/checkout_rules.dart';
 
 /// Was nach einem verpassten Checkout passiert.
 enum FailRule {
@@ -100,15 +101,13 @@ class OneTwentyOne extends TrainingGame {
 
   @override
   void handleDart(DartThrow dart) {
-    final next = remaining - dart.score;
-    final bust = doubleOut ? (next < 0 || next == 1 || (next == 0 && !dart.segment.isDouble)) : next < 0;
-    if (bust) {
+    if (CheckoutRules.isBust(remaining, dart.segment, OutMode.fromDoubleOut(doubleOut))) {
       remaining = _visitStartRemaining;
       events.add(GameEvent(GameEventType.bust, value: target));
       closeVisit();
       return;
     }
-    remaining = next;
+    remaining -= dart.score;
     if (remaining == 0) {
       history.add((target: target, success: true, darts: _visitsUsed * TrainingGame.dartsPerVisit + visit.length));
       events.add(GameEvent(GameEventType.checkout, value: target));

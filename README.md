@@ -23,6 +23,7 @@ Würfe kommen live vom Autodarts-Board, aus einem Simulator oder per manueller E
 | Checkout-Training, Around the Clock, Bullseye-Drill, T20-Training, Score-Ziel, Highscore-Jagd | fertig |
 | Lokale Datenbank (drift/SQLite): Sessions und jeder einzelne Wurf | fertig |
 | Cricket (Solo), 121, Bob's 27, Drei-Treffer-Runde, Around the World mit Überspringen | fertig |
+| X01-Solo, Halve-It, Catch 40, JDC-Challenge, Shanghai, Darts-Golf, 420, Frustration, Ziel-Wechsel, Doppel-Leiter, Genau 100, Drei im Bett, Stellen | fertig |
 | Statistik (Average, Quoten, Verlauf, Darts pro Tag, Heatmap, Treffer pro Zahl) | fertig |
 | Ziele und Serien | fertig |
 | Mehrere Profile | fertig |
@@ -34,6 +35,7 @@ Würfe kommen live vom Autodarts-Board, aus einem Simulator oder per manueller E
 Was über das Autodarts-Protokoll bekannt und was offen ist: [docs/autodarts-protokoll.md](docs/autodarts-protokoll.md).
 Wie der Sync funktioniert: [docs/sync.md](docs/sync.md).
 Regeln und Optionen der Trainingsspiele: [docs/trainingsspiele.md](docs/trainingsspiele.md).
+Die 13 weiteren Spiele (X01-Solo bis Stellen): [docs/trainingsspiele-erweitert.md](docs/trainingsspiele-erweitert.md).
 Regeln der zwei eigenen Spiele: [docs/spielregeln.md](docs/spielregeln.md).
 Wie Statistiken berechnet werden, Ziele, Profile, Export-Formate: [docs/statistik-und-daten.md](docs/statistik-und-daten.md).
 

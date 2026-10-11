@@ -4,6 +4,7 @@ import '../../engine/game_definition.dart';
 import '../../engine/game_display.dart';
 import '../../engine/training_game.dart';
 import 'checkout_calculator.dart';
+import 'checkout_rules.dart';
 
 /// Wie die Zielwerte gewählt werden.
 enum CheckoutMode {
@@ -163,15 +164,13 @@ class CheckoutTraining extends TrainingGame {
 
   @override
   void handleDart(DartThrow dart) {
-    final next = remaining - dart.score;
-    final bust = doubleOut ? (next < 0 || next == 1 || (next == 0 && !dart.segment.isDouble)) : next < 0;
-    if (bust) {
+    if (CheckoutRules.isBust(remaining, dart.segment, OutMode.fromDoubleOut(doubleOut))) {
       remaining = _visitStartRemaining;
       events.add(GameEvent(GameEventType.bust, value: target));
       closeVisit();
       return;
     }
-    remaining = next;
+    remaining -= dart.score;
     if (remaining == 0) {
       final darts = _visitsUsed * TrainingGame.dartsPerVisit + visit.length;
       results.add(CheckoutAttempt(target: target, success: true, darts: darts));

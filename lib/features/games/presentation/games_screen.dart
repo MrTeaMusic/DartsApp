@@ -10,6 +10,7 @@ import '../../../core/router/app_router.dart';
 import '../data/game_repository.dart';
 import '../domain/engine/game_display.dart';
 import '../domain/game_catalog.dart';
+import '../../stats/domain/game_metrics.dart';
 import '../../profiles/presentation/active_player.dart';
 import 'game_texts.dart';
 
@@ -127,6 +128,18 @@ class _GameCard extends StatelessWidget {
   }
 }
 
+/// Hauptkennzahl laut [PrimaryMetric.byGame], sonst die Punkte.
+String _primaryText(String gameId, Map<String, num> m) {
+  final pm = PrimaryMetric.byGame[gameId];
+  final v = m[pm?.key ?? 'points'];
+  if (v == null) return '–';
+  return switch (pm?.format) {
+    MetricFormat.percent => formatPercent(v),
+    MetricFormat.decimal => formatDecimal(v),
+    _ => '${v.round()}',
+  };
+}
+
 class _RecentTile extends StatelessWidget {
   const _RecentTile({required this.summary});
   final SessionSummary summary;
@@ -147,7 +160,7 @@ class _RecentTile extends StatelessWidget {
       'one_twenty_one' => '${m['highestCheckout'] ?? '–'}',
       'bobs_27' => '${m['score'] ?? '–'}',
       'three_hits' => '${m['darts'] ?? '–'} ${l10n.statDarts}',
-      _ => '${m['points'] ?? '–'}',
+      _ => _primaryText(summary.gameId, m),
     };
     return ListTile(
       leading: Icon(gameIcon(summary.gameId)),

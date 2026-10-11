@@ -85,3 +85,8 @@ zählen nicht und werden in der Datenbank als „nicht gezählt“ markiert.
 ## Drei-Treffer-Runde und Around the World mit Überspringen
 
 Deine zwei eigenen Spiele, siehe [spielregeln.md](spielregeln.md).
+
+## Weitere Spiele
+
+X01-Solo, Halve-It, Catch 40, JDC-Challenge, Shanghai, Darts-Golf, 420, Frustration, Ziel-Wechsel,
+Doppel-Leiter, Genau 100, Drei im Bett und Stellen: siehe [trainingsspiele-erweitert.md](trainingsspiele-erweitert.md).

@@ -105,7 +105,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                   children: [
                     for (final (i, o) in def.options.indexed) ...[
                       if (i > 0) const Divider(height: AppSpacing.xl),
-                      _OptionField(option: o, value: _config[o.key], onChanged: (v) => _set(o.key, v)),
+                      _OptionField(option: o, gameId: def.id, value: _config[o.key], onChanged: (v) => _set(o.key, v)),
                     ],
                     if (def.id == CheckoutTraining.id && _config['mode'] == 'weak') ...[
                       const SizedBox(height: AppSpacing.m),
@@ -130,9 +130,10 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
 }
 
 class _OptionField extends StatelessWidget {
-  const _OptionField({required this.option, required this.value, required this.onChanged});
+  const _OptionField({required this.option, required this.gameId, required this.value, required this.onChanged});
 
   final ConfigOption option;
+  final String gameId;
   final Object? value;
   final ValueChanged<Object?> onChanged;
 
@@ -140,7 +141,7 @@ class _OptionField extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
-    final label = Text(l10n.optionLabel(option.key), style: theme.textTheme.titleSmall);
+    final label = Text(l10n.optionLabel(option.key, gameId), style: theme.textTheme.titleSmall);
     switch (option) {
       case BoolOption():
         return SwitchListTile(
@@ -164,7 +165,7 @@ class _OptionField extends StatelessWidget {
                 for (final v in values)
                   ChoiceChip(
                     key: Key('opt-${option.key}-$v'),
-                    label: Text(l10n.optionValue(v)),
+                    label: Text(l10n.optionValue(v, key: option.key)),
                     selected: v == selected,
                     onSelected: (_) => onChanged(v),
                   ),
