@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../../core/design/app_theme.dart';
 import '../../../core/design/dart_colors.dart';
 import '../domain/board_geometry.dart';
 import '../domain/segment.dart';
@@ -192,6 +193,7 @@ class DartboardPainter extends CustomPainter {
       text: TextSpan(
         text: '$number',
         style: TextStyle(
+          fontFamily: AppTypography.family,
           color: colors.boardNumbers,
           fontSize: r * 0.115,
           fontWeight: FontWeight.w700,

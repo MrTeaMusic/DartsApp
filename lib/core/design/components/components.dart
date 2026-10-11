@@ -194,47 +194,101 @@ class _DotState extends State<_Dot> with SingleTickerProviderStateMixin {
   }
 }
 
+/// Farbe für ein Feld nach Multiplikator: Triple lila, Double grün.
+Color segmentColor(BuildContext context, Segment s) {
+  final colors = context.dartColors;
+  if (s.isMiss) return colors.textMuted;
+  if (s.isTriple) return colors.tripleHit;
+  if (s.isDouble) return colors.doubleHit;
+  return Theme.of(context).colorScheme.onSurface;
+}
+
 /// Anzeige eines geworfenen Felds, eingefärbt nach Multiplikator.
+///
+/// Ist noch kein Dart geworfen, kann [planned] den empfohlenen Wurf zeigen
+/// (gelb, z. B. der Checkout-Weg).
 class DartChip extends StatelessWidget {
-  const DartChip({super.key, this.segment, this.large = false});
+  const DartChip({super.key, this.segment, this.planned, this.large = false, this.onTap, this.label});
 
   /// `null` = noch nicht geworfen (Platzhalter).
   final Segment? segment;
+
+  /// Empfohlenes Feld für einen noch nicht geworfenen Dart.
+  final Segment? planned;
   final bool large;
+
+  /// Antippen, z. B. zum Korrigieren.
+  final VoidCallback? onTap;
+
+  /// Kleine Beschriftung oben links, z. B. „1“.
+  final String? label;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.dartColors;
     final theme = Theme.of(context);
     final s = segment;
-    final Color accent = switch (s) {
-      null => colors.textMuted,
-      final s when s.isMiss => colors.textMuted,
-      final s when s.isTriple => colors.boardRed,
-      final s when s.isDouble => colors.boardGreen,
-      _ => theme.colorScheme.onSurface,
-    };
+    final p = s == null ? planned : null;
+    final Color accent = s != null ? segmentColor(context, s) : (p != null ? colors.highlight : colors.textMuted);
     final size = large ? 92.0 : 64.0;
-    return AnimatedContainer(
-      duration: AppDurations.medium,
-      curve: Curves.easeOutCubic,
-      width: size * 1.35,
-      height: size,
-      decoration: BoxDecoration(
-        color: s == null ? Colors.transparent : accent.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(AppRadii.m),
-        border: Border.all(color: s == null ? theme.colorScheme.outline : accent.withValues(alpha: 0.6), width: 1.5),
-      ),
-      alignment: Alignment.center,
-      child: AnimatedSwitcher(
-        duration: AppDurations.medium,
-        transitionBuilder: (child, a) => ScaleTransition(scale: a, child: FadeTransition(opacity: a, child: child)),
-        child: Text(
-          s?.name ?? '–',
-          key: ValueKey(s?.name),
-          style: (large ? AppTypography.scoreMedium : theme.textTheme.titleLarge)?.copyWith(
-            color: s == null ? colors.textMuted : accent,
-            fontFeatures: AppTypography.tabular,
+    final text = s?.name ?? p?.name ?? '–';
+    final radius = BorderRadius.circular(AppRadii.m);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: radius,
+        child: AnimatedContainer(
+          duration: AppDurations.medium,
+          curve: Curves.easeOutCubic,
+          width: size * 1.35,
+          height: size,
+          decoration: BoxDecoration(
+            color: s != null
+                ? accent.withValues(alpha: 0.14)
+                : p != null
+                    ? accent.withValues(alpha: 0.06)
+                    : colors.surfaceHigh.withValues(alpha: 0.5),
+            borderRadius: radius,
+            border: Border.all(
+              color: s != null
+                  ? accent.withValues(alpha: 0.65)
+                  : p != null
+                      ? accent.withValues(alpha: 0.45)
+                      : theme.colorScheme.outline,
+              width: 1.5,
+            ),
+          ),
+          child: Stack(
+            children: [
+              if (label != null)
+                Positioned(
+                  left: 8,
+                  top: 6,
+                  child: Text(label!, style: theme.textTheme.labelSmall?.copyWith(color: colors.textMuted)),
+                ),
+              if (onTap != null && s != null)
+                Positioned(
+                  right: 6,
+                  top: 6,
+                  child: Icon(Icons.edit_rounded, size: large ? 14 : 12, color: colors.textMuted.withValues(alpha: 0.7)),
+                ),
+              Center(
+                child: AnimatedSwitcher(
+                  duration: AppDurations.medium,
+                  transitionBuilder: (child, a) => ScaleTransition(scale: a, child: FadeTransition(opacity: a, child: child)),
+                  child: Text(
+                    text,
+                    key: ValueKey('${s == null ? 'p' : 's'}$text'),
+                    style: (large ? AppTypography.scoreMedium : theme.textTheme.titleLarge)?.copyWith(
+                      color: s == null && p == null ? colors.textMuted : accent,
+                      fontFeatures: AppTypography.tabular,
+                      fontWeight: p != null ? FontWeight.w600 : null,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
