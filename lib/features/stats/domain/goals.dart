@@ -18,7 +18,7 @@ enum GoalKind {
   /// Checkout-Quote in Prozent, letzte 30 Tage.
   checkoutRate(min: 5, max: 80, step: 1, defaultTarget: 30),
 
-  /// Double-Quote in Prozent (Bob's 27), letzte 30 Tage.
+  /// Double-Quote in Prozent (alle Darts mit einem Double als Ziel), letzte 30 Tage.
   doubleRate(min: 5, max: 60, step: 1, defaultTarget: 20);
 
   const GoalKind({required this.min, required this.max, required this.step, required this.defaultTarget});

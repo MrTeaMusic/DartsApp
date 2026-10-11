@@ -609,161 +609,175 @@
       }
     }
   },
-  "gameX01": "X01-Solo",
-  "gameX01Desc": "Ein Leg 501 (oder 101 bis 1001) allein: Average, First 9, Checkout-Quote. Mit Double-In, Double-/Master-Out und Dart-Limit.",
-  "gameHalveIt": "Halve-It",
-  "gameHalveItDesc": "Bermuda-Dreieck: eine Aufnahme pro Ziel. Wer das Ziel nicht trifft, verliert die Hälfte seiner Punkte.",
-  "gameCatch40": "Catch 40",
-  "gameCatch40Desc": "Finishes 61 bis 100 der Reihe nach. 2 Darts = 3 Punkte, 3 Darts = 2, mehr = 1. Maximum 120.",
-  "gameJdc": "JDC-Challenge",
-  "gameJdcDesc": "Prüfungsroutine der Junior Darts Corporation: Shanghai 10–15, alle Doubles, Shanghai 15–20. 57 Darts.",
-  "gameShanghai": "Shanghai",
-  "gameShanghaiDesc": "Eine Aufnahme pro Zahl. Single, Double und Triple derselben Zahl in einer Aufnahme ist ein Shanghai.",
-  "gameGolf": "Darts-Golf",
-  "gameGolfDesc": "Loch n = Zahl n. Double ist ein Hole-in-One, nach jedem Dart darfst du aufhören. Par 3 pro Loch.",
-  "gameDoubles420": "420",
-  "gameDoubles420Desc": "Doppel-Countdown: Start bei 420, jeder Treffer auf das aktuelle Double zieht ab. 0 heißt jedes Double genau einmal.",
-  "gameFrustration": "Frustration",
-  "gameFrustrationDesc": "Erst mit zwei Darts mindestens 80 scoren, dann mit dem dritten das Double. D1 bis Bull.",
-  "gameSwitchDrill": "Ziel-Wechsel",
-  "gameSwitchDrillDesc": "Pro Dart ein anderes Ziel, z. B. T20, T19, Bullseye (167). Übt den Wechsel zwischen Feldern.",
-  "gameDoublesLadder": "Doppel-Leiter",
-  "gameDoublesLadderDesc": "Doubles von D1 aufwärts. Genug Treffer: eine Stufe hoch, zu wenige: zurück.",
-  "gameExactScore": "Genau 100",
-  "gameExactScoreDesc": "Mit höchstens 9 Darts genau 100 Punkte erreichen, nicht mehr und nicht weniger.",
-  "gameThreeInABed": "Drei im Bett",
-  "gameThreeInABedDesc": "Alle drei Darts einer Aufnahme auf dieselbe Zahl, dann geht es zur nächsten.",
-  "gameSetupShot": "Stellen",
-  "gameSetupShotDesc": "Mit einem Dart den Rest auf ein Lieblings-Double stellen, z. B. 57 mit S17 auf 40.",
-  "optInMode": "Einstieg",
-  "optOutMode": "Ausstieg",
-  "optLegs": "Legs",
-  "optDartLimit": "Dart-Limit pro Leg (0 = aus)",
-  "optPreset": "Folge",
-  "optRounding": "Halbieren bei ungeradem Stand",
-  "optDartsPerTarget": "Darts pro Ziel",
-  "optFrom": "Von",
-  "optTo": "Bis",
-  "optShanghaiWins": "Shanghai beendet das Spiel",
-  "optShanghaiBonus": "Bonus für Shanghai",
-  "optHoles": "Löcher",
-  "optScoring": "Wertung",
-  "optCounts": "Es zählt",
-  "optSequence": "Ziele",
-  "optSetupMin": "Mindestens mit zwei Darts",
-  "optMaxVisits": "Höchstens Aufnahmen (0 = unbegrenzt)",
-  "optDifficulty": "Schwierigkeit",
-  "optVisitsPerAttempt": "Aufnahmen pro Versuch",
-  "optOvershoot": "Überworfen",
-  "optLeaves": "Erlaubte Reste",
-  "optDarts": "Darts",
-  "optBedMode": "Modus",
-  "optExactTarget": "Zielwert",
-  "optSwitchRounds": "Aufnahmen",
-  "optMinRest": "Kleinster Rest",
-  "optMaxRest": "Größter Rest",
-  "valStraight": "Straight",
-  "valMaster": "Master",
-  "valBermuda": "Bermuda (13 Runden)",
-  "valShortHalveIt": "Kurz (9 Runden)",
-  "valRoundDown": "Abrunden",
-  "valRoundUp": "Aufrunden",
-  "valClassicGolf": "Klassisch (inneres Single 3)",
-  "valSimple": "Einfach",
-  "valLast": "Letzter Dart",
-  "valBest": "Bester Dart",
-  "valFull": "D1 bis Bull",
-  "valShortFrustration": "D20 bis D10",
-  "valNormal": "Normal",
-  "valPro": "Profi",
-  "valFail": "Versuch gescheitert",
-  "valBust": "Bust (Aufnahme zählt nicht)",
-  "valClassicLeaves": "40, 32, 16",
-  "valGood": "40, 32, 36, 24, 16, 20, 8",
-  "valAnyDouble": "Jedes Double",
-  "valWedge": "Zahl (S/D/T gemischt)",
-  "valSegment": "Gleiches Feld",
-  "val167": "167 (T20, T19, Bull)",
-  "valTrebles": "Triples (T20, T19, T18)",
-  "valDoubles": "Doubles (D20, D16, D8)",
-  "valScoring": "Scoring (T20, T19, T20)",
-  "statLegDarts": "Darts im Leg",
-  "statLegsWon": "Legs gewonnen",
-  "statFirst9Average": "First-9-Average",
-  "statBestLegDarts": "Bestes Leg (Darts)",
-  "statHighestFinish": "Höchstes Finish",
-  "statScores100": "100+ / 140+ / 180",
-  "statDoubleToStart": "Double zum Einstieg",
-  "statHalvings": "Halbierungen",
-  "statBestRound": "Beste Runde",
-  "statCleanRounds": "Runden ohne Halbierung",
-  "statThreePointers": "3-Punkte-Finishes",
-  "statPart": "Teil",
-  "statPartPoints": "Punkte im Teil",
-  "statPart1": "Teil 1 (Shanghai 10–15)",
-  "statPart2": "Teil 2 (Doubles)",
-  "statPart3": "Teil 3 (Shanghai 15–20)",
-  "statShanghais": "Shanghais",
-  "statTriples": "Triples",
-  "statHole": "Loch",
-  "statStrokes": "Schläge",
-  "statToPar": "Zum Par",
-  "statHoleValue": "Lochwert",
-  "statHolesInOne": "Hole-in-One",
-  "statAveragePerHole": "Ø Schläge pro Loch",
-  "statMissedDoubles": "Doubles ohne Treffer",
-  "statVisits": "Aufnahmen",
-  "statSetupScore": "Aufbau",
-  "statSetupRate": "Aufbau-Quote",
-  "statPerfectRounds": "Perfekte Runden",
-  "statRateOf": "Quote",
-  "statLevel": "Stufe",
-  "statHighestLevel": "Höchste Stufe",
-  "statVisitsLeft": "Aufnahmen übrig",
-  "statAverageDarts": "Ø Darts bei Erfolg",
-  "statAverageGap": "Ø Abstand bei Fehlversuch",
-  "statIdeal": "Ideal gestellt",
-  "statIdealRate": "Ideal-Quote",
-  "evShanghai": "Shanghai auf {value}!",
-  "@evShanghai": {
+  "statsTabOverview": "Überblick",
+  "statsTabScoring": "Scoring",
+  "statsTabDoubles": "Doppel & Finish",
+  "statsTabGames": "Spiele",
+  "statsTabRecords": "Rekorde",
+  "statsKeyFigures": "Kennzahlen",
+  "statsCompareHint": "Pfeile: Vergleich mit den {days} Tagen davor",
+  "@statsCompareHint": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "statsPrevious": "Vorher: {value}",
+  "@statsPrevious": {
     "placeholders": {
       "value": {
         "type": "String"
       }
     }
   },
-  "evHalved": "Halbiert auf {value}",
-  "@evHalved": {
+  "statsTrainingTime": "Trainingszeit",
+  "statsAccuracy": "Trefferquote aufs Ziel",
+  "statsAccuracyCaption": "{count} Darts mit Ziel",
+  "@statsAccuracyCaption": {
     "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsDoubleCaption": "{count} Darts aufs Double",
+  "@statsDoubleCaption": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsTrebleCaption": "{count} Darts aufs Triple",
+  "@statsTrebleCaption": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsActivityWeekly": "Darts pro Woche",
+  "statsPattern": "Trainingsmuster",
+  "statsWeekdays": "Wochentage",
+  "statsWeekdayNames": "Mo,Di,Mi,Do,Fr,Sa,So",
+  "statsDayParts": "Tageszeit",
+  "statsDayMorning": "Morgen",
+  "statsDayAfternoon": "Nachmittag",
+  "statsDayEvening": "Abend",
+  "statsDayNight": "Nacht",
+  "statsHours": "{from}–{to} Uhr",
+  "@statsHours": {
+    "placeholders": {
+      "from": {
+        "type": "int"
+      },
+      "to": {
+        "type": "int"
+      }
+    }
+  },
+  "statsBestDayPart": "Dein bester Average: {part}, Ø {value}",
+  "@statsBestDayPart": {
+    "placeholders": {
+      "part": {
+        "type": "String"
+      },
       "value": {
         "type": "String"
       }
     }
   },
-  "evLevelDown": "Zurück auf {value}",
-  "@evLevelDown": {
+  "statsSessionsDarts": "{sessions} Sessions · {darts} Darts",
+  "@statsSessionsDarts": {
     "placeholders": {
-      "value": {
+      "sessions": {
+        "type": "int"
+      },
+      "darts": {
+        "type": "int"
+      }
+    }
+  },
+  "statsFirst9": "First 9",
+  "statsFirst9Caption": "Ø der ersten 9 Darts (X01)",
+  "statsSpread": "Streuung",
+  "statsSpreadCaption": "± Punkte je Aufnahme, kleiner ist konstanter",
+  "statsHighestVisit": "Höchste Aufnahme",
+  "statsTons": "Aufnahmen 100+",
+  "statsTon40s": "Aufnahmen 140+",
+  "statsMaxes": "180er",
+  "statsUnder40": "Aufnahmen unter 40",
+  "statsRateOfVisits": "{percent} der Aufnahmen",
+  "@statsRateOfVisits": {
+    "placeholders": {
+      "percent": {
         "type": "String"
       }
     }
   },
-  "evPartComplete": "Teil {value} geschafft",
-  "@evPartComplete": {
+  "statsAverageTrend": "3-Dart-Average pro Trainingstag",
+  "statsMovingAverage": "Gleitender Durchschnitt ({count})",
+  "@statsMovingAverage": {
     "placeholders": {
-      "value": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsLegendValue": "Wert",
+  "statsDistribution": "Punkte pro Aufnahme",
+  "statsDistributionHint": "{count} volle Aufnahmen (3 Darts) aus Scoring-Spielen und X01",
+  "@statsDistributionHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsTreblesPerNumber": "Triple-Quote pro Zahl",
+  "statsTreblesHint": "Darts, bei denen das Spiel ein Triple als Ziel vorgab, z. B. T20-Training oder Highscore-Jagd. Zahlen ab 3 Versuchen.",
+  "statsNoData": "Im Zeitraum gibt es dafür noch keine Daten.",
+  "statsDoublesPerNumber": "Doubles im Detail",
+  "statsDoublesHint": "Darts, bei denen genau ein Double das Ziel war: Bob's 27, Around the Clock auf Doubles und Checkout-Darts aufs vorgeschlagene Double.",
+  "statsStrongestDouble": "Stärkstes Double",
+  "statsWeakestDouble": "Schwächstes Double",
+  "statsDoublesLegend": "Grün: besser als deine Double-Quote, rot: schlechter. Stärkstes und schwächstes Double zählen ab {count} Versuchen.",
+  "@statsDoublesLegend": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsCheckoutByRange": "Checkout-Quote nach Rest",
+  "statsLast": "Zuletzt",
+  "statsLastFive": "Ø letzte 5",
+  "statsBestOn": "am {date}",
+  "@statsBestOn": {
+    "placeholders": {
+      "date": {
         "type": "String"
       }
     }
   },
-  "evLegComplete": "Leg {value} beendet",
-  "@evLegComplete": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
+  "statsRecordsHint": "Über alle Zeiträume, für das aktive Profil.",
+  "statsRecordBestAverage": "Bester Average einer Session",
+  "statsRecordBestFirst9": "Beste First 9",
+  "statsRecordHighestVisit": "Höchste Aufnahme",
+  "statsRecordHighestCheckout": "Höchstes Finish",
+  "statsRecordMost180s": "Meiste 180er in einer Session",
+  "statsRecordMostDartsDay": "Meiste Darts an einem Tag",
+  "statsRecordLongestStreak": "Längste Serie",
+  "statsGameBests": "Bestwerte je Spiel",
+  "statsRecordsEmpty": "Noch keine Rekorde. Spiel ein paar Trainings, dann tauchen sie hier auf.",
+  "statsMetricBestScore": "Bester Stand",
+  "statsMetricMarks": "Marks",
+  "statsMetricReached": "Erreicht",
+  "statsMetricTrebles": "Triples",
+  "statsMetricRounds": "Runden",
+  "statsMetricAttempts": "Versuche",
+  "statsMetricEndTarget": "Letztes Ziel",
   "visitLabel": "Aufnahme",
   "visitRoute": "Checkout-Weg",
   "fixOpen": "Würfe korrigieren",
@@ -941,5 +955,160 @@
   "planBackToPlans": "Zu den Plänen",
   "planNotFound": "Diesen Plan gibt es nicht mehr.",
   "optOn": "an",
-  "optOff": "aus"
+  "optOff": "aus",
+  "gameX01": "X01-Solo",
+  "gameX01Desc": "Ein Leg 501 (oder 101 bis 1001) allein: Average, First 9, Checkout-Quote. Mit Double-In, Double-/Master-Out und Dart-Limit.",
+  "gameHalveIt": "Halve-It",
+  "gameHalveItDesc": "Bermuda-Dreieck: eine Aufnahme pro Ziel. Wer das Ziel nicht trifft, verliert die Hälfte seiner Punkte.",
+  "gameCatch40": "Catch 40",
+  "gameCatch40Desc": "Finishes 61 bis 100 der Reihe nach. 2 Darts = 3 Punkte, 3 Darts = 2, mehr = 1. Maximum 120.",
+  "gameJdc": "JDC-Challenge",
+  "gameJdcDesc": "Prüfungsroutine der Junior Darts Corporation: Shanghai 10–15, alle Doubles, Shanghai 15–20. 57 Darts.",
+  "gameShanghai": "Shanghai",
+  "gameShanghaiDesc": "Eine Aufnahme pro Zahl. Single, Double und Triple derselben Zahl in einer Aufnahme ist ein Shanghai.",
+  "gameGolf": "Darts-Golf",
+  "gameGolfDesc": "Loch n = Zahl n. Double ist ein Hole-in-One, nach jedem Dart darfst du aufhören. Par 3 pro Loch.",
+  "gameDoubles420": "420",
+  "gameDoubles420Desc": "Doppel-Countdown: Start bei 420, jeder Treffer auf das aktuelle Double zieht ab. 0 heißt jedes Double genau einmal.",
+  "gameFrustration": "Frustration",
+  "gameFrustrationDesc": "Erst mit zwei Darts mindestens 80 scoren, dann mit dem dritten das Double. D1 bis Bull.",
+  "gameSwitchDrill": "Ziel-Wechsel",
+  "gameSwitchDrillDesc": "Pro Dart ein anderes Ziel, z. B. T20, T19, Bullseye (167). Übt den Wechsel zwischen Feldern.",
+  "gameDoublesLadder": "Doppel-Leiter",
+  "gameDoublesLadderDesc": "Doubles von D1 aufwärts. Genug Treffer: eine Stufe hoch, zu wenige: zurück.",
+  "gameExactScore": "Genau 100",
+  "gameExactScoreDesc": "Mit höchstens 9 Darts genau 100 Punkte erreichen, nicht mehr und nicht weniger.",
+  "gameThreeInABed": "Drei im Bett",
+  "gameThreeInABedDesc": "Alle drei Darts einer Aufnahme auf dieselbe Zahl, dann geht es zur nächsten.",
+  "gameSetupShot": "Stellen",
+  "gameSetupShotDesc": "Mit einem Dart den Rest auf ein Lieblings-Double stellen, z. B. 57 mit S17 auf 40.",
+  "optInMode": "Einstieg",
+  "optOutMode": "Ausstieg",
+  "optLegs": "Legs",
+  "optDartLimit": "Dart-Limit pro Leg (0 = aus)",
+  "optPreset": "Folge",
+  "optRounding": "Halbieren bei ungeradem Stand",
+  "optDartsPerTarget": "Darts pro Ziel",
+  "optFrom": "Von",
+  "optTo": "Bis",
+  "optShanghaiWins": "Shanghai beendet das Spiel",
+  "optShanghaiBonus": "Bonus für Shanghai",
+  "optHoles": "Löcher",
+  "optScoring": "Wertung",
+  "optCounts": "Es zählt",
+  "optSequence": "Ziele",
+  "optSetupMin": "Mindestens mit zwei Darts",
+  "optMaxVisits": "Höchstens Aufnahmen (0 = unbegrenzt)",
+  "optDifficulty": "Schwierigkeit",
+  "optVisitsPerAttempt": "Aufnahmen pro Versuch",
+  "optOvershoot": "Überworfen",
+  "optLeaves": "Erlaubte Reste",
+  "optDarts": "Darts",
+  "optBedMode": "Modus",
+  "optExactTarget": "Zielwert",
+  "optSwitchRounds": "Aufnahmen",
+  "optMinRest": "Kleinster Rest",
+  "optMaxRest": "Größter Rest",
+  "valStraight": "Straight",
+  "valMaster": "Master",
+  "valBermuda": "Bermuda (13 Runden)",
+  "valShortHalveIt": "Kurz (9 Runden)",
+  "valRoundDown": "Abrunden",
+  "valRoundUp": "Aufrunden",
+  "valClassicGolf": "Klassisch (inneres Single 3)",
+  "valSimple": "Einfach",
+  "valLast": "Letzter Dart",
+  "valBest": "Bester Dart",
+  "valFull": "D1 bis Bull",
+  "valShortFrustration": "D20 bis D10",
+  "valNormal": "Normal",
+  "valPro": "Profi",
+  "valFail": "Versuch gescheitert",
+  "valBust": "Bust (Aufnahme zählt nicht)",
+  "valClassicLeaves": "40, 32, 16",
+  "valGood": "40, 32, 36, 24, 16, 20, 8",
+  "valAnyDouble": "Jedes Double",
+  "valWedge": "Zahl (S/D/T gemischt)",
+  "valSegment": "Gleiches Feld",
+  "val167": "167 (T20, T19, Bull)",
+  "valTrebles": "Triples (T20, T19, T18)",
+  "valDoubles": "Doubles (D20, D16, D8)",
+  "valScoring": "Scoring (T20, T19, T20)",
+  "statLegDarts": "Darts im Leg",
+  "statLegsWon": "Legs gewonnen",
+  "statFirst9Average": "First-9-Average",
+  "statBestLegDarts": "Bestes Leg (Darts)",
+  "statHighestFinish": "Höchstes Finish",
+  "statScores100": "100+ / 140+ / 180",
+  "statDoubleToStart": "Double zum Einstieg",
+  "statHalvings": "Halbierungen",
+  "statBestRound": "Beste Runde",
+  "statCleanRounds": "Runden ohne Halbierung",
+  "statThreePointers": "3-Punkte-Finishes",
+  "statPart": "Teil",
+  "statPartPoints": "Punkte im Teil",
+  "statPart1": "Teil 1 (Shanghai 10–15)",
+  "statPart2": "Teil 2 (Doubles)",
+  "statPart3": "Teil 3 (Shanghai 15–20)",
+  "statShanghais": "Shanghais",
+  "statTriples": "Triples",
+  "statHole": "Loch",
+  "statStrokes": "Schläge",
+  "statToPar": "Zum Par",
+  "statHoleValue": "Lochwert",
+  "statHolesInOne": "Hole-in-One",
+  "statAveragePerHole": "Ø Schläge pro Loch",
+  "statMissedDoubles": "Doubles ohne Treffer",
+  "statVisits": "Aufnahmen",
+  "statSetupScore": "Aufbau",
+  "statSetupRate": "Aufbau-Quote",
+  "statPerfectRounds": "Perfekte Runden",
+  "statRateOf": "Quote",
+  "statLevel": "Stufe",
+  "statHighestLevel": "Höchste Stufe",
+  "statVisitsLeft": "Aufnahmen übrig",
+  "statAverageDarts": "Ø Darts bei Erfolg",
+  "statAverageGap": "Ø Abstand bei Fehlversuch",
+  "statIdeal": "Ideal gestellt",
+  "statIdealRate": "Ideal-Quote",
+  "evShanghai": "Shanghai auf {value}!",
+  "@evShanghai": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "evHalved": "Halbiert auf {value}",
+  "@evHalved": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "evLevelDown": "Zurück auf {value}",
+  "@evLevelDown": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "evPartComplete": "Teil {value} geschafft",
+  "@evPartComplete": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "evLegComplete": "Leg {value} beendet",
+  "@evLegComplete": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  }
 }
