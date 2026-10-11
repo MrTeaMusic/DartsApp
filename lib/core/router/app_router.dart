@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/dart_source/presentation/debug_screen.dart';
+import '../../features/games/presentation/game_play_screen.dart';
+import '../../features/games/presentation/game_setup_screen.dart';
 import '../../features/games/presentation/games_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
@@ -17,12 +19,16 @@ abstract final class Routes {
   static const stats = '/statistik';
   static const settings = '/einstellungen';
   static const debug = '/einstellungen/debug';
+  static const play = '/spiel';
+  static String gameSetup(String gameId) => '$games/$gameId';
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
   final router = GoRouter(
     initialLocation: Routes.home,
     routes: [
+      // Spielansicht ohne Navigation, damit das Board möglichst groß ist.
+      GoRoute(path: Routes.play, builder: (_, _) => const GamePlayScreen()),
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => AdaptiveScaffold(shell: shell),
         branches: [
@@ -30,7 +36,16 @@ final routerProvider = Provider<GoRouter>((ref) {
             GoRoute(path: Routes.home, builder: (_, _) => const HomeScreen()),
           ]),
           StatefulShellBranch(routes: [
-            GoRoute(path: Routes.games, builder: (_, _) => const GamesScreen()),
+            GoRoute(
+              path: Routes.games,
+              builder: (_, _) => const GamesScreen(),
+              routes: [
+                GoRoute(
+                  path: ':gameId',
+                  builder: (_, state) => GameSetupScreen(gameId: state.pathParameters['gameId']!),
+                ),
+              ],
+            ),
           ]),
           StatefulShellBranch(routes: [
             GoRoute(path: Routes.board, builder: (_, _) => const BoardScreen()),

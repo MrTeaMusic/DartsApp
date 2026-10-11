@@ -1,46 +1,96 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/design/components/components.dart';
 import '../../../core/design/dart_colors.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
+import '../../../core/router/app_router.dart';
+import '../data/game_repository.dart';
+import '../domain/engine/game_display.dart';
+import '../domain/game_catalog.dart';
+import 'game_texts.dart';
 
-/// Übersicht der Trainingsspiele. In Phase 1 nur Vorschau, die Regel-Engine
-/// kommt in Phase 2 und 3.
-class GamesScreen extends StatelessWidget {
+final recentSessionsProvider = StreamProvider<List<SessionSummary>>(
+  (ref) => ref.watch(gameRepositoryProvider).watchRecent(limit: 10),
+);
+
+/// Übersicht der Trainingsspiele.
+class GamesScreen extends ConsumerWidget {
   const GamesScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final games = [
-      (Icons.flag_rounded, l10n.gameCheckout, l10n.gameCheckoutDesc, 2),
-      (Icons.av_timer_rounded, l10n.gameAroundClock, l10n.gameAroundClockDesc, 2),
-      (Icons.trip_origin_rounded, l10n.gameBullDrill, l10n.gameBullDrillDesc, 2),
-      (Icons.trending_up_rounded, l10n.gameScoring, l10n.gameScoringDesc, 2),
-      (Icons.grid_on_rounded, l10n.gameCricket, l10n.gameCricketDesc, 3),
-      (Icons.filter_1_rounded, l10n.game121, l10n.game121Desc, 3),
-      (Icons.looks_two_rounded, l10n.gameBobs27, l10n.gameBobs27Desc, 3),
-      (Icons.repeat_rounded, l10n.gameThreeHits, l10n.gameThreeHitsDesc, 3),
-      (Icons.fast_forward_rounded, l10n.gameSkip, l10n.gameSkipDesc, 3),
+    final coming = [
+      (Icons.grid_on_rounded, l10n.gameCricket, l10n.gameCricketDesc),
+      (Icons.filter_1_rounded, l10n.game121, l10n.game121Desc),
+      (Icons.looks_two_rounded, l10n.gameBobs27, l10n.gameBobs27Desc),
+      (Icons.repeat_rounded, l10n.gameThreeHits, l10n.gameThreeHitsDesc),
+      (Icons.fast_forward_rounded, l10n.gameSkip, l10n.gameSkipDesc),
     ];
+    final recent = ref.watch(recentSessionsProvider).value ?? const [];
+
     return Scaffold(
       appBar: AppBar(title: Text(l10n.gamesTitle)),
       body: LayoutBuilder(builder: (context, c) {
         final columns = (c.maxWidth / 360).floor().clamp(1, 3);
-        return GridView.builder(
-          padding: const EdgeInsets.all(AppSpacing.page),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: columns,
-            mainAxisSpacing: AppSpacing.m,
-            crossAxisSpacing: AppSpacing.m,
-            mainAxisExtent: 128,
-          ),
-          itemCount: games.length,
-          itemBuilder: (context, i) {
-            final (icon, title, desc, phase) = games[i];
-            return _GameCard(icon: icon, title: title, description: desc, phase: phase);
-          },
+        SliverGrid grid(List<Widget> children) => SliverGrid(
+              delegate: SliverChildListDelegate(children),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: columns,
+                mainAxisSpacing: AppSpacing.m,
+                crossAxisSpacing: AppSpacing.m,
+                mainAxisExtent: 124,
+              ),
+            );
+        return CustomScrollView(
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(AppSpacing.page, AppSpacing.s, AppSpacing.page, 0),
+              sliver: SliverToBoxAdapter(child: SectionHeader(l10n.gamesPlayable)),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.page),
+              sliver: grid([
+                for (final def in GameCatalog.all)
+                  _GameCard(
+                    key: Key('game-${def.id}'),
+                    icon: gameIcon(def.id),
+                    title: l10n.gameTitle(def.id),
+                    description: l10n.gameDescription(def.id),
+                    onTap: () => context.go(Routes.gameSetup(def.id)),
+                  ),
+              ]),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(AppSpacing.page, AppSpacing.xl, AppSpacing.page, 0),
+              sliver: SliverToBoxAdapter(child: SectionHeader(l10n.gameRecent)),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.page),
+              sliver: SliverToBoxAdapter(
+                child: recent.isEmpty
+                    ? Text(l10n.gameRecentEmpty, style: Theme.of(context).textTheme.bodySmall)
+                    : AppCard(
+                        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                        child: Column(children: [for (final s in recent) _RecentTile(summary: s)]),
+                      ),
+              ),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(AppSpacing.page, AppSpacing.xl, AppSpacing.page, 0),
+              sliver: SliverToBoxAdapter(child: SectionHeader(l10n.gamesComing)),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(AppSpacing.page, 0, AppSpacing.page, AppSpacing.page),
+              sliver: grid([
+                for (final (icon, title, desc) in coming)
+                  _GameCard(icon: icon, title: title, description: desc, enabled: false),
+              ]),
+            ),
+          ],
         );
       }),
     );
@@ -48,53 +98,84 @@ class GamesScreen extends StatelessWidget {
 }
 
 class _GameCard extends StatelessWidget {
-  const _GameCard({required this.icon, required this.title, required this.description, required this.phase});
+  const _GameCard({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.description,
+    this.onTap,
+    this.enabled = true,
+  });
 
   final IconData icon;
   final String title;
   final String description;
-  final int phase;
+  final VoidCallback? onTap;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = context.dartColors;
-    return AppCard(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(AppRadii.m),
+    final accent = enabled ? theme.colorScheme.primary : colors.textMuted;
+    return Opacity(
+      opacity: enabled ? 1 : 0.6,
+      child: AppCard(
+        onTap: onTap,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: accent.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(AppRadii.m),
+              ),
+              child: Icon(icon, color: accent),
             ),
-            child: Icon(icon, color: theme.colorScheme.primary),
-          ),
-          const SizedBox(width: AppSpacing.l),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(child: Text(title, style: theme.textTheme.titleMedium, overflow: TextOverflow.ellipsis)),
-                    StatusPill(label: context.l10n.gamesPhase(phase), color: colors.textMuted),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  description,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodySmall,
-                ),
-              ],
+            const SizedBox(width: AppSpacing.l),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: theme.textTheme.titleMedium, overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(description, maxLines: 3, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodySmall),
+                ],
+              ),
             ),
-          ),
-        ],
+            if (enabled) Icon(Icons.chevron_right_rounded, color: colors.textMuted),
+          ],
+        ),
       ),
+    );
+  }
+}
+
+class _RecentTile extends StatelessWidget {
+  const _RecentTile({required this.summary});
+  final SessionSummary summary;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final m = summary.metrics;
+    final t = summary.startedAt;
+    String two(int v) => v.toString().padLeft(2, '0');
+    final date = '${two(t.day)}.${two(t.month)}. ${two(t.hour)}:${two(t.minute)}';
+    final headline = switch (summary.gameId) {
+      'checkout' => formatPercent(m['checkoutRate']),
+      'around_the_clock' => '${m['darts'] ?? '–'} ${l10n.statDarts}',
+      'score_target' => formatPercent(m['successRate']),
+      'target_practice' || 'highscore_hunt' => formatDecimal(m['average']),
+      _ => '${m['points'] ?? '–'}',
+    };
+    return ListTile(
+      leading: Icon(gameIcon(summary.gameId)),
+      title: Text(l10n.gameTitle(summary.gameId)),
+      subtitle: Text('$date · ${summary.dartCount} ${l10n.statDarts}${summary.finished ? '' : ' · ${l10n.gameAborted}'}'),
+      trailing: Text(headline, style: Theme.of(context).textTheme.titleMedium),
     );
   }
 }

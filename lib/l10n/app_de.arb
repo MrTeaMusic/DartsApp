@@ -33,7 +33,7 @@
   "homeSessionDarts": "Darts",
   "homeSessionAverage": "3-Dart-Average",
   "homeLastDart": "Letzter Dart",
-  "homePhaseNote": "Phase 1: Grundgerüst mit Design-System, Navigation, Datenquellen und Board. Spiele, Datenbank und Statistiken folgen in den nächsten Phasen.",
+  "homePhaseNote": "Phase 2: Checkout-Training, Around the Clock, Bullseye-Drill und Scoring-Drills sind spielbar, jeder Dart wird lokal gespeichert. Cricket, 121, Bob's 27 und deine eigenen Spiele folgen in Phase 3, Statistiken in Phase 4.",
   "gamesTitle": "Training",
   "gamesPhase": "Phase {phase}",
   "@gamesPhase": {
@@ -48,7 +48,7 @@
   "gameAroundClock": "Around the Clock",
   "gameAroundClockDesc": "Alle Zahlen von 1 bis 20 der Reihe nach, optional mit Bull.",
   "gameBullDrill": "Bullseye-Drills",
-  "gameBullDrillDesc": "Gezieltes Training auf 25 und Bull.",
+  "gameBullDrillDesc": "Feste Anzahl Aufnahmen nur auf Bull. Single Bull 25, Bullseye 50 Punkte.",
   "gameScoring": "Scoring-Drills",
   "gameScoringDesc": "T20-Training, Score-Aufgaben (100/140/180) und Highscore-Jagd.",
   "gameCricket": "Cricket",
@@ -167,5 +167,115 @@
         "type": "int"
       }
     }
-  }
+  },
+  "gameTargetPractice": "T20-Training",
+  "gameTargetPracticeDesc": "Eine Aufnahme nach der anderen auf das Triple einer Zahl. Misst Triple- und Zahl-Quote.",
+  "gameScoreTarget": "Score-Aufgabe",
+  "gameScoreTargetDesc": "Jede Aufnahme soll eine Vorgabe schaffen, z. B. 100, 140 oder 180.",
+  "gameHighscore": "Highscore-Jagd",
+  "gameHighscoreDesc": "So viele Punkte wie möglich in einer festen Anzahl Aufnahmen.",
+  "optMode": "Zielauswahl",
+  "optMin": "Kleinstes Finish",
+  "optMax": "Größtes Finish",
+  "optAttempts": "Versuche",
+  "optDartsPerAttempt": "Darts pro Versuch",
+  "optShowSuggestion": "Wurfvorschlag anzeigen",
+  "optDoubleOut": "Double-Out",
+  "optOrder": "Reihenfolge",
+  "optRing": "Zählender Ring",
+  "optIncludeBull": "Bull am Ende",
+  "optMultiplierAdvances": "Double/Triple springt 2/3 Zahlen weiter",
+  "optVisits": "Aufnahmen",
+  "optNumber": "Zahl",
+  "optTarget": "Vorgabe pro Aufnahme",
+  "valRandom": "Zufällig",
+  "valDescending": "Absteigend",
+  "valWeak": "Meine schwachen",
+  "valAscending": "1 bis 20",
+  "valClockwise": "Im Uhrzeigersinn",
+  "valAny": "Alle",
+  "statTarget": "Ziel",
+  "statCheckouts": "Checkouts",
+  "statCheckoutRate": "Checkout-Quote",
+  "statAvgDartsPerCheckout": "Ø Darts pro Checkout",
+  "statHighestCheckout": "Höchstes Finish",
+  "statDarts": "Darts",
+  "statHitRate": "Trefferquote",
+  "statNext": "Danach",
+  "statProgress": "Fortschritt",
+  "statPoints": "Punkte",
+  "statBullHits": "Bullseyes",
+  "statOuterBullHits": "Single Bulls",
+  "statBullRate": "Bullseye-Quote",
+  "statAverage": "3-Dart-Average",
+  "statTrebleRate": "Triple-Quote",
+  "statNumberRate": "Zahl-Quote",
+  "statBestVisit": "Beste Aufnahme",
+  "statScoreTarget": "Vorgabe",
+  "statSuccesses": "Geschafft",
+  "statSuccessRate": "Erfolgsquote",
+  "statVisitScore": "Aufnahme",
+  "statTons": "Aufnahmen ab 100",
+  "statRemaining": "Rest",
+  "evBust": "Bust!",
+  "evCheckout": "Checkout {value}!",
+  "@evCheckout": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "evFailed": "Nicht geschafft",
+  "evHit": "{value}",
+  "@evHit": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "evAdvanced": "Weiter!",
+  "evVisitSuccess": "Geschafft: {value}",
+  "@evVisitSuccess": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "evVisitMissed": "Nur {value}",
+  "@evVisitMissed": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "evBest": "Neuer Bestwert: {value}",
+  "@evBest": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "evFinished": "Spiel beendet",
+  "gameStart": "Spiel starten",
+  "gameSettings": "Einstellungen",
+  "gameEnd": "Beenden",
+  "gameEndTitle": "Spiel beenden?",
+  "gameEndText": "Der bisherige Stand wird gespeichert.",
+  "gameCancel": "Weiterspielen",
+  "gameAgain": "Nochmal",
+  "gameDone": "Fertig",
+  "gameResult": "Ergebnis",
+  "gameSuggestion": "Vorschlag",
+  "gameNoCheckout": "Kein Finish mit den restlichen Darts",
+  "gamesPlayable": "Spielbar",
+  "gamesComing": "Kommt in Phase 3",
+  "gameRecent": "Zuletzt gespielt",
+  "gameRecentEmpty": "Noch keine Spiele gespeichert.",
+  "gameAborted": "abgebrochen",
+  "gameWeakHint": "Nutzt deine bisherigen Checkout-Versuche. Ohne genug Daten wird zufällig gewählt."
 }
