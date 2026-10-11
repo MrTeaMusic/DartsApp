@@ -3,8 +3,12 @@ import 'package:flutter/material.dart';
 import '../../../core/l10n.dart';
 import '../domain/engine/game_display.dart';
 import '../domain/games/around_the_clock.dart';
+import '../domain/games/bobs_27.dart';
 import '../domain/games/bull_drill.dart';
 import '../domain/games/checkout/checkout_training.dart';
+import '../domain/games/cricket.dart';
+import '../domain/games/one_twenty_one.dart';
+import '../domain/games/own_games.dart';
 import '../domain/games/scoring_drills.dart';
 
 /// Übersetzt die stabilen Schlüssel der Spiel-Domäne in Text und Icons.
@@ -17,6 +21,11 @@ extension GameTexts on AppLocalizations {
         TargetPractice.id => gameTargetPractice,
         ScoreTarget.id => gameScoreTarget,
         HighscoreHunt.id => gameHighscore,
+        CricketTraining.id => gameCricket,
+        OneTwentyOne.id => game121,
+        Bobs27.id => gameBobs27,
+        ThreeHitsRound.id => gameThreeHits,
+        SkipAroundTheWorld.id => gameSkip,
         _ => id,
       };
 
@@ -27,6 +36,11 @@ extension GameTexts on AppLocalizations {
         TargetPractice.id => gameTargetPracticeDesc,
         ScoreTarget.id => gameScoreTargetDesc,
         HighscoreHunt.id => gameHighscoreDesc,
+        CricketTraining.id => gameCricketDesc,
+        OneTwentyOne.id => game121Desc,
+        Bobs27.id => gameBobs27Desc,
+        ThreeHitsRound.id => gameThreeHitsDesc,
+        SkipAroundTheWorld.id => gameSkipDesc,
         _ => '',
       };
 
@@ -45,6 +59,17 @@ extension GameTexts on AppLocalizations {
         'visits' => optVisits,
         'number' => optNumber,
         'target' => optTarget,
+        'cricketOrder' => optCricketOrder,
+        'marksToClose' => optMarksToClose,
+        'start' => optStart,
+        'rounds' => optRounds,
+        'failRule' => optFailRule,
+        'startScore' => optStartScore,
+        'allowNegative' => optAllowNegative,
+        'hitsRequired' => optHitsRequired,
+        'multiplierCounts' => optMultiplierCounts,
+        'skipThreshold' => optSkipThreshold,
+        'bullSkippable' => optBullSkippable,
         _ => key,
       };
 
@@ -58,6 +83,11 @@ extension GameTexts on AppLocalizations {
         'single' => single,
         'double' => this.double,
         'triple' => triple,
+        'free' => valFree,
+        'sequential' => valSequential,
+        'back' => valBack,
+        'stay' => valStay,
+        'down' => valDown,
         _ => value,
       };
 
@@ -85,6 +115,15 @@ extension GameTexts on AppLocalizations {
         'visitScore' => statVisitScore,
         'tons' => statTons,
         'remaining' => statRemaining,
+        'openNumbers' => statOpenNumbers,
+        'mpr' => statMpr,
+        'closedNumbers' => statClosedNumbers,
+        'attemptDarts' => statAttemptDarts,
+        'doubleHits' => statDoubleHits,
+        'doubleRate' => statDoubleRate,
+        'hitsOnTarget' => statHitsOnTarget,
+        'skips' => statSkips,
+        'pointsPerNumber' => statPointsPerNumber,
         _ => key,
       };
 
@@ -98,6 +137,8 @@ extension GameTexts on AppLocalizations {
         GameEventType.visitMissed => evVisitMissed('${e.value ?? ''}'),
         GameEventType.best => evBest('${e.value ?? ''}'),
         GameEventType.finished => evFinished,
+        GameEventType.closed => evClosed('${e.value ?? ''}'),
+        GameEventType.skipped => evSkipped('${e.value ?? ''}'),
       };
 }
 
@@ -108,6 +149,11 @@ IconData gameIcon(String id) => switch (id) {
       TargetPractice.id => Icons.gps_fixed_rounded,
       ScoreTarget.id => Icons.trending_up_rounded,
       HighscoreHunt.id => Icons.emoji_events_rounded,
+      CricketTraining.id => Icons.grid_on_rounded,
+      OneTwentyOne.id => Icons.stairs_rounded,
+      Bobs27.id => Icons.looks_two_rounded,
+      ThreeHitsRound.id => Icons.repeat_rounded,
+      SkipAroundTheWorld.id => Icons.fast_forward_rounded,
       _ => Icons.sports_esports_rounded,
     };
 
@@ -115,7 +161,13 @@ IconData gameIcon(String id) => switch (id) {
 enum EventTone { positive, negative, neutral }
 
 EventTone eventTone(GameEventType t) => switch (t) {
-      GameEventType.checkout || GameEventType.visitSuccess || GameEventType.best || GameEventType.advanced => EventTone.positive,
+      GameEventType.checkout ||
+      GameEventType.visitSuccess ||
+      GameEventType.best ||
+      GameEventType.advanced ||
+      GameEventType.closed ||
+      GameEventType.skipped =>
+        EventTone.positive,
       GameEventType.bust || GameEventType.failed || GameEventType.visitMissed => EventTone.negative,
       _ => EventTone.neutral,
     };
