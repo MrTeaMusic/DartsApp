@@ -126,13 +126,13 @@ Profils; das letzte Profil lässt sich nicht löschen.
 Unter Optionen › Daten. Auf Windows und macOS öffnet sich ein Speichern-Dialog. Auf iOS landen die
 Dateien im Dokumente-Ordner der App (Dateien-App › Auf meinem iPhone › DartLab).
 
-* **Backup (JSON):** alle Profile, Sessions, Würfe (mit Rohdaten) und Ziele. Format
-  `{"format": "dartlab-backup", "version": 2, …}`, dasselbe Datenformat wie beim
-  [Sync im Heimnetz](sync.md).
+* **Backup (JSON):** alle Profile, Sessions, Würfe (mit Rohdaten), Ziele und eigenen
+  [Trainingspläne](trainingsplaene.md). Format `{"format": "dartlab-backup", "version": 3, …}`,
+  dasselbe Datenformat wie beim [Sync im Heimnetz](sync.md).
 * **Import:** führt ein Backup mit den vorhandenen Daten zusammen, nach denselben Regeln wie der
   Sync. Sessions mit bekannter ID werden übersprungen, ein zweiter Import derselben Datei ändert
-  also nichts. Backups der Version 1 (ohne IDs) lassen sich weiter importieren: Profile werden dann
-  über den Namen zugeordnet, Sessions mit gleichem Profil, Spiel, Startzeit und Seed gelten als
-  vorhanden.
+  also nichts. Backups der Version 2 (ohne Trainingspläne) und 1 (ohne IDs) lassen sich weiter
+  importieren. Bei Version 1 werden Profile über den Namen zugeordnet, Sessions mit gleichem
+  Profil, Spiel, Startzeit und Seed gelten als vorhanden.
 * **Würfe als CSV / Sessions als CSV:** Komma-getrennt, UTF-8 mit BOM, Dezimalpunkt, Zeiten im
   ISO-Format. Die Sessions-Tabelle hat eine Spalte je Kennzahl.

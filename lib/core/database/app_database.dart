@@ -93,7 +93,47 @@ class Goals extends Table {
   DateTimeColumn get deletedAt => dateTime().nullable()();
 }
 
-@DriftDatabase(tables: [Players, Sessions, Throws, Goals])
+/// Eigene Trainingspläne (geräteübergreifend, nicht an ein Profil gebunden).
+/// Die festen Pläne stehen im Code.
+@DataClassName('TrainingPlanRow')
+@TableIndex(name: 'training_plans_uid', columns: {#uid}, unique: true)
+class TrainingPlans extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get uid => text().clientDefault(newUid)();
+  TextColumn get name => text().withLength(min: 1, max: 60)();
+  TextColumn get description => text().withDefault(const Constant(''))();
+
+  /// Schritte als JSON-Liste `[{gameId, config, note}]`, siehe `PlanStep`.
+  TextColumn get stepsJson => text()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime().nullable()();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+}
+
+/// Durchläufe von Trainingsplänen, damit ein angefangener Plan später
+/// fortgesetzt werden kann. Bleiben auf dem Gerät (kein Abgleich).
+@DataClassName('PlanRunRow')
+@TableIndex(name: 'plan_runs_uid', columns: {#uid}, unique: true)
+class PlanRuns extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get uid => text().clientDefault(newUid)();
+
+  /// `builtin-…` oder `uid` eines eigenen Plans.
+  TextColumn get planId => text()();
+  TextColumn get planName => text()();
+
+  /// Schritte beim Start (eingefroren).
+  TextColumn get stepsJson => text()();
+  IntColumn get playerId => integer().references(Players, #id, onDelete: KeyAction.cascade)();
+  DateTimeColumn get startedAt => dateTime()();
+  DateTimeColumn get finishedAt => dateTime().nullable()();
+  IntColumn get currentStep => integer().withDefault(const Constant(0))();
+
+  /// Ergebnisse je Schritt mit Session-`uid`, siehe `StepResult`.
+  TextColumn get resultsJson => text().withDefault(const Constant('[]'))();
+}
+
+@DriftDatabase(tables: [Players, Sessions, Throws, Goals, TrainingPlans, PlanRuns])
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
@@ -102,7 +142,7 @@ class AppDatabase extends _$AppDatabase {
 
   /// Bei Schemaänderungen erhöhen und in [migration] einen Schritt ergänzen.
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -135,6 +175,15 @@ class AppDatabase extends _$AppDatabase {
               if (!await _hasColumn('goals', column.name)) await m.addColumn(goals, column);
             }
             for (final table in ['players', 'sessions', 'goals']) {
+              await customStatement('CREATE UNIQUE INDEX IF NOT EXISTS ${table}_uid ON $table (uid)');
+            }
+          }
+          // Version 4: Trainingspläne und ihre Durchläufe. createTable legt
+          // nur an, was fehlt (IF NOT EXISTS), der Schritt ist wiederholbar.
+          if (from < 4) {
+            await m.createTable(trainingPlans);
+            await m.createTable(planRuns);
+            for (final table in ['training_plans', 'plan_runs']) {
               await customStatement('CREATE UNIQUE INDEX IF NOT EXISTS ${table}_uid ON $table (uid)');
             }
           }

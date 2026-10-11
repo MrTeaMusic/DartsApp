@@ -1,6 +1,7 @@
 # Sync im Heimnetz
 
-DartLab gleicht Profile, Sessions (mit allen Würfen) und Ziele zwischen den Geräten ab, ohne Cloud
+DartLab gleicht Profile, Sessions (mit allen Würfen), Ziele und eigene Trainingspläne zwischen den
+Geräten ab, ohne Cloud
 und ohne Konto. Ein Rechner ist der **Hub**, normalerweise der Windows-PC am Board. iPhone, iPad und
 weitere Rechner sind **Clients** und gleichen mit dem Hub ab, sobald sie im selben WLAN sind.
 
@@ -30,6 +31,9 @@ beide einmal abgeglichen haben.
 
 * **Sessions** werden nach dem Abschluss nicht mehr verändert. Jede hat eine eindeutige ID; fehlende
   werden übernommen, vorhandene übersprungen. Laufende Sessions werden nicht abgeglichen.
+* **Eigene Trainingspläne** werden wie Ziele behandelt: die neuere Änderung gewinnt, bei gleicher
+  Zeit das Löschen bzw. der größere Inhalt. Zwei gleich benannte Pläne bleiben zwei Pläne.
+  Plan-Durchläufe (wo man in einem Plan gerade steht) bleiben auf dem Gerät.
 * **Profile und Ziele:** die neuere Änderung gewinnt. Gelöschte Profile und Ziele bleiben als
   Markierung erhalten, damit das Löschen auf allen Geräten ankommt und nichts über ein anderes Gerät
   zurückkommt. Ein gelöschtes Profil nimmt seine Sessions auf allen Geräten mit.
@@ -45,11 +49,12 @@ HTTP auf Port 3190 (änderbar), JSON, jede Anfrage mit dem Code im Header `X-Dar
 | Anfrage | Inhalt | Antwort |
 |---|---|---|
 | `GET /hello` | – | `{"app": "dartlab-sync", "version": 1, "keyOk": …}` |
-| `POST /manifest` | Manifest des Clients: Profile, Ziele, IDs der abgeschlossenen Sessions | Manifest des Hubs; der Hub hat Profile und Ziele schon übernommen |
+| `POST /manifest` | Manifest des Clients: Profile, Ziele, Trainingspläne, IDs der abgeschlossenen Sessions | Manifest des Hubs; der Hub hat Profile, Ziele und Pläne schon übernommen |
 | `POST /push` | Paket mit den Sessions, die dem Hub fehlen | Ergebnis der Übernahme |
 | `POST /pull` | `{"sessions": [IDs]}` | Paket mit diesen Sessions |
 
-Sessions gehen in Teilen zu je 200. Das Paketformat ist dasselbe wie im JSON-Backup (Version 2).
+Sessions gehen in Teilen zu je 200. Das Paketformat ist dasselbe wie im JSON-Backup (Version 3). Ältere Geräte ohne Trainingspläne
+ignorieren das Feld `plans` und gleichen den Rest weiter ab.
 Der Code schützt nur vor versehentlichen Zugriffen im eigenen Netz; die Verbindung ist nicht
 verschlüsselt. Für den Einsatz in fremden Netzen ist der Sync nicht gedacht.
 

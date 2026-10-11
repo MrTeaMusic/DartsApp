@@ -105,7 +105,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                   children: [
                     for (final (i, o) in def.options.indexed) ...[
                       if (i > 0) const Divider(height: AppSpacing.xl),
-                      _OptionField(option: o, value: _config[o.key], onChanged: (v) => _set(o.key, v)),
+                      GameOptionField(option: o, value: _config[o.key], onChanged: (v) => _set(o.key, v)),
                     ],
                     if (def.id == CheckoutTraining.id && _config['mode'] == 'weak') ...[
                       const SizedBox(height: AppSpacing.m),
@@ -129,8 +129,9 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
   }
 }
 
-class _OptionField extends StatelessWidget {
-  const _OptionField({required this.option, required this.value, required this.onChanged});
+/// Ein Formularfeld für eine [ConfigOption]; auch im Trainingsplan-Editor genutzt.
+class GameOptionField extends StatelessWidget {
+  const GameOptionField({super.key, required this.option, required this.value, required this.onChanged});
 
   final ConfigOption option;
   final Object? value;

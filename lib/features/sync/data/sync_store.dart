@@ -10,6 +10,7 @@ class MergeResult {
     this.sessions = 0,
     this.throws = 0,
     this.goals = 0,
+    this.plans = 0,
     this.skipped = 0,
     this.updated = 0,
   });
@@ -20,25 +21,29 @@ class MergeResult {
   final int throws;
   final int goals;
 
+  /// Neu angelegte eigene Trainingspläne.
+  final int plans;
+
   /// Sessions, die schon vorhanden waren.
   final int skipped;
 
-  /// Geänderte oder gelöschte Profile und Ziele.
+  /// Geänderte oder gelöschte Profile, Ziele und Trainingspläne.
   final int updated;
 
-  bool get changedAnything => players + sessions + goals + updated > 0;
+  bool get changedAnything => players + sessions + goals + plans + updated > 0;
 
   MergeResult operator +(MergeResult o) => MergeResult(
         players: players + o.players,
         sessions: sessions + o.sessions,
         throws: throws + o.throws,
         goals: goals + o.goals,
+        plans: plans + o.plans,
         skipped: skipped + o.skipped,
         updated: updated + o.updated,
       );
 
   Map<String, int> toJson() =>
-      {'players': players, 'sessions': sessions, 'throws': throws, 'goals': goals, 'skipped': skipped, 'updated': updated};
+      {'players': players, 'sessions': sessions, 'throws': throws, 'goals': goals, 'plans': plans, 'skipped': skipped, 'updated': updated};
 
   static MergeResult fromJson(Map<String, Object?> j) {
     int n(String k) => (j[k] as num?)?.toInt() ?? 0;
@@ -47,25 +52,28 @@ class MergeResult {
       sessions: n('sessions'),
       throws: n('throws'),
       goals: n('goals'),
+      plans: n('plans'),
       skipped: n('skipped'),
       updated: n('updated'),
     );
   }
 }
 
-/// Was ein Gerät hat: alle Profile und Ziele (klein, inklusive gelöschter)
-/// und die IDs der abgeschlossenen Sessions.
+/// Was ein Gerät hat: alle Profile, Ziele und eigenen Trainingspläne (klein,
+/// inklusive gelöschter) und die IDs der abgeschlossenen Sessions.
 class SyncManifest {
-  const SyncManifest({required this.players, required this.goals, required this.sessionUids});
+  const SyncManifest({required this.players, required this.goals, this.plans = const [], required this.sessionUids});
   final List<Map<String, Object?>> players;
   final List<Map<String, Object?>> goals;
+  final List<Map<String, Object?>> plans;
   final Set<String> sessionUids;
 
-  Map<String, Object?> toJson() => {'players': players, 'goals': goals, 'sessions': sessionUids.toList()};
+  Map<String, Object?> toJson() => {'players': players, 'goals': goals, 'plans': plans, 'sessions': sessionUids.toList()};
 
   static SyncManifest fromJson(Map<String, Object?> j) => SyncManifest(
         players: _maps(j['players']),
         goals: _maps(j['goals']),
+        plans: _maps(j['plans']),
         sessionUids: {for (final u in (j['sessions'] as List? ?? const [])) if (u is String) u},
       );
 }
@@ -78,20 +86,29 @@ List<Map<String, Object?>> _maps(Object? l) =>
 ///
 /// Ältere Backups (Version 1) haben keine `uid`; dann wird wie früher über
 /// Profilnamen und Startzeit zugeordnet, verknüpft über die lokalen `id`s.
+/// Trainingspläne gibt es ab Version 3; ältere Pakete haben keine.
 class SyncBundle {
-  const SyncBundle({this.players = const [], this.sessions = const [], this.throws = const [], this.goals = const []});
+  const SyncBundle({
+    this.players = const [],
+    this.sessions = const [],
+    this.throws = const [],
+    this.goals = const [],
+    this.plans = const [],
+  });
   final List<Map<String, Object?>> players;
   final List<Map<String, Object?>> sessions;
   final List<Map<String, Object?>> throws;
   final List<Map<String, Object?>> goals;
+  final List<Map<String, Object?>> plans;
 
-  Map<String, Object?> toJson() => {'players': players, 'sessions': sessions, 'throws': throws, 'goals': goals};
+  Map<String, Object?> toJson() => {'players': players, 'sessions': sessions, 'throws': throws, 'goals': goals, 'plans': plans};
 
   static SyncBundle fromJson(Map<String, Object?> j) => SyncBundle(
         players: _maps(j['players']),
         sessions: _maps(j['sessions']),
         throws: _maps(j['throws']),
         goals: _maps(j['goals']),
+        plans: _maps(j['plans']),
       );
 }
 
@@ -102,6 +119,8 @@ class SyncBundle {
 ///   übernommen, vorhandene übersprungen.
 /// * Profile und Ziele: die neueste Änderung gewinnt (`updatedAt`). Gelöscht
 ///   wird über eine Markierung (`deletedAt`), damit es weitergegeben wird.
+/// * Eigene Trainingspläne: ebenso, zugeordnet nur über die `uid` (zwei
+///   gleich benannte Pläne bleiben zwei Pläne).
 /// * Gleich benannte Profile bzw. gleiche Zielart auf zwei Geräten werden zu
 ///   einem; beide Seiten übernehmen die kleinere `uid` und landen so beim
 ///   selben Ergebnis.
@@ -115,6 +134,7 @@ class SyncStore {
     final players = await db.select(db.players).get();
     final byId = {for (final p in players) p.id: p.uid};
     final goals = await db.select(db.goals).get();
+    final plans = await db.select(db.trainingPlans).get();
     final sessions = await (db.selectOnly(db.sessions)
           ..addColumns([db.sessions.uid])
           ..where(db.sessions.endedAt.isNotNull()))
@@ -123,6 +143,7 @@ class SyncStore {
     return SyncManifest(
       players: [for (final p in players) _player(p)],
       goals: [for (final g in goals) if (byId[g.playerId] != null) _goal(g, byId[g.playerId]!)],
+      plans: [for (final p in plans) _plan(p)],
       sessionUids: sessions.toSet(),
     );
   }
@@ -131,18 +152,20 @@ class SyncStore {
 SELECT
   (SELECT count(*) FROM sessions WHERE ended_at IS NOT NULL) || ':' ||
   (SELECT count(*) || '-' || coalesce(max(coalesce(updated_at, created_at)), 0) FROM players) || ':' ||
-  (SELECT count(*) || '-' || coalesce(max(coalesce(updated_at, created_at)), 0) FROM goals) AS sig''';
+  (SELECT count(*) || '-' || coalesce(max(coalesce(updated_at, created_at)), 0) FROM goals) || ':' ||
+  (SELECT count(*) || '-' || coalesce(max(coalesce(updated_at, created_at)), 0) FROM training_plans) AS sig''';
 
   /// Kurzer Fingerabdruck dessen, was abgeglichen wird. Ändert er sich, gibt
-  /// es etwas Neues (abgeschlossene Session, Profil oder Ziel geändert).
+  /// es etwas Neues (abgeschlossene Session, Profil, Ziel oder Plan geändert).
   Future<String> signature() => db.customSelect(_signatureSql).map((r) => r.read<String>('sig')).getSingle();
 
   Stream<String> watchSignature() => db
-      .customSelect(_signatureSql, readsFrom: {db.sessions, db.players, db.goals})
+      .customSelect(_signatureSql, readsFrom: {db.sessions, db.players, db.goals, db.trainingPlans})
       .map((r) => r.read<String>('sig'))
       .watchSingle();
 
-  /// Paket mit Profilen, Zielen und den Sessions (samt Würfen). Ohne
+  /// Paket mit Profilen, Zielen, eigenen Trainingsplänen und den Sessions
+  /// (samt Würfen). Pläne gehören keinem Profil und sind immer dabei. Ohne
   /// [sessionUids] alle, mit [playerId] nur ein Profil. [includeOpen] nimmt
   /// auch laufende Sessions mit (fürs Backup).
   Future<SyncBundle> bundle({Iterable<String>? sessionUids, int? playerId, bool includeOpen = false}) async {
@@ -170,11 +193,13 @@ SELECT
               ..orderBy([(t) => OrderingTerm.asc(t.sessionId), (t) => OrderingTerm.asc(t.seq)]))
             .get();
     final goals = await (db.select(db.goals)..where((g) => playerId == null ? const Constant(true) : g.playerId.equals(playerId))).get();
+    final plans = await (db.select(db.trainingPlans)..orderBy([(p) => OrderingTerm.asc(p.id)])).get();
     return SyncBundle(
       players: [for (final p in players) _player(p)],
       sessions: [for (final s in sessions) _session(s, playerUids[s.playerId]!)],
       throws: [for (final t in throws) _throw(t, sessionUid[t.sessionId]!, playerUids[t.playerId]!)],
       goals: [for (final g in goals) if (playerUids[g.playerId] != null) _goal(g, playerUids[g.playerId]!)],
+      plans: [for (final p in plans) _plan(p)],
     );
   }
 
@@ -205,6 +230,16 @@ SELECT
         'createdAt': _time(g.createdAt),
         'updatedAt': _time(g.updatedAt),
         'deletedAt': _time(g.deletedAt),
+      };
+
+  Map<String, Object?> _plan(TrainingPlanRow p) => {
+        'uid': p.uid,
+        'name': p.name,
+        'description': p.description,
+        'stepsJson': p.stepsJson,
+        'createdAt': _time(p.createdAt),
+        'updatedAt': _time(p.updatedAt),
+        'deletedAt': _time(p.deletedAt),
       };
 
   Map<String, Object?> _session(SessionRow s, String playerUid) => {
@@ -249,15 +284,17 @@ SELECT
   Future<MergeResult> merge(SyncBundle bundle) => db.transaction(() async {
         final players = await _mergePlayers(bundle.players);
         final goals = await _mergeGoals(bundle.goals, players);
+        final plans = await _mergePlans(bundle.plans);
         final sessions = await _mergeSessions(bundle.sessions, bundle.throws, players);
-        return players.result + goals + sessions;
+        return players.result + goals + plans + sessions;
       });
 
-  /// Nur Profile und Ziele (aus einem Manifest).
+  /// Nur Profile, Ziele und Trainingspläne (aus einem Manifest).
   Future<MergeResult> mergeMeta(SyncManifest m) => db.transaction(() async {
         final players = await _mergePlayers(m.players);
         final goals = await _mergeGoals(m.goals, players);
-        return players.result + goals;
+        final plans = await _mergePlans(m.plans);
+        return players.result + goals + plans;
       });
 
   static DateTime _stamp(DateTime created, DateTime? updated) => updated ?? created;
@@ -387,6 +424,61 @@ SELECT
       }
     }
     return MergeResult(goals: created, updated: updated);
+  }
+
+  /// Eigene Trainingspläne: neueste Änderung gewinnt, Löschmarkierungen
+  /// werden übernommen und weitergegeben. Bei gleicher Zeit gewinnt das
+  /// Löschen, sonst der größere Inhalt (Name, Beschreibung, Schritte), damit
+  /// beide Seiten dasselbe Ergebnis haben.
+  Future<MergeResult> _mergePlans(List<Map<String, Object?>> incoming) async {
+    var created = 0;
+    var updated = 0;
+    for (final j in incoming) {
+      final uid = j['uid'];
+      final rawName = j['name'];
+      final stepsJson = j['stepsJson'];
+      if (uid is! String || uid.isEmpty || rawName is! String || stepsJson is! String) continue;
+      var name = rawName.trim();
+      if (name.length > 60) name = name.substring(0, 60);
+      if (name.isEmpty) continue;
+      final description = j['description'] as String? ?? '';
+      final createdAt = _parse(j['createdAt']) ?? DateTime.now();
+      final updatedAt = _parse(j['updatedAt']);
+      final deletedAt = _parse(j['deletedAt']);
+
+      final local = await (db.select(db.trainingPlans)..where((p) => p.uid.equals(uid))).getSingleOrNull();
+      if (local == null) {
+        await db.into(db.trainingPlans).insert(TrainingPlansCompanion.insert(
+              uid: Value(uid),
+              name: name,
+              description: Value(description),
+              stepsJson: stepsJson,
+              createdAt: createdAt,
+              updatedAt: Value(updatedAt),
+              deletedAt: Value(deletedAt),
+            ));
+        if (deletedAt == null) created++;
+        continue;
+      }
+      final theirs = _stamp(createdAt, updatedAt);
+      final theirDeleted = deletedAt != null;
+      final ourDeleted = local.deletedAt != null;
+      final theirContent = [name, description, stepsJson].join('\n');
+      final ourContent = [local.name, local.description, local.stepsJson].join('\n');
+      final differs = theirContent != ourContent || theirDeleted != ourDeleted;
+      final tie = theirDeleted != ourDeleted ? (theirDeleted ? 1 : -1) : theirContent.compareTo(ourContent);
+      if (differs && _newer(theirs, _stamp(local.createdAt, local.updatedAt), tie)) {
+        await (db.update(db.trainingPlans)..where((p) => p.id.equals(local.id))).write(TrainingPlansCompanion(
+          name: Value(name),
+          description: Value(description),
+          stepsJson: Value(stepsJson),
+          updatedAt: Value(theirs),
+          deletedAt: Value(deletedAt),
+        ));
+        updated++;
+      }
+    }
+    return MergeResult(plans: created, updated: updated);
   }
 
   Future<MergeResult> _mergeSessions(

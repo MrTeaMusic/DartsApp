@@ -7,6 +7,7 @@ import '../../features/games/presentation/game_play_screen.dart';
 import '../../features/games/presentation/game_setup_screen.dart';
 import '../../features/games/presentation/games_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/plans/presentation/plan_routes.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/simulator/presentation/board_screen.dart';
 import '../../features/stats/presentation/stats_screen.dart';
@@ -40,6 +41,8 @@ final routerProvider = Provider<GoRouter>((ref) {
               path: Routes.games,
               builder: (_, _) => const GamesScreen(),
               routes: [
+                // Trainingspläne vor :gameId, damit "plaene" kein Spiel ist.
+                ...planRoutes,
                 GoRoute(
                   path: ':gameId',
                   builder: (_, state) => GameSetupScreen(gameId: state.pathParameters['gameId']!),
