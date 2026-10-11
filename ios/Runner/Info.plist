@@ -71,7 +71,7 @@
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<true/>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>DartLab verbindet sich mit dem Autodarts Board Manager in deinem Netzwerk, um Würfe live zu empfangen.</string>
+	<string>DartLab verbindet sich mit dem Autodarts Board Manager in deinem Netzwerk, um Würfe live zu empfangen, und gleicht deine Einträge mit DartLab auf deinem PC ab.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>

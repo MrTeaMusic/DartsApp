@@ -16,6 +16,7 @@ import '../../dart_source/presentation/diagnostics_dialog.dart';
 import '../../dart_source/presentation/recording_sheet.dart';
 import '../../dart_source/presentation/source_status_badge.dart';
 import '../../profiles/presentation/profiles_card.dart';
+import '../../sync/presentation/sync_card.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -102,6 +103,9 @@ class SettingsScreen extends ConsumerWidget {
                   ],
                 ),
               ),
+              const SizedBox(height: AppSpacing.xl),
+              SectionHeader(l10n.syncTitle),
+              const SyncCard(),
               const SizedBox(height: AppSpacing.xl),
               SectionHeader(l10n.backupTitle),
               const BackupCard(),

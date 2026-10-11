@@ -127,6 +127,21 @@ class SyncStore {
     );
   }
 
+  static const _signatureSql = '''
+SELECT
+  (SELECT count(*) FROM sessions WHERE ended_at IS NOT NULL) || ':' ||
+  (SELECT count(*) || '-' || coalesce(max(coalesce(updated_at, created_at)), 0) FROM players) || ':' ||
+  (SELECT count(*) || '-' || coalesce(max(coalesce(updated_at, created_at)), 0) FROM goals) AS sig''';
+
+  /// Kurzer Fingerabdruck dessen, was abgeglichen wird. Ändert er sich, gibt
+  /// es etwas Neues (abgeschlossene Session, Profil oder Ziel geändert).
+  Future<String> signature() => db.customSelect(_signatureSql).map((r) => r.read<String>('sig')).getSingle();
+
+  Stream<String> watchSignature() => db
+      .customSelect(_signatureSql, readsFrom: {db.sessions, db.players, db.goals})
+      .map((r) => r.read<String>('sig'))
+      .watchSingle();
+
   /// Paket mit Profilen, Zielen und den Sessions (samt Würfen). Ohne
   /// [sessionUids] alle, mit [playerId] nur ein Profil. [includeOpen] nimmt
   /// auch laufende Sessions mit (fürs Backup).

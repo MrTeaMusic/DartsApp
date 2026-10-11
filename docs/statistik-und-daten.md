@@ -51,9 +51,12 @@ Unter Optionen › Daten. Auf Windows und macOS öffnet sich ein Speichern-Dialo
 Dateien im Dokumente-Ordner der App (Dateien-App › Auf meinem iPhone › DartLab).
 
 * **Backup (JSON):** alle Profile, Sessions, Würfe (mit Rohdaten) und Ziele. Format
-  `{"format": "dartlab-backup", "version": 1, …}`.
-* **Import:** führt ein Backup mit den vorhandenen Daten zusammen. Profile werden über den Namen
-  zugeordnet, fehlende angelegt. Sessions mit gleichem Profil, Spiel, Startzeit und Seed gelten als
-  vorhanden und werden übersprungen, ein zweiter Import derselben Datei ändert also nichts.
+  `{"format": "dartlab-backup", "version": 2, …}`, dasselbe Datenformat wie beim
+  [Sync im Heimnetz](sync.md).
+* **Import:** führt ein Backup mit den vorhandenen Daten zusammen, nach denselben Regeln wie der
+  Sync. Sessions mit bekannter ID werden übersprungen, ein zweiter Import derselben Datei ändert
+  also nichts. Backups der Version 1 (ohne IDs) lassen sich weiter importieren: Profile werden dann
+  über den Namen zugeordnet, Sessions mit gleichem Profil, Spiel, Startzeit und Seed gelten als
+  vorhanden.
 * **Würfe als CSV / Sessions als CSV:** Komma-getrennt, UTF-8 mit BOM, Dezimalpunkt, Zeiten im
   ISO-Format. Die Sessions-Tabelle hat eine Spalte je Kennzahl.

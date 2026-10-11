@@ -148,6 +148,8 @@ void main() {
     final scrollable = find.byType(Scrollable).last;
 
     await tester.scrollUntilVisible(find.byKey(const Key('export-json')), 300, scrollable: scrollable);
+    await tester.ensureVisible(find.byKey(const Key('export-json')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('export-json')));
     await tester.pumpAndSettle();
     final json = files.saved.entries.single;
@@ -155,12 +157,16 @@ void main() {
     expect(jsonDecode(json.value)['format'], 'dartlab-backup');
     expect(find.textContaining('Gespeichert: /tmp/dartlab-backup-'), findsOneWidget);
 
+    await tester.ensureVisible(find.byKey(const Key('export-throws')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('export-throws')));
     await tester.pumpAndSettle();
     expect(files.saved.keys.where((k) => k.startsWith('dartlab-wuerfe-')).length, 1);
 
     files.toOpen = json.value;
     await tester.scrollUntilVisible(find.byKey(const Key('import-json')), 300, scrollable: scrollable);
+    await tester.ensureVisible(find.byKey(const Key('import-json')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('import-json')));
     await tester.pumpAndSettle();
     expect(find.textContaining('(1 schon vorhanden)'), findsOneWidget);
