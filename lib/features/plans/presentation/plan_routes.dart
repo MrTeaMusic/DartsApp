@@ -5,6 +5,7 @@ import '../../../core/router/app_router.dart';
 import '../../profiles/presentation/active_player.dart';
 import '../data/plan_repository.dart';
 import '../domain/training_plan.dart';
+import 'auto_plan_screen.dart';
 import 'plan_detail_screen.dart';
 import 'plan_editor_screen.dart';
 import 'plan_summary_screen.dart';
@@ -14,6 +15,9 @@ import 'plans_screen.dart';
 abstract final class PlanRoutes {
   static const list = '${Routes.games}/plaene';
   static const create = '$list/neu';
+
+  /// Automatischer Plan aus der Statistik.
+  static const auto = '$list/fuer-mich';
   static String plan(String id) => '$list/$id';
   static String edit(String id) => '$list/$id/bearbeiten';
   static String run(int runId) => '$list/lauf/$runId';
@@ -26,6 +30,7 @@ final List<RouteBase> planRoutes = [
     builder: (_, _) => const PlansScreen(),
     routes: [
       GoRoute(path: 'neu', builder: (_, _) => const PlanEditorScreen()),
+      GoRoute(path: 'fuer-mich', builder: (_, _) => const AutoPlanScreen()),
       GoRoute(
         path: 'lauf/:runId',
         builder: (_, state) => PlanSummaryScreen(runId: int.tryParse(state.pathParameters['runId']!) ?? -1),
