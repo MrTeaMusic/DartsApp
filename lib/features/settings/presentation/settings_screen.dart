@@ -1,0 +1,211 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../core/design/components/components.dart';
+import '../../../core/design/dart_colors.dart';
+import '../../../core/design/tokens.dart';
+import '../../../core/l10n.dart';
+import '../../../core/router/app_router.dart';
+import '../../../core/settings/app_settings.dart';
+import '../../dart_source/domain/dart_event.dart';
+import '../../dart_source/presentation/source_status_badge.dart';
+
+class SettingsScreen extends ConsumerWidget {
+  const SettingsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final settings = ref.watch(settingsProvider);
+    final notifier = ref.read(settingsProvider.notifier);
+
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.settingsTitle)),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 720),
+          child: ListView(
+            padding: const EdgeInsets.all(AppSpacing.page),
+            children: [
+              SectionHeader(l10n.settingsAppearance),
+              SegmentedButton<ThemeMode>(
+                key: const Key('theme-selector'),
+                segments: [
+                  ButtonSegment(value: ThemeMode.dark, label: Text(l10n.themeDark), icon: const Icon(Icons.dark_mode_rounded)),
+                  ButtonSegment(value: ThemeMode.light, label: Text(l10n.themeLight), icon: const Icon(Icons.light_mode_rounded)),
+                  ButtonSegment(value: ThemeMode.system, label: Text(l10n.themeSystem), icon: const Icon(Icons.brightness_auto_rounded)),
+                ],
+                selected: {settings.themeMode},
+                onSelectionChanged: (s) => notifier.update((x) => x.copyWith(themeMode: s.first)),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              SectionHeader(l10n.settingsSource, trailing: const SourceStatusBadge()),
+              AppCard(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                child: RadioGroup<DartSourceKind>(
+                  groupValue: settings.sourceKind,
+                  onChanged: (v) {
+                    if (v != null) notifier.update((x) => x.copyWith(sourceKind: v));
+                  },
+                  child: Column(
+                    children: [
+                      for (final kind in DartSourceKind.values)
+                        RadioListTile<DartSourceKind>(
+                          key: Key('source-${kind.name}'),
+                          value: kind,
+                          secondary: Icon(kind.icon),
+                          title: Text(kind.label(l10n)),
+                          subtitle: Text(switch (kind) {
+                            DartSourceKind.simulator => l10n.sourceSimulatorHint,
+                            DartSourceKind.manual => l10n.sourceManualHint,
+                            DartSourceKind.autodartsLocal => l10n.sourceAutodartsHint,
+                          }),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              if (settings.sourceKind == DartSourceKind.autodartsLocal) ...[
+                const SizedBox(height: AppSpacing.m),
+                _AutodartsConnectionCard(settings: settings),
+              ],
+              const SizedBox(height: AppSpacing.xl),
+              SectionHeader(l10n.settingsFeedback),
+              AppCard(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                child: Column(
+                  children: [
+                    SwitchListTile(
+                      value: settings.soundEnabled,
+                      onChanged: (v) => notifier.update((x) => x.copyWith(soundEnabled: v)),
+                      title: Text(l10n.settingsSound),
+                      subtitle: Text(l10n.settingsSoundHint),
+                      secondary: const Icon(Icons.volume_up_rounded),
+                    ),
+                    SwitchListTile(
+                      value: settings.hapticsEnabled,
+                      onChanged: (v) => notifier.update((x) => x.copyWith(hapticsEnabled: v)),
+                      title: Text(l10n.settingsHaptics),
+                      subtitle: Text(l10n.settingsHapticsHint),
+                      secondary: const Icon(Icons.vibration_rounded),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              SectionHeader(l10n.settingsDeveloper),
+              AppCard(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                child: Column(
+                  children: [
+                    ListTile(
+                      key: const Key('open-debug'),
+                      leading: const Icon(Icons.terminal_rounded),
+                      title: Text(l10n.debugTitle),
+                      subtitle: Text(l10n.settingsDebugHint),
+                      trailing: const Icon(Icons.chevron_right_rounded),
+                      onTap: () => context.go(Routes.debug),
+                    ),
+                    SwitchListTile(
+                      value: settings.logRawToFile,
+                      onChanged: (v) => notifier.update((x) => x.copyWith(logRawToFile: v)),
+                      title: Text(l10n.settingsLogToFile),
+                      subtitle: Text(l10n.settingsLogToFileHint),
+                      secondary: const Icon(Icons.save_alt_rounded),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              Center(child: Text(l10n.settingsVersion('0.1.0 · Phase 1'), style: Theme.of(context).textTheme.bodySmall)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AutodartsConnectionCard extends ConsumerStatefulWidget {
+  const _AutodartsConnectionCard({required this.settings});
+  final AppSettings settings;
+
+  @override
+  ConsumerState<_AutodartsConnectionCard> createState() => _AutodartsConnectionCardState();
+}
+
+class _AutodartsConnectionCardState extends ConsumerState<_AutodartsConnectionCard> {
+  late final _host = TextEditingController(text: widget.settings.autodartsHost);
+  late final _port = TextEditingController(text: '${widget.settings.autodartsPort}');
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  void dispose() {
+    _host.dispose();
+    _port.dispose();
+    super.dispose();
+  }
+
+  void _apply() {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    ref.read(settingsProvider.notifier).update(
+          (x) => x.copyWith(autodartsHost: _host.text.trim(), autodartsPort: int.parse(_port.text.trim())),
+        );
+    FocusScope.of(context).unfocus();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    return AppCard(
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: TextFormField(
+                    key: const Key('host-field'),
+                    controller: _host,
+                    decoration: InputDecoration(labelText: l10n.settingsHost, hintText: '192.168.0.42'),
+                    keyboardType: TextInputType.url,
+                    autocorrect: false,
+                    validator: (v) => (v == null || v.trim().isEmpty || v.contains(' ')) ? l10n.settingsHostInvalid : null,
+                    onFieldSubmitted: (_) => _apply(),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.m),
+                Expanded(
+                  child: TextFormField(
+                    key: const Key('port-field'),
+                    controller: _port,
+                    decoration: InputDecoration(labelText: l10n.settingsPort),
+                    keyboardType: TextInputType.number,
+                    validator: (v) {
+                      final p = int.tryParse(v?.trim() ?? '');
+                      return (p == null || p < 1 || p > 65535) ? l10n.settingsPortInvalid : null;
+                    },
+                    onFieldSubmitted: (_) => _apply(),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.m),
+            Text(l10n.autodartsUnverified, style: theme.textTheme.bodySmall?.copyWith(color: context.dartColors.warning)),
+            const SizedBox(height: AppSpacing.m),
+            Align(
+              alignment: Alignment.centerRight,
+              child: FilledButton(key: const Key('apply-connection'), onPressed: _apply, child: Text(l10n.settingsApply)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

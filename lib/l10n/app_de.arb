@@ -1,0 +1,171 @@
+{
+  "@@locale": "de",
+  "appTitle": "DartLab",
+  "navHome": "Start",
+  "navGames": "Training",
+  "navBoard": "Board",
+  "navStats": "Statistik",
+  "navSettings": "Optionen",
+  "sourceSimulator": "Simulator",
+  "sourceManual": "Manuelle Eingabe",
+  "sourceAutodarts": "Autodarts (lokal)",
+  "sourceSimulatorHint": "Virtuelles Board zum Testen ohne Hardware",
+  "sourceManualHint": "Felder per Tastenfeld oder Board antippen",
+  "sourceAutodartsHint": "Live-Würfe vom Board Manager im Netzwerk",
+  "statusIdle": "Nicht verbunden",
+  "statusConnecting": "Verbinde …",
+  "statusConnected": "Verbunden",
+  "statusPolling": "Verbunden (Polling)",
+  "statusReconnecting": "Neuer Versuch in {seconds} s",
+  "@statusReconnecting": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "statusError": "Fehler",
+  "homeGreeting": "Bereit fürs Training?",
+  "homeSubtitle": "Teste das Board im Simulator oder verbinde dein Autodarts-Board.",
+  "homeOpenBoard": "Board öffnen",
+  "homeOpenGames": "Trainingsspiele",
+  "homeSession": "Diese Sitzung",
+  "homeSessionDarts": "Darts",
+  "homeSessionAverage": "3-Dart-Average",
+  "homeLastDart": "Letzter Dart",
+  "homePhaseNote": "Phase 1: Grundgerüst mit Design-System, Navigation, Datenquellen und Board. Spiele, Datenbank und Statistiken folgen in den nächsten Phasen.",
+  "gamesTitle": "Training",
+  "gamesPhase": "Phase {phase}",
+  "@gamesPhase": {
+    "placeholders": {
+      "phase": {
+        "type": "int"
+      }
+    }
+  },
+  "gameCheckout": "Checkout-Training",
+  "gameCheckoutDesc": "Finishes von 170 bis 2, zufällig, nach Bereich oder deine schwachen. Double-Out, Wurfvorschlag auf Wunsch.",
+  "gameAroundClock": "Around the Clock",
+  "gameAroundClockDesc": "Alle Zahlen von 1 bis 20 der Reihe nach, optional mit Bull.",
+  "gameBullDrill": "Bullseye-Drills",
+  "gameBullDrillDesc": "Gezieltes Training auf 25 und Bull.",
+  "gameScoring": "Scoring-Drills",
+  "gameScoringDesc": "T20-Training, Score-Aufgaben (100/140/180) und Highscore-Jagd.",
+  "gameCricket": "Cricket",
+  "gameCricketDesc": "15 bis 20 und Bull schließen, Punkte sammeln.",
+  "game121": "121",
+  "game121Desc": "Checkout-Leiter ab 121 mit begrenzter Dartzahl.",
+  "gameBobs27": "Bob's 27",
+  "gameBobs27Desc": "Doubles-Training von D1 bis Bull, Start mit 27 Punkten.",
+  "gameThreeHits": "Drei-Treffer-Runde",
+  "gameThreeHitsDesc": "Around the World mit Pflicht: erst nach 3 Treffern zur nächsten Zahl.",
+  "gameSkip": "Around the World mit Überspringen",
+  "gameSkipDesc": "Punkte pro Zahl (S=1, D=2, T=3). Ab 4 Punkten in einer Aufnahme wird die nächste Zahl übersprungen.",
+  "boardTitle": "Board",
+  "boardVisit": "Aufnahme",
+  "boardTakeout": "Darts ziehen …",
+  "boardNext": "Weiter",
+  "boardUndo": "Rückgängig",
+  "boardMiss": "Miss",
+  "boardHeatmap": "Heatmap",
+  "boardHeatmapHint": "{count} Darts mit Koordinaten in dieser Sitzung",
+  "@boardHeatmapHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "boardClearSession": "Sitzung leeren",
+  "boardTapHint": "Tippe auf das Board, um einen Dart zu werfen. Nach drei Darts wird automatisch gezogen.",
+  "boardScatter": "Streuung: ca. {mm} mm",
+  "@boardScatter": {
+    "placeholders": {
+      "mm": {
+        "type": "int"
+      }
+    }
+  },
+  "boardScatterOff": "Streuung: aus (exakter Treffer)",
+  "boardLiveHint": "Würfe kommen live vom Board Manager unter {address}.",
+  "@boardLiveHint": {
+    "placeholders": {
+      "address": {
+        "type": "String"
+      }
+    }
+  },
+  "boardManualHint": "Erst Single, Double oder Triple wählen, dann die Zahl. Du kannst auch direkt aufs Board tippen.",
+  "single": "Single",
+  "double": "Double",
+  "triple": "Triple",
+  "autodartsUnverified": "Hinweis: Das Autodarts-Protokoll ist nicht offiziell dokumentiert. Das Mapping ist noch nicht am echten Board getestet.",
+  "statsTitle": "Statistik",
+  "statsComingTitle": "Statistiken kommen in Phase 4",
+  "statsComingText": "Averages, Quoten, Heatmap, Verlauf, Ziele und Streaks. Jeder Wurf wird ab Phase 2 mit Rohdaten gespeichert, damit sich alles später neu berechnen lässt.",
+  "settingsTitle": "Einstellungen",
+  "settingsAppearance": "Darstellung",
+  "themeDark": "Dunkel",
+  "themeLight": "Hell",
+  "themeSystem": "System",
+  "settingsSource": "Datenquelle",
+  "settingsHost": "Host / IP des Board Managers",
+  "settingsHostInvalid": "Bitte Host oder IP eingeben",
+  "settingsPort": "Port",
+  "settingsPortInvalid": "1–65535",
+  "settingsApply": "Übernehmen",
+  "settingsFeedback": "Feedback",
+  "settingsSound": "Soundeffekte",
+  "settingsSoundHint": "Kurzer Klick bei jedem Dart",
+  "settingsHaptics": "Haptik",
+  "settingsHapticsHint": "Vibration bei Treffern (iPhone/iPad)",
+  "settingsDeveloper": "Entwicklung",
+  "settingsDebugHint": "Rohe Nachrichten vom Board live ansehen",
+  "settingsLogToFile": "Rohdaten in Datei mitschreiben",
+  "settingsLogToFileHint": "JSON-Lines im Dokumente-Ordner unter DartLab/logs",
+  "settingsVersion": "Version {version}",
+  "@settingsVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "debugTitle": "Debug: Rohdaten",
+  "debugShort": "Debug",
+  "debugPause": "Pausieren",
+  "debugResume": "Fortsetzen",
+  "debugClear": "Leeren",
+  "debugCopy": "Alles kopieren",
+  "debugCopied": "{count} Nachrichten kopiert",
+  "@debugCopied": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "debugEmptyTitle": "Noch keine Nachrichten",
+  "debugEmpty": "Wähle in den Einstellungen „Autodarts (lokal)“ als Quelle. Hier erscheint dann jede eingehende Nachricht.",
+  "debugFilter": "Filtern …",
+  "debugLogFile": "Logdatei: {path}",
+  "@debugLogFile": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "debugReconnect": "Neu verbinden",
+  "debugCmdReset": "Board-Reset",
+  "debugCmdStart": "Erkennung starten",
+  "debugPretty": "JSON formatieren",
+  "debugWarnings": "{count} Mapping-Hinweise, siehe Einträge mit „Mapping:“",
+  "@debugWarnings": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
+}

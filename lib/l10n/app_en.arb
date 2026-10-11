@@ -1,0 +1,9 @@
+{
+  "@@locale": "en",
+  "appTitle": "DartLab",
+  "navHome": "Home",
+  "navGames": "Training",
+  "navBoard": "Board",
+  "navStats": "Stats",
+  "navSettings": "Settings"
+}
