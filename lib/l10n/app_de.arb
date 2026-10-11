@@ -519,5 +519,95 @@
     }
   },
   "diagBoardEmpty": "Gerade steckt kein Dart, deshalb schickt der Board Manager keine Wurfliste. Einen Dart werfen und erneut testen.",
-  "diagQuiet": "Verbunden. Der Board Manager sendet nur, wenn sich am Board etwas ändert."
+  "diagQuiet": "Verbunden. Der Board Manager sendet nur, wenn sich am Board etwas ändert.",
+  "syncTitle": "Sync im Heimnetz",
+  "syncRoleOff": "Aus",
+  "syncRoleOffHint": "Einträge bleiben nur auf diesem Gerät.",
+  "syncRoleHub": "Dieses Gerät ist der Hub",
+  "syncRoleHubHint": "Nimmt die Einträge von iPhone, iPad und anderen Rechnern an. DartLab muss dafür hier geöffnet sein.",
+  "syncRoleClient": "Mit dem Hub abgleichen",
+  "syncRoleClientHint": "Gleicht automatisch ab: beim Öffnen, nach jedem Spiel und alle paar Minuten.",
+  "syncHubOnlyDesktop": "Hub kann nur die Windows- oder Mac-App sein.",
+  "syncHubRunning": "Hub läuft auf Port {port}.",
+  "@syncHubRunning": {
+    "placeholders": {
+      "port": {
+        "type": "int"
+      }
+    }
+  },
+  "syncHubStarting": "Hub startet …",
+  "syncHubFailed": "Hub konnte nicht starten: {error}",
+  "@syncHubFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "syncHubAddresses": "Auf den anderen Geräten als Adresse eintragen: {addresses}",
+  "@syncHubAddresses": {
+    "placeholders": {
+      "addresses": {
+        "type": "String"
+      }
+    }
+  },
+  "syncHubCode": "Code für die anderen Geräte",
+  "syncHubNewCode": "Neuer Code",
+  "syncHubLastReceived": "Zuletzt Einträge empfangen: {time}",
+  "@syncHubLastReceived": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "syncFirewallHint": "Kommt von den anderen Geräten keine Verbindung, in der Windows-Firewall eingehende Verbindungen für DartLab (TCP-Port {port}, privates Netzwerk) erlauben.",
+  "@syncFirewallHint": {
+    "placeholders": {
+      "port": {
+        "type": "int"
+      }
+    }
+  },
+  "syncHost": "Adresse des Hubs",
+  "syncCode": "Code",
+  "syncCodeInvalid": "Code vom Hub",
+  "syncUseAutodartsHost": "Adresse von Autodarts übernehmen ({host})",
+  "@syncUseAutodartsHost": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "syncNow": "Jetzt abgleichen",
+  "syncSyncing": "Gleiche ab …",
+  "syncNever": "Noch nicht abgeglichen.",
+  "syncLast": "Zuletzt abgeglichen: {time}. {sent} gesendet, {received} geholt.",
+  "@syncLast": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "sent": {
+        "type": "int"
+      },
+      "received": {
+        "type": "int"
+      }
+    }
+  },
+  "syncErrUnreachable": "Hub nicht erreichbar. Ist DartLab am PC geöffnet und als Hub eingestellt, stimmt die Adresse, und lässt die Firewall den Port durch?",
+  "syncErrWrongKey": "Der Code passt nicht. Den Code aus den Optionen der Hub-App eingeben.",
+  "syncErrNotDartLab": "Unter dieser Adresse antwortet kein DartLab-Hub. Port prüfen.",
+  "syncErrServer": "Der Hub meldet einen Fehler: {detail}",
+  "@syncErrServer": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -13,6 +13,7 @@ SessionRow session(String gameId, DateTime start, Map<String, Object?> metrics,
     {Map<String, Object?> details = const {}, int darts = 3, bool ended = true}) =>
     SessionRow(
       id: ++_id,
+      uid: 's$_id',
       playerId: 1,
       gameId: gameId,
       configJson: '{}',
@@ -48,7 +49,7 @@ ThrowRow dart(SessionRow s, String name, {int seq = 0, bool counted = true, doub
 }
 
 GoalRow goal(GoalKind kind, double target) =>
-    GoalRow(id: ++_id, playerId: 1, kind: kind.name, target: target, createdAt: now);
+    GoalRow(id: ++_id, uid: 'g$_id', playerId: 1, kind: kind.name, target: target, createdAt: now);
 
 void main() {
   test('Average nur aus Scoring-Spielen, ignorierte Darts zählen nicht', () {

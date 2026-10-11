@@ -9,6 +9,7 @@ import 'core/router/app_router.dart';
 import 'core/settings/app_settings.dart';
 import 'features/board/presentation/live_visit_controller.dart';
 import 'features/dart_source/presentation/dart_source_providers.dart';
+import 'features/sync/presentation/sync_controller.dart';
 
 class DartLabApp extends ConsumerWidget {
   const DartLabApp({super.key});
@@ -22,7 +23,8 @@ class DartLabApp extends ConsumerWidget {
     ref
       ..watch(dartFeedbackProvider)
       ..watch(liveVisitProvider.select((_) => null))
-      ..watch(rawLogProvider.select((_) => null));
+      ..watch(rawLogProvider.select((_) => null))
+      ..watch(syncControllerProvider.select((_) => null));
 
     return MaterialApp.router(
       onGenerateTitle: (context) => context.l10n.appTitle,

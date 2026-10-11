@@ -10,10 +10,14 @@ class ProfileRepository {
 
   static const int maxNameLength = 40;
 
-  Stream<List<Player>> watchPlayers() =>
-      (db.select(db.players)..orderBy([(p) => OrderingTerm.asc(p.id)])).watch();
+  SimpleSelectStatement<$PlayersTable, Player> _active() => db.select(db.players)
+    ..where((p) => p.deletedAt.isNull())
+    ..orderBy([(p) => OrderingTerm.asc(p.id)]);
 
-  Future<List<Player>> players() => (db.select(db.players)..orderBy([(p) => OrderingTerm.asc(p.id)])).get();
+  /// Aktive Profile (ohne gelöschte).
+  Stream<List<Player>> watchPlayers() => _active().watch();
+
+  Future<List<Player>> players() => _active().get();
 
   static String clean(String name) {
     final t = name.trim();
@@ -23,25 +27,30 @@ class ProfileRepository {
   Future<int> create(String name) {
     final n = clean(name);
     if (n.isEmpty) throw ArgumentError('Name fehlt');
-    return db.into(db.players).insert(PlayersCompanion.insert(name: n, createdAt: DateTime.now()));
+    final now = DateTime.now();
+    return db.into(db.players).insert(PlayersCompanion.insert(name: n, createdAt: now, updatedAt: Value(now)));
   }
 
   Future<void> rename(int id, String name) async {
     final n = clean(name);
     if (n.isEmpty) return;
-    await (db.update(db.players)..where((p) => p.id.equals(id))).write(PlayersCompanion(name: Value(n)));
+    await (db.update(db.players)..where((p) => p.id.equals(id))).write(PlayersCompanion(name: Value(n), updatedAt: Value(DateTime.now())));
   }
 
   /// Löscht ein Profil mit allen Sessions, Würfen und Zielen. Das letzte
   /// Profil bleibt immer erhalten. Gibt `false` zurück, wenn nichts gelöscht
   /// wurde.
-  Future<bool> delete(int id) => db.transaction(() async {
+  Future<bool> delete(int id, {DateTime? at}) => db.transaction(() async {
         final all = await players();
         if (all.length <= 1 || !all.any((p) => p.id == id)) return false;
         await (db.delete(db.sessions)..where((s) => s.playerId.equals(id))).go();
         await (db.delete(db.throws)..where((t) => t.playerId.equals(id))).go();
         await (db.delete(db.goals)..where((g) => g.playerId.equals(id))).go();
-        await (db.delete(db.players)..where((p) => p.id.equals(id))).go();
+        // Markierung statt Löschen, damit andere Geräte es beim Abgleich erfahren.
+        final now = at ?? DateTime.now();
+        await (db.update(db.players)..where((p) => p.id.equals(id))).write(
+              PlayersCompanion(isDefault: const Value(false), deletedAt: Value(now), updatedAt: Value(now)),
+            );
         // Es gibt immer genau ein Standardprofil.
         final rest = await players();
         if (!rest.any((p) => p.isDefault)) {
@@ -58,11 +67,7 @@ class ProfileRepository {
     if (preferred != null && all.any((p) => p.id == preferred)) return preferred;
     final def = all.where((p) => p.isDefault).firstOrNull ?? all.firstOrNull;
     if (def != null) return def.id;
-    return db.into(db.players).insert(PlayersCompanion.insert(
-          name: 'Ich',
-          isDefault: const Value(true),
-          createdAt: DateTime.now(),
-        ));
+    return db.insertDefaultPlayer();
   }
 }
 

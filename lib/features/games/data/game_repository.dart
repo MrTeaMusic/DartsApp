@@ -36,15 +36,12 @@ class GameRepository {
 
   Future<int> defaultPlayerId() async {
     final row = await (db.select(db.players)
+          ..where((p) => p.deletedAt.isNull())
           ..orderBy([(p) => OrderingTerm.desc(p.isDefault), (p) => OrderingTerm.asc(p.id)])
           ..limit(1))
         .getSingleOrNull();
     if (row != null) return row.id;
-    return db.into(db.players).insert(PlayersCompanion.insert(
-          name: 'Ich',
-          isDefault: const Value(true),
-          createdAt: DateTime.now(),
-        ));
+    return db.insertDefaultPlayer();
   }
 
   Future<int> startSession({

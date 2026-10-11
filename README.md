@@ -27,10 +27,12 @@ Würfe kommen live vom Autodarts-Board, aus einem Simulator oder per manueller E
 | Ziele und Serien | fertig |
 | Mehrere Profile | fertig |
 | Export/Import (JSON-Backup, CSV) | fertig |
+| Sync im Heimnetz (Desktop-App als Hub, iPhone/iPad gleichen automatisch ab) | fertig, am echten Heimnetz noch nicht getestet |
 | Autodarts-Verbindungstest, Mitschnitt-Prüfung, Koordinaten-Kalibrierung | fertig |
 | Build-Anleitung, native Builds in GitHub Actions | fertig |
 
 Was über das Autodarts-Protokoll bekannt und was offen ist: [docs/autodarts-protokoll.md](docs/autodarts-protokoll.md).
+Wie der Sync funktioniert: [docs/sync.md](docs/sync.md).
 Regeln und Optionen der Trainingsspiele: [docs/trainingsspiele.md](docs/trainingsspiele.md).
 Regeln der zwei eigenen Spiele: [docs/spielregeln.md](docs/spielregeln.md).
 Wie Statistiken berechnet werden, Ziele, Profile, Export-Formate: [docs/statistik-und-daten.md](docs/statistik-und-daten.md).

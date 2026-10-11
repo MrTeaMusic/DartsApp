@@ -22,7 +22,7 @@ class StatsRepository {
 
   Stream<List<GoalRow>> watchGoals(int playerId) =>
       (db.select(db.goals)
-            ..where((g) => g.playerId.equals(playerId))
+            ..where((g) => g.playerId.equals(playerId) & g.deletedAt.isNull())
             ..orderBy([(g) => OrderingTerm.asc(g.createdAt)]))
           .watch();
 
@@ -31,12 +31,18 @@ class StatsRepository {
         kind: kind.name,
         target: target,
         createdAt: DateTime.now(),
+        updatedAt: Value(DateTime.now()),
       ));
 
   Future<void> updateGoal(int id, double target) =>
-      (db.update(db.goals)..where((g) => g.id.equals(id))).write(GoalsCompanion(target: Value(target)));
+      (db.update(db.goals)..where((g) => g.id.equals(id))).write(GoalsCompanion(target: Value(target), updatedAt: Value(DateTime.now())));
 
-  Future<void> deleteGoal(int id) => (db.delete(db.goals)..where((g) => g.id.equals(id))).go();
+  /// Markiert das Ziel als gelöscht, damit der Abgleich es weitergibt.
+  Future<void> deleteGoal(int id) {
+    final now = DateTime.now();
+    return (db.update(db.goals)..where((g) => g.id.equals(id)))
+        .write(GoalsCompanion(deletedAt: Value(now), updatedAt: Value(now)));
+  }
 }
 
 final statsRepositoryProvider = Provider<StatsRepository>((ref) => StatsRepository(ref.watch(appDatabaseProvider)));
