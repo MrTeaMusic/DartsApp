@@ -1,0 +1,3356 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'app_database.dart';
+
+// ignore_for_file: type=lint
+class $PlayersTable extends Players with TableInfo<$PlayersTable, Player> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PlayersTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 40,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isDefaultMeta = const VerificationMeta(
+    'isDefault',
+  );
+  @override
+  late final GeneratedColumn<bool> isDefault = GeneratedColumn<bool>(
+    'is_default',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_default" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name, isDefault, createdAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'players';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Player> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('is_default')) {
+      context.handle(
+        _isDefaultMeta,
+        isDefault.isAcceptableOrUnknown(data['is_default']!, _isDefaultMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Player map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Player(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      isDefault: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_default'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $PlayersTable createAlias(String alias) {
+    return $PlayersTable(attachedDatabase, alias);
+  }
+}
+
+class Player extends DataClass implements Insertable<Player> {
+  final int id;
+  final String name;
+  final bool isDefault;
+  final DateTime createdAt;
+  const Player({
+    required this.id,
+    required this.name,
+    required this.isDefault,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['name'] = Variable<String>(name);
+    map['is_default'] = Variable<bool>(isDefault);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  PlayersCompanion toCompanion(bool nullToAbsent) {
+    return PlayersCompanion(
+      id: Value(id),
+      name: Value(name),
+      isDefault: Value(isDefault),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory Player.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Player(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      isDefault: serializer.fromJson<bool>(json['isDefault']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'isDefault': serializer.toJson<bool>(isDefault),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  Player copyWith({
+    int? id,
+    String? name,
+    bool? isDefault,
+    DateTime? createdAt,
+  }) => Player(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    isDefault: isDefault ?? this.isDefault,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  Player copyWithCompanion(PlayersCompanion data) {
+    return Player(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      isDefault: data.isDefault.present ? data.isDefault.value : this.isDefault,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Player(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('isDefault: $isDefault, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, isDefault, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Player &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.isDefault == this.isDefault &&
+          other.createdAt == this.createdAt);
+}
+
+class PlayersCompanion extends UpdateCompanion<Player> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<bool> isDefault;
+  final Value<DateTime> createdAt;
+  const PlayersCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.isDefault = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  PlayersCompanion.insert({
+    this.id = const Value.absent(),
+    required String name,
+    this.isDefault = const Value.absent(),
+    required DateTime createdAt,
+  }) : name = Value(name),
+       createdAt = Value(createdAt);
+  static Insertable<Player> custom({
+    Expression<int>? id,
+    Expression<String>? name,
+    Expression<bool>? isDefault,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (isDefault != null) 'is_default': isDefault,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  PlayersCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<bool>? isDefault,
+    Value<DateTime>? createdAt,
+  }) {
+    return PlayersCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      isDefault: isDefault ?? this.isDefault,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (isDefault.present) {
+      map['is_default'] = Variable<bool>(isDefault.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PlayersCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('isDefault: $isDefault, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SessionsTable extends Sessions
+    with TableInfo<$SessionsTable, SessionRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SessionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _playerIdMeta = const VerificationMeta(
+    'playerId',
+  );
+  @override
+  late final GeneratedColumn<int> playerId = GeneratedColumn<int>(
+    'player_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES players (id)',
+    ),
+  );
+  static const VerificationMeta _gameIdMeta = const VerificationMeta('gameId');
+  @override
+  late final GeneratedColumn<String> gameId = GeneratedColumn<String>(
+    'game_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _configJsonMeta = const VerificationMeta(
+    'configJson',
+  );
+  @override
+  late final GeneratedColumn<String> configJson = GeneratedColumn<String>(
+    'config_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _seedMeta = const VerificationMeta('seed');
+  @override
+  late final GeneratedColumn<int> seed = GeneratedColumn<int>(
+    'seed',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _startedAtMeta = const VerificationMeta(
+    'startedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startedAt = GeneratedColumn<DateTime>(
+    'started_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _endedAtMeta = const VerificationMeta(
+    'endedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> endedAt = GeneratedColumn<DateTime>(
+    'ended_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _finishedMeta = const VerificationMeta(
+    'finished',
+  );
+  @override
+  late final GeneratedColumn<bool> finished = GeneratedColumn<bool>(
+    'finished',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("finished" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _resultJsonMeta = const VerificationMeta(
+    'resultJson',
+  );
+  @override
+  late final GeneratedColumn<String> resultJson = GeneratedColumn<String>(
+    'result_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _dartCountMeta = const VerificationMeta(
+    'dartCount',
+  );
+  @override
+  late final GeneratedColumn<int> dartCount = GeneratedColumn<int>(
+    'dart_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    playerId,
+    gameId,
+    configJson,
+    seed,
+    startedAt,
+    endedAt,
+    finished,
+    resultJson,
+    dartCount,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sessions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SessionRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('player_id')) {
+      context.handle(
+        _playerIdMeta,
+        playerId.isAcceptableOrUnknown(data['player_id']!, _playerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_playerIdMeta);
+    }
+    if (data.containsKey('game_id')) {
+      context.handle(
+        _gameIdMeta,
+        gameId.isAcceptableOrUnknown(data['game_id']!, _gameIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_gameIdMeta);
+    }
+    if (data.containsKey('config_json')) {
+      context.handle(
+        _configJsonMeta,
+        configJson.isAcceptableOrUnknown(data['config_json']!, _configJsonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_configJsonMeta);
+    }
+    if (data.containsKey('seed')) {
+      context.handle(
+        _seedMeta,
+        seed.isAcceptableOrUnknown(data['seed']!, _seedMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_seedMeta);
+    }
+    if (data.containsKey('started_at')) {
+      context.handle(
+        _startedAtMeta,
+        startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startedAtMeta);
+    }
+    if (data.containsKey('ended_at')) {
+      context.handle(
+        _endedAtMeta,
+        endedAt.isAcceptableOrUnknown(data['ended_at']!, _endedAtMeta),
+      );
+    }
+    if (data.containsKey('finished')) {
+      context.handle(
+        _finishedMeta,
+        finished.isAcceptableOrUnknown(data['finished']!, _finishedMeta),
+      );
+    }
+    if (data.containsKey('result_json')) {
+      context.handle(
+        _resultJsonMeta,
+        resultJson.isAcceptableOrUnknown(data['result_json']!, _resultJsonMeta),
+      );
+    }
+    if (data.containsKey('dart_count')) {
+      context.handle(
+        _dartCountMeta,
+        dartCount.isAcceptableOrUnknown(data['dart_count']!, _dartCountMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SessionRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SessionRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      playerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}player_id'],
+      )!,
+      gameId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}game_id'],
+      )!,
+      configJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}config_json'],
+      )!,
+      seed: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}seed'],
+      )!,
+      startedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}started_at'],
+      )!,
+      endedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}ended_at'],
+      ),
+      finished: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}finished'],
+      )!,
+      resultJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}result_json'],
+      ),
+      dartCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}dart_count'],
+      )!,
+    );
+  }
+
+  @override
+  $SessionsTable createAlias(String alias) {
+    return $SessionsTable(attachedDatabase, alias);
+  }
+}
+
+class SessionRow extends DataClass implements Insertable<SessionRow> {
+  final int id;
+  final int playerId;
+  final String gameId;
+  final String configJson;
+  final int seed;
+  final DateTime startedAt;
+  final DateTime? endedAt;
+
+  /// Regulär zu Ende gespielt (nicht abgebrochen).
+  final bool finished;
+  final String? resultJson;
+  final int dartCount;
+  const SessionRow({
+    required this.id,
+    required this.playerId,
+    required this.gameId,
+    required this.configJson,
+    required this.seed,
+    required this.startedAt,
+    this.endedAt,
+    required this.finished,
+    this.resultJson,
+    required this.dartCount,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['player_id'] = Variable<int>(playerId);
+    map['game_id'] = Variable<String>(gameId);
+    map['config_json'] = Variable<String>(configJson);
+    map['seed'] = Variable<int>(seed);
+    map['started_at'] = Variable<DateTime>(startedAt);
+    if (!nullToAbsent || endedAt != null) {
+      map['ended_at'] = Variable<DateTime>(endedAt);
+    }
+    map['finished'] = Variable<bool>(finished);
+    if (!nullToAbsent || resultJson != null) {
+      map['result_json'] = Variable<String>(resultJson);
+    }
+    map['dart_count'] = Variable<int>(dartCount);
+    return map;
+  }
+
+  SessionsCompanion toCompanion(bool nullToAbsent) {
+    return SessionsCompanion(
+      id: Value(id),
+      playerId: Value(playerId),
+      gameId: Value(gameId),
+      configJson: Value(configJson),
+      seed: Value(seed),
+      startedAt: Value(startedAt),
+      endedAt: endedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(endedAt),
+      finished: Value(finished),
+      resultJson: resultJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(resultJson),
+      dartCount: Value(dartCount),
+    );
+  }
+
+  factory SessionRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SessionRow(
+      id: serializer.fromJson<int>(json['id']),
+      playerId: serializer.fromJson<int>(json['playerId']),
+      gameId: serializer.fromJson<String>(json['gameId']),
+      configJson: serializer.fromJson<String>(json['configJson']),
+      seed: serializer.fromJson<int>(json['seed']),
+      startedAt: serializer.fromJson<DateTime>(json['startedAt']),
+      endedAt: serializer.fromJson<DateTime?>(json['endedAt']),
+      finished: serializer.fromJson<bool>(json['finished']),
+      resultJson: serializer.fromJson<String?>(json['resultJson']),
+      dartCount: serializer.fromJson<int>(json['dartCount']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'playerId': serializer.toJson<int>(playerId),
+      'gameId': serializer.toJson<String>(gameId),
+      'configJson': serializer.toJson<String>(configJson),
+      'seed': serializer.toJson<int>(seed),
+      'startedAt': serializer.toJson<DateTime>(startedAt),
+      'endedAt': serializer.toJson<DateTime?>(endedAt),
+      'finished': serializer.toJson<bool>(finished),
+      'resultJson': serializer.toJson<String?>(resultJson),
+      'dartCount': serializer.toJson<int>(dartCount),
+    };
+  }
+
+  SessionRow copyWith({
+    int? id,
+    int? playerId,
+    String? gameId,
+    String? configJson,
+    int? seed,
+    DateTime? startedAt,
+    Value<DateTime?> endedAt = const Value.absent(),
+    bool? finished,
+    Value<String?> resultJson = const Value.absent(),
+    int? dartCount,
+  }) => SessionRow(
+    id: id ?? this.id,
+    playerId: playerId ?? this.playerId,
+    gameId: gameId ?? this.gameId,
+    configJson: configJson ?? this.configJson,
+    seed: seed ?? this.seed,
+    startedAt: startedAt ?? this.startedAt,
+    endedAt: endedAt.present ? endedAt.value : this.endedAt,
+    finished: finished ?? this.finished,
+    resultJson: resultJson.present ? resultJson.value : this.resultJson,
+    dartCount: dartCount ?? this.dartCount,
+  );
+  SessionRow copyWithCompanion(SessionsCompanion data) {
+    return SessionRow(
+      id: data.id.present ? data.id.value : this.id,
+      playerId: data.playerId.present ? data.playerId.value : this.playerId,
+      gameId: data.gameId.present ? data.gameId.value : this.gameId,
+      configJson: data.configJson.present
+          ? data.configJson.value
+          : this.configJson,
+      seed: data.seed.present ? data.seed.value : this.seed,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
+      endedAt: data.endedAt.present ? data.endedAt.value : this.endedAt,
+      finished: data.finished.present ? data.finished.value : this.finished,
+      resultJson: data.resultJson.present
+          ? data.resultJson.value
+          : this.resultJson,
+      dartCount: data.dartCount.present ? data.dartCount.value : this.dartCount,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SessionRow(')
+          ..write('id: $id, ')
+          ..write('playerId: $playerId, ')
+          ..write('gameId: $gameId, ')
+          ..write('configJson: $configJson, ')
+          ..write('seed: $seed, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('endedAt: $endedAt, ')
+          ..write('finished: $finished, ')
+          ..write('resultJson: $resultJson, ')
+          ..write('dartCount: $dartCount')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    playerId,
+    gameId,
+    configJson,
+    seed,
+    startedAt,
+    endedAt,
+    finished,
+    resultJson,
+    dartCount,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SessionRow &&
+          other.id == this.id &&
+          other.playerId == this.playerId &&
+          other.gameId == this.gameId &&
+          other.configJson == this.configJson &&
+          other.seed == this.seed &&
+          other.startedAt == this.startedAt &&
+          other.endedAt == this.endedAt &&
+          other.finished == this.finished &&
+          other.resultJson == this.resultJson &&
+          other.dartCount == this.dartCount);
+}
+
+class SessionsCompanion extends UpdateCompanion<SessionRow> {
+  final Value<int> id;
+  final Value<int> playerId;
+  final Value<String> gameId;
+  final Value<String> configJson;
+  final Value<int> seed;
+  final Value<DateTime> startedAt;
+  final Value<DateTime?> endedAt;
+  final Value<bool> finished;
+  final Value<String?> resultJson;
+  final Value<int> dartCount;
+  const SessionsCompanion({
+    this.id = const Value.absent(),
+    this.playerId = const Value.absent(),
+    this.gameId = const Value.absent(),
+    this.configJson = const Value.absent(),
+    this.seed = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.endedAt = const Value.absent(),
+    this.finished = const Value.absent(),
+    this.resultJson = const Value.absent(),
+    this.dartCount = const Value.absent(),
+  });
+  SessionsCompanion.insert({
+    this.id = const Value.absent(),
+    required int playerId,
+    required String gameId,
+    required String configJson,
+    required int seed,
+    required DateTime startedAt,
+    this.endedAt = const Value.absent(),
+    this.finished = const Value.absent(),
+    this.resultJson = const Value.absent(),
+    this.dartCount = const Value.absent(),
+  }) : playerId = Value(playerId),
+       gameId = Value(gameId),
+       configJson = Value(configJson),
+       seed = Value(seed),
+       startedAt = Value(startedAt);
+  static Insertable<SessionRow> custom({
+    Expression<int>? id,
+    Expression<int>? playerId,
+    Expression<String>? gameId,
+    Expression<String>? configJson,
+    Expression<int>? seed,
+    Expression<DateTime>? startedAt,
+    Expression<DateTime>? endedAt,
+    Expression<bool>? finished,
+    Expression<String>? resultJson,
+    Expression<int>? dartCount,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (playerId != null) 'player_id': playerId,
+      if (gameId != null) 'game_id': gameId,
+      if (configJson != null) 'config_json': configJson,
+      if (seed != null) 'seed': seed,
+      if (startedAt != null) 'started_at': startedAt,
+      if (endedAt != null) 'ended_at': endedAt,
+      if (finished != null) 'finished': finished,
+      if (resultJson != null) 'result_json': resultJson,
+      if (dartCount != null) 'dart_count': dartCount,
+    });
+  }
+
+  SessionsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? playerId,
+    Value<String>? gameId,
+    Value<String>? configJson,
+    Value<int>? seed,
+    Value<DateTime>? startedAt,
+    Value<DateTime?>? endedAt,
+    Value<bool>? finished,
+    Value<String?>? resultJson,
+    Value<int>? dartCount,
+  }) {
+    return SessionsCompanion(
+      id: id ?? this.id,
+      playerId: playerId ?? this.playerId,
+      gameId: gameId ?? this.gameId,
+      configJson: configJson ?? this.configJson,
+      seed: seed ?? this.seed,
+      startedAt: startedAt ?? this.startedAt,
+      endedAt: endedAt ?? this.endedAt,
+      finished: finished ?? this.finished,
+      resultJson: resultJson ?? this.resultJson,
+      dartCount: dartCount ?? this.dartCount,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (playerId.present) {
+      map['player_id'] = Variable<int>(playerId.value);
+    }
+    if (gameId.present) {
+      map['game_id'] = Variable<String>(gameId.value);
+    }
+    if (configJson.present) {
+      map['config_json'] = Variable<String>(configJson.value);
+    }
+    if (seed.present) {
+      map['seed'] = Variable<int>(seed.value);
+    }
+    if (startedAt.present) {
+      map['started_at'] = Variable<DateTime>(startedAt.value);
+    }
+    if (endedAt.present) {
+      map['ended_at'] = Variable<DateTime>(endedAt.value);
+    }
+    if (finished.present) {
+      map['finished'] = Variable<bool>(finished.value);
+    }
+    if (resultJson.present) {
+      map['result_json'] = Variable<String>(resultJson.value);
+    }
+    if (dartCount.present) {
+      map['dart_count'] = Variable<int>(dartCount.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SessionsCompanion(')
+          ..write('id: $id, ')
+          ..write('playerId: $playerId, ')
+          ..write('gameId: $gameId, ')
+          ..write('configJson: $configJson, ')
+          ..write('seed: $seed, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('endedAt: $endedAt, ')
+          ..write('finished: $finished, ')
+          ..write('resultJson: $resultJson, ')
+          ..write('dartCount: $dartCount')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ThrowsTable extends Throws with TableInfo<$ThrowsTable, ThrowRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ThrowsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _sessionIdMeta = const VerificationMeta(
+    'sessionId',
+  );
+  @override
+  late final GeneratedColumn<int> sessionId = GeneratedColumn<int>(
+    'session_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES sessions (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _playerIdMeta = const VerificationMeta(
+    'playerId',
+  );
+  @override
+  late final GeneratedColumn<int> playerId = GeneratedColumn<int>(
+    'player_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES players (id)',
+    ),
+  );
+  static const VerificationMeta _gameIdMeta = const VerificationMeta('gameId');
+  @override
+  late final GeneratedColumn<String> gameId = GeneratedColumn<String>(
+    'game_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _seqMeta = const VerificationMeta('seq');
+  @override
+  late final GeneratedColumn<int> seq = GeneratedColumn<int>(
+    'seq',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _visitIndexMeta = const VerificationMeta(
+    'visitIndex',
+  );
+  @override
+  late final GeneratedColumn<int> visitIndex = GeneratedColumn<int>(
+    'visit_index',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _countedMeta = const VerificationMeta(
+    'counted',
+  );
+  @override
+  late final GeneratedColumn<bool> counted = GeneratedColumn<bool>(
+    'counted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("counted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _segmentMeta = const VerificationMeta(
+    'segment',
+  );
+  @override
+  late final GeneratedColumn<String> segment = GeneratedColumn<String>(
+    'segment',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _numberMeta = const VerificationMeta('number');
+  @override
+  late final GeneratedColumn<int> number = GeneratedColumn<int>(
+    'number',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _multiplierMeta = const VerificationMeta(
+    'multiplier',
+  );
+  @override
+  late final GeneratedColumn<int> multiplier = GeneratedColumn<int>(
+    'multiplier',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bedMeta = const VerificationMeta('bed');
+  @override
+  late final GeneratedColumn<String> bed = GeneratedColumn<String>(
+    'bed',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _scoreMeta = const VerificationMeta('score');
+  @override
+  late final GeneratedColumn<int> score = GeneratedColumn<int>(
+    'score',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _xMeta = const VerificationMeta('x');
+  @override
+  late final GeneratedColumn<double> x = GeneratedColumn<double>(
+    'x',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _yMeta = const VerificationMeta('y');
+  @override
+  late final GeneratedColumn<double> y = GeneratedColumn<double>(
+    'y',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
+  @override
+  late final GeneratedColumn<String> source = GeneratedColumn<String>(
+    'source',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _timestampMeta = const VerificationMeta(
+    'timestamp',
+  );
+  @override
+  late final GeneratedColumn<DateTime> timestamp = GeneratedColumn<DateTime>(
+    'timestamp',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _rawJsonMeta = const VerificationMeta(
+    'rawJson',
+  );
+  @override
+  late final GeneratedColumn<String> rawJson = GeneratedColumn<String>(
+    'raw_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    sessionId,
+    playerId,
+    gameId,
+    seq,
+    visitIndex,
+    counted,
+    segment,
+    number,
+    multiplier,
+    bed,
+    score,
+    x,
+    y,
+    source,
+    timestamp,
+    rawJson,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'throws';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ThrowRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('session_id')) {
+      context.handle(
+        _sessionIdMeta,
+        sessionId.isAcceptableOrUnknown(data['session_id']!, _sessionIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sessionIdMeta);
+    }
+    if (data.containsKey('player_id')) {
+      context.handle(
+        _playerIdMeta,
+        playerId.isAcceptableOrUnknown(data['player_id']!, _playerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_playerIdMeta);
+    }
+    if (data.containsKey('game_id')) {
+      context.handle(
+        _gameIdMeta,
+        gameId.isAcceptableOrUnknown(data['game_id']!, _gameIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_gameIdMeta);
+    }
+    if (data.containsKey('seq')) {
+      context.handle(
+        _seqMeta,
+        seq.isAcceptableOrUnknown(data['seq']!, _seqMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_seqMeta);
+    }
+    if (data.containsKey('visit_index')) {
+      context.handle(
+        _visitIndexMeta,
+        visitIndex.isAcceptableOrUnknown(data['visit_index']!, _visitIndexMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_visitIndexMeta);
+    }
+    if (data.containsKey('counted')) {
+      context.handle(
+        _countedMeta,
+        counted.isAcceptableOrUnknown(data['counted']!, _countedMeta),
+      );
+    }
+    if (data.containsKey('segment')) {
+      context.handle(
+        _segmentMeta,
+        segment.isAcceptableOrUnknown(data['segment']!, _segmentMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_segmentMeta);
+    }
+    if (data.containsKey('number')) {
+      context.handle(
+        _numberMeta,
+        number.isAcceptableOrUnknown(data['number']!, _numberMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_numberMeta);
+    }
+    if (data.containsKey('multiplier')) {
+      context.handle(
+        _multiplierMeta,
+        multiplier.isAcceptableOrUnknown(data['multiplier']!, _multiplierMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_multiplierMeta);
+    }
+    if (data.containsKey('bed')) {
+      context.handle(
+        _bedMeta,
+        bed.isAcceptableOrUnknown(data['bed']!, _bedMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bedMeta);
+    }
+    if (data.containsKey('score')) {
+      context.handle(
+        _scoreMeta,
+        score.isAcceptableOrUnknown(data['score']!, _scoreMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_scoreMeta);
+    }
+    if (data.containsKey('x')) {
+      context.handle(_xMeta, x.isAcceptableOrUnknown(data['x']!, _xMeta));
+    }
+    if (data.containsKey('y')) {
+      context.handle(_yMeta, y.isAcceptableOrUnknown(data['y']!, _yMeta));
+    }
+    if (data.containsKey('source')) {
+      context.handle(
+        _sourceMeta,
+        source.isAcceptableOrUnknown(data['source']!, _sourceMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sourceMeta);
+    }
+    if (data.containsKey('timestamp')) {
+      context.handle(
+        _timestampMeta,
+        timestamp.isAcceptableOrUnknown(data['timestamp']!, _timestampMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_timestampMeta);
+    }
+    if (data.containsKey('raw_json')) {
+      context.handle(
+        _rawJsonMeta,
+        rawJson.isAcceptableOrUnknown(data['raw_json']!, _rawJsonMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ThrowRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ThrowRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      sessionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}session_id'],
+      )!,
+      playerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}player_id'],
+      )!,
+      gameId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}game_id'],
+      )!,
+      seq: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}seq'],
+      )!,
+      visitIndex: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}visit_index'],
+      )!,
+      counted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}counted'],
+      )!,
+      segment: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}segment'],
+      )!,
+      number: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}number'],
+      )!,
+      multiplier: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}multiplier'],
+      )!,
+      bed: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}bed'],
+      )!,
+      score: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}score'],
+      )!,
+      x: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}x'],
+      ),
+      y: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}y'],
+      ),
+      source: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source'],
+      )!,
+      timestamp: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}timestamp'],
+      )!,
+      rawJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}raw_json'],
+      ),
+    );
+  }
+
+  @override
+  $ThrowsTable createAlias(String alias) {
+    return $ThrowsTable(attachedDatabase, alias);
+  }
+}
+
+class ThrowRow extends DataClass implements Insertable<ThrowRow> {
+  final int id;
+  final int sessionId;
+  final int playerId;
+  final String gameId;
+
+  /// Reihenfolge innerhalb der Session (0, 1, 2 …).
+  final int seq;
+  final int visitIndex;
+
+  /// Hat der Dart im Spiel gezählt (nicht nach Bust/Checkout ignoriert)?
+  final bool counted;
+
+  /// Kurzname wie "T20", "25", "BULL", "MISS".
+  final String segment;
+  final int number;
+  final int multiplier;
+  final String bed;
+  final int score;
+  final double? x;
+  final double? y;
+
+  /// simulator, manual, autodartsLocal
+  final String source;
+  final DateTime timestamp;
+  final String? rawJson;
+  const ThrowRow({
+    required this.id,
+    required this.sessionId,
+    required this.playerId,
+    required this.gameId,
+    required this.seq,
+    required this.visitIndex,
+    required this.counted,
+    required this.segment,
+    required this.number,
+    required this.multiplier,
+    required this.bed,
+    required this.score,
+    this.x,
+    this.y,
+    required this.source,
+    required this.timestamp,
+    this.rawJson,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['session_id'] = Variable<int>(sessionId);
+    map['player_id'] = Variable<int>(playerId);
+    map['game_id'] = Variable<String>(gameId);
+    map['seq'] = Variable<int>(seq);
+    map['visit_index'] = Variable<int>(visitIndex);
+    map['counted'] = Variable<bool>(counted);
+    map['segment'] = Variable<String>(segment);
+    map['number'] = Variable<int>(number);
+    map['multiplier'] = Variable<int>(multiplier);
+    map['bed'] = Variable<String>(bed);
+    map['score'] = Variable<int>(score);
+    if (!nullToAbsent || x != null) {
+      map['x'] = Variable<double>(x);
+    }
+    if (!nullToAbsent || y != null) {
+      map['y'] = Variable<double>(y);
+    }
+    map['source'] = Variable<String>(source);
+    map['timestamp'] = Variable<DateTime>(timestamp);
+    if (!nullToAbsent || rawJson != null) {
+      map['raw_json'] = Variable<String>(rawJson);
+    }
+    return map;
+  }
+
+  ThrowsCompanion toCompanion(bool nullToAbsent) {
+    return ThrowsCompanion(
+      id: Value(id),
+      sessionId: Value(sessionId),
+      playerId: Value(playerId),
+      gameId: Value(gameId),
+      seq: Value(seq),
+      visitIndex: Value(visitIndex),
+      counted: Value(counted),
+      segment: Value(segment),
+      number: Value(number),
+      multiplier: Value(multiplier),
+      bed: Value(bed),
+      score: Value(score),
+      x: x == null && nullToAbsent ? const Value.absent() : Value(x),
+      y: y == null && nullToAbsent ? const Value.absent() : Value(y),
+      source: Value(source),
+      timestamp: Value(timestamp),
+      rawJson: rawJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(rawJson),
+    );
+  }
+
+  factory ThrowRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ThrowRow(
+      id: serializer.fromJson<int>(json['id']),
+      sessionId: serializer.fromJson<int>(json['sessionId']),
+      playerId: serializer.fromJson<int>(json['playerId']),
+      gameId: serializer.fromJson<String>(json['gameId']),
+      seq: serializer.fromJson<int>(json['seq']),
+      visitIndex: serializer.fromJson<int>(json['visitIndex']),
+      counted: serializer.fromJson<bool>(json['counted']),
+      segment: serializer.fromJson<String>(json['segment']),
+      number: serializer.fromJson<int>(json['number']),
+      multiplier: serializer.fromJson<int>(json['multiplier']),
+      bed: serializer.fromJson<String>(json['bed']),
+      score: serializer.fromJson<int>(json['score']),
+      x: serializer.fromJson<double?>(json['x']),
+      y: serializer.fromJson<double?>(json['y']),
+      source: serializer.fromJson<String>(json['source']),
+      timestamp: serializer.fromJson<DateTime>(json['timestamp']),
+      rawJson: serializer.fromJson<String?>(json['rawJson']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'sessionId': serializer.toJson<int>(sessionId),
+      'playerId': serializer.toJson<int>(playerId),
+      'gameId': serializer.toJson<String>(gameId),
+      'seq': serializer.toJson<int>(seq),
+      'visitIndex': serializer.toJson<int>(visitIndex),
+      'counted': serializer.toJson<bool>(counted),
+      'segment': serializer.toJson<String>(segment),
+      'number': serializer.toJson<int>(number),
+      'multiplier': serializer.toJson<int>(multiplier),
+      'bed': serializer.toJson<String>(bed),
+      'score': serializer.toJson<int>(score),
+      'x': serializer.toJson<double?>(x),
+      'y': serializer.toJson<double?>(y),
+      'source': serializer.toJson<String>(source),
+      'timestamp': serializer.toJson<DateTime>(timestamp),
+      'rawJson': serializer.toJson<String?>(rawJson),
+    };
+  }
+
+  ThrowRow copyWith({
+    int? id,
+    int? sessionId,
+    int? playerId,
+    String? gameId,
+    int? seq,
+    int? visitIndex,
+    bool? counted,
+    String? segment,
+    int? number,
+    int? multiplier,
+    String? bed,
+    int? score,
+    Value<double?> x = const Value.absent(),
+    Value<double?> y = const Value.absent(),
+    String? source,
+    DateTime? timestamp,
+    Value<String?> rawJson = const Value.absent(),
+  }) => ThrowRow(
+    id: id ?? this.id,
+    sessionId: sessionId ?? this.sessionId,
+    playerId: playerId ?? this.playerId,
+    gameId: gameId ?? this.gameId,
+    seq: seq ?? this.seq,
+    visitIndex: visitIndex ?? this.visitIndex,
+    counted: counted ?? this.counted,
+    segment: segment ?? this.segment,
+    number: number ?? this.number,
+    multiplier: multiplier ?? this.multiplier,
+    bed: bed ?? this.bed,
+    score: score ?? this.score,
+    x: x.present ? x.value : this.x,
+    y: y.present ? y.value : this.y,
+    source: source ?? this.source,
+    timestamp: timestamp ?? this.timestamp,
+    rawJson: rawJson.present ? rawJson.value : this.rawJson,
+  );
+  ThrowRow copyWithCompanion(ThrowsCompanion data) {
+    return ThrowRow(
+      id: data.id.present ? data.id.value : this.id,
+      sessionId: data.sessionId.present ? data.sessionId.value : this.sessionId,
+      playerId: data.playerId.present ? data.playerId.value : this.playerId,
+      gameId: data.gameId.present ? data.gameId.value : this.gameId,
+      seq: data.seq.present ? data.seq.value : this.seq,
+      visitIndex: data.visitIndex.present
+          ? data.visitIndex.value
+          : this.visitIndex,
+      counted: data.counted.present ? data.counted.value : this.counted,
+      segment: data.segment.present ? data.segment.value : this.segment,
+      number: data.number.present ? data.number.value : this.number,
+      multiplier: data.multiplier.present
+          ? data.multiplier.value
+          : this.multiplier,
+      bed: data.bed.present ? data.bed.value : this.bed,
+      score: data.score.present ? data.score.value : this.score,
+      x: data.x.present ? data.x.value : this.x,
+      y: data.y.present ? data.y.value : this.y,
+      source: data.source.present ? data.source.value : this.source,
+      timestamp: data.timestamp.present ? data.timestamp.value : this.timestamp,
+      rawJson: data.rawJson.present ? data.rawJson.value : this.rawJson,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ThrowRow(')
+          ..write('id: $id, ')
+          ..write('sessionId: $sessionId, ')
+          ..write('playerId: $playerId, ')
+          ..write('gameId: $gameId, ')
+          ..write('seq: $seq, ')
+          ..write('visitIndex: $visitIndex, ')
+          ..write('counted: $counted, ')
+          ..write('segment: $segment, ')
+          ..write('number: $number, ')
+          ..write('multiplier: $multiplier, ')
+          ..write('bed: $bed, ')
+          ..write('score: $score, ')
+          ..write('x: $x, ')
+          ..write('y: $y, ')
+          ..write('source: $source, ')
+          ..write('timestamp: $timestamp, ')
+          ..write('rawJson: $rawJson')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    sessionId,
+    playerId,
+    gameId,
+    seq,
+    visitIndex,
+    counted,
+    segment,
+    number,
+    multiplier,
+    bed,
+    score,
+    x,
+    y,
+    source,
+    timestamp,
+    rawJson,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ThrowRow &&
+          other.id == this.id &&
+          other.sessionId == this.sessionId &&
+          other.playerId == this.playerId &&
+          other.gameId == this.gameId &&
+          other.seq == this.seq &&
+          other.visitIndex == this.visitIndex &&
+          other.counted == this.counted &&
+          other.segment == this.segment &&
+          other.number == this.number &&
+          other.multiplier == this.multiplier &&
+          other.bed == this.bed &&
+          other.score == this.score &&
+          other.x == this.x &&
+          other.y == this.y &&
+          other.source == this.source &&
+          other.timestamp == this.timestamp &&
+          other.rawJson == this.rawJson);
+}
+
+class ThrowsCompanion extends UpdateCompanion<ThrowRow> {
+  final Value<int> id;
+  final Value<int> sessionId;
+  final Value<int> playerId;
+  final Value<String> gameId;
+  final Value<int> seq;
+  final Value<int> visitIndex;
+  final Value<bool> counted;
+  final Value<String> segment;
+  final Value<int> number;
+  final Value<int> multiplier;
+  final Value<String> bed;
+  final Value<int> score;
+  final Value<double?> x;
+  final Value<double?> y;
+  final Value<String> source;
+  final Value<DateTime> timestamp;
+  final Value<String?> rawJson;
+  const ThrowsCompanion({
+    this.id = const Value.absent(),
+    this.sessionId = const Value.absent(),
+    this.playerId = const Value.absent(),
+    this.gameId = const Value.absent(),
+    this.seq = const Value.absent(),
+    this.visitIndex = const Value.absent(),
+    this.counted = const Value.absent(),
+    this.segment = const Value.absent(),
+    this.number = const Value.absent(),
+    this.multiplier = const Value.absent(),
+    this.bed = const Value.absent(),
+    this.score = const Value.absent(),
+    this.x = const Value.absent(),
+    this.y = const Value.absent(),
+    this.source = const Value.absent(),
+    this.timestamp = const Value.absent(),
+    this.rawJson = const Value.absent(),
+  });
+  ThrowsCompanion.insert({
+    this.id = const Value.absent(),
+    required int sessionId,
+    required int playerId,
+    required String gameId,
+    required int seq,
+    required int visitIndex,
+    this.counted = const Value.absent(),
+    required String segment,
+    required int number,
+    required int multiplier,
+    required String bed,
+    required int score,
+    this.x = const Value.absent(),
+    this.y = const Value.absent(),
+    required String source,
+    required DateTime timestamp,
+    this.rawJson = const Value.absent(),
+  }) : sessionId = Value(sessionId),
+       playerId = Value(playerId),
+       gameId = Value(gameId),
+       seq = Value(seq),
+       visitIndex = Value(visitIndex),
+       segment = Value(segment),
+       number = Value(number),
+       multiplier = Value(multiplier),
+       bed = Value(bed),
+       score = Value(score),
+       source = Value(source),
+       timestamp = Value(timestamp);
+  static Insertable<ThrowRow> custom({
+    Expression<int>? id,
+    Expression<int>? sessionId,
+    Expression<int>? playerId,
+    Expression<String>? gameId,
+    Expression<int>? seq,
+    Expression<int>? visitIndex,
+    Expression<bool>? counted,
+    Expression<String>? segment,
+    Expression<int>? number,
+    Expression<int>? multiplier,
+    Expression<String>? bed,
+    Expression<int>? score,
+    Expression<double>? x,
+    Expression<double>? y,
+    Expression<String>? source,
+    Expression<DateTime>? timestamp,
+    Expression<String>? rawJson,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (sessionId != null) 'session_id': sessionId,
+      if (playerId != null) 'player_id': playerId,
+      if (gameId != null) 'game_id': gameId,
+      if (seq != null) 'seq': seq,
+      if (visitIndex != null) 'visit_index': visitIndex,
+      if (counted != null) 'counted': counted,
+      if (segment != null) 'segment': segment,
+      if (number != null) 'number': number,
+      if (multiplier != null) 'multiplier': multiplier,
+      if (bed != null) 'bed': bed,
+      if (score != null) 'score': score,
+      if (x != null) 'x': x,
+      if (y != null) 'y': y,
+      if (source != null) 'source': source,
+      if (timestamp != null) 'timestamp': timestamp,
+      if (rawJson != null) 'raw_json': rawJson,
+    });
+  }
+
+  ThrowsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? sessionId,
+    Value<int>? playerId,
+    Value<String>? gameId,
+    Value<int>? seq,
+    Value<int>? visitIndex,
+    Value<bool>? counted,
+    Value<String>? segment,
+    Value<int>? number,
+    Value<int>? multiplier,
+    Value<String>? bed,
+    Value<int>? score,
+    Value<double?>? x,
+    Value<double?>? y,
+    Value<String>? source,
+    Value<DateTime>? timestamp,
+    Value<String?>? rawJson,
+  }) {
+    return ThrowsCompanion(
+      id: id ?? this.id,
+      sessionId: sessionId ?? this.sessionId,
+      playerId: playerId ?? this.playerId,
+      gameId: gameId ?? this.gameId,
+      seq: seq ?? this.seq,
+      visitIndex: visitIndex ?? this.visitIndex,
+      counted: counted ?? this.counted,
+      segment: segment ?? this.segment,
+      number: number ?? this.number,
+      multiplier: multiplier ?? this.multiplier,
+      bed: bed ?? this.bed,
+      score: score ?? this.score,
+      x: x ?? this.x,
+      y: y ?? this.y,
+      source: source ?? this.source,
+      timestamp: timestamp ?? this.timestamp,
+      rawJson: rawJson ?? this.rawJson,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (sessionId.present) {
+      map['session_id'] = Variable<int>(sessionId.value);
+    }
+    if (playerId.present) {
+      map['player_id'] = Variable<int>(playerId.value);
+    }
+    if (gameId.present) {
+      map['game_id'] = Variable<String>(gameId.value);
+    }
+    if (seq.present) {
+      map['seq'] = Variable<int>(seq.value);
+    }
+    if (visitIndex.present) {
+      map['visit_index'] = Variable<int>(visitIndex.value);
+    }
+    if (counted.present) {
+      map['counted'] = Variable<bool>(counted.value);
+    }
+    if (segment.present) {
+      map['segment'] = Variable<String>(segment.value);
+    }
+    if (number.present) {
+      map['number'] = Variable<int>(number.value);
+    }
+    if (multiplier.present) {
+      map['multiplier'] = Variable<int>(multiplier.value);
+    }
+    if (bed.present) {
+      map['bed'] = Variable<String>(bed.value);
+    }
+    if (score.present) {
+      map['score'] = Variable<int>(score.value);
+    }
+    if (x.present) {
+      map['x'] = Variable<double>(x.value);
+    }
+    if (y.present) {
+      map['y'] = Variable<double>(y.value);
+    }
+    if (source.present) {
+      map['source'] = Variable<String>(source.value);
+    }
+    if (timestamp.present) {
+      map['timestamp'] = Variable<DateTime>(timestamp.value);
+    }
+    if (rawJson.present) {
+      map['raw_json'] = Variable<String>(rawJson.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ThrowsCompanion(')
+          ..write('id: $id, ')
+          ..write('sessionId: $sessionId, ')
+          ..write('playerId: $playerId, ')
+          ..write('gameId: $gameId, ')
+          ..write('seq: $seq, ')
+          ..write('visitIndex: $visitIndex, ')
+          ..write('counted: $counted, ')
+          ..write('segment: $segment, ')
+          ..write('number: $number, ')
+          ..write('multiplier: $multiplier, ')
+          ..write('bed: $bed, ')
+          ..write('score: $score, ')
+          ..write('x: $x, ')
+          ..write('y: $y, ')
+          ..write('source: $source, ')
+          ..write('timestamp: $timestamp, ')
+          ..write('rawJson: $rawJson')
+          ..write(')'))
+        .toString();
+  }
+}
+
+abstract class _$AppDatabase extends GeneratedDatabase {
+  _$AppDatabase(QueryExecutor e) : super(e);
+  $AppDatabaseManager get managers => $AppDatabaseManager(this);
+  late final $PlayersTable players = $PlayersTable(this);
+  late final $SessionsTable sessions = $SessionsTable(this);
+  late final $ThrowsTable throws = $ThrowsTable(this);
+  late final Index throwsSession = Index(
+    'throws_session',
+    'CREATE INDEX throws_session ON throws (session_id)',
+  );
+  late final Index throwsTime = Index(
+    'throws_time',
+    'CREATE INDEX throws_time ON throws (timestamp)',
+  );
+  @override
+  Iterable<TableInfo<Table, Object?>> get allTables =>
+      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
+  @override
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+    players,
+    sessions,
+    throws,
+    throwsSession,
+    throwsTime,
+  ];
+  @override
+  StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'sessions',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('throws', kind: UpdateKind.delete)],
+    ),
+  ]);
+}
+
+typedef $$PlayersTableCreateCompanionBuilder = PlayersCompanion Function({
+  Value<int> id,
+  required String name,
+  Value<bool> isDefault,
+  required DateTime createdAt,
+});
+typedef $$PlayersTableUpdateCompanionBuilder = PlayersCompanion Function({
+  Value<int> id,
+  Value<String> name,
+  Value<bool> isDefault,
+  Value<DateTime> createdAt,
+});
+
+final class $$PlayersTableReferences
+    extends BaseReferences<_$AppDatabase, $PlayersTable, Player> {
+  $$PlayersTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$SessionsTable, List<SessionRow>>
+  _sessionsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.sessions,
+    aliasName: 'players__id__sessions__player_id',
+  );
+
+  $$SessionsTableProcessedTableManager get sessionsRefs {
+    final manager = $$SessionsTableTableManager(
+      $_db,
+      $_db.sessions,
+    ).filter((f) => f.playerId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_sessionsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ThrowsTable, List<ThrowRow>> _throwsRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.throws,
+    aliasName: 'players__id__throws__player_id',
+  );
+
+  $$ThrowsTableProcessedTableManager get throwsRefs {
+    final manager = $$ThrowsTableTableManager(
+      $_db,
+      $_db.throws,
+    ).filter((f) => f.playerId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_throwsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$PlayersTableFilterComposer
+    extends Composer<_$AppDatabase, $PlayersTable> {
+  $$PlayersTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isDefault => $composableBuilder(
+    column: $table.isDefault,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> sessionsRefs(
+    Expression<bool> Function($$SessionsTableFilterComposer f) f,
+  ) {
+    final $$SessionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.sessions,
+      getReferencedColumn: (t) => t.playerId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SessionsTableFilterComposer(
+            $db: $db,
+            $table: $db.sessions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> throwsRefs(
+    Expression<bool> Function($$ThrowsTableFilterComposer f) f,
+  ) {
+    final $$ThrowsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.throws,
+      getReferencedColumn: (t) => t.playerId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ThrowsTableFilterComposer(
+            $db: $db,
+            $table: $db.throws,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$PlayersTableOrderingComposer
+    extends Composer<_$AppDatabase, $PlayersTable> {
+  $$PlayersTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isDefault => $composableBuilder(
+    column: $table.isDefault,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PlayersTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PlayersTable> {
+  $$PlayersTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDefault =>
+      $composableBuilder(column: $table.isDefault, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  Expression<T> sessionsRefs<T extends Object>(
+    Expression<T> Function($$SessionsTableAnnotationComposer a) f,
+  ) {
+    final $$SessionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.sessions,
+      getReferencedColumn: (t) => t.playerId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SessionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.sessions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> throwsRefs<T extends Object>(
+    Expression<T> Function($$ThrowsTableAnnotationComposer a) f,
+  ) {
+    final $$ThrowsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.throws,
+      getReferencedColumn: (t) => t.playerId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ThrowsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.throws,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$PlayersTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PlayersTable,
+          Player,
+          $$PlayersTableFilterComposer,
+          $$PlayersTableOrderingComposer,
+          $$PlayersTableAnnotationComposer,
+          $$PlayersTableCreateCompanionBuilder,
+          $$PlayersTableUpdateCompanionBuilder,
+          (Player, $$PlayersTableReferences),
+          Player,
+          PrefetchHooks Function({bool sessionsRefs, bool throwsRefs})
+        > {
+  $$PlayersTableTableManager(_$AppDatabase db, $PlayersTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PlayersTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PlayersTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PlayersTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<bool> isDefault = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => PlayersCompanion(
+                id: id,
+                name: name,
+                isDefault: isDefault,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<bool> isDefault = const Value.absent(),
+                required DateTime createdAt,
+              }) => PlayersCompanion.insert(
+                id: id,
+                name: name,
+                isDefault: isDefault,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$PlayersTable, Player>(table),
+                  $$PlayersTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({sessionsRefs = false, throwsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (sessionsRefs) db.sessions,
+                if (throwsRefs) db.throws,
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (sessionsRefs)
+                    await $_getPrefetchedData<
+                      Player,
+                      $PlayersTable,
+                      SessionRow
+                    >(
+                      currentTable: table,
+                      referencedTable: $$PlayersTableReferences
+                          ._sessionsRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$PlayersTableReferences(db, table, p0).sessionsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.playerId == item.id),
+                      typedResults: items,
+                    ),
+                  if (throwsRefs)
+                    await $_getPrefetchedData<Player, $PlayersTable, ThrowRow>(
+                      currentTable: table,
+                      referencedTable: $$PlayersTableReferences
+                          ._throwsRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$PlayersTableReferences(db, table, p0).throwsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.playerId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$PlayersTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PlayersTable,
+      Player,
+      $$PlayersTableFilterComposer,
+      $$PlayersTableOrderingComposer,
+      $$PlayersTableAnnotationComposer,
+      $$PlayersTableCreateCompanionBuilder,
+      $$PlayersTableUpdateCompanionBuilder,
+      (Player, $$PlayersTableReferences),
+      Player,
+      PrefetchHooks Function({bool sessionsRefs, bool throwsRefs})
+    >;
+typedef $$SessionsTableCreateCompanionBuilder = SessionsCompanion Function({
+  Value<int> id,
+  required int playerId,
+  required String gameId,
+  required String configJson,
+  required int seed,
+  required DateTime startedAt,
+  Value<DateTime?> endedAt,
+  Value<bool> finished,
+  Value<String?> resultJson,
+  Value<int> dartCount,
+});
+typedef $$SessionsTableUpdateCompanionBuilder = SessionsCompanion Function({
+  Value<int> id,
+  Value<int> playerId,
+  Value<String> gameId,
+  Value<String> configJson,
+  Value<int> seed,
+  Value<DateTime> startedAt,
+  Value<DateTime?> endedAt,
+  Value<bool> finished,
+  Value<String?> resultJson,
+  Value<int> dartCount,
+});
+
+final class $$SessionsTableReferences
+    extends BaseReferences<_$AppDatabase, $SessionsTable, SessionRow> {
+  $$SessionsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $PlayersTable _playerIdTable(_$AppDatabase db) =>
+      db.players.createAlias('sessions__player_id__players__id');
+
+  $$PlayersTableProcessedTableManager get playerId {
+    final $_column = $_itemColumn<int>('player_id')!;
+
+    final manager = $$PlayersTableTableManager(
+      $_db,
+      $_db.players,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_playerIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$ThrowsTable, List<ThrowRow>> _throwsRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.throws,
+    aliasName: 'sessions__id__throws__session_id',
+  );
+
+  $$ThrowsTableProcessedTableManager get throwsRefs {
+    final manager = $$ThrowsTableTableManager(
+      $_db,
+      $_db.throws,
+    ).filter((f) => f.sessionId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_throwsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$SessionsTableFilterComposer
+    extends Composer<_$AppDatabase, $SessionsTable> {
+  $$SessionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get gameId => $composableBuilder(
+    column: $table.gameId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get configJson => $composableBuilder(
+    column: $table.configJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get seed => $composableBuilder(
+    column: $table.seed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get endedAt => $composableBuilder(
+    column: $table.endedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get finished => $composableBuilder(
+    column: $table.finished,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get resultJson => $composableBuilder(
+    column: $table.resultJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get dartCount => $composableBuilder(
+    column: $table.dartCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$PlayersTableFilterComposer get playerId {
+    final $$PlayersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.playerId,
+      referencedTable: $db.players,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlayersTableFilterComposer(
+            $db: $db,
+            $table: $db.players,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> throwsRefs(
+    Expression<bool> Function($$ThrowsTableFilterComposer f) f,
+  ) {
+    final $$ThrowsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.throws,
+      getReferencedColumn: (t) => t.sessionId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ThrowsTableFilterComposer(
+            $db: $db,
+            $table: $db.throws,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$SessionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SessionsTable> {
+  $$SessionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get gameId => $composableBuilder(
+    column: $table.gameId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get configJson => $composableBuilder(
+    column: $table.configJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get seed => $composableBuilder(
+    column: $table.seed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get endedAt => $composableBuilder(
+    column: $table.endedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get finished => $composableBuilder(
+    column: $table.finished,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get resultJson => $composableBuilder(
+    column: $table.resultJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get dartCount => $composableBuilder(
+    column: $table.dartCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$PlayersTableOrderingComposer get playerId {
+    final $$PlayersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.playerId,
+      referencedTable: $db.players,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlayersTableOrderingComposer(
+            $db: $db,
+            $table: $db.players,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SessionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SessionsTable> {
+  $$SessionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get gameId =>
+      $composableBuilder(column: $table.gameId, builder: (column) => column);
+
+  GeneratedColumn<String> get configJson => $composableBuilder(
+    column: $table.configJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get seed =>
+      $composableBuilder(column: $table.seed, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get endedAt =>
+      $composableBuilder(column: $table.endedAt, builder: (column) => column);
+
+  GeneratedColumn<bool> get finished =>
+      $composableBuilder(column: $table.finished, builder: (column) => column);
+
+  GeneratedColumn<String> get resultJson => $composableBuilder(
+    column: $table.resultJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get dartCount =>
+      $composableBuilder(column: $table.dartCount, builder: (column) => column);
+
+  $$PlayersTableAnnotationComposer get playerId {
+    final $$PlayersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.playerId,
+      referencedTable: $db.players,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlayersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.players,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> throwsRefs<T extends Object>(
+    Expression<T> Function($$ThrowsTableAnnotationComposer a) f,
+  ) {
+    final $$ThrowsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.throws,
+      getReferencedColumn: (t) => t.sessionId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ThrowsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.throws,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$SessionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SessionsTable,
+          SessionRow,
+          $$SessionsTableFilterComposer,
+          $$SessionsTableOrderingComposer,
+          $$SessionsTableAnnotationComposer,
+          $$SessionsTableCreateCompanionBuilder,
+          $$SessionsTableUpdateCompanionBuilder,
+          (SessionRow, $$SessionsTableReferences),
+          SessionRow,
+          PrefetchHooks Function({bool playerId, bool throwsRefs})
+        > {
+  $$SessionsTableTableManager(_$AppDatabase db, $SessionsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SessionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SessionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SessionsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> playerId = const Value.absent(),
+                Value<String> gameId = const Value.absent(),
+                Value<String> configJson = const Value.absent(),
+                Value<int> seed = const Value.absent(),
+                Value<DateTime> startedAt = const Value.absent(),
+                Value<DateTime?> endedAt = const Value.absent(),
+                Value<bool> finished = const Value.absent(),
+                Value<String?> resultJson = const Value.absent(),
+                Value<int> dartCount = const Value.absent(),
+              }) => SessionsCompanion(
+                id: id,
+                playerId: playerId,
+                gameId: gameId,
+                configJson: configJson,
+                seed: seed,
+                startedAt: startedAt,
+                endedAt: endedAt,
+                finished: finished,
+                resultJson: resultJson,
+                dartCount: dartCount,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int playerId,
+                required String gameId,
+                required String configJson,
+                required int seed,
+                required DateTime startedAt,
+                Value<DateTime?> endedAt = const Value.absent(),
+                Value<bool> finished = const Value.absent(),
+                Value<String?> resultJson = const Value.absent(),
+                Value<int> dartCount = const Value.absent(),
+              }) => SessionsCompanion.insert(
+                id: id,
+                playerId: playerId,
+                gameId: gameId,
+                configJson: configJson,
+                seed: seed,
+                startedAt: startedAt,
+                endedAt: endedAt,
+                finished: finished,
+                resultJson: resultJson,
+                dartCount: dartCount,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$SessionsTable, SessionRow>(table),
+                  $$SessionsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({playerId = false, throwsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [if (throwsRefs) db.throws],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (playerId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.playerId,
+                        referencedTable: $$SessionsTableReferences
+                            ._playerIdTable(db),
+                        referencedColumn: $$SessionsTableReferences
+                            ._playerIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (throwsRefs)
+                    await $_getPrefetchedData<
+                      SessionRow,
+                      $SessionsTable,
+                      ThrowRow
+                    >(
+                      currentTable: table,
+                      referencedTable: $$SessionsTableReferences
+                          ._throwsRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$SessionsTableReferences(db, table, p0).throwsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.sessionId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$SessionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SessionsTable,
+      SessionRow,
+      $$SessionsTableFilterComposer,
+      $$SessionsTableOrderingComposer,
+      $$SessionsTableAnnotationComposer,
+      $$SessionsTableCreateCompanionBuilder,
+      $$SessionsTableUpdateCompanionBuilder,
+      (SessionRow, $$SessionsTableReferences),
+      SessionRow,
+      PrefetchHooks Function({bool playerId, bool throwsRefs})
+    >;
+typedef $$ThrowsTableCreateCompanionBuilder = ThrowsCompanion Function({
+  Value<int> id,
+  required int sessionId,
+  required int playerId,
+  required String gameId,
+  required int seq,
+  required int visitIndex,
+  Value<bool> counted,
+  required String segment,
+  required int number,
+  required int multiplier,
+  required String bed,
+  required int score,
+  Value<double?> x,
+  Value<double?> y,
+  required String source,
+  required DateTime timestamp,
+  Value<String?> rawJson,
+});
+typedef $$ThrowsTableUpdateCompanionBuilder = ThrowsCompanion Function({
+  Value<int> id,
+  Value<int> sessionId,
+  Value<int> playerId,
+  Value<String> gameId,
+  Value<int> seq,
+  Value<int> visitIndex,
+  Value<bool> counted,
+  Value<String> segment,
+  Value<int> number,
+  Value<int> multiplier,
+  Value<String> bed,
+  Value<int> score,
+  Value<double?> x,
+  Value<double?> y,
+  Value<String> source,
+  Value<DateTime> timestamp,
+  Value<String?> rawJson,
+});
+
+final class $$ThrowsTableReferences
+    extends BaseReferences<_$AppDatabase, $ThrowsTable, ThrowRow> {
+  $$ThrowsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $SessionsTable _sessionIdTable(_$AppDatabase db) =>
+      db.sessions.createAlias('throws__session_id__sessions__id');
+
+  $$SessionsTableProcessedTableManager get sessionId {
+    final $_column = $_itemColumn<int>('session_id')!;
+
+    final manager = $$SessionsTableTableManager(
+      $_db,
+      $_db.sessions,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_sessionIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $PlayersTable _playerIdTable(_$AppDatabase db) =>
+      db.players.createAlias('throws__player_id__players__id');
+
+  $$PlayersTableProcessedTableManager get playerId {
+    final $_column = $_itemColumn<int>('player_id')!;
+
+    final manager = $$PlayersTableTableManager(
+      $_db,
+      $_db.players,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_playerIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ThrowsTableFilterComposer
+    extends Composer<_$AppDatabase, $ThrowsTable> {
+  $$ThrowsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get gameId => $composableBuilder(
+    column: $table.gameId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get seq => $composableBuilder(
+    column: $table.seq,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get visitIndex => $composableBuilder(
+    column: $table.visitIndex,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get counted => $composableBuilder(
+    column: $table.counted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get segment => $composableBuilder(
+    column: $table.segment,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get number => $composableBuilder(
+    column: $table.number,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get multiplier => $composableBuilder(
+    column: $table.multiplier,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get bed => $composableBuilder(
+    column: $table.bed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get score => $composableBuilder(
+    column: $table.score,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get x => $composableBuilder(
+    column: $table.x,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get y => $composableBuilder(
+    column: $table.y,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get timestamp => $composableBuilder(
+    column: $table.timestamp,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get rawJson => $composableBuilder(
+    column: $table.rawJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$SessionsTableFilterComposer get sessionId {
+    final $$SessionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.sessionId,
+      referencedTable: $db.sessions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SessionsTableFilterComposer(
+            $db: $db,
+            $table: $db.sessions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$PlayersTableFilterComposer get playerId {
+    final $$PlayersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.playerId,
+      referencedTable: $db.players,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlayersTableFilterComposer(
+            $db: $db,
+            $table: $db.players,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ThrowsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ThrowsTable> {
+  $$ThrowsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get gameId => $composableBuilder(
+    column: $table.gameId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get seq => $composableBuilder(
+    column: $table.seq,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get visitIndex => $composableBuilder(
+    column: $table.visitIndex,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get counted => $composableBuilder(
+    column: $table.counted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get segment => $composableBuilder(
+    column: $table.segment,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get number => $composableBuilder(
+    column: $table.number,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get multiplier => $composableBuilder(
+    column: $table.multiplier,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get bed => $composableBuilder(
+    column: $table.bed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get score => $composableBuilder(
+    column: $table.score,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get x => $composableBuilder(
+    column: $table.x,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get y => $composableBuilder(
+    column: $table.y,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get timestamp => $composableBuilder(
+    column: $table.timestamp,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get rawJson => $composableBuilder(
+    column: $table.rawJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$SessionsTableOrderingComposer get sessionId {
+    final $$SessionsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.sessionId,
+      referencedTable: $db.sessions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SessionsTableOrderingComposer(
+            $db: $db,
+            $table: $db.sessions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$PlayersTableOrderingComposer get playerId {
+    final $$PlayersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.playerId,
+      referencedTable: $db.players,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlayersTableOrderingComposer(
+            $db: $db,
+            $table: $db.players,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ThrowsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ThrowsTable> {
+  $$ThrowsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get gameId =>
+      $composableBuilder(column: $table.gameId, builder: (column) => column);
+
+  GeneratedColumn<int> get seq =>
+      $composableBuilder(column: $table.seq, builder: (column) => column);
+
+  GeneratedColumn<int> get visitIndex => $composableBuilder(
+    column: $table.visitIndex,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get counted =>
+      $composableBuilder(column: $table.counted, builder: (column) => column);
+
+  GeneratedColumn<String> get segment =>
+      $composableBuilder(column: $table.segment, builder: (column) => column);
+
+  GeneratedColumn<int> get number =>
+      $composableBuilder(column: $table.number, builder: (column) => column);
+
+  GeneratedColumn<int> get multiplier => $composableBuilder(
+    column: $table.multiplier,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get bed =>
+      $composableBuilder(column: $table.bed, builder: (column) => column);
+
+  GeneratedColumn<int> get score =>
+      $composableBuilder(column: $table.score, builder: (column) => column);
+
+  GeneratedColumn<double> get x =>
+      $composableBuilder(column: $table.x, builder: (column) => column);
+
+  GeneratedColumn<double> get y =>
+      $composableBuilder(column: $table.y, builder: (column) => column);
+
+  GeneratedColumn<String> get source =>
+      $composableBuilder(column: $table.source, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get timestamp =>
+      $composableBuilder(column: $table.timestamp, builder: (column) => column);
+
+  GeneratedColumn<String> get rawJson =>
+      $composableBuilder(column: $table.rawJson, builder: (column) => column);
+
+  $$SessionsTableAnnotationComposer get sessionId {
+    final $$SessionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.sessionId,
+      referencedTable: $db.sessions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SessionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.sessions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$PlayersTableAnnotationComposer get playerId {
+    final $$PlayersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.playerId,
+      referencedTable: $db.players,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlayersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.players,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ThrowsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ThrowsTable,
+          ThrowRow,
+          $$ThrowsTableFilterComposer,
+          $$ThrowsTableOrderingComposer,
+          $$ThrowsTableAnnotationComposer,
+          $$ThrowsTableCreateCompanionBuilder,
+          $$ThrowsTableUpdateCompanionBuilder,
+          (ThrowRow, $$ThrowsTableReferences),
+          ThrowRow,
+          PrefetchHooks Function({bool sessionId, bool playerId})
+        > {
+  $$ThrowsTableTableManager(_$AppDatabase db, $ThrowsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ThrowsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ThrowsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ThrowsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> sessionId = const Value.absent(),
+                Value<int> playerId = const Value.absent(),
+                Value<String> gameId = const Value.absent(),
+                Value<int> seq = const Value.absent(),
+                Value<int> visitIndex = const Value.absent(),
+                Value<bool> counted = const Value.absent(),
+                Value<String> segment = const Value.absent(),
+                Value<int> number = const Value.absent(),
+                Value<int> multiplier = const Value.absent(),
+                Value<String> bed = const Value.absent(),
+                Value<int> score = const Value.absent(),
+                Value<double?> x = const Value.absent(),
+                Value<double?> y = const Value.absent(),
+                Value<String> source = const Value.absent(),
+                Value<DateTime> timestamp = const Value.absent(),
+                Value<String?> rawJson = const Value.absent(),
+              }) => ThrowsCompanion(
+                id: id,
+                sessionId: sessionId,
+                playerId: playerId,
+                gameId: gameId,
+                seq: seq,
+                visitIndex: visitIndex,
+                counted: counted,
+                segment: segment,
+                number: number,
+                multiplier: multiplier,
+                bed: bed,
+                score: score,
+                x: x,
+                y: y,
+                source: source,
+                timestamp: timestamp,
+                rawJson: rawJson,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int sessionId,
+                required int playerId,
+                required String gameId,
+                required int seq,
+                required int visitIndex,
+                Value<bool> counted = const Value.absent(),
+                required String segment,
+                required int number,
+                required int multiplier,
+                required String bed,
+                required int score,
+                Value<double?> x = const Value.absent(),
+                Value<double?> y = const Value.absent(),
+                required String source,
+                required DateTime timestamp,
+                Value<String?> rawJson = const Value.absent(),
+              }) => ThrowsCompanion.insert(
+                id: id,
+                sessionId: sessionId,
+                playerId: playerId,
+                gameId: gameId,
+                seq: seq,
+                visitIndex: visitIndex,
+                counted: counted,
+                segment: segment,
+                number: number,
+                multiplier: multiplier,
+                bed: bed,
+                score: score,
+                x: x,
+                y: y,
+                source: source,
+                timestamp: timestamp,
+                rawJson: rawJson,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$ThrowsTable, ThrowRow>(table),
+                  $$ThrowsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({sessionId = false, playerId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (sessionId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.sessionId,
+                        referencedTable: $$ThrowsTableReferences
+                            ._sessionIdTable(db),
+                        referencedColumn: $$ThrowsTableReferences
+                            ._sessionIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+                    if (playerId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.playerId,
+                        referencedTable: $$ThrowsTableReferences._playerIdTable(
+                          db,
+                        ),
+                        referencedColumn: $$ThrowsTableReferences
+                            ._playerIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$ThrowsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ThrowsTable,
+      ThrowRow,
+      $$ThrowsTableFilterComposer,
+      $$ThrowsTableOrderingComposer,
+      $$ThrowsTableAnnotationComposer,
+      $$ThrowsTableCreateCompanionBuilder,
+      $$ThrowsTableUpdateCompanionBuilder,
+      (ThrowRow, $$ThrowsTableReferences),
+      ThrowRow,
+      PrefetchHooks Function({bool sessionId, bool playerId})
+    >;
+
+class $AppDatabaseManager {
+  final _$AppDatabase _db;
+  $AppDatabaseManager(this._db);
+  $$PlayersTableTableManager get players =>
+      $$PlayersTableTableManager(_db, _db.players);
+  $$SessionsTableTableManager get sessions =>
+      $$SessionsTableTableManager(_db, _db.sessions);
+  $$ThrowsTableTableManager get throws =>
+      $$ThrowsTableTableManager(_db, _db.throws);
+}

@@ -6,7 +6,7 @@ Würfe kommen live vom Autodarts-Board, aus einem Simulator oder per manueller E
 > Die Datei `index.html` im Repo-Wurzelordner ist der frühere Web-Prototyp und bleibt vorerst
 > unverändert liegen. Die Flutter-App ist davon unabhängig.
 
-## Stand: Phase 1
+## Stand: Phase 2
 
 | Bereich | Status |
 |---|---|
@@ -19,9 +19,14 @@ Würfe kommen live vom Autodarts-Board, aus einem Simulator oder per manueller E
 | `AutodartsLocalSource` (WebSocket, HTTP-Fallback, Wiederverbindung, Status) | gebaut, **nicht am echten Board getestet** |
 | Debug-Bildschirm mit Live-Rohdaten und Datei-Log | fertig |
 | Animiertes Dartboard (CustomPainter, Treffer, Aufleuchten, Heatmap-Overlay) | fertig |
-| Spiele, Datenbank, Statistiken | Phase 2 bis 4 |
+| Spiel-Engine (Aufnahmen, Rückgängig, Korrektur, Wiederholbarkeit per Seed) | fertig |
+| Checkout-Training, Around the Clock, Bullseye-Drill, T20-Training, Score-Ziel, Highscore-Jagd | fertig |
+| Lokale Datenbank (drift/SQLite): Sessions und jeder einzelne Wurf | fertig |
+| Cricket, 121, Bob's 27, eigene Spiele | Phase 3 |
+| Statistiken, Export/Import, Profile | Phase 4 |
 
 Was über das Autodarts-Protokoll bekannt und was offen ist: [docs/autodarts-protokoll.md](docs/autodarts-protokoll.md).
+Regeln und Optionen der Trainingsspiele: [docs/trainingsspiele.md](docs/trainingsspiele.md).
 Geplante Regeln der zwei eigenen Spiele: [docs/spielregeln.md](docs/spielregeln.md).
 
 ## Starten
@@ -49,6 +54,7 @@ Die ausführliche Build- und Installationsanleitung für alle drei Plattformen k
 ```
 lib/
   core/
+    database/      drift-Datenbank (Spieler, Sessions, Würfe)
     design/        Tokens, Theme, DartColors, wiederverwendbare Komponenten
     router/        go_router mit StatefulShellRoute
     settings/      AppSettings (shared_preferences) + Riverpod-Notifier
@@ -61,9 +67,18 @@ lib/
       domain/      DartSource, DartEvent, DartThrow, SourceStatus
       data/        Simulator-, Manual-, AutodartsLocal-Quelle, Mapper, RawMessageLog
       presentation/Provider, Statusanzeige, Debug-Bildschirm
-    home/ games/ simulator/ stats/ settings/   Bildschirme
+    games/
+      domain/engine/ TrainingGame, GameDefinition, GameSession (reine Dart-Klassen)
+      domain/games/  ein Spiel = eine Klasse + GameDefinition, registriert in game_catalog.dart
+      data/          GameRepository (Speichern, Verlauf, schwache Checkouts)
+      presentation/  Spielauswahl, Einstellungen, Spielbildschirm, ActiveGameController
+    home/ simulator/ stats/ settings/   Bildschirme
   l10n/            app_de.arb (Vorlage), app_en.arb
 ```
+
+**Neues Spiel:** Klasse von `TrainingGame` ableiten, eine `GameDefinition` mit Standardwerten und
+Optionen anlegen und in `GameCatalog.all` eintragen. Das Einstellungsformular entsteht aus den Optionen.
+Nach Änderungen an Tabellen: `dart run build_runner build`.
 
 **Regel:** Spiele sprechen nur mit `DartSource` (über `dartEventsProvider`), nie direkt mit Autodarts.
 Ändert sich das Protokoll, wird nur `AutodartsStateMapper` bzw. `AutodartsLocalSource` angepasst.

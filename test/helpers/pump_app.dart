@@ -1,10 +1,12 @@
 import 'package:dartlab/app.dart';
+import 'package:dartlab/core/database/app_database.dart';
 import 'package:dartlab/core/settings/app_settings.dart';
 import 'package:dartlab/features/dart_source/data/manual_source.dart';
 import 'package:dartlab/features/dart_source/data/simulator_source.dart';
 import 'package:dartlab/features/dart_source/domain/dart_event.dart';
 import 'package:dartlab/features/dart_source/domain/dart_source.dart';
 import 'package:dartlab/features/dart_source/presentation/dart_source_providers.dart';
+import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -27,8 +29,11 @@ Future<ProviderContainer> pumpApp(
   addTearDown(tester.view.reset);
   SharedPreferences.setMockInitialValues(prefs);
   final sp = await SharedPreferences.getInstance();
+  final db = AppDatabase(NativeDatabase.memory());
+  addTearDown(db.close);
   final container = ProviderContainer(overrides: [
     sharedPreferencesProvider.overrideWithValue(sp),
+    appDatabaseProvider.overrideWithValue(db),
     dartSourceFactoryProvider.overrideWithValue(factory),
   ]);
   addTearDown(container.dispose);
