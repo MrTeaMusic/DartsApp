@@ -25,6 +25,9 @@ class FakeFiles implements BackupFiles {
 
   @override
   Future<String?> openJson() async => toOpen;
+
+  @override
+  Future<String?> openText() async => toOpen;
 }
 
 /// Legt eine Highscore-Session mit drei Würfen von heute an.

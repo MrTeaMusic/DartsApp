@@ -16,10 +16,11 @@ import '../domain/dart_source.dart';
 typedef DartSourceFactory = DartSource Function(DartSourceKind kind, String host, int port);
 
 final dartSourceFactoryProvider = Provider<DartSourceFactory>((ref) {
+  final calibration = ref.watch(settingsProvider.select((s) => s.coordCalibration));
   return (kind, host, port) => switch (kind) {
         DartSourceKind.simulator => SimulatorSource(),
         DartSourceKind.manual => ManualSource(),
-        DartSourceKind.autodartsLocal => AutodartsLocalSource(host: host, port: port),
+        DartSourceKind.autodartsLocal => AutodartsLocalSource(host: host, port: port, calibration: calibration),
       };
 });
 

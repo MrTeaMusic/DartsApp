@@ -1,3 +1,4 @@
+import '../domain/coordinate_calibration.dart';
 import '../../board/domain/board_geometry.dart';
 import '../../board/domain/segment.dart';
 import '../domain/dart_event.dart';
@@ -22,8 +23,11 @@ import '../domain/dart_event.dart';
 /// Der Zustand enthält immer alle Darts der laufenden Aufnahme. Neue Darts
 /// werden durch Vergleich mit dem vorherigen Zustand erkannt.
 class AutodartsStateMapper {
-  AutodartsStateMapper({DateTime Function()? clock})
+  AutodartsStateMapper({DateTime Function()? clock, this.calibration = CoordinateCalibration.identity})
       : _clock = clock ?? DateTime.now;
+
+  /// Umrechnung der Koordinaten, siehe [CoordinateCalibration].
+  final CoordinateCalibration calibration;
 
   final DateTime Function() _clock;
   List<DartThrow>? _previous;
@@ -125,7 +129,10 @@ class AutodartsStateMapper {
       }
       result.add(DartThrow(
         segment: segment,
-        position: parseCoords(map['coords']),
+        position: switch (parseCoords(map['coords'])) {
+          final p? => calibration.apply(p),
+          null => null,
+        },
         timestamp: now,
         source: DartSourceKind.autodartsLocal,
         raw: map,

@@ -69,12 +69,13 @@ loggt sie nicht.
 1. **Kommen bei deiner Board-Manager-Version überhaupt Würfe lokal an?** Die ioBroker-Doku sagt, ab
    Autodarts v2.0 liefere die lokale API keine `throws` mehr (nur noch Cloud). Die
    Home-Assistant-Integration von Dennis-Otto wertet dagegen lokal Würfe von Board Manager 2.0.x aus.
-   Widersprüchlich, also unbedingt testen. Falls lokal nichts kommt, wäre die Cloud-Anbindung
-   (Phase 5, optional) der Weg.
+   Widersprüchlich, also unbedingt testen (Ben nutzt v2.0.2). Der Verbindungstest zeigt das direkt
+   unter „Würfe im Status enthalten“. Falls lokal nichts kommt, wäre eine Cloud-Anbindung der Weg;
+   die ist noch nicht gebaut.
 2. Schickt der WebSocket bei jeder Änderung ein `state`, oder nur gelegentlich? Falls nur
    gelegentlich, zusätzlich pollen.
-3. Koordinaten: Maßstab und Ausrichtung wie oben beschrieben? Prüfen mit Darts auf T20 (oben),
-   D6 (rechts), D3 (unten).
+3. Koordinaten: Maßstab und Ausrichtung wie oben beschrieben? Die Mitschnitt-Prüfung misst das und
+   schlägt bei Bedarf eine Kalibrierung vor (siehe unten).
 4. Wie sieht eine **Korrektur** am Board aus (Segment eines Darts ändert sich, oder Liste wird neu
    aufgebaut)? DartLab meldet derzeit `DartCorrected`, wenn sich das Feld an einer Position ändert.
 5. Wie heißen Bull und Single Bull genau (`bed`, `name`)? DartLab verlässt sich primär auf
@@ -82,11 +83,42 @@ loggt sie nicht.
 6. Verlangt der WebSocket bei manchen Versionen eine Anmeldung (HTTP 401/403)?
 7. Passen die Befehlspfade (`/api/reset` usw.) zu deiner Version?
 
+## Werkzeuge in DartLab
+
+**Verbindungstest** (Optionen › Autodarts › „Verbindung testen“) prüft nacheinander:
+
+| Prüfung | Was passiert |
+|---|---|
+| Board Manager erreichbar | `GET /api/state` mit Zeitlimit. Bei Fehlern ein Hinweis: abgelehnt (läuft der BM? Port?), Zeitüberschreitung (IP, Netz, iOS „Lokales Netzwerk“), Adresse unbekannt, Anmeldung verlangt. |
+| Statusformat erkannt | Antwort ist JSON mit den erwarteten Feldern. |
+| Würfe im Status enthalten | Gibt es das Feld `throws`? Fehlt es, liefert die Version Würfe vermutlich nur über die Cloud. |
+| Erkennung läuft | `running` ist `true` (der `status` wird mit angezeigt). |
+| Live-Verbindung | WebSocket `/api/events` öffnen und kurz auf eine Nachricht warten. Ohne Nachricht nutzt DartLab automatisch Polling. |
+
+Der Test liest nur `/api/state` und `/api/events`. `/api/system` und `/api/config` werden nie
+abgefragt oder mitgeschrieben, weil dort der API-Schlüssel des Boards steht.
+
+**Mitschnitt prüfen** (Debug-Bildschirm › „Mitschnitt prüfen“ für die aktuellen Rohdaten,
+„Datei prüfen…“ für eine `.jsonl`-Datei) zählt Statusmeldungen, Darts, Takeouts und Korrekturen,
+zeigt die Nachrichtentypen und vergleicht bei jedem Dart das gemeldete Feld mit dem Feld, das
+sich aus den Koordinaten ergibt („Koordinaten passen zum Feld“).
+
+**Koordinaten-Kalibrierung:** Passen die Koordinaten schlecht, probiert die Prüfung alle acht
+Ausrichtungen (Achsen tauschen, x/y spiegeln) und schätzt den Maßstab (z. B. Millimeter statt
+Radius 1). Ist eine Variante deutlich besser, erscheint sie als Vorschlag mit „Übernehmen“.
+Die aktive Kalibrierung steht unter Optionen › Autodarts und lässt sich dort zurücksetzen.
+Die Kalibrierung betrifft nur die Position (Heatmap, Treffer-Animation). Gezählt wird immer das
+Feld, das Autodarts meldet.
+
+**Regressionstests:** Jede `.jsonl`-Datei in `test/fixtures/autodarts/` wird bei `flutter test`
+ausgewertet und muss ohne Mapping-Warnung durchlaufen. Echte Mitschnitte dort ablegen.
+
 ## So sammelst du Testdaten
 
 1. Einstellungen → Datenquelle **Autodarts (lokal)**, Host/IP und Port 3180 eintragen.
 2. **Rohdaten in Datei mitschreiben** einschalten.
 3. Ein paar Aufnahmen werfen: T20, D6, D3, Bull, 25, einen Dart daneben, einmal Darts ziehen,
    einmal am Board korrigieren.
-4. Debug-Bildschirm → **Alles kopieren** oder die `.jsonl`-Datei schicken. Damit schärfen wir das
-   Mapping nach.
+4. Debug-Bildschirm → **Mitschnitt prüfen**. Stimmen Dart-Anzahl und Felder, passt das Mapping.
+5. Die `.jsonl`-Datei oder **Alles kopieren** schicken. Damit schärfen wir das Mapping nach, und
+   die Datei wird ein Regressionstest.

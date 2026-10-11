@@ -15,6 +15,9 @@ abstract class BackupFiles {
   /// Lässt eine JSON-Datei auswählen und gibt ihren Text zurück, `null`
   /// bei Abbruch.
   Future<String?> openJson();
+
+  /// Lässt eine Textdatei (z. B. einen Autodarts-Mitschnitt) auswählen.
+  Future<String?> openText();
 }
 
 /// Windows/macOS: Speichern-Dialog. iOS: Ablage im Dokumente-Ordner der App
@@ -44,6 +47,14 @@ class SystemBackupFiles implements BackupFiles {
   Future<String?> openJson() async {
     final file = await openFile(acceptedTypeGroups: const [
       XTypeGroup(label: 'JSON', extensions: ['json'], uniformTypeIdentifiers: ['public.json']),
+    ]);
+    return file?.readAsString();
+  }
+
+  @override
+  Future<String?> openText() async {
+    final file = await openFile(acceptedTypeGroups: const [
+      XTypeGroup(label: 'Mitschnitt', extensions: ['jsonl', 'txt', 'log', 'json'], uniformTypeIdentifiers: ['public.plain-text', 'public.json']),
     ]);
     return file?.readAsString();
   }

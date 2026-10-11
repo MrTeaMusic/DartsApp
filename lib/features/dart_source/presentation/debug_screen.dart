@@ -9,9 +9,11 @@ import '../../../core/design/components/components.dart';
 import '../../../core/design/dart_colors.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
+import '../../backup/data/backup_files.dart';
 import '../data/autodarts_local_source.dart';
 import '../domain/dart_source.dart';
 import 'dart_source_providers.dart';
+import 'recording_sheet.dart';
 import 'source_status_badge.dart';
 
 /// Zeigt rohe eingehende Nachrichten der aktiven Quelle live an.
@@ -99,6 +101,30 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
                     label: Text(l10n.debugCmdStart),
                   ),
                 ],
+                OutlinedButton.icon(
+                  key: const Key('check-log'),
+                  onPressed: () {
+                    if (entries.isEmpty) {
+                      ScaffoldMessenger.of(context)
+                        ..hideCurrentSnackBar()
+                        ..showSnackBar(SnackBar(content: Text(l10n.recEmpty)));
+                      return;
+                    }
+                    showRecordingAnalysis(context, logNotifier.log.exportJsonLines());
+                  },
+                  icon: const Icon(Icons.fact_check_outlined),
+                  label: Text(l10n.recCheckLog),
+                ),
+                OutlinedButton.icon(
+                  key: const Key('check-file'),
+                  onPressed: () async {
+                    final text = await ref.read(backupFilesProvider).openText();
+                    if (text == null || !context.mounted) return;
+                    await showRecordingAnalysis(context, text);
+                  },
+                  icon: const Icon(Icons.file_open_outlined),
+                  label: Text(l10n.recCheckFile),
+                ),
                 FilterChip(
                   label: Text(l10n.debugPretty),
                   selected: _pretty,
