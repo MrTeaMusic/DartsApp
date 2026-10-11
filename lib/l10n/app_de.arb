@@ -33,7 +33,7 @@
   "homeSessionDarts": "Darts",
   "homeSessionAverage": "3-Dart-Average",
   "homeLastDart": "Letzter Dart",
-  "homePhaseNote": "Phase 2: Checkout-Training, Around the Clock, Bullseye-Drill und Scoring-Drills sind spielbar, jeder Dart wird lokal gespeichert. Cricket, 121, Bob's 27 und deine eigenen Spiele folgen in Phase 3, Statistiken in Phase 4.",
+  "homePhaseNote": "Phase 3: Elf Trainingsspiele sind spielbar, darunter Cricket, 121, Bob's 27 und deine zwei eigenen Spiele. Jeder Dart wird lokal gespeichert. Statistiken, Ziele und Export folgen in Phase 4.",
   "gamesTitle": "Training",
   "gamesPhase": "Phase {phase}",
   "@gamesPhase": {
@@ -52,13 +52,13 @@
   "gameScoring": "Scoring-Drills",
   "gameScoringDesc": "T20-Training, Score-Aufgaben (100/140/180) und Highscore-Jagd.",
   "gameCricket": "Cricket",
-  "gameCricketDesc": "15 bis 20 und Bull schließen, Punkte sammeln.",
+  "gameCricketDesc": "Solo-Cricket: 20 bis 15 und Bull schließen, frei oder der Reihe nach. Wertung in Marks pro Aufnahme.",
   "game121": "121",
-  "game121Desc": "Checkout-Leiter ab 121 mit begrenzter Dartzahl.",
+  "game121Desc": "Checkout-Leiter ab 121: geschafft heißt eins höher, verpasst je nach Einstellung zurück.",
   "gameBobs27": "Bob's 27",
-  "gameBobs27Desc": "Doubles-Training von D1 bis Bull, Start mit 27 Punkten.",
+  "gameBobs27Desc": "Doubles von D1 bis Bull. Treffer bringen Punkte, eine leere Aufnahme kostet. Unter 0 ist Schluss.",
   "gameThreeHits": "Drei-Treffer-Runde",
-  "gameThreeHitsDesc": "Around the World mit Pflicht: erst nach 3 Treffern zur nächsten Zahl.",
+  "gameThreeHitsDesc": "Around the World mit Pflicht: erst nach 3 Treffern geht es zur nächsten Zahl.",
   "gameSkip": "Around the World mit Überspringen",
   "gameSkipDesc": "Punkte pro Zahl (S=1, D=2, T=3). Ab 4 Punkten in einer Aufnahme wird die nächste Zahl übersprungen.",
   "boardTitle": "Board",
@@ -188,6 +188,22 @@
   "optVisits": "Aufnahmen",
   "optNumber": "Zahl",
   "optTarget": "Vorgabe pro Aufnahme",
+  "optCricketOrder": "Zahlen",
+  "optMarksToClose": "Marks zum Schließen",
+  "optStart": "Startwert",
+  "optRounds": "Ziele",
+  "optFailRule": "Bei Fehlversuch",
+  "optStartScore": "Startpunkte",
+  "optAllowNegative": "Unter 0 weiterspielen",
+  "optHitsRequired": "Treffer pro Zahl",
+  "optMultiplierCounts": "Double zählt 2, Triple 3 Treffer",
+  "optSkipThreshold": "Punkte zum Überspringen",
+  "optBullSkippable": "Bull darf übersprungen werden",
+  "valFree": "Frei",
+  "valSequential": "Der Reihe nach",
+  "valBack": "Zurück zum letzten Erfolg",
+  "valStay": "Gleiches Ziel",
+  "valDown": "Eins runter",
   "valRandom": "Zufällig",
   "valDescending": "Absteigend",
   "valWeak": "Meine schwachen",
@@ -217,6 +233,15 @@
   "statVisitScore": "Aufnahme",
   "statTons": "Aufnahmen ab 100",
   "statRemaining": "Rest",
+  "statOpenNumbers": "Offene Zahlen",
+  "statMpr": "Marks pro Aufnahme",
+  "statClosedNumbers": "Geschlossen",
+  "statAttemptDarts": "Darts für dieses Ziel",
+  "statDoubleHits": "Double-Treffer",
+  "statDoubleRate": "Double-Quote",
+  "statHitsOnTarget": "Treffer",
+  "statSkips": "Übersprungen",
+  "statPointsPerNumber": "Ø Punkte pro Zahl",
   "evBust": "Bust!",
   "evCheckout": "Checkout {value}!",
   "@evCheckout": {
@@ -261,6 +286,22 @@
     }
   },
   "evFinished": "Spiel beendet",
+  "evClosed": "{value} geschlossen!",
+  "@evClosed": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "evSkipped": "{value} übersprungen!",
+  "@evSkipped": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "gameStart": "Spiel starten",
   "gameSettings": "Einstellungen",
   "gameEnd": "Beenden",
@@ -273,7 +314,6 @@
   "gameSuggestion": "Vorschlag",
   "gameNoCheckout": "Kein Finish mit den restlichen Darts",
   "gamesPlayable": "Spielbar",
-  "gamesComing": "Kommt in Phase 3",
   "gameRecent": "Zuletzt gespielt",
   "gameRecentEmpty": "Noch keine Spiele gespeichert.",
   "gameAborted": "abgebrochen",

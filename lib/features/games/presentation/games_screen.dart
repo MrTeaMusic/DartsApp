@@ -23,131 +23,104 @@ class GamesScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final coming = [
-      (Icons.grid_on_rounded, l10n.gameCricket, l10n.gameCricketDesc),
-      (Icons.filter_1_rounded, l10n.game121, l10n.game121Desc),
-      (Icons.looks_two_rounded, l10n.gameBobs27, l10n.gameBobs27Desc),
-      (Icons.repeat_rounded, l10n.gameThreeHits, l10n.gameThreeHitsDesc),
-      (Icons.fast_forward_rounded, l10n.gameSkip, l10n.gameSkipDesc),
-    ];
     final recent = ref.watch(recentSessionsProvider).value ?? const [];
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.gamesTitle)),
-      body: LayoutBuilder(builder: (context, c) {
-        final columns = (c.maxWidth / 360).floor().clamp(1, 3);
-        SliverGrid grid(List<Widget> children) => SliverGrid(
-              delegate: SliverChildListDelegate(children),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: columns,
-                mainAxisSpacing: AppSpacing.m,
-                crossAxisSpacing: AppSpacing.m,
-                mainAxisExtent: 124,
+      body: LayoutBuilder(
+        builder: (context, c) {
+          final columns = (c.maxWidth / 360).floor().clamp(1, 3);
+          SliverGrid grid(List<Widget> children) => SliverGrid(
+            delegate: SliverChildListDelegate(children),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: columns,
+              mainAxisSpacing: AppSpacing.m,
+              crossAxisSpacing: AppSpacing.m,
+              mainAxisExtent: 124,
+            ),
+          );
+          return CustomScrollView(
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(AppSpacing.page, AppSpacing.s, AppSpacing.page, 0),
+                sliver: SliverToBoxAdapter(child: SectionHeader(l10n.gamesPlayable)),
               ),
-            );
-        return CustomScrollView(
-          slivers: [
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(AppSpacing.page, AppSpacing.s, AppSpacing.page, 0),
-              sliver: SliverToBoxAdapter(child: SectionHeader(l10n.gamesPlayable)),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.page),
-              sliver: grid([
-                for (final def in GameCatalog.all)
-                  _GameCard(
-                    key: Key('game-${def.id}'),
-                    icon: gameIcon(def.id),
-                    title: l10n.gameTitle(def.id),
-                    description: l10n.gameDescription(def.id),
-                    onTap: () => context.go(Routes.gameSetup(def.id)),
-                  ),
-              ]),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(AppSpacing.page, AppSpacing.xl, AppSpacing.page, 0),
-              sliver: SliverToBoxAdapter(child: SectionHeader(l10n.gameRecent)),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.page),
-              sliver: SliverToBoxAdapter(
-                child: recent.isEmpty
-                    ? Text(l10n.gameRecentEmpty, style: Theme.of(context).textTheme.bodySmall)
-                    : AppCard(
-                        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-                        child: Column(children: [for (final s in recent) _RecentTile(summary: s)]),
-                      ),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.page),
+                sliver: grid([
+                  for (final def in GameCatalog.all)
+                    _GameCard(
+                      key: Key('game-${def.id}'),
+                      icon: gameIcon(def.id),
+                      title: l10n.gameTitle(def.id),
+                      description: l10n.gameDescription(def.id),
+                      onTap: () => context.go(Routes.gameSetup(def.id)),
+                    ),
+                ]),
               ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(AppSpacing.page, AppSpacing.xl, AppSpacing.page, 0),
-              sliver: SliverToBoxAdapter(child: SectionHeader(l10n.gamesComing)),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(AppSpacing.page, 0, AppSpacing.page, AppSpacing.page),
-              sliver: grid([
-                for (final (icon, title, desc) in coming)
-                  _GameCard(icon: icon, title: title, description: desc, enabled: false),
-              ]),
-            ),
-          ],
-        );
-      }),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(AppSpacing.page, AppSpacing.xl, AppSpacing.page, 0),
+                sliver: SliverToBoxAdapter(child: SectionHeader(l10n.gameRecent)),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(AppSpacing.page, 0, AppSpacing.page, AppSpacing.page),
+                sliver: SliverToBoxAdapter(
+                  child: recent.isEmpty
+                      ? Text(l10n.gameRecentEmpty, style: Theme.of(context).textTheme.bodySmall)
+                      : AppCard(
+                          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                          child: Column(children: [for (final s in recent) _RecentTile(summary: s)]),
+                        ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 }
 
 class _GameCard extends StatelessWidget {
-  const _GameCard({
-    super.key,
-    required this.icon,
-    required this.title,
-    required this.description,
-    this.onTap,
-    this.enabled = true,
-  });
+  const _GameCard({super.key, required this.icon, required this.title, required this.description, this.onTap});
 
   final IconData icon;
   final String title;
   final String description;
   final VoidCallback? onTap;
-  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = context.dartColors;
-    final accent = enabled ? theme.colorScheme.primary : colors.textMuted;
-    return Opacity(
-      opacity: enabled ? 1 : 0.6,
-      child: AppCard(
-        onTap: onTap,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: accent.withValues(alpha: 0.14),
-                borderRadius: BorderRadius.circular(AppRadii.m),
-              ),
-              child: Icon(icon, color: accent),
+    final accent = theme.colorScheme.primary;
+    return AppCard(
+      onTap: onTap,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: accent.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(AppRadii.m),
             ),
-            const SizedBox(width: AppSpacing.l),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: theme.textTheme.titleMedium, overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(description, maxLines: 3, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodySmall),
-                ],
-              ),
+            child: Icon(icon, color: accent),
+          ),
+          const SizedBox(width: AppSpacing.l),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: theme.textTheme.titleMedium, overflow: TextOverflow.ellipsis),
+                const SizedBox(height: AppSpacing.xs),
+                Text(description, maxLines: 3, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodySmall),
+              ],
             ),
-            if (enabled) Icon(Icons.chevron_right_rounded, color: colors.textMuted),
-          ],
-        ),
+          ),
+          Icon(Icons.chevron_right_rounded, color: colors.textMuted),
+        ],
       ),
     );
   }
@@ -169,12 +142,18 @@ class _RecentTile extends StatelessWidget {
       'around_the_clock' => '${m['darts'] ?? '–'} ${l10n.statDarts}',
       'score_target' => formatPercent(m['successRate']),
       'target_practice' || 'highscore_hunt' => formatDecimal(m['average']),
+      'cricket' => '${formatDecimal(m['mpr'])} MPR',
+      'one_twenty_one' => '${m['highestCheckout'] ?? '–'}',
+      'bobs_27' => '${m['score'] ?? '–'}',
+      'three_hits' => '${m['darts'] ?? '–'} ${l10n.statDarts}',
       _ => '${m['points'] ?? '–'}',
     };
     return ListTile(
       leading: Icon(gameIcon(summary.gameId)),
       title: Text(l10n.gameTitle(summary.gameId)),
-      subtitle: Text('$date · ${summary.dartCount} ${l10n.statDarts}${summary.finished ? '' : ' · ${l10n.gameAborted}'}'),
+      subtitle: Text(
+        '$date · ${summary.dartCount} ${l10n.statDarts}${summary.finished ? '' : ' · ${l10n.gameAborted}'}',
+      ),
       trailing: Text(headline, style: Theme.of(context).textTheme.titleMedium),
     );
   }

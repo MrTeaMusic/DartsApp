@@ -6,7 +6,7 @@ Würfe kommen live vom Autodarts-Board, aus einem Simulator oder per manueller E
 > Die Datei `index.html` im Repo-Wurzelordner ist der frühere Web-Prototyp und bleibt vorerst
 > unverändert liegen. Die Flutter-App ist davon unabhängig.
 
-## Stand: Phase 2
+## Stand: Phase 3
 
 | Bereich | Status |
 |---|---|
@@ -22,12 +22,12 @@ Würfe kommen live vom Autodarts-Board, aus einem Simulator oder per manueller E
 | Spiel-Engine (Aufnahmen, Rückgängig, Korrektur, Wiederholbarkeit per Seed) | fertig |
 | Checkout-Training, Around the Clock, Bullseye-Drill, T20-Training, Score-Ziel, Highscore-Jagd | fertig |
 | Lokale Datenbank (drift/SQLite): Sessions und jeder einzelne Wurf | fertig |
-| Cricket, 121, Bob's 27, eigene Spiele | Phase 3 |
+| Cricket (Solo), 121, Bob's 27, Drei-Treffer-Runde, Around the World mit Überspringen | fertig |
 | Statistiken, Export/Import, Profile | Phase 4 |
 
 Was über das Autodarts-Protokoll bekannt und was offen ist: [docs/autodarts-protokoll.md](docs/autodarts-protokoll.md).
 Regeln und Optionen der Trainingsspiele: [docs/trainingsspiele.md](docs/trainingsspiele.md).
-Geplante Regeln der zwei eigenen Spiele: [docs/spielregeln.md](docs/spielregeln.md).
+Regeln der zwei eigenen Spiele: [docs/spielregeln.md](docs/spielregeln.md).
 
 ## Starten
 

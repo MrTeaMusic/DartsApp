@@ -1,3 +1,7 @@
+import 'package:dartlab/features/board/domain/board_geometry.dart';
+import 'package:dartlab/features/board/domain/segment.dart';
+import 'package:dartlab/features/dart_source/data/simulator_source.dart';
+import 'package:dartlab/features/dart_source/presentation/dart_source_providers.dart';
 import 'package:dartlab/features/games/presentation/active_game_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -40,6 +44,7 @@ void main() {
     await tester.tap(find.byKey(const Key('game-done')));
     await tester.pumpAndSettle();
     expect(container.read(activeGameProvider), isNull);
+    await tester.scrollUntilVisible(find.textContaining('3 Darts'), 300, scrollable: find.byType(Scrollable).last);
     expect(find.textContaining('3 Darts'), findsOneWidget);
   });
 
@@ -59,5 +64,24 @@ void main() {
     await tester.pumpAndSettle();
     expect(container.read(activeGameProvider), isNull);
     expect(find.byKey(const Key('game-around_the_clock')), findsOneWidget);
+  });
+
+  testWidgets('Cricket: Spiel startet, Schließen erscheint als Banner', (tester) async {
+    final container = await pumpApp(tester, prefs: {'game.config.cricket': '{"cricketOrder":"sequential"}'});
+    await tester.tap(find.text('Training').first);
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.byKey(const Key('game-cricket')), 200, scrollable: find.byType(Scrollable).last);
+    await tester.tap(find.byKey(const Key('game-cricket')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('start-game')));
+    await pumpFrames(tester);
+    expect(container.read(activeGameProvider)?.gameId, 'cricket');
+    expect(find.text('20'), findsWidgets);
+
+    final source = container.read(dartSourceProvider) as SimulatorSource;
+    source.throwAt(BoardGeometry.centerOf(Segment.triple(20)));
+    await pumpFrames(tester);
+    expect(find.text('20 geschlossen!'), findsOneWidget);
+    expect(find.text('19'), findsWidgets);
   });
 }

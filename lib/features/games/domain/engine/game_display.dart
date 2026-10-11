@@ -26,6 +26,12 @@ enum GameEventType {
   /// Neuer Bestwert in diesem Spiel.
   best,
 
+  /// Zahl geschlossen (Cricket).
+  closed,
+
+  /// Nächste Zahl übersprungen (Around the World mit Überspringen).
+  skipped,
+
   /// Spiel ist vorbei.
   finished,
 }
