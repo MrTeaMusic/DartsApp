@@ -7,6 +7,7 @@ import '../../features/games/presentation/game_play_screen.dart';
 import '../../features/games/presentation/game_setup_screen.dart';
 import '../../features/games/presentation/games_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/matches/presentation/match_routes.dart';
 import '../../features/plans/presentation/plan_routes.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/simulator/presentation/board_screen.dart';
@@ -30,6 +31,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       // Spielansicht ohne Navigation, damit das Board möglichst groß ist.
       GoRoute(path: Routes.play, builder: (_, _) => const GamePlayScreen()),
+      matchPlayRoute,
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => AdaptiveScaffold(shell: shell),
         branches: [
@@ -43,6 +45,7 @@ final routerProvider = Provider<GoRouter>((ref) {
               routes: [
                 // Trainingspläne vor :gameId, damit "plaene" kein Spiel ist.
                 ...planRoutes,
+                ...matchRoutes,
                 GoRoute(
                   path: ':gameId',
                   builder: (_, state) => GameSetupScreen(gameId: state.pathParameters['gameId']!),
