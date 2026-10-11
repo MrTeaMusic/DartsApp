@@ -119,7 +119,10 @@ class RecordingAnalysis {
   /// (`{"ts","dir","channel","payload"}`) und reine Zustände pro Zeile.
   static RecordingAnalysis analyze(String jsonLines) {
     var time = DateTime.fromMillisecondsSinceEpoch(0);
-    final mapper = AutodartsStateMapper(clock: () => time);
+    final mapper = AutodartsStateMapper(clock: () => time)
+      // Leeres Board als Ausgangslage: Ein Mitschnitt beginnt oft erst mit dem
+      // ersten Wurf, und dieser Dart soll mitgezählt werden.
+      ..update(const {'numThrows': 0, 'throws': <Object>[]});
     final darts = <RecordedDart>[];
     final types = <String, int>{};
     var lines = 0;

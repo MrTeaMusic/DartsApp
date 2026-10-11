@@ -37,8 +37,10 @@ enum CheckReason {
   httpStatus,
   notJson,
   missingThrows,
+  boardEmpty,
   stopped,
   noMessages,
+  quiet,
   other,
 }
 
@@ -157,6 +159,9 @@ class AutodartsDiagnostics {
     final throws = decoded['throws'];
     if (throws is List) {
       checks.add(DiagnosticCheck(CheckKind.throwsField, CheckResult.ok, detail: '${throws.length}'));
+    } else if (decoded['numThrows'] == 0) {
+      // Board Manager 2.0.2 lässt `throws` weg, solange kein Dart steckt.
+      checks.add(const DiagnosticCheck(CheckKind.throwsField, CheckResult.skipped, reason: CheckReason.boardEmpty));
     } else {
       checks.add(const DiagnosticCheck(CheckKind.throwsField, CheckResult.warning, reason: CheckReason.missingThrows));
     }
@@ -185,7 +190,8 @@ class AutodartsDiagnostics {
         }
         return DiagnosticCheck(CheckKind.webSocket, CheckResult.ok, detail: type);
       } on TimeoutException {
-        return const DiagnosticCheck(CheckKind.webSocket, CheckResult.warning, reason: CheckReason.noMessages);
+        // Verbunden, aber still: Der Board Manager sendet nur bei Änderungen.
+        return const DiagnosticCheck(CheckKind.webSocket, CheckResult.ok, reason: CheckReason.quiet);
       } on StateError {
         return const DiagnosticCheck(CheckKind.webSocket, CheckResult.warning, reason: CheckReason.noMessages);
       } finally {

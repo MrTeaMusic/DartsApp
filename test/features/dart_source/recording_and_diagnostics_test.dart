@@ -85,6 +85,18 @@ void main() {
     }
   });
 
+  test('echter Mitschnitt: Board Manager 2.0.2 unter Windows', () {
+    final a = RecordingAnalysis.analyze(fixture('board-manager-2.0.2-windows.jsonl'));
+    // Der Mitschnitt beginnt mit dem ersten Dart, der trotzdem zählen muss.
+    expect(a.darts.map((d) => d.segment.name), ['T20', 'T20', 'T5', 'S12', 'MISS', 'S20']);
+    expect(a.takeouts, 2);
+    expect(a.corrections, 0);
+    expect(a.sawThrowsField, isTrue);
+    expect(a.warnings, isEmpty);
+    expect(a.agreement(CoordinateCalibration.identity), 1.0);
+    expect(a.suggestCalibration(), CoordinateCalibration.identity);
+  });
+
   group('Verbindungstest', () {
     late FakeBoardManager board;
     tearDown(() => board.close());
@@ -110,7 +122,18 @@ void main() {
       final byKind = {for (final c in checks) c.kind: c};
       expect(byKind[CheckKind.throwsField]!.reason, CheckReason.missingThrows);
       expect(byKind[CheckKind.detection]!.reason, CheckReason.stopped);
-      expect(byKind[CheckKind.webSocket]!.reason, CheckReason.noMessages);
+      expect(byKind[CheckKind.webSocket]!.result, CheckResult.ok);
+      expect(byKind[CheckKind.webSocket]!.reason, CheckReason.quiet);
+    });
+
+    test('leeres Board wie bei Board Manager 2.0.2: throws fehlt, ist aber kein Fehler', () async {
+      board = await FakeBoardManager.start(silent: true);
+      board.state = {'connected': true, 'event': 'Takeout finished', 'numThrows': 0, 'running': true, 'status': 'Throw'};
+      final checks = await AutodartsDiagnostics(host: '127.0.0.1', port: board.port, messageWait: const Duration(milliseconds: 200)).run();
+      final throwsCheck = checks.firstWhere((c) => c.kind == CheckKind.throwsField);
+      expect(throwsCheck.result, CheckResult.skipped);
+      expect(throwsCheck.reason, CheckReason.boardEmpty);
+      expect(checks.where((c) => c.result == CheckResult.warning || c.result == CheckResult.failed), isEmpty);
     });
 
     test('Anmeldung verlangt', () async {
