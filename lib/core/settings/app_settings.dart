@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../features/dart_source/domain/coordinate_calibration.dart';
 import '../../features/dart_source/domain/dart_event.dart';
 
 /// Einstellungen der App. Unveränderlich, Änderungen über [SettingsNotifier].
@@ -15,6 +16,7 @@ class AppSettings {
     this.soundEnabled = false,
     this.hapticsEnabled = true,
     this.logRawToFile = false,
+    this.coordCalibration = CoordinateCalibration.identity,
   });
 
   final ThemeMode themeMode;
@@ -27,6 +29,9 @@ class AppSettings {
   /// Rohe Autodarts-Nachrichten zusätzlich in eine Datei schreiben.
   final bool logRawToFile;
 
+  /// Umrechnung der Autodarts-Koordinaten (Standard: keine).
+  final CoordinateCalibration coordCalibration;
+
   AppSettings copyWith({
     ThemeMode? themeMode,
     DartSourceKind? sourceKind,
@@ -35,6 +40,7 @@ class AppSettings {
     bool? soundEnabled,
     bool? hapticsEnabled,
     bool? logRawToFile,
+    CoordinateCalibration? coordCalibration,
   }) =>
       AppSettings(
         themeMode: themeMode ?? this.themeMode,
@@ -44,6 +50,7 @@ class AppSettings {
         soundEnabled: soundEnabled ?? this.soundEnabled,
         hapticsEnabled: hapticsEnabled ?? this.hapticsEnabled,
         logRawToFile: logRawToFile ?? this.logRawToFile,
+        coordCalibration: coordCalibration ?? this.coordCalibration,
       );
 
   static const _kTheme = 'settings.themeMode';
@@ -53,6 +60,7 @@ class AppSettings {
   static const _kSound = 'settings.sound';
   static const _kHaptics = 'settings.haptics';
   static const _kLogFile = 'settings.logRawToFile';
+  static const _kCalibration = 'settings.coordCalibration';
 
   static AppSettings load(SharedPreferences prefs) {
     const d = AppSettings();
@@ -66,6 +74,7 @@ class AppSettings {
       soundEnabled: prefs.getBool(_kSound) ?? d.soundEnabled,
       hapticsEnabled: prefs.getBool(_kHaptics) ?? d.hapticsEnabled,
       logRawToFile: prefs.getBool(_kLogFile) ?? d.logRawToFile,
+      coordCalibration: CoordinateCalibration.decode(prefs.getString(_kCalibration)),
     );
   }
 
@@ -77,6 +86,7 @@ class AppSettings {
     await prefs.setBool(_kSound, soundEnabled);
     await prefs.setBool(_kHaptics, hapticsEnabled);
     await prefs.setBool(_kLogFile, logRawToFile);
+    await prefs.setString(_kCalibration, coordCalibration.encode());
   }
 }
 

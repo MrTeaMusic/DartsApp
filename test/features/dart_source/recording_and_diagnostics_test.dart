@@ -1,0 +1,134 @@
+import 'dart:io';
+
+import 'package:dartlab/features/board/domain/board_geometry.dart';
+import 'package:dartlab/features/dart_source/data/autodarts_diagnostics.dart';
+import 'package:dartlab/features/dart_source/data/autodarts_state_mapper.dart';
+import 'package:dartlab/features/dart_source/data/recording_analysis.dart';
+import 'package:dartlab/features/dart_source/domain/coordinate_calibration.dart';
+import 'package:dartlab/features/dart_source/domain/dart_event.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+import '../../helpers/fake_board_manager.dart';
+import '../../helpers/recordings.dart';
+
+String fixture(String name) => File('test/fixtures/autodarts/$name').readAsStringSync();
+
+void main() {
+  group('Kalibrierung', () {
+    test('Kodieren und Lesen', () {
+      const c = CoordinateCalibration(swapAxes: true, mirrorY: true, scale: 0.0059);
+      expect(CoordinateCalibration.decode(c.encode()), c);
+      expect(CoordinateCalibration.decode(null), CoordinateCalibration.identity);
+      expect(CoordinateCalibration.decode('kaputt'), CoordinateCalibration.identity);
+      expect(CoordinateCalibration.identity.encode(), ';1.0000');
+    });
+
+    test('Mapper wendet die Kalibrierung auf die Koordinaten an', () {
+      final m = AutodartsStateMapper(calibration: const CoordinateCalibration(mirrorY: true, scale: 0.5));
+      m.update({'numThrows': 0, 'throws': <Object>[]});
+      final e = m.update({
+        'numThrows': 1,
+        'throws': [
+          {'segment': {'number': 3, 'multiplier': 2}, 'coords': {'x': 0.2, 'y': 1.0}},
+        ],
+      }).single as DartThrown;
+      expect(e.dart.position, const BoardPoint(0.1, -0.5));
+    });
+  });
+
+  group('Mitschnitt-Prüfung', () {
+    test('synthetischer Mitschnitt im Debug-Format', () {
+      final a = RecordingAnalysis.analyze(fixture('synthetisch-community-format.jsonl'));
+      expect(a.darts.map((d) => d.segment.name), ['T20', 'D6', 'D3', 'BULL', '25', 'T19', 'MISS']);
+      expect(a.corrections, 1);
+      expect(a.takeouts, 2);
+      expect(a.warnings, isEmpty);
+      expect(a.sawThrowsField, isTrue);
+      expect(a.messageTypes, {'state': 12, 'motion_state': 1});
+      expect(a.agreement(CoordinateCalibration.identity), 1.0);
+      expect(a.suggestCalibration(), CoordinateCalibration.identity);
+    });
+
+    test('erkennt gespiegelte y-Achse', () {
+      final a = RecordingAnalysis.analyze(recording(sample, (p) => BoardPoint(p.x, -p.y)));
+      expect(a.agreement(CoordinateCalibration.identity), lessThan(0.5));
+      final c = a.suggestCalibration()!;
+      expect(c, const CoordinateCalibration(mirrorY: true));
+      expect(a.agreement(c), 1.0);
+    });
+
+    test('erkennt vertauschte Achsen und Maßstab in Millimetern', () {
+      final a = RecordingAnalysis.analyze(recording(sample, (p) => BoardPoint(p.y * 170, p.x * 170)));
+      final c = a.suggestCalibration()!;
+      expect(c.swapAxes, isTrue);
+      expect(c.scale, closeTo(1 / 170, 0.0002));
+      expect(a.agreement(c), greaterThanOrEqualTo(0.9));
+    });
+
+    test('ohne throws-Feld wird das gemeldet', () {
+      final a = RecordingAnalysis.analyze('{"type":"x"}\n{"numThrows":0,"running":true}\nkein json');
+      expect(a.sawThrowsField, isFalse);
+      expect(a.darts, isEmpty);
+      expect(a.suggestCalibration(), isNull);
+      expect(a.lines, 3);
+    });
+  });
+
+  test('alle Mitschnitte in test/fixtures/autodarts laufen ohne Warnung durch', () {
+    final files = Directory('test/fixtures/autodarts').listSync().whereType<File>().where((f) => f.path.endsWith('.jsonl'));
+    expect(files, isNotEmpty);
+    for (final f in files) {
+      final a = RecordingAnalysis.analyze(f.readAsStringSync());
+      expect(a.warnings, isEmpty, reason: f.path);
+      final agreement = a.agreement(CoordinateCalibration.identity);
+      if (agreement != null) expect(agreement, greaterThanOrEqualTo(0.9), reason: f.path);
+    }
+  });
+
+  group('Verbindungstest', () {
+    late FakeBoardManager board;
+    tearDown(() => board.close());
+
+    test('alles erreichbar', () async {
+      board = await FakeBoardManager.start()..greet = true;
+      final checks = await AutodartsDiagnostics(host: '127.0.0.1', port: board.port).run();
+      expect({for (final c in checks) c.kind: c.result}, {
+        CheckKind.http: CheckResult.ok,
+        CheckKind.stateFormat: CheckResult.ok,
+        CheckKind.throwsField: CheckResult.ok,
+        CheckKind.detection: CheckResult.ok,
+        CheckKind.webSocket: CheckResult.ok,
+      });
+      expect(checks.last.detail, 'state');
+      expect(board.requests.where((r) => r.contains('system') || r.contains('config')), isEmpty);
+    });
+
+    test('ohne throws, Erkennung gestoppt, stiller WebSocket', () async {
+      board = await FakeBoardManager.start(silent: true);
+      board.state = {'connected': true, 'running': false, 'status': 'Stopped'};
+      final checks = await AutodartsDiagnostics(host: '127.0.0.1', port: board.port, messageWait: const Duration(milliseconds: 200)).run();
+      final byKind = {for (final c in checks) c.kind: c};
+      expect(byKind[CheckKind.throwsField]!.reason, CheckReason.missingThrows);
+      expect(byKind[CheckKind.detection]!.reason, CheckReason.stopped);
+      expect(byKind[CheckKind.webSocket]!.reason, CheckReason.noMessages);
+    });
+
+    test('Anmeldung verlangt', () async {
+      board = await FakeBoardManager.start(webSocket: false, stateStatus: 401);
+      final checks = await AutodartsDiagnostics(host: '127.0.0.1', port: board.port).run();
+      expect(checks.first.reason, CheckReason.unauthorized);
+      expect(checks.where((c) => c.result == CheckResult.skipped).length, 3);
+      expect(checks.last.result, CheckResult.failed);
+    });
+
+    test('niemand zu Hause', () async {
+      board = await FakeBoardManager.start();
+      final port = board.port;
+      await board.close();
+      final checks = await AutodartsDiagnostics(host: '127.0.0.1', port: port).run();
+      expect(checks.first.result, CheckResult.failed);
+      expect(checks.first.reason, CheckReason.refused);
+      expect(checks.last.result, CheckResult.failed);
+    });
+  });
+}

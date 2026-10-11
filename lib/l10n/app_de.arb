@@ -33,7 +33,7 @@
   "homeSessionDarts": "Darts",
   "homeSessionAverage": "3-Dart-Average",
   "homeLastDart": "Letzter Dart",
-  "homePhaseNote": "Phase 4: Statistiken mit Verlauf und Heatmap, Ziele, Serien, mehrere Profile sowie Export und Import sind da. Phase 5 bringt den Feinschliff für Autodarts und die Build-Anleitung.",
+  "homePhaseNote": "Phase 5: Verbindungstest, Mitschnitt-Prüfung und Koordinaten-Kalibrierung für Autodarts sind da. Die Build-Anleitung liegt im Ordner docs.",
   "gamesTitle": "Training",
   "gamesPhase": "Phase {phase}",
   "@gamesPhase": {
@@ -436,5 +436,86 @@
   "gameRecent": "Zuletzt gespielt",
   "gameRecentEmpty": "Noch keine Spiele gespeichert.",
   "gameAborted": "abgebrochen",
-  "gameWeakHint": "Nutzt deine bisherigen Checkout-Versuche. Ohne genug Daten wird zufällig gewählt."
+  "gameWeakHint": "Nutzt deine bisherigen Checkout-Versuche. Ohne genug Daten wird zufällig gewählt.",
+  "diagButton": "Verbindung testen",
+  "diagTitle": "Verbindungstest {target}",
+  "@diagTitle": {
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "diagRunning": "Prüfe Board Manager…",
+  "diagAgain": "Erneut testen",
+  "diagHttp": "Board Manager erreichbar (HTTP)",
+  "diagFormat": "Statusformat erkannt",
+  "diagThrows": "Würfe im Status enthalten",
+  "diagDetection": "Erkennung läuft",
+  "diagWebSocket": "Live-Verbindung (WebSocket)",
+  "diagRefused": "Verbindung abgelehnt. Läuft der Board Manager, und stimmt der Port (normal 3180)?",
+  "diagTimeout": "Keine Antwort. IP-Adresse prüfen und ob beide Geräte im selben Netz sind. Auf iOS muss „Lokales Netzwerk“ für DartLab erlaubt sein.",
+  "diagHostNotFound": "Adresse nicht gefunden. Am besten die IP-Adresse des Board-Rechners eintragen.",
+  "diagUnauthorized": "Der Board Manager verlangt eine Anmeldung. Das wird lokal bisher nicht unterstützt.",
+  "diagHttpStatus": "Unerwartete Antwort: {detail}",
+  "@diagHttpStatus": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "diagNotJson": "Die Antwort ist kein JSON. Läuft unter dieser Adresse wirklich der Board Manager?",
+  "diagMissingThrows": "Der Status enthält keine Würfe. Möglicherweise liefert deine Board-Manager-Version Würfe nur noch über die Cloud. Bitte einen Mitschnitt aufnehmen und prüfen.",
+  "diagStopped": "Die Erkennung ist gestoppt. Im Board Manager „Start“ drücken.",
+  "diagNoMessages": "Keine Live-Nachrichten empfangen. Einen Dart werfen und erneut testen. Ohne WebSocket fragt DartLab den Status automatisch regelmäßig ab.",
+  "diagOther": "Fehler: {detail}",
+  "@diagOther": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "recCheckLog": "Mitschnitt prüfen",
+  "recCheckFile": "Datei prüfen…",
+  "recTitle": "Mitschnitt-Auswertung",
+  "recLines": "Zeilen",
+  "recStates": "Statusmeldungen",
+  "recDarts": "Erkannte Darts",
+  "recTakeouts": "Takeouts",
+  "recCorrections": "Korrekturen",
+  "recTypes": "Nachrichtentypen",
+  "recThrowsField": "Feld „throws“ vorhanden",
+  "recYes": "ja",
+  "recNo": "nein",
+  "recAgreement": "Koordinaten passen zum Feld",
+  "recWarnings": "Warnungen",
+  "recSuggestion": "Vorschlag: Kalibrierung mit {percent} Übereinstimmung",
+  "@recSuggestion": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "recApply": "Übernehmen",
+  "recDartList": "Darts im Mitschnitt",
+  "recNoDarts": "Im Mitschnitt wurden keine Darts gefunden.",
+  "recNoCoords": "ohne Koordinaten",
+  "recEmpty": "Noch keine Rohdaten aufgezeichnet.",
+  "calibTitle": "Koordinaten-Kalibrierung",
+  "calibReset": "Zurücksetzen",
+  "calibNone": "Keine (Standard)",
+  "calibSwap": "Achsen getauscht",
+  "calibMirrorX": "x gespiegelt",
+  "calibMirrorY": "y gespiegelt",
+  "calibScale": "Skalierung {value}",
+  "@calibScale": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  }
 }

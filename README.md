@@ -6,7 +6,7 @@ Würfe kommen live vom Autodarts-Board, aus einem Simulator oder per manueller E
 > Die Datei `index.html` im Repo-Wurzelordner ist der frühere Web-Prototyp und bleibt vorerst
 > unverändert liegen. Die Flutter-App ist davon unabhängig.
 
-## Stand: Phase 4
+## Stand: Phase 5
 
 | Bereich | Status |
 |---|---|
@@ -27,7 +27,8 @@ Würfe kommen live vom Autodarts-Board, aus einem Simulator oder per manueller E
 | Ziele und Serien | fertig |
 | Mehrere Profile | fertig |
 | Export/Import (JSON-Backup, CSV) | fertig |
-| Autodarts-Feinschliff, Build-Anleitung | Phase 5 |
+| Autodarts-Verbindungstest, Mitschnitt-Prüfung, Koordinaten-Kalibrierung | fertig, **Mapping weiter ungeprüft am echten Board** |
+| Build-Anleitung, native Builds in GitHub Actions | fertig |
 
 Was über das Autodarts-Protokoll bekannt und was offen ist: [docs/autodarts-protokoll.md](docs/autodarts-protokoll.md).
 Regeln und Optionen der Trainingsspiele: [docs/trainingsspiele.md](docs/trainingsspiele.md).
@@ -52,7 +53,8 @@ flutter analyze
 flutter test
 ```
 
-Die ausführliche Build- und Installationsanleitung für alle drei Plattformen kommt mit Phase 5.
+Ausführliche Build- und Installationsanleitung für alle drei Plattformen (inkl. iPhone mit kostenloser
+Apple-ID): [docs/build-anleitung.md](docs/build-anleitung.md).
 
 ## Architektur
 

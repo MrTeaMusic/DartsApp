@@ -5,13 +5,15 @@ import 'dart:math' as math;
 import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+import '../domain/coordinate_calibration.dart';
 import '../domain/dart_event.dart';
 import '../domain/dart_source.dart';
 import 'autodarts_state_mapper.dart';
 
 typedef WebSocketConnector = Future<WebSocketChannel> Function(Uri uri);
 
-Future<WebSocketChannel> _defaultConnector(Uri uri) async {
+/// Öffnet einen WebSocket und wartet, bis er bereit ist.
+Future<WebSocketChannel> defaultWebSocketConnector(Uri uri) async {
   final channel = WebSocketChannel.connect(uri);
   await channel.ready;
   return channel;
@@ -49,12 +51,13 @@ class AutodartsLocalSource implements DartSource {
     this.maxBackoff = const Duration(seconds: 30),
     DateTime Function()? clock,
     math.Random? random,
+    CoordinateCalibration calibration = CoordinateCalibration.identity,
   })  : _http = httpClient ?? http.Client(),
         _ownsHttp = httpClient == null,
-        _connector = connector ?? _defaultConnector,
+        _connector = connector ?? defaultWebSocketConnector,
         _clock = clock ?? DateTime.now,
         _random = random ?? math.Random(),
-        _mapper = AutodartsStateMapper(clock: clock);
+        _mapper = AutodartsStateMapper(clock: clock, calibration: calibration);
 
   final String host;
   final int port;

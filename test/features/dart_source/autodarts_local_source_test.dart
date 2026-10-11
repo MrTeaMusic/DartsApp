@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 
@@ -9,62 +8,7 @@ import 'package:dartlab/features/dart_source/domain/dart_event.dart';
 import 'package:dartlab/features/dart_source/domain/dart_source.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// Kleiner Fake-Board-Manager mit `/api/events` (WebSocket) und `/api/state`.
-class FakeBoardManager {
-  FakeBoardManager._(this.server, {required this.webSocket});
-
-  static Future<FakeBoardManager> start({bool webSocket = true}) async {
-    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
-    final fake = FakeBoardManager._(server, webSocket: webSocket);
-    server.listen(fake._handle);
-    return fake;
-  }
-
-  final HttpServer server;
-  final bool webSocket;
-  final sockets = <WebSocket>[];
-  final requests = <String>[];
-  Map<String, Object?> state = {'connected': true, 'running': true, 'status': 'Throw', 'numThrows': 0, 'throws': <Object>[]};
-
-  int get port => server.port;
-
-  Future<void> _handle(HttpRequest req) async {
-    requests.add('${req.method} ${req.uri.path}');
-    if (req.uri.path == '/api/events' && webSocket && WebSocketTransformer.isUpgradeRequest(req)) {
-      final ws = await WebSocketTransformer.upgrade(req);
-      sockets.add(ws);
-      ws.listen((_) {}, onDone: () => sockets.remove(ws));
-      return;
-    }
-    if (req.uri.path == '/api/state') {
-      req.response.headers.contentType = ContentType.json;
-      req.response.write(jsonEncode(state));
-    } else if (req.uri.path == '/api/reset' && req.method == 'POST') {
-      req.response.statusCode = 200;
-    } else {
-      req.response.statusCode = 404;
-    }
-    await req.response.close();
-  }
-
-  void push(Map<String, Object?> s) {
-    state = s;
-    for (final ws in sockets) {
-      ws.add(jsonEncode({'type': 'state', 'data': s}));
-    }
-  }
-
-  Future<void> dropClients() async {
-    for (final ws in [...sockets]) {
-      await ws.close();
-    }
-  }
-
-  Future<void> close() async {
-    await dropClients();
-    await server.close(force: true);
-  }
-}
+import '../../helpers/fake_board_manager.dart';
 
 Map<String, Object?> withThrows(List<String> names) => {
       'connected': true,
