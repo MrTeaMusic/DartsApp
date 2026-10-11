@@ -52,7 +52,7 @@ Zugriff im Widget:
 | --- | --- |
 | `AppPage` + `AppPageBar` | Einspaltige Seite mit Seitenrand und Höchstbreite des Looks; die Kopfzeile steht bündig mit dem Inhalt. |
 | `SectionGap` | Abstand zwischen Abschnitten (Rhythmus des Looks). |
-| `SectionHeader` | Abschnittstitel (TV: roter Balken, Clean: ruhig, Lab: Versalien mit Linie). |
+| `SectionHeader` | Abschnittstitel (TV: roter Balken, Clean: ruhig, Lab: Versalien mit Linie). Optionaler Zusatz rechts (Knopf, Statusschild), höchstens 200 px breit. |
 | `AppCard` | Jede Karte. Rahmen/Schatten/Radius kommen vom Look. |
 | `ScorePanel` | Große Zahl mit Beschriftung, optional Fortschritt und Inhalt darunter (Restpunkte, Aufnahme, Ergebnis). |
 | `StatTile` | Kennzahl-Kachel (Beschriftung, große Zahl, Zusatz). |
