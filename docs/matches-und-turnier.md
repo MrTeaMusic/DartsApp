@@ -40,6 +40,12 @@ der nächste ist ein Bot, dann beendet der Dart nur die Aufnahme.
   höchstes Finish, bestes Leg, 100+/140+/180, Darts). **Revanche** startet dasselbe Match, der
   andere Spieler fängt an.
 
+**Caller**: Ist der Caller an, sagt er „Game on“ zu Matchbeginn, nach jeder abgeschlossenen
+Aufnahme die Punkte bzw. „Bust“ – bei Menschen wie beim Bot, dort nach dessen drittem Dart –, dazu
+„You require …“ für den Spieler, der als Nächstes wirft, wenn sein Rest auscheckbar ist, und
+„Game shot, and the leg / the set / the match“ beim Leg-, Satz- und Matchgewinn. Rückgängig und
+Korrekturen bleiben still. Der Stumm-Knopf sitzt in der App-Leiste der Spielansicht.
+
 Bust- und Checkout-Regeln sowie der Checkout-Weg kommen aus denselben Bausteinen wie beim
 X01-Solo (`CheckoutRules`, `CheckoutCalculator`).
 

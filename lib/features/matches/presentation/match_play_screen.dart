@@ -11,6 +11,7 @@ import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
 import '../../../core/widgets/fullscreen_button.dart';
 import '../../board/domain/segment.dart';
+import '../../caller/presentation/caller_mute_button.dart';
 import '../../board/presentation/dartboard_view.dart';
 import '../../dart_source/data/manual_source.dart';
 import '../../dart_source/data/simulator_source.dart';
@@ -109,6 +110,7 @@ class MatchPlayScreen extends ConsumerWidget {
           actions: [
             SourceStatusBadge(compact: MediaQuery.sizeOf(context).width < 600),
             const SizedBox(width: AppSpacing.xs),
+            const CallerMuteButton(),
             const FullscreenButton(),
             const SizedBox(width: AppSpacing.s),
           ],

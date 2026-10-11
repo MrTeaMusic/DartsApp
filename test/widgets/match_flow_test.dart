@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:dartlab/core/database/app_database.dart';
+import 'package:dartlab/features/caller/caller.dart';
 import 'package:dartlab/features/board/domain/board_geometry.dart';
 import 'package:dartlab/features/board/domain/segment.dart';
 import 'package:dartlab/features/dart_source/data/simulator_source.dart';
@@ -13,6 +14,7 @@ import 'package:dartlab/features/matches/presentation/tournament_controller.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../helpers/fake_speech_engine.dart';
 import '../helpers/pump_app.dart';
 
 /// Board und Zielfelder pulsieren, daher feste Frames statt pumpAndSettle.
@@ -39,8 +41,10 @@ Future<void> openMatches(WidgetTester tester) async {
 
 void main() {
   testWidgets('Match gegen die CPU: Bot wirft sichtbar, Checkout gewinnt, nur eigene Darts zählen', (tester) async {
+    final speech = FakeSpeechEngine();
     final container = await pumpApp(
       tester,
+      speech: speech,
       prefs: {
         MatchStore.setupKey: jsonEncode({
           'opponent': 'cpu',
@@ -73,6 +77,8 @@ void main() {
     expect(state.setup.players[1].name, 'Robo');
     expect(state.setup.players[1].isBot, isTrue);
     expect(find.text('Ich ist dran'), findsOneWidget);
+    expect(speech.spoken, ['Game on!']);
+    expect(find.byKey(const Key('caller-mute')), findsOneWidget);
     expect(tester.widget<Text>(find.byKey(const Key('match-remaining-0'))).data, '101');
 
     // Drei Fehlwürfe, danach ist der Bot dran.
@@ -84,6 +90,8 @@ void main() {
     await tester.pump();
     expect(container.read(matchControllerProvider)!.match.current, 1);
     expect(find.text('Robo wirft …'), findsOneWidget);
+    // Eigene Aufnahme angesagt, dazu der Rest des Bots auf einem Finish.
+    expect(speech.spoken.sublist(1), ['No score', 'You require one hundred and one']);
 
     // Bot-Darts erscheinen nacheinander.
     await tester.pump(const Duration(milliseconds: 110));
@@ -93,6 +101,9 @@ void main() {
     expect(afterBot.players[1].darts, 3);
     expect(afterBot.current, 0, reason: 'nach dem Bot-Takeout wieder der Mensch');
     expect(afterBot.players[0].remaining, 101);
+    // Bot-Aufnahme nach dem dritten Dart angesagt.
+    expect(speech.spoken, hasLength(greaterThanOrEqualTo(4)));
+    expect(speech.spoken[3], const EnglishCallerPhrases().score(afterBot.players[1].lastVisit!).text);
 
     // Checkout 101: T20, S9, D16.
     for (final s in [Segment.triple(20), Segment.single(9), Segment.double(16)]) {
@@ -103,6 +114,7 @@ void main() {
     expect(done.ended, isTrue);
     expect(done.match.winner, 0);
     expect(find.text('Ich gewinnt das Match!'), findsOneWidget);
+    expect(speech.spoken.last, 'Game shot, and the match!');
     expect(tester.widget<Text>(find.byKey(const Key('match-final-score'))).data, '1 : 0');
 
     // Gespeichert: eine Session mit den sechs eigenen Darts, keine Bot-Darts.

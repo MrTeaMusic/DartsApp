@@ -9,6 +9,8 @@ import 'package:dartlab/features/matches/data/match_store.dart';
 import 'package:dartlab/features/matches/domain/match_format.dart';
 import 'package:dartlab/features/matches/domain/match_result.dart';
 import 'package:dartlab/features/matches/domain/match_session.dart';
+import 'package:dartlab/features/caller/caller.dart';
+import 'package:dartlab/features/matches/presentation/match_caller.dart';
 import 'package:dartlab/features/matches/presentation/match_controller.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,6 +18,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../helpers/darts.dart';
+import '../../helpers/fake_speech_engine.dart';
 
 /// Quelle ohne eigenes Verhalten (wie Autodarts): Ereignisse kommen nur über
 /// `handle`.
@@ -43,13 +46,16 @@ class _FakeBoard implements DartSource {
 void main() {
   late ProviderContainer container;
   late AppDatabase db;
+  late FakeSpeechEngine speech;
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     final sp = await SharedPreferences.getInstance();
     db = AppDatabase(NativeDatabase.memory());
+    speech = FakeSpeechEngine();
     container = ProviderContainer(
       overrides: [
+        speechEngineProvider.overrideWithValue(speech),
         sharedPreferencesProvider.overrideWithValue(sp),
         appDatabaseProvider.overrideWithValue(db),
         dartSourceFactoryProvider.overrideWithValue((kind, host, port) => _FakeBoard()),
@@ -60,6 +66,7 @@ void main() {
       ],
     );
     container.listen(matchControllerProvider, (_, _) {});
+    container.listen(matchCallerProvider, (_, _) {});
   });
   tearDown(() async {
     container.dispose();
@@ -111,6 +118,27 @@ void main() {
     final throws = await db.select(db.throws).get();
     expect(throws.map((t) => t.segment), ['S1']);
     expect(throws.single.gameId, matchGameId);
+  });
+
+  test('Caller: Game on, Aufnahme angesagt, still bei Rückgängig und Korrektur', () async {
+    await controller().start(vsBot);
+    await pumpEventQueue();
+    expect(speech.spoken, ['Game on!']);
+    controller().handle(DartThrown(d('T20')));
+    controller().handle(DartThrown(d('S5')));
+    controller().handle(DartUndone(at));
+    controller().handle(DartCorrected(0, d('T19')));
+    await pumpEventQueue();
+    expect(speech.spoken, ['Game on!'], reason: 'nichts während der Aufnahme und bei Korrekturen');
+    controller().handle(DartThrown(d('S5')));
+    controller().handle(DartThrown(d('S5')));
+    await pumpEventQueue();
+    expect(speech.spoken, ['Game on!', const EnglishCallerPhrases().score(67).text]);
+    // Korrektur nach der Aufnahme: neu gerechnet, aber nicht noch einmal angesagt.
+    expect(controller().correct(0, d('S1').segment), isTrue);
+    await pumpEventQueue();
+    expect(speech.spoken, hasLength(2));
+    await controller().pendingWrites;
   });
 
   test('Freund mit Profil: Würfe getrennt je Profil, Gast ohne Speicherung', () async {

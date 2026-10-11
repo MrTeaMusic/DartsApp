@@ -20,6 +20,9 @@ enum GameShotKind {
   /// Leg gewonnen, es geht weiter.
   leg,
 
+  /// Leg und damit Satz gewonnen (Matches mit Sätzen).
+  set,
+
   /// Letztes Leg, das Match ist gewonnen.
   match,
 }
@@ -196,6 +199,7 @@ class EnglishCallerPhrases extends CallerPhrases {
   CallerPhrase gameShot(GameShotKind kind) => switch (kind) {
         GameShotKind.plain => const CallerPhrase('Game shot!'),
         GameShotKind.leg => const CallerPhrase('Game shot, and the leg!'),
+        GameShotKind.set => const CallerPhrase('Game shot, and the set!'),
         GameShotKind.match => const CallerPhrase('Game shot, and the match!', emphasis: true),
       };
 }
@@ -241,6 +245,7 @@ class GermanCallerPhrases extends CallerPhrases {
   CallerPhrase gameShot(GameShotKind kind) => switch (kind) {
         GameShotKind.plain => const CallerPhrase('Ausgecheckt!'),
         GameShotKind.leg => const CallerPhrase('Ausgecheckt, Leg gewonnen!'),
+        GameShotKind.set => const CallerPhrase('Ausgecheckt, Satz gewonnen!'),
         GameShotKind.match => const CallerPhrase('Ausgecheckt, Match gewonnen!', emphasis: true),
       };
 }
