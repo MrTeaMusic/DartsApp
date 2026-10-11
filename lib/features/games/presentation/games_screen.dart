@@ -10,6 +10,7 @@ import '../../../core/router/app_router.dart';
 import '../data/game_repository.dart';
 import '../domain/engine/game_display.dart';
 import '../domain/game_catalog.dart';
+import '../../plans/presentation/plan_routes.dart';
 import '../../profiles/presentation/active_player.dart';
 import 'game_texts.dart';
 
@@ -44,6 +45,22 @@ class GamesScreen extends ConsumerWidget {
             slivers: [
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(AppSpacing.page, AppSpacing.s, AppSpacing.page, 0),
+                sliver: SliverToBoxAdapter(child: SectionHeader(l10n.plansTitle)),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.page),
+                sliver: grid([
+                  _GameCard(
+                    key: const Key('open-plans'),
+                    icon: Icons.event_note_rounded,
+                    title: l10n.plansTitle,
+                    description: l10n.plansEntryText,
+                    onTap: () => context.go(PlanRoutes.list),
+                  ),
+                ]),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(AppSpacing.page, AppSpacing.xl, AppSpacing.page, 0),
                 sliver: SliverToBoxAdapter(child: SectionHeader(l10n.gamesPlayable)),
               ),
               SliverPadding(
