@@ -12,6 +12,7 @@ import '../../../core/l10n.dart';
 import '../../../core/router/app_router.dart';
 import '../../board/presentation/dartboard_view.dart';
 import '../../board/presentation/live_visit_controller.dart';
+import '../../caller/presentation/caller_mute_button.dart';
 import '../../dart_source/data/manual_source.dart';
 import '../../dart_source/data/simulator_source.dart';
 import '../../dart_source/presentation/dart_source_providers.dart';
@@ -100,6 +101,7 @@ class GamePlayScreen extends ConsumerWidget {
           actions: [
             SourceStatusBadge(compact: MediaQuery.sizeOf(context).width < 600),
             const SizedBox(width: AppSpacing.xs),
+            const CallerMuteButton(),
             const FullscreenButton(),
             const SizedBox(width: AppSpacing.s),
           ],

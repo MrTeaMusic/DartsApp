@@ -1461,5 +1461,21 @@
   "autoPlanSave": "Als eigenen Plan speichern",
   "autoPlanSaved": "Als eigener Plan gespeichert. Über „Bearbeiten“ kannst du ihn anpassen.",
   "autoPlanHint": "Lass dir aus diesen Zahlen einen Trainingsplan vorschlagen.",
-  "autoPlanHintAction": "Plan für mich"
+  "autoPlanHintAction": "Plan für mich",
+  "callerTitle": "Caller",
+  "callerEnabled": "Caller an",
+  "callerEnabledHint": "Eine Stimme sagt Punkte und Rest an wie bei einem Turnier",
+  "callerLanguageEnglish": "Englisch (wie im TV)",
+  "callerLanguageGerman": "Deutsch",
+  "callerVolume": "Lautstärke",
+  "callerRate": "Tempo",
+  "callerAnnounce": "Ansagen",
+  "callerAnnounceScores": "Punkte jeder Aufnahme",
+  "callerAnnounceRemaining": "Rest auf einem Finish",
+  "callerAnnounceCheckout": "Checkout",
+  "callerAnnounceGameOn": "Spielbeginn",
+  "callerGamesHint": "Angesagt wird bei X01, Scoring- und Checkout-Spielen. Andere Trainingsspiele bleiben still.",
+  "callerPreview": "Probe hören",
+  "callerMute": "Caller stumm schalten",
+  "callerUnmute": "Caller einschalten"
 }
