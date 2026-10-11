@@ -2529,6 +2529,1123 @@ class GoalsCompanion extends UpdateCompanion<GoalRow> {
   }
 }
 
+class $TrainingPlansTable extends TrainingPlans
+    with TableInfo<$TrainingPlansTable, TrainingPlanRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TrainingPlansTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _uidMeta = const VerificationMeta('uid');
+  @override
+  late final GeneratedColumn<String> uid = GeneratedColumn<String>(
+    'uid',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: newUid,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 60,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _stepsJsonMeta = const VerificationMeta(
+    'stepsJson',
+  );
+  @override
+  late final GeneratedColumn<String> stepsJson = GeneratedColumn<String>(
+    'steps_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    uid,
+    name,
+    description,
+    stepsJson,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'training_plans';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TrainingPlanRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('uid')) {
+      context.handle(
+        _uidMeta,
+        uid.isAcceptableOrUnknown(data['uid']!, _uidMeta),
+      );
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('steps_json')) {
+      context.handle(
+        _stepsJsonMeta,
+        stepsJson.isAcceptableOrUnknown(data['steps_json']!, _stepsJsonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_stepsJsonMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TrainingPlanRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TrainingPlanRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      uid: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}uid'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      )!,
+      stepsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}steps_json'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      ),
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+    );
+  }
+
+  @override
+  $TrainingPlansTable createAlias(String alias) {
+    return $TrainingPlansTable(attachedDatabase, alias);
+  }
+}
+
+class TrainingPlanRow extends DataClass implements Insertable<TrainingPlanRow> {
+  final int id;
+  final String uid;
+  final String name;
+  final String description;
+
+  /// Schritte als JSON-Liste `[{gameId, config, note}]`, siehe `PlanStep`.
+  final String stepsJson;
+  final DateTime createdAt;
+  final DateTime? updatedAt;
+  final DateTime? deletedAt;
+  const TrainingPlanRow({
+    required this.id,
+    required this.uid,
+    required this.name,
+    required this.description,
+    required this.stepsJson,
+    required this.createdAt,
+    this.updatedAt,
+    this.deletedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['uid'] = Variable<String>(uid);
+    map['name'] = Variable<String>(name);
+    map['description'] = Variable<String>(description);
+    map['steps_json'] = Variable<String>(stepsJson);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    return map;
+  }
+
+  TrainingPlansCompanion toCompanion(bool nullToAbsent) {
+    return TrainingPlansCompanion(
+      id: Value(id),
+      uid: Value(uid),
+      name: Value(name),
+      description: Value(description),
+      stepsJson: Value(stepsJson),
+      createdAt: Value(createdAt),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+    );
+  }
+
+  factory TrainingPlanRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TrainingPlanRow(
+      id: serializer.fromJson<int>(json['id']),
+      uid: serializer.fromJson<String>(json['uid']),
+      name: serializer.fromJson<String>(json['name']),
+      description: serializer.fromJson<String>(json['description']),
+      stepsJson: serializer.fromJson<String>(json['stepsJson']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'uid': serializer.toJson<String>(uid),
+      'name': serializer.toJson<String>(name),
+      'description': serializer.toJson<String>(description),
+      'stepsJson': serializer.toJson<String>(stepsJson),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
+  }
+
+  TrainingPlanRow copyWith({
+    int? id,
+    String? uid,
+    String? name,
+    String? description,
+    String? stepsJson,
+    DateTime? createdAt,
+    Value<DateTime?> updatedAt = const Value.absent(),
+    Value<DateTime?> deletedAt = const Value.absent(),
+  }) => TrainingPlanRow(
+    id: id ?? this.id,
+    uid: uid ?? this.uid,
+    name: name ?? this.name,
+    description: description ?? this.description,
+    stepsJson: stepsJson ?? this.stepsJson,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+  );
+  TrainingPlanRow copyWithCompanion(TrainingPlansCompanion data) {
+    return TrainingPlanRow(
+      id: data.id.present ? data.id.value : this.id,
+      uid: data.uid.present ? data.uid.value : this.uid,
+      name: data.name.present ? data.name.value : this.name,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      stepsJson: data.stepsJson.present ? data.stepsJson.value : this.stepsJson,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TrainingPlanRow(')
+          ..write('id: $id, ')
+          ..write('uid: $uid, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('stepsJson: $stepsJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    uid,
+    name,
+    description,
+    stepsJson,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TrainingPlanRow &&
+          other.id == this.id &&
+          other.uid == this.uid &&
+          other.name == this.name &&
+          other.description == this.description &&
+          other.stepsJson == this.stepsJson &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt);
+}
+
+class TrainingPlansCompanion extends UpdateCompanion<TrainingPlanRow> {
+  final Value<int> id;
+  final Value<String> uid;
+  final Value<String> name;
+  final Value<String> description;
+  final Value<String> stepsJson;
+  final Value<DateTime> createdAt;
+  final Value<DateTime?> updatedAt;
+  final Value<DateTime?> deletedAt;
+  const TrainingPlansCompanion({
+    this.id = const Value.absent(),
+    this.uid = const Value.absent(),
+    this.name = const Value.absent(),
+    this.description = const Value.absent(),
+    this.stepsJson = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+  });
+  TrainingPlansCompanion.insert({
+    this.id = const Value.absent(),
+    this.uid = const Value.absent(),
+    required String name,
+    this.description = const Value.absent(),
+    required String stepsJson,
+    required DateTime createdAt,
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+  }) : name = Value(name),
+       stepsJson = Value(stepsJson),
+       createdAt = Value(createdAt);
+  static Insertable<TrainingPlanRow> custom({
+    Expression<int>? id,
+    Expression<String>? uid,
+    Expression<String>? name,
+    Expression<String>? description,
+    Expression<String>? stepsJson,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (uid != null) 'uid': uid,
+      if (name != null) 'name': name,
+      if (description != null) 'description': description,
+      if (stepsJson != null) 'steps_json': stepsJson,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+    });
+  }
+
+  TrainingPlansCompanion copyWith({
+    Value<int>? id,
+    Value<String>? uid,
+    Value<String>? name,
+    Value<String>? description,
+    Value<String>? stepsJson,
+    Value<DateTime>? createdAt,
+    Value<DateTime?>? updatedAt,
+    Value<DateTime?>? deletedAt,
+  }) {
+    return TrainingPlansCompanion(
+      id: id ?? this.id,
+      uid: uid ?? this.uid,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      stepsJson: stepsJson ?? this.stepsJson,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (uid.present) {
+      map['uid'] = Variable<String>(uid.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (stepsJson.present) {
+      map['steps_json'] = Variable<String>(stepsJson.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TrainingPlansCompanion(')
+          ..write('id: $id, ')
+          ..write('uid: $uid, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('stepsJson: $stepsJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PlanRunsTable extends PlanRuns
+    with TableInfo<$PlanRunsTable, PlanRunRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PlanRunsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _uidMeta = const VerificationMeta('uid');
+  @override
+  late final GeneratedColumn<String> uid = GeneratedColumn<String>(
+    'uid',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: newUid,
+  );
+  static const VerificationMeta _planIdMeta = const VerificationMeta('planId');
+  @override
+  late final GeneratedColumn<String> planId = GeneratedColumn<String>(
+    'plan_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _planNameMeta = const VerificationMeta(
+    'planName',
+  );
+  @override
+  late final GeneratedColumn<String> planName = GeneratedColumn<String>(
+    'plan_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _stepsJsonMeta = const VerificationMeta(
+    'stepsJson',
+  );
+  @override
+  late final GeneratedColumn<String> stepsJson = GeneratedColumn<String>(
+    'steps_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _playerIdMeta = const VerificationMeta(
+    'playerId',
+  );
+  @override
+  late final GeneratedColumn<int> playerId = GeneratedColumn<int>(
+    'player_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES players (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _startedAtMeta = const VerificationMeta(
+    'startedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startedAt = GeneratedColumn<DateTime>(
+    'started_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _finishedAtMeta = const VerificationMeta(
+    'finishedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> finishedAt = GeneratedColumn<DateTime>(
+    'finished_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _currentStepMeta = const VerificationMeta(
+    'currentStep',
+  );
+  @override
+  late final GeneratedColumn<int> currentStep = GeneratedColumn<int>(
+    'current_step',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _resultsJsonMeta = const VerificationMeta(
+    'resultsJson',
+  );
+  @override
+  late final GeneratedColumn<String> resultsJson = GeneratedColumn<String>(
+    'results_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    uid,
+    planId,
+    planName,
+    stepsJson,
+    playerId,
+    startedAt,
+    finishedAt,
+    currentStep,
+    resultsJson,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'plan_runs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PlanRunRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('uid')) {
+      context.handle(
+        _uidMeta,
+        uid.isAcceptableOrUnknown(data['uid']!, _uidMeta),
+      );
+    }
+    if (data.containsKey('plan_id')) {
+      context.handle(
+        _planIdMeta,
+        planId.isAcceptableOrUnknown(data['plan_id']!, _planIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_planIdMeta);
+    }
+    if (data.containsKey('plan_name')) {
+      context.handle(
+        _planNameMeta,
+        planName.isAcceptableOrUnknown(data['plan_name']!, _planNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_planNameMeta);
+    }
+    if (data.containsKey('steps_json')) {
+      context.handle(
+        _stepsJsonMeta,
+        stepsJson.isAcceptableOrUnknown(data['steps_json']!, _stepsJsonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_stepsJsonMeta);
+    }
+    if (data.containsKey('player_id')) {
+      context.handle(
+        _playerIdMeta,
+        playerId.isAcceptableOrUnknown(data['player_id']!, _playerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_playerIdMeta);
+    }
+    if (data.containsKey('started_at')) {
+      context.handle(
+        _startedAtMeta,
+        startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startedAtMeta);
+    }
+    if (data.containsKey('finished_at')) {
+      context.handle(
+        _finishedAtMeta,
+        finishedAt.isAcceptableOrUnknown(data['finished_at']!, _finishedAtMeta),
+      );
+    }
+    if (data.containsKey('current_step')) {
+      context.handle(
+        _currentStepMeta,
+        currentStep.isAcceptableOrUnknown(
+          data['current_step']!,
+          _currentStepMeta,
+        ),
+      );
+    }
+    if (data.containsKey('results_json')) {
+      context.handle(
+        _resultsJsonMeta,
+        resultsJson.isAcceptableOrUnknown(
+          data['results_json']!,
+          _resultsJsonMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PlanRunRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PlanRunRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      uid: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}uid'],
+      )!,
+      planId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}plan_id'],
+      )!,
+      planName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}plan_name'],
+      )!,
+      stepsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}steps_json'],
+      )!,
+      playerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}player_id'],
+      )!,
+      startedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}started_at'],
+      )!,
+      finishedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}finished_at'],
+      ),
+      currentStep: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}current_step'],
+      )!,
+      resultsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}results_json'],
+      )!,
+    );
+  }
+
+  @override
+  $PlanRunsTable createAlias(String alias) {
+    return $PlanRunsTable(attachedDatabase, alias);
+  }
+}
+
+class PlanRunRow extends DataClass implements Insertable<PlanRunRow> {
+  final int id;
+  final String uid;
+
+  /// `builtin-…` oder `uid` eines eigenen Plans.
+  final String planId;
+  final String planName;
+
+  /// Schritte beim Start (eingefroren).
+  final String stepsJson;
+  final int playerId;
+  final DateTime startedAt;
+  final DateTime? finishedAt;
+  final int currentStep;
+
+  /// Ergebnisse je Schritt mit Session-`uid`, siehe `StepResult`.
+  final String resultsJson;
+  const PlanRunRow({
+    required this.id,
+    required this.uid,
+    required this.planId,
+    required this.planName,
+    required this.stepsJson,
+    required this.playerId,
+    required this.startedAt,
+    this.finishedAt,
+    required this.currentStep,
+    required this.resultsJson,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['uid'] = Variable<String>(uid);
+    map['plan_id'] = Variable<String>(planId);
+    map['plan_name'] = Variable<String>(planName);
+    map['steps_json'] = Variable<String>(stepsJson);
+    map['player_id'] = Variable<int>(playerId);
+    map['started_at'] = Variable<DateTime>(startedAt);
+    if (!nullToAbsent || finishedAt != null) {
+      map['finished_at'] = Variable<DateTime>(finishedAt);
+    }
+    map['current_step'] = Variable<int>(currentStep);
+    map['results_json'] = Variable<String>(resultsJson);
+    return map;
+  }
+
+  PlanRunsCompanion toCompanion(bool nullToAbsent) {
+    return PlanRunsCompanion(
+      id: Value(id),
+      uid: Value(uid),
+      planId: Value(planId),
+      planName: Value(planName),
+      stepsJson: Value(stepsJson),
+      playerId: Value(playerId),
+      startedAt: Value(startedAt),
+      finishedAt: finishedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(finishedAt),
+      currentStep: Value(currentStep),
+      resultsJson: Value(resultsJson),
+    );
+  }
+
+  factory PlanRunRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PlanRunRow(
+      id: serializer.fromJson<int>(json['id']),
+      uid: serializer.fromJson<String>(json['uid']),
+      planId: serializer.fromJson<String>(json['planId']),
+      planName: serializer.fromJson<String>(json['planName']),
+      stepsJson: serializer.fromJson<String>(json['stepsJson']),
+      playerId: serializer.fromJson<int>(json['playerId']),
+      startedAt: serializer.fromJson<DateTime>(json['startedAt']),
+      finishedAt: serializer.fromJson<DateTime?>(json['finishedAt']),
+      currentStep: serializer.fromJson<int>(json['currentStep']),
+      resultsJson: serializer.fromJson<String>(json['resultsJson']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'uid': serializer.toJson<String>(uid),
+      'planId': serializer.toJson<String>(planId),
+      'planName': serializer.toJson<String>(planName),
+      'stepsJson': serializer.toJson<String>(stepsJson),
+      'playerId': serializer.toJson<int>(playerId),
+      'startedAt': serializer.toJson<DateTime>(startedAt),
+      'finishedAt': serializer.toJson<DateTime?>(finishedAt),
+      'currentStep': serializer.toJson<int>(currentStep),
+      'resultsJson': serializer.toJson<String>(resultsJson),
+    };
+  }
+
+  PlanRunRow copyWith({
+    int? id,
+    String? uid,
+    String? planId,
+    String? planName,
+    String? stepsJson,
+    int? playerId,
+    DateTime? startedAt,
+    Value<DateTime?> finishedAt = const Value.absent(),
+    int? currentStep,
+    String? resultsJson,
+  }) => PlanRunRow(
+    id: id ?? this.id,
+    uid: uid ?? this.uid,
+    planId: planId ?? this.planId,
+    planName: planName ?? this.planName,
+    stepsJson: stepsJson ?? this.stepsJson,
+    playerId: playerId ?? this.playerId,
+    startedAt: startedAt ?? this.startedAt,
+    finishedAt: finishedAt.present ? finishedAt.value : this.finishedAt,
+    currentStep: currentStep ?? this.currentStep,
+    resultsJson: resultsJson ?? this.resultsJson,
+  );
+  PlanRunRow copyWithCompanion(PlanRunsCompanion data) {
+    return PlanRunRow(
+      id: data.id.present ? data.id.value : this.id,
+      uid: data.uid.present ? data.uid.value : this.uid,
+      planId: data.planId.present ? data.planId.value : this.planId,
+      planName: data.planName.present ? data.planName.value : this.planName,
+      stepsJson: data.stepsJson.present ? data.stepsJson.value : this.stepsJson,
+      playerId: data.playerId.present ? data.playerId.value : this.playerId,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
+      finishedAt: data.finishedAt.present
+          ? data.finishedAt.value
+          : this.finishedAt,
+      currentStep: data.currentStep.present
+          ? data.currentStep.value
+          : this.currentStep,
+      resultsJson: data.resultsJson.present
+          ? data.resultsJson.value
+          : this.resultsJson,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PlanRunRow(')
+          ..write('id: $id, ')
+          ..write('uid: $uid, ')
+          ..write('planId: $planId, ')
+          ..write('planName: $planName, ')
+          ..write('stepsJson: $stepsJson, ')
+          ..write('playerId: $playerId, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('finishedAt: $finishedAt, ')
+          ..write('currentStep: $currentStep, ')
+          ..write('resultsJson: $resultsJson')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    uid,
+    planId,
+    planName,
+    stepsJson,
+    playerId,
+    startedAt,
+    finishedAt,
+    currentStep,
+    resultsJson,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PlanRunRow &&
+          other.id == this.id &&
+          other.uid == this.uid &&
+          other.planId == this.planId &&
+          other.planName == this.planName &&
+          other.stepsJson == this.stepsJson &&
+          other.playerId == this.playerId &&
+          other.startedAt == this.startedAt &&
+          other.finishedAt == this.finishedAt &&
+          other.currentStep == this.currentStep &&
+          other.resultsJson == this.resultsJson);
+}
+
+class PlanRunsCompanion extends UpdateCompanion<PlanRunRow> {
+  final Value<int> id;
+  final Value<String> uid;
+  final Value<String> planId;
+  final Value<String> planName;
+  final Value<String> stepsJson;
+  final Value<int> playerId;
+  final Value<DateTime> startedAt;
+  final Value<DateTime?> finishedAt;
+  final Value<int> currentStep;
+  final Value<String> resultsJson;
+  const PlanRunsCompanion({
+    this.id = const Value.absent(),
+    this.uid = const Value.absent(),
+    this.planId = const Value.absent(),
+    this.planName = const Value.absent(),
+    this.stepsJson = const Value.absent(),
+    this.playerId = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.finishedAt = const Value.absent(),
+    this.currentStep = const Value.absent(),
+    this.resultsJson = const Value.absent(),
+  });
+  PlanRunsCompanion.insert({
+    this.id = const Value.absent(),
+    this.uid = const Value.absent(),
+    required String planId,
+    required String planName,
+    required String stepsJson,
+    required int playerId,
+    required DateTime startedAt,
+    this.finishedAt = const Value.absent(),
+    this.currentStep = const Value.absent(),
+    this.resultsJson = const Value.absent(),
+  }) : planId = Value(planId),
+       planName = Value(planName),
+       stepsJson = Value(stepsJson),
+       playerId = Value(playerId),
+       startedAt = Value(startedAt);
+  static Insertable<PlanRunRow> custom({
+    Expression<int>? id,
+    Expression<String>? uid,
+    Expression<String>? planId,
+    Expression<String>? planName,
+    Expression<String>? stepsJson,
+    Expression<int>? playerId,
+    Expression<DateTime>? startedAt,
+    Expression<DateTime>? finishedAt,
+    Expression<int>? currentStep,
+    Expression<String>? resultsJson,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (uid != null) 'uid': uid,
+      if (planId != null) 'plan_id': planId,
+      if (planName != null) 'plan_name': planName,
+      if (stepsJson != null) 'steps_json': stepsJson,
+      if (playerId != null) 'player_id': playerId,
+      if (startedAt != null) 'started_at': startedAt,
+      if (finishedAt != null) 'finished_at': finishedAt,
+      if (currentStep != null) 'current_step': currentStep,
+      if (resultsJson != null) 'results_json': resultsJson,
+    });
+  }
+
+  PlanRunsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? uid,
+    Value<String>? planId,
+    Value<String>? planName,
+    Value<String>? stepsJson,
+    Value<int>? playerId,
+    Value<DateTime>? startedAt,
+    Value<DateTime?>? finishedAt,
+    Value<int>? currentStep,
+    Value<String>? resultsJson,
+  }) {
+    return PlanRunsCompanion(
+      id: id ?? this.id,
+      uid: uid ?? this.uid,
+      planId: planId ?? this.planId,
+      planName: planName ?? this.planName,
+      stepsJson: stepsJson ?? this.stepsJson,
+      playerId: playerId ?? this.playerId,
+      startedAt: startedAt ?? this.startedAt,
+      finishedAt: finishedAt ?? this.finishedAt,
+      currentStep: currentStep ?? this.currentStep,
+      resultsJson: resultsJson ?? this.resultsJson,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (uid.present) {
+      map['uid'] = Variable<String>(uid.value);
+    }
+    if (planId.present) {
+      map['plan_id'] = Variable<String>(planId.value);
+    }
+    if (planName.present) {
+      map['plan_name'] = Variable<String>(planName.value);
+    }
+    if (stepsJson.present) {
+      map['steps_json'] = Variable<String>(stepsJson.value);
+    }
+    if (playerId.present) {
+      map['player_id'] = Variable<int>(playerId.value);
+    }
+    if (startedAt.present) {
+      map['started_at'] = Variable<DateTime>(startedAt.value);
+    }
+    if (finishedAt.present) {
+      map['finished_at'] = Variable<DateTime>(finishedAt.value);
+    }
+    if (currentStep.present) {
+      map['current_step'] = Variable<int>(currentStep.value);
+    }
+    if (resultsJson.present) {
+      map['results_json'] = Variable<String>(resultsJson.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PlanRunsCompanion(')
+          ..write('id: $id, ')
+          ..write('uid: $uid, ')
+          ..write('planId: $planId, ')
+          ..write('planName: $planName, ')
+          ..write('stepsJson: $stepsJson, ')
+          ..write('playerId: $playerId, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('finishedAt: $finishedAt, ')
+          ..write('currentStep: $currentStep, ')
+          ..write('resultsJson: $resultsJson')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2536,6 +3653,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $SessionsTable sessions = $SessionsTable(this);
   late final $ThrowsTable throws = $ThrowsTable(this);
   late final $GoalsTable goals = $GoalsTable(this);
+  late final $TrainingPlansTable trainingPlans = $TrainingPlansTable(this);
+  late final $PlanRunsTable planRuns = $PlanRunsTable(this);
   late final Index playersUid = Index(
     'players_uid',
     'CREATE UNIQUE INDEX players_uid ON players (uid)',
@@ -2556,6 +3675,14 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'goals_uid',
     'CREATE UNIQUE INDEX goals_uid ON goals (uid)',
   );
+  late final Index trainingPlansUid = Index(
+    'training_plans_uid',
+    'CREATE UNIQUE INDEX training_plans_uid ON training_plans (uid)',
+  );
+  late final Index planRunsUid = Index(
+    'plan_runs_uid',
+    'CREATE UNIQUE INDEX plan_runs_uid ON plan_runs (uid)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2565,11 +3692,15 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     sessions,
     throws,
     goals,
+    trainingPlans,
+    planRuns,
     playersUid,
     sessionsUid,
     throwsSession,
     throwsTime,
     goalsUid,
+    trainingPlansUid,
+    planRunsUid,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -2586,6 +3717,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('goals', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'players',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('plan_runs', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -2664,6 +3802,24 @@ final class $$PlayersTableReferences
     ).filter((f) => f.playerId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_goalsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$PlanRunsTable, List<PlanRunRow>>
+  _planRunsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.planRuns,
+    aliasName: 'players__id__plan_runs__player_id',
+  );
+
+  $$PlanRunsTableProcessedTableManager get planRunsRefs {
+    final manager = $$PlanRunsTableTableManager(
+      $_db,
+      $_db.planRuns,
+    ).filter((f) => f.playerId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_planRunsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -2780,6 +3936,31 @@ class $$PlayersTableFilterComposer
           }) => $$GoalsTableFilterComposer(
             $db: $db,
             $table: $db.goals,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> planRunsRefs(
+    Expression<bool> Function($$PlanRunsTableFilterComposer f) f,
+  ) {
+    final $$PlanRunsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.planRuns,
+      getReferencedColumn: (t) => t.playerId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlanRunsTableFilterComposer(
+            $db: $db,
+            $table: $db.planRuns,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -2939,6 +4120,31 @@ class $$PlayersTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> planRunsRefs<T extends Object>(
+    Expression<T> Function($$PlanRunsTableAnnotationComposer a) f,
+  ) {
+    final $$PlanRunsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.planRuns,
+      getReferencedColumn: (t) => t.playerId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlanRunsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.planRuns,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$PlayersTableTableManager
@@ -2958,6 +4164,7 @@ class $$PlayersTableTableManager
             bool sessionsRefs,
             bool throwsRefs,
             bool goalsRefs,
+            bool planRunsRefs,
           })
         > {
   $$PlayersTableTableManager(_$AppDatabase db, $PlayersTable table)
@@ -3016,13 +4223,19 @@ class $$PlayersTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({sessionsRefs = false, throwsRefs = false, goalsRefs = false}) {
+              ({
+                sessionsRefs = false,
+                throwsRefs = false,
+                goalsRefs = false,
+                planRunsRefs = false,
+              }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (sessionsRefs) db.sessions,
                     if (throwsRefs) db.throws,
                     if (goalsRefs) db.goals,
+                    if (planRunsRefs) db.planRuns,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -3086,6 +4299,27 @@ class $$PlayersTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (planRunsRefs)
+                        await $_getPrefetchedData<
+                          Player,
+                          $PlayersTable,
+                          PlanRunRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$PlayersTableReferences
+                              ._planRunsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$PlayersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).planRunsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.playerId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -3110,6 +4344,7 @@ typedef $$PlayersTableProcessedTableManager =
         bool sessionsRefs,
         bool throwsRefs,
         bool goalsRefs,
+        bool planRunsRefs,
       })
     >;
 typedef $$SessionsTableCreateCompanionBuilder = SessionsCompanion Function({
@@ -4610,6 +5845,676 @@ typedef $$GoalsTableProcessedTableManager =
       GoalRow,
       PrefetchHooks Function({bool playerId})
     >;
+typedef $$TrainingPlansTableCreateCompanionBuilder =
+    TrainingPlansCompanion Function({
+      Value<int> id,
+      Value<String> uid,
+      required String name,
+      Value<String> description,
+      required String stepsJson,
+      required DateTime createdAt,
+      Value<DateTime?> updatedAt,
+      Value<DateTime?> deletedAt,
+    });
+typedef $$TrainingPlansTableUpdateCompanionBuilder =
+    TrainingPlansCompanion Function({
+      Value<int> id,
+      Value<String> uid,
+      Value<String> name,
+      Value<String> description,
+      Value<String> stepsJson,
+      Value<DateTime> createdAt,
+      Value<DateTime?> updatedAt,
+      Value<DateTime?> deletedAt,
+    });
+
+class $$TrainingPlansTableFilterComposer
+    extends Composer<_$AppDatabase, $TrainingPlansTable> {
+  $$TrainingPlansTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get uid => $composableBuilder(
+    column: $table.uid,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get stepsJson => $composableBuilder(
+    column: $table.stepsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$TrainingPlansTableOrderingComposer
+    extends Composer<_$AppDatabase, $TrainingPlansTable> {
+  $$TrainingPlansTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get uid => $composableBuilder(
+    column: $table.uid,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get stepsJson => $composableBuilder(
+    column: $table.stepsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$TrainingPlansTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TrainingPlansTable> {
+  $$TrainingPlansTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get uid =>
+      $composableBuilder(column: $table.uid, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get stepsJson =>
+      $composableBuilder(column: $table.stepsJson, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+}
+
+class $$TrainingPlansTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TrainingPlansTable,
+          TrainingPlanRow,
+          $$TrainingPlansTableFilterComposer,
+          $$TrainingPlansTableOrderingComposer,
+          $$TrainingPlansTableAnnotationComposer,
+          $$TrainingPlansTableCreateCompanionBuilder,
+          $$TrainingPlansTableUpdateCompanionBuilder,
+          (
+            TrainingPlanRow,
+            BaseReferences<_$AppDatabase, $TrainingPlansTable, TrainingPlanRow>,
+          ),
+          TrainingPlanRow,
+          PrefetchHooks Function()
+        > {
+  $$TrainingPlansTableTableManager(_$AppDatabase db, $TrainingPlansTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TrainingPlansTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TrainingPlansTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TrainingPlansTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> uid = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> description = const Value.absent(),
+                Value<String> stepsJson = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+              }) => TrainingPlansCompanion(
+                id: id,
+                uid: uid,
+                name: name,
+                description: description,
+                stepsJson: stepsJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> uid = const Value.absent(),
+                required String name,
+                Value<String> description = const Value.absent(),
+                required String stepsJson,
+                required DateTime createdAt,
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+              }) => TrainingPlansCompanion.insert(
+                id: id,
+                uid: uid,
+                name: name,
+                description: description,
+                stepsJson: stepsJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$TrainingPlansTable, TrainingPlanRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $TrainingPlansTable,
+                    TrainingPlanRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$TrainingPlansTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TrainingPlansTable,
+      TrainingPlanRow,
+      $$TrainingPlansTableFilterComposer,
+      $$TrainingPlansTableOrderingComposer,
+      $$TrainingPlansTableAnnotationComposer,
+      $$TrainingPlansTableCreateCompanionBuilder,
+      $$TrainingPlansTableUpdateCompanionBuilder,
+      (
+        TrainingPlanRow,
+        BaseReferences<_$AppDatabase, $TrainingPlansTable, TrainingPlanRow>,
+      ),
+      TrainingPlanRow,
+      PrefetchHooks Function()
+    >;
+typedef $$PlanRunsTableCreateCompanionBuilder = PlanRunsCompanion Function({
+  Value<int> id,
+  Value<String> uid,
+  required String planId,
+  required String planName,
+  required String stepsJson,
+  required int playerId,
+  required DateTime startedAt,
+  Value<DateTime?> finishedAt,
+  Value<int> currentStep,
+  Value<String> resultsJson,
+});
+typedef $$PlanRunsTableUpdateCompanionBuilder = PlanRunsCompanion Function({
+  Value<int> id,
+  Value<String> uid,
+  Value<String> planId,
+  Value<String> planName,
+  Value<String> stepsJson,
+  Value<int> playerId,
+  Value<DateTime> startedAt,
+  Value<DateTime?> finishedAt,
+  Value<int> currentStep,
+  Value<String> resultsJson,
+});
+
+final class $$PlanRunsTableReferences
+    extends BaseReferences<_$AppDatabase, $PlanRunsTable, PlanRunRow> {
+  $$PlanRunsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $PlayersTable _playerIdTable(_$AppDatabase db) =>
+      db.players.createAlias('plan_runs__player_id__players__id');
+
+  $$PlayersTableProcessedTableManager get playerId {
+    final $_column = $_itemColumn<int>('player_id')!;
+
+    final manager = $$PlayersTableTableManager(
+      $_db,
+      $_db.players,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_playerIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$PlanRunsTableFilterComposer
+    extends Composer<_$AppDatabase, $PlanRunsTable> {
+  $$PlanRunsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get uid => $composableBuilder(
+    column: $table.uid,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get planId => $composableBuilder(
+    column: $table.planId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get planName => $composableBuilder(
+    column: $table.planName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get stepsJson => $composableBuilder(
+    column: $table.stepsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get finishedAt => $composableBuilder(
+    column: $table.finishedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get currentStep => $composableBuilder(
+    column: $table.currentStep,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get resultsJson => $composableBuilder(
+    column: $table.resultsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$PlayersTableFilterComposer get playerId {
+    final $$PlayersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.playerId,
+      referencedTable: $db.players,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlayersTableFilterComposer(
+            $db: $db,
+            $table: $db.players,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PlanRunsTableOrderingComposer
+    extends Composer<_$AppDatabase, $PlanRunsTable> {
+  $$PlanRunsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get uid => $composableBuilder(
+    column: $table.uid,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get planId => $composableBuilder(
+    column: $table.planId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get planName => $composableBuilder(
+    column: $table.planName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get stepsJson => $composableBuilder(
+    column: $table.stepsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get finishedAt => $composableBuilder(
+    column: $table.finishedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get currentStep => $composableBuilder(
+    column: $table.currentStep,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get resultsJson => $composableBuilder(
+    column: $table.resultsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$PlayersTableOrderingComposer get playerId {
+    final $$PlayersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.playerId,
+      referencedTable: $db.players,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlayersTableOrderingComposer(
+            $db: $db,
+            $table: $db.players,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PlanRunsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PlanRunsTable> {
+  $$PlanRunsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get uid =>
+      $composableBuilder(column: $table.uid, builder: (column) => column);
+
+  GeneratedColumn<String> get planId =>
+      $composableBuilder(column: $table.planId, builder: (column) => column);
+
+  GeneratedColumn<String> get planName =>
+      $composableBuilder(column: $table.planName, builder: (column) => column);
+
+  GeneratedColumn<String> get stepsJson =>
+      $composableBuilder(column: $table.stepsJson, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get finishedAt => $composableBuilder(
+    column: $table.finishedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get currentStep => $composableBuilder(
+    column: $table.currentStep,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get resultsJson => $composableBuilder(
+    column: $table.resultsJson,
+    builder: (column) => column,
+  );
+
+  $$PlayersTableAnnotationComposer get playerId {
+    final $$PlayersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.playerId,
+      referencedTable: $db.players,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlayersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.players,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PlanRunsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PlanRunsTable,
+          PlanRunRow,
+          $$PlanRunsTableFilterComposer,
+          $$PlanRunsTableOrderingComposer,
+          $$PlanRunsTableAnnotationComposer,
+          $$PlanRunsTableCreateCompanionBuilder,
+          $$PlanRunsTableUpdateCompanionBuilder,
+          (PlanRunRow, $$PlanRunsTableReferences),
+          PlanRunRow,
+          PrefetchHooks Function({bool playerId})
+        > {
+  $$PlanRunsTableTableManager(_$AppDatabase db, $PlanRunsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PlanRunsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PlanRunsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PlanRunsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> uid = const Value.absent(),
+                Value<String> planId = const Value.absent(),
+                Value<String> planName = const Value.absent(),
+                Value<String> stepsJson = const Value.absent(),
+                Value<int> playerId = const Value.absent(),
+                Value<DateTime> startedAt = const Value.absent(),
+                Value<DateTime?> finishedAt = const Value.absent(),
+                Value<int> currentStep = const Value.absent(),
+                Value<String> resultsJson = const Value.absent(),
+              }) => PlanRunsCompanion(
+                id: id,
+                uid: uid,
+                planId: planId,
+                planName: planName,
+                stepsJson: stepsJson,
+                playerId: playerId,
+                startedAt: startedAt,
+                finishedAt: finishedAt,
+                currentStep: currentStep,
+                resultsJson: resultsJson,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> uid = const Value.absent(),
+                required String planId,
+                required String planName,
+                required String stepsJson,
+                required int playerId,
+                required DateTime startedAt,
+                Value<DateTime?> finishedAt = const Value.absent(),
+                Value<int> currentStep = const Value.absent(),
+                Value<String> resultsJson = const Value.absent(),
+              }) => PlanRunsCompanion.insert(
+                id: id,
+                uid: uid,
+                planId: planId,
+                planName: planName,
+                stepsJson: stepsJson,
+                playerId: playerId,
+                startedAt: startedAt,
+                finishedAt: finishedAt,
+                currentStep: currentStep,
+                resultsJson: resultsJson,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$PlanRunsTable, PlanRunRow>(table),
+                  $$PlanRunsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({playerId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (playerId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.playerId,
+                        referencedTable: $$PlanRunsTableReferences
+                            ._playerIdTable(db),
+                        referencedColumn: $$PlanRunsTableReferences
+                            ._playerIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$PlanRunsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PlanRunsTable,
+      PlanRunRow,
+      $$PlanRunsTableFilterComposer,
+      $$PlanRunsTableOrderingComposer,
+      $$PlanRunsTableAnnotationComposer,
+      $$PlanRunsTableCreateCompanionBuilder,
+      $$PlanRunsTableUpdateCompanionBuilder,
+      (PlanRunRow, $$PlanRunsTableReferences),
+      PlanRunRow,
+      PrefetchHooks Function({bool playerId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4622,4 +6527,8 @@ class $AppDatabaseManager {
       $$ThrowsTableTableManager(_db, _db.throws);
   $$GoalsTableTableManager get goals =>
       $$GoalsTableTableManager(_db, _db.goals);
+  $$TrainingPlansTableTableManager get trainingPlans =>
+      $$TrainingPlansTableTableManager(_db, _db.trainingPlans);
+  $$PlanRunsTableTableManager get planRuns =>
+      $$PlanRunsTableTableManager(_db, _db.planRuns);
 }

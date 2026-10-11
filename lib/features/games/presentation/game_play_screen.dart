@@ -16,6 +16,7 @@ import '../../dart_source/data/manual_source.dart';
 import '../../dart_source/data/simulator_source.dart';
 import '../../dart_source/presentation/dart_source_providers.dart';
 import '../../dart_source/presentation/source_status_badge.dart';
+import '../../plans/presentation/plan_run_panel.dart';
 import '../../simulator/presentation/manual_keypad.dart';
 import '../../board/domain/segment.dart';
 import '../domain/engine/game_display.dart';
@@ -237,6 +238,7 @@ class _GamePanel extends ConsumerWidget {
         const SizedBox(height: AppSpacing.m),
         _StatsGrid(stats: active.ended ? active.game.result.summary : display.stats),
         const SizedBox(height: AppSpacing.m),
+        const PlanRunPanel(),
         if (active.ended)
           _ResultActions(active: active)
         else if (source is ManualSource)

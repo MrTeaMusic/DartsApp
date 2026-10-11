@@ -27,6 +27,7 @@ Würfe kommen live vom Autodarts-Board, aus einem Simulator oder per manueller E
 | Ziele und Serien | fertig |
 | Mehrere Profile | fertig |
 | Export/Import (JSON-Backup, CSV) | fertig |
+| Trainingspläne (feste und eigene, Fortschritt merken, Zusammenfassung) | fertig |
 | Sync im Heimnetz (Desktop-App als Hub, iPhone/iPad gleichen automatisch ab) | fertig, am echten Heimnetz noch nicht getestet |
 | Autodarts-Verbindungstest, Mitschnitt-Prüfung, Koordinaten-Kalibrierung | fertig |
 | Build-Anleitung, native Builds in GitHub Actions | fertig |
@@ -35,6 +36,7 @@ Was über das Autodarts-Protokoll bekannt und was offen ist: [docs/autodarts-pro
 Wie der Sync funktioniert: [docs/sync.md](docs/sync.md).
 Regeln und Optionen der Trainingsspiele: [docs/trainingsspiele.md](docs/trainingsspiele.md).
 Regeln der zwei eigenen Spiele: [docs/spielregeln.md](docs/spielregeln.md).
+Feste und eigene Trainingspläne: [docs/trainingsplaene.md](docs/trainingsplaene.md).
 Wie Statistiken berechnet werden, Ziele, Profile, Export-Formate: [docs/statistik-und-daten.md](docs/statistik-und-daten.md).
 
 ## Starten
@@ -85,6 +87,7 @@ lib/
       domain/        StatsCalculator, Ziele (reine Berechnung)
       data/          StatsRepository
       presentation/  Statistik-Bildschirm mit fl_chart, Ziele-Karte
+    plans/           Trainingspläne: feste Pläne im Code, eigene in der Datenbank, Durchläufe
     profiles/        Profile und aktives Profil
     backup/          JSON/CSV-Export, Import, Dateidialoge
     home/ simulator/ settings/   Bildschirme

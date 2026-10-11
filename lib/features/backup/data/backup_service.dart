@@ -21,7 +21,8 @@ class BackupFormatException implements Exception {
 
 /// Export und Import aller Daten.
 ///
-/// * JSON: vollständige Sicherung (Profile, Sessions, Würfe, Ziele), lässt
+/// * JSON: vollständige Sicherung (Profile, Sessions, Würfe, Ziele,
+///   eigene Trainingspläne), lässt
 ///   sich wieder importieren.
 /// * CSV: Würfe bzw. Sessions als Tabelle für Excel/Numbers, nur Export.
 class BackupService {
@@ -31,8 +32,10 @@ class BackupService {
   static const String format = 'dartlab-backup';
 
   /// 2: geräteübergreifende IDs (`uid`), Zeiten als ISO-Text, gelöschte
-  /// Profile und Ziele als Markierung. Version 1 wird weiter gelesen.
-  static const int version = 2;
+  /// Profile und Ziele als Markierung.
+  /// 3: zusätzlich eigene Trainingspläne (`plans`).
+  /// Versionen 1 und 2 werden weiter gelesen.
+  static const int version = 3;
 
   // ---------------------------------------------------------------- JSON
 
