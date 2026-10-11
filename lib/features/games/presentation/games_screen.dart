@@ -10,10 +10,11 @@ import '../../../core/router/app_router.dart';
 import '../data/game_repository.dart';
 import '../domain/engine/game_display.dart';
 import '../domain/game_catalog.dart';
+import '../../profiles/presentation/active_player.dart';
 import 'game_texts.dart';
 
 final recentSessionsProvider = StreamProvider<List<SessionSummary>>(
-  (ref) => ref.watch(gameRepositoryProvider).watchRecent(limit: 10),
+  (ref) => ref.watch(gameRepositoryProvider).watchRecent(limit: 10, playerId: ref.watch(activePlayerProvider)?.id),
 );
 
 /// Übersicht der Trainingsspiele.

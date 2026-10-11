@@ -1,3 +1,5 @@
+import '../../profiles/data/profile_repository.dart';
+import '../../profiles/presentation/active_player.dart';
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -80,7 +82,7 @@ class ActiveGameController extends Notifier<ActiveGame?> {
       config: config,
       seed: seed ?? math.Random().nextInt(1 << 31),
     );
-    final playerId = await _repo.defaultPlayerId();
+    final playerId = await ref.read(profileRepositoryProvider).resolve(ref.read(activePlayerIdProvider));
     final id = await _repo.startSession(
       playerId: playerId,
       gameId: definition.id,

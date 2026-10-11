@@ -14,6 +14,8 @@ import '../data/game_repository.dart';
 import '../domain/engine/game_definition.dart';
 import '../domain/game_catalog.dart';
 import '../domain/games/checkout/checkout_training.dart';
+import '../../profiles/data/profile_repository.dart';
+import '../../profiles/presentation/active_player.dart';
 import 'active_game_controller.dart';
 import 'game_texts.dart';
 
@@ -62,7 +64,8 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
     await ref.read(sharedPreferencesProvider).setString(_prefsKey, jsonEncode(resolved));
     var config = resolved;
     if (def.id == CheckoutTraining.id && resolved['mode'] == 'weak') {
-      final weak = await ref.read(gameRepositoryProvider).weakCheckoutTargets();
+      final playerId = await ref.read(profileRepositoryProvider).resolve(ref.read(activePlayerIdProvider));
+      final weak = await ref.read(gameRepositoryProvider).weakCheckoutTargets(playerId: playerId);
       config = {...resolved, 'weakTargets': weak};
     }
     await ref.read(activeGameProvider.notifier).start(def, config);
