@@ -36,25 +36,6 @@ class SettingsScreen extends ConsumerWidget {
               SectionHeader(l10n.profilesTitle),
               const ProfilesCard(),
               const SectionGap(),
-              SectionHeader(l10n.settingsAppearance),
-              const _LookPicker(),
-              const SizedBox(height: AppSpacing.l),
-              if (settings.look.supportsLight) ...[
-                Kicker(l10n.settingsBrightness),
-                const SizedBox(height: AppSpacing.s),
-                SegmentedButton<ThemeMode>(
-                  key: const Key('theme-selector'),
-                  segments: [
-                    ButtonSegment(value: ThemeMode.dark, label: Text(l10n.themeDark), icon: const Icon(Icons.dark_mode_rounded)),
-                    ButtonSegment(value: ThemeMode.light, label: Text(l10n.themeLight), icon: const Icon(Icons.light_mode_rounded)),
-                    ButtonSegment(value: ThemeMode.system, label: Text(l10n.themeSystem), icon: const Icon(Icons.brightness_auto_rounded)),
-                  ],
-                  selected: {settings.themeMode},
-                  onSelectionChanged: (s) => notifier.update((x) => x.copyWith(themeMode: s.first)),
-                ),
-              ] else
-                Text(l10n.settingsBrightnessFixed, key: const Key('theme-fixed'), style: Theme.of(context).textTheme.bodySmall),
-              const SectionGap(),
               SectionHeader(l10n.settingsSource, trailing: const SourceStatusBadge()),
               AppCard(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
@@ -85,6 +66,25 @@ class SettingsScreen extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.m),
                 _AutodartsConnectionCard(settings: settings),
               ],
+              const SectionGap(),
+              SectionHeader(l10n.settingsAppearance),
+              const _LookPicker(),
+              const SizedBox(height: AppSpacing.l),
+              if (settings.look.supportsLight) ...[
+                Kicker(l10n.settingsBrightness),
+                const SizedBox(height: AppSpacing.s),
+                SegmentedButton<ThemeMode>(
+                  key: const Key('theme-selector'),
+                  segments: [
+                    ButtonSegment(value: ThemeMode.dark, label: Text(l10n.themeDark), icon: const Icon(Icons.dark_mode_rounded)),
+                    ButtonSegment(value: ThemeMode.light, label: Text(l10n.themeLight), icon: const Icon(Icons.light_mode_rounded)),
+                    ButtonSegment(value: ThemeMode.system, label: Text(l10n.themeSystem), icon: const Icon(Icons.brightness_auto_rounded)),
+                  ],
+                  selected: {settings.themeMode},
+                  onSelectionChanged: (s) => notifier.update((x) => x.copyWith(themeMode: s.first)),
+                ),
+              ] else
+                Text(l10n.settingsBrightnessFixed, key: const Key('theme-fixed'), style: Theme.of(context).textTheme.bodySmall),
               const SectionGap(),
               SectionHeader(l10n.settingsFeedback),
               AppCard(

@@ -79,24 +79,57 @@ class SectionHeader extends StatelessWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: 40),
         // Kein LayoutBuilder: der Kopf steht auch in IntrinsicHeight-Zeilen.
-        child: Row(
+        child: look.header == HeaderTreatment.rule
+            ? _ruleRow(context, text)
+            : Row(
+                children: [
+                  if (look.header == HeaderTreatment.bar) ...[
+                    Container(width: 4, height: 18, color: theme.colorScheme.primary),
+                    const SizedBox(width: AppSpacing.s + 2),
+                  ],
+                  Expanded(child: text),
+                  if (trailing != null) ...[
+                    const SizedBox(width: AppSpacing.s),
+                    ConstrainedBox(constraints: const BoxConstraints(maxWidth: 200), child: trailing),
+                  ],
+                ],
+              ),
+      ),
+    );
+  }
+}
+
+extension on SectionHeader {
+  /// Lab: Linie über die ganze Breite hinter dem Titel; Titel und
+  /// Zusatz decken sie mit der Farbe der Fläche darunter ab. So füllt die
+  /// Linie genau den freien Platz, ohne die Breite messen zu müssen.
+  Widget _ruleRow(BuildContext context, Widget text) {
+    final theme = Theme.of(context);
+    final background = Material.maybeOf(context)?.color ?? theme.scaffoldBackgroundColor;
+    return Stack(
+      alignment: Alignment.centerLeft,
+      children: [
+        Positioned(left: 0, right: 0, child: Container(height: 1, color: theme.colorScheme.outline)),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            if (look.header == HeaderTreatment.bar) ...[
-              Container(width: 4, height: 18, color: theme.colorScheme.primary),
-              const SizedBox(width: AppSpacing.s + 2),
-            ],
-            if (look.header == HeaderTreatment.rule) ...[
-              // Text so breit wie nötig, die Linie füllt den Rest.
-              ConstrainedBox(constraints: const BoxConstraints(maxWidth: 240), child: text),
-              const SizedBox(width: AppSpacing.m),
-              Expanded(child: Container(height: 1, color: theme.colorScheme.outline)),
-              if (trailing != null) const SizedBox(width: AppSpacing.m),
-            ] else
-              Expanded(child: text),
-            ?trailing,
+            Flexible(
+              child: ColoredBox(
+                color: background,
+                child: Padding(padding: const EdgeInsets.only(right: AppSpacing.m), child: text),
+              ),
+            ),
+            if (trailing != null)
+              ColoredBox(
+                color: background,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: AppSpacing.m),
+                  child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 200), child: trailing),
+                ),
+              ),
           ],
         ),
-      ),
+      ],
     );
   }
 }

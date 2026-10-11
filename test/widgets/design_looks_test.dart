@@ -33,6 +33,8 @@ void main() {
 
     await tester.tap(find.text('Optionen').first);
     await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const Key('look-tv')));
+    await tester.pumpAndSettle();
     expect(find.byKey(const Key('look-tv')), findsOneWidget);
     expect(find.byKey(const Key('theme-selector')), findsNothing);
     expect(find.byKey(const Key('theme-fixed')), findsOneWidget);
@@ -43,6 +45,8 @@ void main() {
     await tester.tap(find.text('Optionen').first);
     await tester.pumpAndSettle();
 
+    await tester.ensureVisible(find.byKey(const Key('look-clean')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('look-clean')));
     await tester.pumpAndSettle();
     expect(container.read(settingsProvider).look, DartLookId.clean);
@@ -56,12 +60,16 @@ void main() {
     expect(find.byKey(const Key('theme-selector')), findsOneWidget);
 
     // Manuell auf dunkel.
+    await tester.ensureVisible(find.text('Dunkel'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Dunkel'));
     await tester.pumpAndSettle();
     theme = themeOf(tester);
     expect(theme.brightness, Brightness.dark);
     expect(theme.colorScheme.primary, LookPalettes.cleanDark.primary);
 
+    await tester.scrollUntilVisible(find.byKey(const Key('look-lab')), -200, scrollable: find.byType(Scrollable).last);
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('look-lab')));
     await tester.pumpAndSettle();
     expect(prefs.getString('settings.look'), 'lab');
@@ -111,10 +119,13 @@ void main() {
       await visit(Routes.gameSetup('checkout'));
       await visit(Routes.gameSetup('x01_solo'));
       await visit(PlanRoutes.list);
+      await visit(PlanRoutes.auto);
       await visit(Routes.board);
       await visit(Routes.settings);
       await visit(Routes.stats);
       for (final tab in ['scoring', 'doubles', 'games', 'records', 'overview']) {
+        await tester.ensureVisible(find.byKey(Key('stats-tab-$tab')));
+        await tester.pumpAndSettle();
         await tester.tap(find.byKey(Key('stats-tab-$tab')));
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull, reason: 'stats-$tab');

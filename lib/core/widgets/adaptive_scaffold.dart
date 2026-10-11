@@ -121,7 +121,9 @@ class _Logo extends StatelessWidget {
         children: [
           mark,
           const SizedBox(width: AppSpacing.m),
-          Text(title, style: style),
+          Flexible(
+            child: FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: Text(title, style: style)),
+          ),
         ],
       ),
     );

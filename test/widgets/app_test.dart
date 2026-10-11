@@ -67,6 +67,11 @@ void main() {
     expect(container.read(settingsProvider).sourceKind, DartSourceKind.manual);
     expect(find.textContaining('Manuelle Eingabe · Verbunden'), findsWidgets);
 
+    // Hell/Dunkel gibt es nur im Look Clean (TV und Lab sind immer dunkel).
+    await tester.ensureVisible(find.byKey(const Key('look-clean')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('look-clean')));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Hell'));
     await tester.pumpAndSettle();
     expect(container.read(settingsProvider).themeMode, ThemeMode.light);

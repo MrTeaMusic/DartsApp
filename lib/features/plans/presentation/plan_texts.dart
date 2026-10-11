@@ -75,7 +75,12 @@ class PlanStepTile extends StatelessWidget {
             const SizedBox(width: AppSpacing.s),
           ],
           Expanded(child: Text(l10n.stepTitle(step), overflow: TextOverflow.ellipsis)),
-          if (status != null) Text(status!, style: theme.textTheme.labelMedium),
+          if (status != null) ...[
+            const SizedBox(width: AppSpacing.s),
+            Flexible(
+              child: Text(status!, style: theme.textTheme.labelMedium, maxLines: 1, overflow: TextOverflow.ellipsis),
+            ),
+          ],
         ],
       ),
       subtitle: Text(
