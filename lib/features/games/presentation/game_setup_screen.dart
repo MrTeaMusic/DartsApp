@@ -83,21 +83,20 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
       return Scaffold(appBar: AppBar(), body: Center(child: Text(widget.gameId)));
     }
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.gameTitle(def.id))),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 640),
-          child: ListView(
-            padding: const EdgeInsets.all(AppSpacing.page),
-            children: [
-              Row(
-                children: [
-                  Icon(gameIcon(def.id), color: theme.colorScheme.primary, size: 32),
-                  const SizedBox(width: AppSpacing.m),
-                  Expanded(child: Text(l10n.gameDescription(def.id), style: theme.textTheme.bodyLarge)),
-                ],
+      appBar: AppPageBar(maxWidth: 640, title: Text(l10n.gameTitle(def.id))),
+      body: AppPage(
+        maxWidth: 640,
+        children: [
+              AppCard(
+                child: Row(
+                  children: [
+                    IconBadge(icon: gameIcon(def.id), size: 52),
+                    const SizedBox(width: AppSpacing.l),
+                    Expanded(child: Text(l10n.gameDescription(def.id), style: theme.textTheme.bodyLarge)),
+                  ],
+                ),
               ),
-              const SizedBox(height: AppSpacing.xl),
+              const SectionGap(),
               SectionHeader(l10n.gameSettings),
               AppCard(
                 child: Column(
@@ -114,7 +113,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: AppSpacing.xl),
+              const SectionGap(),
               FilledButton.icon(
                 key: const Key('start-game'),
                 onPressed: _starting ? null : _start,
@@ -122,8 +121,6 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                 label: Text(l10n.gameStart),
               ),
             ],
-          ),
-        ),
       ),
     );
   }

@@ -45,7 +45,7 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
     ];
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppPageBar(
         title: Text(l10n.debugTitle),
         actions: [
           IconButton(

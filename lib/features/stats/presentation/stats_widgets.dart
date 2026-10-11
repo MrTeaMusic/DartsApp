@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/design/components/components.dart';
 import '../../../core/design/dart_colors.dart';
+import '../../../core/design/dart_look.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
 import '../../games/domain/engine/game_display.dart';
@@ -129,51 +130,39 @@ class KpiTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final d = delta;
     if (d == null) return StatTile(label: label, value: value, caption: caption, icon: icon);
-    final theme = Theme.of(context);
     final colors = context.dartColors;
+    final look = context.look;
     final color = d.flat ? colors.textMuted : (d.improved ? colors.success : colors.danger);
     final arrow = d.flat
         ? Icons.trending_flat_rounded
         : (d.diff > 0 ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded);
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              if (icon != null) ...[
-                Icon(icon, size: 16, color: colors.textMuted),
-                const SizedBox(width: AppSpacing.xs),
-              ],
-              Expanded(child: Text(label, style: theme.textTheme.labelMedium)),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.s),
-          Text(value, style: theme.textTheme.displayMedium),
-          const SizedBox(height: AppSpacing.xs),
-          Tooltip(
-            message: context.l10n.statsPrevious(formatValue(d.kind, d.previous)),
+    final deltaStyle = (look.id == DartLookId.tv ? look.kicker.copyWith(letterSpacing: 0.6) : Theme.of(context).textTheme.labelMedium)
+        ?.copyWith(color: color);
+    return StatTile(
+      label: label,
+      value: value,
+      caption: caption,
+      icon: icon,
+      footer: Padding(
+        padding: const EdgeInsets.only(top: AppSpacing.xs),
+        child: Tooltip(
+          message: context.l10n.statsPrevious(formatValue(d.kind, d.previous)),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s - 2, vertical: AppSpacing.xxs),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(look.id == DartLookId.clean ? 99 : look.radiusS),
+            ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(arrow, size: 14, color: color),
+                Icon(arrow, size: 13, color: color),
                 const SizedBox(width: AppSpacing.xxs),
-                Flexible(
-                  child: Text(
-                    d.text,
-                    style: theme.textTheme.labelMedium?.copyWith(color: color),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
+                Flexible(child: Text(d.text, style: deltaStyle, overflow: TextOverflow.ellipsis)),
               ],
             ),
           ),
-          if (caption != null) ...[
-            const SizedBox(height: AppSpacing.xxs),
-            Text(caption!, style: theme.textTheme.bodySmall),
-          ],
-        ],
+        ),
       ),
     );
   }
@@ -188,12 +177,29 @@ class TileGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, c) {
+      final gap = context.look.gridGap;
       final cols = (c.maxWidth / minTileWidth).floor().clamp(2, 4);
-      final w = (c.maxWidth - (cols - 1) * AppSpacing.m) / cols;
-      return Wrap(
-        spacing: AppSpacing.m,
-        runSpacing: AppSpacing.m,
-        children: [for (final t in children) SizedBox(width: w, child: t)],
+      final w = (c.maxWidth - (cols - 1) * gap) / cols;
+      // Zeilenweise mit gleicher Höhe, damit Kacheln mit und ohne
+      // Zusatztext bündig abschließen.
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (var r = 0; r < children.length; r += cols) ...[
+            if (r > 0) SizedBox(height: gap),
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (var i = r; i < r + cols && i < children.length; i++) ...[
+                    if (i > r) SizedBox(width: gap),
+                    SizedBox(width: w, child: children[i]),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ],
       );
     });
   }
@@ -234,10 +240,11 @@ class TwoColumns extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final gap = context.look.sectionGap * 0.75;
     if (!wide) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [left, const SizedBox(height: AppSpacing.xl), right],
+        children: [left, SizedBox(height: gap), right],
       );
     }
     return IntrinsicHeight(
@@ -245,7 +252,7 @@ class TwoColumns extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(child: left),
-          const SizedBox(width: AppSpacing.xl),
+          SizedBox(width: gap),
           Expanded(child: right),
         ],
       ),
@@ -291,7 +298,7 @@ class LegendItem extends StatelessWidget {
           height: line ? 3 : 8,
           decoration: BoxDecoration(
             color: color,
-            borderRadius: BorderRadius.circular(AppRadii.pill),
+            borderRadius: BorderRadius.circular(context.look.barRadius.clamp(0, 4).toDouble()),
           ),
         ),
         const SizedBox(width: AppSpacing.xs),
@@ -320,14 +327,10 @@ class BarRow extends StatelessWidget {
         children: [
           SizedBox(width: 64, child: Text(label, style: theme.textTheme.labelMedium)),
           Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(AppRadii.pill),
-              child: LinearProgressIndicator(
-                value: ratio.clamp(0, 1).toDouble(),
-                minHeight: 10,
-                backgroundColor: colors.surfaceHigh,
-                color: color ?? theme.colorScheme.primary,
-              ),
+            child: LookProgressBar(
+              value: ratio,
+              height: context.look.barHeight + 4,
+              color: color ?? colors.chartPrimary,
             ),
           ),
           const SizedBox(width: AppSpacing.m),

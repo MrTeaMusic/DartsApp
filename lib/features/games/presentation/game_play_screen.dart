@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/design/app_theme.dart';
 import '../../../core/design/components/components.dart';
 import '../../../core/design/dart_colors.dart';
+import '../../../core/design/dart_look.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
 import '../../../core/router/app_router.dart';
@@ -96,7 +96,10 @@ class GamePlayScreen extends ConsumerWidget {
             icon: const Icon(Icons.close_rounded),
             onPressed: () => _leave(context, ref),
           ),
-          title: Text(l10n.gameTitle(active.gameId)),
+          title: Text(
+            l10n.gameTitle(active.gameId),
+            style: MediaQuery.sizeOf(context).width < 600 ? Theme.of(context).textTheme.titleLarge : null,
+          ),
           actions: [
             SourceStatusBadge(compact: MediaQuery.sizeOf(context).width < 600),
             const SizedBox(width: AppSpacing.xs),
@@ -150,55 +153,26 @@ class _Headline extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final theme = Theme.of(context);
     final display = active.game.display;
-    final style = large ? AppTypography.scoreHuge.copyWith(fontSize: 140) : AppTypography.scoreLarge;
     // Nach dem Spiel steht die wichtigste Kennzahl oben statt des Spielstands.
     final summary = active.ended ? active.game.result.summary : const <GameStat>[];
     final label = summary.isNotEmpty ? '${l10n.gameResult} · ${l10n.statLabel(summary.first.key)}' : l10n.statLabel(display.headlineKey);
     final headline = summary.isNotEmpty ? summary.first.value : display.headline;
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(child: Text(label.toUpperCase(), style: theme.textTheme.labelMedium)),
-              if (display.progressLabel != null) Text(display.progressLabel!, style: theme.textTheme.titleMedium),
-            ],
-          ),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: AnimatedSwitcher(
-              duration: AppDurations.medium,
-              transitionBuilder: (child, a) => FadeTransition(
-                opacity: a,
-                child: SlideTransition(position: Tween(begin: const Offset(0, 0.15), end: Offset.zero).animate(a), child: child),
-              ),
-              child: Text(
-                headline,
-                key: ValueKey(headline),
-                style: style.copyWith(color: theme.colorScheme.onSurface),
-              ),
-            ),
-          ),
-          if (display.progress != null) ...[
-            const SizedBox(height: AppSpacing.s),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(AppRadii.pill),
-              child: TweenAnimationBuilder<double>(
-                tween: Tween(end: display.progress!.clamp(0, 1)),
-                duration: AppDurations.medium,
-                builder: (context, v, _) => LinearProgressIndicator(
-                  value: v,
-                  minHeight: 8,
-                  backgroundColor: context.dartColors.surfaceHigh,
-                ),
-              ),
-            ),
-          ],
-        ],
+    return ScorePanel(
+      label: label,
+      trailing: display.progressLabel,
+      progress: display.progress,
+      value: AnimatedSwitcher(
+        duration: AppDurations.medium,
+        transitionBuilder: (child, a) => FadeTransition(
+          opacity: a,
+          child: SlideTransition(position: Tween(begin: const Offset(0, 0.15), end: Offset.zero).animate(a), child: child),
+        ),
+        child: Text(
+          headline,
+          key: ValueKey(headline),
+          style: ScorePanel.valueStyle(context, hero: large),
+        ),
       ),
     );
   }
@@ -294,34 +268,70 @@ class _EventBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final colors = context.dartColors;
+    final look = context.look;
+    final theme = Theme.of(context);
     final event = active.events.isEmpty ? null : active.events.last;
     final color = switch (event == null ? EventTone.neutral : eventTone(event.type)) {
       EventTone.positive => colors.success,
       EventTone.negative => colors.danger,
-      EventTone.neutral => Theme.of(context).colorScheme.primary,
+      EventTone.neutral => theme.colorScheme.primary,
     };
-    return AnimatedSwitcher(
-      duration: AppDurations.medium,
-      transitionBuilder: (child, a) => SizeTransition(sizeFactor: a, child: FadeTransition(opacity: a, child: child)),
-      child: event == null
-          ? const SizedBox(width: double.infinity)
-          : Padding(
-              key: ValueKey(active.revision),
-              padding: const EdgeInsets.only(bottom: AppSpacing.m),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l, vertical: AppSpacing.m),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.16),
-                  borderRadius: BorderRadius.circular(AppRadii.m),
-                  border: Border.all(color: color.withValues(alpha: 0.5)),
-                ),
-                child: Text(
-                  l10n.eventText(event),
-                  key: const Key('game-event'),
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: color),
+    final Widget banner;
+    if (event == null) {
+      banner = const SizedBox(width: double.infinity);
+    } else {
+      final text = l10n.eventText(event);
+      banner = Padding(
+        key: ValueKey(active.revision),
+        padding: const EdgeInsets.only(bottom: AppSpacing.m),
+        child: switch (look.id) {
+          // TV: volle Farbfläche wie eine Einblendung.
+          DartLookId.tv => Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l, vertical: AppSpacing.s + 2),
+              decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(look.radiusM)),
+              child: Text(
+                text,
+                key: const Key('game-event'),
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  color: ThemeData.estimateBrightnessForColor(color) == Brightness.dark ? Colors.white : Colors.black,
                 ),
               ),
             ),
+          DartLookId.clean => Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l + 4, vertical: AppSpacing.m + 2),
+              decoration: BoxDecoration(color: color.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(look.radiusL)),
+              child: Text(text, key: const Key('game-event'), style: theme.textTheme.headlineSmall?.copyWith(color: color)),
+            ),
+          DartLookId.lab => Container(
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(look.radiusM),
+                border: Border.all(color: color.withValues(alpha: 0.5)),
+              ),
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(width: 3, color: color),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: AppSpacing.s + 2),
+                        child: Text(text, key: const Key('game-event'), style: theme.textTheme.titleLarge?.copyWith(color: color)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        },
+      );
+    }
+    return AnimatedSwitcher(
+      duration: AppDurations.medium,
+      transitionBuilder: (child, a) => SizeTransition(sizeFactor: a, child: FadeTransition(opacity: a, child: child)),
+      child: banner,
     );
   }
 }
@@ -334,26 +344,40 @@ class _StatsGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
+    final look = context.look;
+    final valueStyle = look.statValue.copyWith(
+      color: theme.colorScheme.onSurface,
+      fontSize: (look.statValue.fontSize ?? 30) * (look.id == DartLookId.tv ? 0.72 : 0.75),
+    );
     return AppCard(
-      child: Wrap(
-        spacing: AppSpacing.xl,
-        runSpacing: AppSpacing.m,
-        children: [
-          for (final s in stats)
-            ConstrainedBox(
-              constraints: const BoxConstraints(minWidth: 110),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(l10n.statLabel(s.key), style: theme.textTheme.labelMedium),
-                  const SizedBox(height: AppSpacing.xxs),
-                  Text(s.value, style: theme.textTheme.headlineSmall?.copyWith(fontFeatures: AppTypography.tabular)),
-                ],
+      child: LayoutBuilder(builder: (context, c) {
+        // Drei Spalten; bei vier Werten oder sehr schmal zwei.
+        final cols = c.maxWidth < 300 || stats.length == 4 ? 2 : 3;
+        final w = (c.maxWidth - (cols - 1) * AppSpacing.m) / cols;
+        return Wrap(
+          spacing: AppSpacing.m,
+          runSpacing: AppSpacing.m + 2,
+          children: [
+            for (final s in stats)
+              SizedBox(
+                width: w,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Kicker(l10n.statLabel(s.key), maxLines: 2),
+                    const SizedBox(height: AppSpacing.xs),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(s.value, style: valueStyle),
+                    ),
+                  ],
+                ),
               ),
-            ),
-        ],
-      ),
+          ],
+        );
+      }),
     );
   }
 }
@@ -427,8 +451,9 @@ class _VisitCard extends ConsumerWidget {
       if (picked != null) ref.read(activeGameProvider.notifier).correct(index, picked);
     }
 
+    final look = context.look;
     return AppCard(
-      padding: const EdgeInsets.fromLTRB(AppSpacing.m, AppSpacing.m, AppSpacing.m, AppSpacing.m),
+      padding: EdgeInsets.all(look.id == DartLookId.clean ? AppSpacing.l : AppSpacing.m),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -436,15 +461,15 @@ class _VisitCard extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
             child: Row(
               children: [
-                Text(l10n.visitLabel.toUpperCase(), style: theme.textTheme.labelMedium),
+                Kicker(l10n.visitLabel),
                 const SizedBox(width: AppSpacing.s),
                 if (route != null && route.isNotEmpty)
                   Flexible(
                     child: Text(
-                      l10n.visitRoute,
+                      look.caps(l10n.visitRoute),
                       key: const Key('checkout-route-label'),
                       overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.labelMedium?.copyWith(color: colors.highlight),
+                      style: look.kicker.copyWith(color: colors.highlight),
                     ),
                   )
                 else if (route != null && thrown == 0)
@@ -455,18 +480,18 @@ class _VisitCard extends ConsumerWidget {
                 Text(
                   '${live.visitScore}',
                   key: const Key('visit-score'),
-                  style: theme.textTheme.titleLarge?.copyWith(fontFeatures: AppTypography.tabular),
+                  style: look.chipNumber.copyWith(color: theme.colorScheme.onSurface, fontSize: (look.chipNumber.fontSize ?? 18) + 4),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: AppSpacing.s),
+          SizedBox(height: look.id == DartLookId.clean ? AppSpacing.m : AppSpacing.s),
           Row(
             children: [
               for (var i = 0; i < 3; i++)
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
                     child: FittedBox(
                       child: DartChip(
                         key: Key('dart-slot-$i'),
@@ -567,7 +592,7 @@ class _CorrectionsSheet extends ConsumerWidget {
                           const Spacer(),
                           Text(
                             '${visits[v]!.where((i) => records[i].counted).fold<int>(0, (s, i) => s + records[i].dart.score)}',
-                            style: theme.textTheme.titleMedium?.copyWith(fontFeatures: AppTypography.tabular),
+                            style: context.look.chipNumber.copyWith(color: theme.colorScheme.onSurface),
                           ),
                         ],
                       ),

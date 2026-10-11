@@ -79,7 +79,8 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen> {
     final resumable = open != null && open.currentStep > 0 && !open.allStepsDone;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppPageBar(
+        maxWidth: 640,
         title: Text(plan.name),
         actions: [
           if (!plan.builtIn)
@@ -103,12 +104,9 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen> {
           ),
         ],
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 640),
-          child: ListView(
-            padding: const EdgeInsets.all(AppSpacing.page),
-            children: [
+      body: AppPage(
+        maxWidth: 640,
+        children: [
               if (plan.description.isNotEmpty) ...[
                 Text(plan.description, style: theme.textTheme.bodyLarge),
                 const SizedBox(height: AppSpacing.xl),
@@ -150,8 +148,6 @@ class _PlanDetailScreenState extends ConsumerState<PlanDetailScreen> {
                   label: Text(l10n.planStart),
                 ),
             ],
-          ),
-        ),
       ),
     );
   }

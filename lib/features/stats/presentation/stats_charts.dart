@@ -4,17 +4,32 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/design/dart_colors.dart';
+import '../../../core/design/dart_look.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
 import '../domain/stats_calculator.dart';
 import '../../games/domain/engine/game_display.dart';
 import 'stats_widgets.dart';
 
-TextStyle? _axis(BuildContext context) =>
-    Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 11, color: context.dartColors.textMuted);
+TextStyle? _axis(BuildContext context) => Theme.of(context)
+    .textTheme
+    .bodySmall
+    ?.copyWith(fontSize: 11, color: context.dartColors.textMuted, fontFeatures: DartLooks.tabular);
 
 TextStyle _tooltip(BuildContext context) =>
-    TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w600, fontSize: 12);
+    (Theme.of(context).textTheme.titleSmall ?? const TextStyle()).copyWith(fontSize: 12, height: 1.35);
+
+/// Rasterlinien aller Diagramme.
+FlLine _gridLine(BuildContext context) => FlLine(color: context.dartColors.chartGrid, strokeWidth: 1);
+
+/// Hintergrund der Tooltips.
+Color _tooltipColor(BuildContext context) => context.dartColors.surfaceHigh;
+
+/// Radius der Säulen je Look (TV eckig, Clean rund, Lab fein).
+BorderRadius _barRadius(BuildContext context, double width) {
+  final r = context.look.barRadius.clamp(0, width / 2).toDouble();
+  return BorderRadius.vertical(top: Radius.circular(r));
+}
 
 /// Säulen mit Beschriftung darunter, z. B. Darts pro Tag oder Woche.
 class VolumeChart extends StatelessWidget {
@@ -28,8 +43,9 @@ class VolumeChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final base = color ?? Theme.of(context).colorScheme.primary;
+    final base = color ?? context.dartColors.chartPrimary;
     final maxY = values.fold(0.0, math.max);
+    final barWidth = (260 / values.length).clamp(3, 22).toDouble();
     // Bei vielen Säulen nur jede n-te Beschriftung, von rechts gezählt.
     final every = (values.length / 8).ceil().clamp(1, 1000);
     return BarChart(
@@ -37,11 +53,12 @@ class VolumeChart extends StatelessWidget {
         maxY: maxY == 0 ? 1 : maxY * 1.15,
         gridData: FlGridData(
           drawVerticalLine: false,
-          getDrawingHorizontalLine: (_) => FlLine(color: context.dartColors.surfaceHigh, strokeWidth: 1),
+          getDrawingHorizontalLine: (_) => _gridLine(context),
         ),
         borderData: FlBorderData(show: false),
         barTouchData: BarTouchData(
           touchTooltipData: BarTouchTooltipData(
+            getTooltipColor: (_) => _tooltipColor(context),
             getTooltipItem: (group, _, rod, _) =>
                 BarTooltipItem('${labels[group.x]}\n${rod.toY.round()}', _tooltip(context)),
           ),
@@ -74,8 +91,8 @@ class VolumeChart extends StatelessWidget {
               BarChartRodData(
                 toY: v,
                 color: highlightLast && i < values.length - 1 ? base.withValues(alpha: 0.7) : base,
-                width: (260 / values.length).clamp(3, 22).toDouble(),
-                borderRadius: BorderRadius.circular(3),
+                width: barWidth,
+                borderRadius: _barRadius(context, barWidth),
               ),
             ]),
         ],
@@ -91,7 +108,7 @@ class NumberHitsChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.primary;
+    final color = context.dartColors.chartPrimary;
     final numbers = [for (var n = 1; n <= 20; n++) n, 25];
     final maxY = numbers.fold(0, (a, n) => math.max(a, hits[n] ?? 0)).toDouble();
     return BarChart(
@@ -101,6 +118,7 @@ class NumberHitsChart extends StatelessWidget {
         borderData: FlBorderData(show: false),
         barTouchData: BarTouchData(
           touchTooltipData: BarTouchTooltipData(
+            getTooltipColor: (_) => _tooltipColor(context),
             getTooltipItem: (group, _, rod, _) => BarTooltipItem('${rod.toY.round()}', _tooltip(context)),
           ),
         ),
@@ -129,7 +147,7 @@ class NumberHitsChart extends StatelessWidget {
                 toY: (hits[n] ?? 0).toDouble(),
                 color: n == 25 ? context.dartColors.boardRed : color,
                 width: 10,
-                borderRadius: BorderRadius.circular(3),
+                borderRadius: _barRadius(context, 10),
               ),
             ]),
         ],
@@ -149,7 +167,9 @@ class RatePerNumberChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final base = color ?? context.dartColors.boardRed;
+    // Triples behalten ihre Farbe (lila) in allen Looks.
+    final base = color ?? context.dartColors.tripleHit;
+    final barWidth = (220 / math.max(1, counts.length)).clamp(6, 22).toDouble();
     final numbers = counts.keys.where((n) => counts[n]!.attempts >= minAttempts).toList()..sort();
     return BarChart(
       BarChartData(
@@ -158,11 +178,12 @@ class RatePerNumberChart extends StatelessWidget {
         gridData: FlGridData(
           drawVerticalLine: false,
           horizontalInterval: 25,
-          getDrawingHorizontalLine: (_) => FlLine(color: context.dartColors.surfaceHigh, strokeWidth: 1),
+          getDrawingHorizontalLine: (_) => _gridLine(context),
         ),
         borderData: FlBorderData(show: false),
         barTouchData: BarTouchData(
           touchTooltipData: BarTouchTooltipData(
+            getTooltipColor: (_) => _tooltipColor(context),
             getTooltipItem: (group, _, rod, _) {
               final c = counts[numbers[group.x]]!;
               return BarTooltipItem('${formatPercent(c.rate)}\n${c.hits}/${c.attempts}', _tooltip(context));
@@ -200,8 +221,8 @@ class RatePerNumberChart extends StatelessWidget {
               BarChartRodData(
                 toY: (counts[n]!.rate ?? 0) * 100,
                 color: base,
-                width: (220 / numbers.length).clamp(6, 22).toDouble(),
-                borderRadius: BorderRadius.circular(3),
+                width: barWidth,
+                borderRadius: _barRadius(context, barWidth),
               ),
             ]),
         ],
@@ -233,8 +254,8 @@ class TrendLineChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     if (points.isEmpty) return NoDataHint(text: emptyText ?? l10n.statsTrendEmpty, height: 200);
-    final color = Theme.of(context).colorScheme.primary;
-    const maColor = AppPalette.amber;
+    final color = context.dartColors.chartPrimary;
+    final maColor = context.dartColors.chartSecondary;
     final values = [for (final p in points) percent ? p.value * 100 : p.value];
     final ma = StatsCalculator.movingAverage(values);
     final showMa = values.length >= 3;
@@ -253,11 +274,12 @@ class TrendLineChart extends StatelessWidget {
               maxY: hi + span * 0.15,
               gridData: FlGridData(
                 drawVerticalLine: false,
-                getDrawingHorizontalLine: (_) => FlLine(color: context.dartColors.surfaceHigh, strokeWidth: 1),
+                getDrawingHorizontalLine: (_) => _gridLine(context),
               ),
               borderData: FlBorderData(show: false),
               lineTouchData: LineTouchData(
                 touchTooltipData: LineTouchTooltipData(
+                  getTooltipColor: (_) => _tooltipColor(context),
                   getTooltipItems: (spots) => [
                     for (final s in spots)
                       LineTooltipItem(
@@ -305,7 +327,14 @@ class TrendLineChart extends StatelessWidget {
                   color: color.withValues(alpha: showMa ? 0.55 : 1),
                   barWidth: showMa ? 2 : 3,
                   dotData: FlDotData(show: points.length <= 40),
-                  belowBarData: BarAreaData(show: true, color: color.withValues(alpha: 0.08)),
+                  belowBarData: BarAreaData(
+                    show: true,
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [color.withValues(alpha: 0.18), color.withValues(alpha: 0.0)],
+                    ),
+                  ),
                 ),
                 if (showMa)
                   LineChartBarData(
@@ -373,7 +402,7 @@ class DoublesGrid extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.s, horizontal: AppSpacing.xs),
                 decoration: BoxDecoration(
                   color: tint.withValues(alpha: rate == null ? 0.06 : 0.14),
-                  borderRadius: BorderRadius.circular(AppRadii.s),
+                  borderRadius: BorderRadius.circular(context.look.radiusS),
                   border: Border.all(color: tint.withValues(alpha: rate == null ? 0.2 : 0.5)),
                 ),
                 child: Column(

@@ -31,13 +31,10 @@ class PlanSummaryScreen extends ConsumerWidget {
     final played = run.results.where((r) => r.status == StepStatus.done).length;
     final darts = run.results.fold<int>(0, (sum, r) => sum + r.darts);
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.planSummaryTitle)),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 640),
-          child: ListView(
-            padding: const EdgeInsets.all(AppSpacing.page),
-            children: [
+      appBar: AppPageBar(maxWidth: 640, title: Text(l10n.planSummaryTitle)),
+      body: AppPage(
+        maxWidth: 640,
+        children: [
               Text(run.planName, style: theme.textTheme.headlineSmall),
               const SizedBox(height: AppSpacing.xs),
               Text(
@@ -58,8 +55,6 @@ class PlanSummaryScreen extends ConsumerWidget {
                 label: Text(l10n.planBackToPlans),
               ),
             ],
-          ),
-        ),
       ),
     );
   }

@@ -18,7 +18,9 @@ class DartLabApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(settingsProvider.select((s) => s.themeMode));
+    final look = ref.watch(settingsProvider.select((s) => s.look));
+    // TV und Lab sind immer dunkel; nur Clean folgt der Helligkeit.
+    final themeMode = look.supportsLight ? ref.watch(settingsProvider.select((s) => s.themeMode)) : ThemeMode.dark;
     final router = ref.watch(routerProvider);
     // Dauerhaft aktiv halten, damit nichts verloren geht, solange der
     // jeweilige Bildschirm nicht offen ist.
@@ -31,8 +33,8 @@ class DartLabApp extends ConsumerWidget {
     return MaterialApp.router(
       onGenerateTitle: (context) => context.l10n.appTitle,
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(),
-      darkTheme: AppTheme.dark(),
+      theme: AppTheme.build(look, Brightness.light),
+      darkTheme: AppTheme.build(look, Brightness.dark),
       themeMode: themeMode,
       routerConfig: router,
       builder: (context, child) => _FullscreenShortcuts(child: child ?? const SizedBox()),

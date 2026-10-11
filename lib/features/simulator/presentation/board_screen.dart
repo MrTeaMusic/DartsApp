@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/design/app_theme.dart';
 import '../../../core/design/components/components.dart';
 import '../../../core/design/dart_colors.dart';
+import '../../../core/design/dart_look.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
 import '../../../core/router/app_router.dart';
@@ -61,11 +61,9 @@ class _BoardScreenState extends ConsumerState<BoardScreen> {
     );
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppPageBar(
         title: Text(l10n.boardTitle),
-        actions: const [
-          Padding(padding: EdgeInsets.only(right: AppSpacing.l), child: SourceStatusBadge()),
-        ],
+        actions: const [SourceStatusBadge()],
       ),
       body: SafeArea(
         child: LayoutBuilder(builder: (context, c) {
@@ -120,7 +118,6 @@ class _SidePanel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final theme = Theme.of(context);
     final colors = context.dartColors;
     final source = ref.watch(dartSourceProvider);
     final live = ref.watch(liveVisitProvider);
@@ -128,49 +125,37 @@ class _SidePanel extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        AppCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        ScorePanel(
+          label: l10n.boardVisit,
+          badge: AnimatedOpacity(
+            opacity: live.takeoutInProgress ? 1 : 0,
+            duration: AppDurations.fast,
+            child: StatusPill(label: l10n.boardTakeout, color: colors.warning, pulsing: live.takeoutInProgress),
+          ),
+          value: TweenAnimationBuilder<double>(
+            tween: Tween(end: live.visitScore.toDouble()),
+            duration: AppDurations.medium,
+            builder: (context, v, _) => Text(
+              v.round().toString(),
+              key: const Key('visit-score'),
+              style: ScorePanel.valueStyle(context, hero: false),
+            ),
+          ),
+          footer: Row(
             children: [
-              Row(
-                children: [
-                  Expanded(child: Text(l10n.boardVisit.toUpperCase(), style: theme.textTheme.labelMedium)),
-                  AnimatedOpacity(
-                    opacity: live.takeoutInProgress ? 1 : 0,
-                    duration: AppDurations.fast,
-                    child: StatusPill(label: l10n.boardTakeout, color: colors.warning, pulsing: live.takeoutInProgress),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.s),
-              TweenAnimationBuilder<double>(
-                tween: Tween(end: live.visitScore.toDouble()),
-                duration: AppDurations.medium,
-                builder: (context, v, _) => Text(
-                  v.round().toString(),
-                  key: const Key('visit-score'),
-                  style: AppTypography.scoreHuge.copyWith(color: theme.colorScheme.onSurface),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.m),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  for (var i = 0; i < LocalDartSource.dartsPerVisit; i++)
-                    Flexible(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
-                        child: FittedBox(
-                          child: DartChip(segment: i < live.visit.length ? live.visit[i].segment : null, large: true),
-                        ),
-                      ),
+              for (var i = 0; i < LocalDartSource.dartsPerVisit; i++)
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
+                    child: FittedBox(
+                      child: DartChip(segment: i < live.visit.length ? live.visit[i].segment : null, large: true),
                     ),
-                ],
-              ),
+                  ),
+                ),
             ],
           ),
         ),
-        const SizedBox(height: AppSpacing.l),
+        SizedBox(height: context.look.gridGap * 1.5),
         switch (source) {
           SimulatorSource() => _SimulatorControls(
               source: source,
@@ -181,9 +166,9 @@ class _SidePanel extends ConsumerWidget {
           AutodartsLocalSource() => _AutodartsControls(source: source),
           _ => const SizedBox.shrink(),
         },
-        const SizedBox(height: AppSpacing.l),
+        SizedBox(height: context.look.gridGap * 1.5),
         AppCard(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s, vertical: AppSpacing.xs),
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
           child: Column(
             children: [
               SwitchListTile(

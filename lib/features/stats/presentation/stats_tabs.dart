@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/design/components/components.dart';
 import '../../../core/design/dart_colors.dart';
+import '../../../core/design/dart_look.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
 import '../../board/presentation/dartboard_view.dart';
@@ -38,10 +39,14 @@ class _TabList extends StatelessWidget {
   }
 }
 
+/// Zahl rechts in Listen (Rekorde, Bestwerte).
+TextStyle _trailingValue(BuildContext context) =>
+    context.look.chipNumber.copyWith(color: Theme.of(context).colorScheme.onSurface, fontSize: (context.look.chipNumber.fontSize ?? 18) + 2);
+
 Widget _empty(BuildContext context) =>
     ComingSoon(icon: Icons.insights_rounded, title: context.l10n.statsEmptyTitle, text: context.l10n.statsEmptyText);
 
-const _gap = SizedBox(height: AppSpacing.xl);
+const _gap = SectionGap(factor: 0.8);
 
 // ---------------------------------------------------------------------------
 // Überblick
@@ -231,14 +236,9 @@ class _DayParts extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.xs),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(AppRadii.pill),
-            child: LinearProgressIndicator(
-              value: maxDarts == 0 ? 0 : buckets[p.index].darts / maxDarts,
-              minHeight: 8,
-              backgroundColor: colors.surfaceHigh,
-              color: p == best ? colors.success : theme.colorScheme.primary,
-            ),
+          LookProgressBar(
+            value: maxDarts == 0 ? 0 : buckets[p.index].darts / maxDarts,
+            color: p == best ? colors.success : colors.chartPrimary,
           ),
           const SizedBox(height: AppSpacing.xxs),
           Text(l10n.statsSessionsDarts(buckets[p.index].sessions, buckets[p.index].darts), style: theme.textTheme.bodySmall),
@@ -264,18 +264,21 @@ class _StreakAndGoals extends StatelessWidget {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final colors = context.dartColors;
+    final flame = streak.current > 0 ? colors.record : colors.textMuted;
     final streakCard = AppCard(
       key: const Key('streak-card'),
       child: Row(
         children: [
-          Icon(Icons.local_fire_department_rounded, size: 48, color: streak.current > 0 ? AppPalette.amber : colors.textMuted),
+          IconBadge(icon: Icons.local_fire_department_rounded, color: flame, size: 56),
           const SizedBox(width: AppSpacing.l),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l10n.statsStreak.toUpperCase(), style: theme.textTheme.labelMedium),
-                Text(l10n.statsDays(streak.current), style: theme.textTheme.headlineMedium),
+                Kicker(l10n.statsStreak),
+                const SizedBox(height: AppSpacing.xxs),
+                Text(l10n.statsDays(streak.current), style: context.look.statValue.copyWith(color: theme.colorScheme.onSurface)),
+                const SizedBox(height: AppSpacing.xxs),
                 Text(
                   '${streak.trainedToday ? l10n.statsTrainedToday : l10n.statsNotTrainedToday} · ${l10n.statsLongest(streak.longest)}',
                   style: theme.textTheme.bodySmall,
@@ -289,14 +292,14 @@ class _StreakAndGoals extends StatelessWidget {
     if (!wide) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [streakCard, const SizedBox(height: AppSpacing.l), const GoalsCard()],
+        children: [streakCard, SizedBox(height: context.look.gridGap * 1.5), const GoalsCard()],
       );
     }
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(flex: 2, child: streakCard),
-        const SizedBox(width: AppSpacing.xl),
+        SizedBox(width: context.look.sectionGap * 0.75),
         const Expanded(flex: 3, child: GoalsCard()),
       ],
     );
@@ -531,7 +534,7 @@ class DoublesTab extends StatelessWidget {
                           ratio: h.rate ?? 0,
                           value: formatPercent(h.rate),
                           detail: '${h.hits}/${h.attempts}',
-                          color: context.dartColors.boardGreen,
+                          color: context.dartColors.doubleHit,
                         ),
                   ],
                 ),
@@ -666,9 +669,9 @@ class _TrendFacts extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label.toUpperCase(), style: Theme.of(context).textTheme.labelMedium),
+              Kicker(label),
               const SizedBox(height: AppSpacing.xxs),
-              Text(value, style: Theme.of(context).textTheme.titleLarge),
+              Text(value, style: _trailingValue(context).copyWith(fontSize: (_trailingValue(context).fontSize ?? 18) + 4)),
             ],
           ),
         );
@@ -692,7 +695,7 @@ class _GameRow extends StatelessWidget {
     final theme = Theme.of(context);
     final acc = summary.accuracy;
     return ListTile(
-      leading: Icon(gameIcon(summary.gameId)),
+      leading: IconBadge(icon: gameIcon(summary.gameId), size: 38),
       title: Text(l10n.gameTitle(summary.gameId)),
       subtitle: Text([
         '${summary.sessions} ${l10n.statsSessions} · ${summary.darts} ${l10n.statDarts}',
@@ -703,7 +706,7 @@ class _GameRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Text(formatMetric(summary.gameId, summary.best), style: theme.textTheme.titleMedium),
+          Text(formatMetric(summary.gameId, summary.best), style: _trailingValue(context)),
           Text(
             summary.bestAt == null ? l10n.statsBest : '${l10n.statsBest} · ${formatDayMonth(summary.bestAt!)}',
             style: theme.textTheme.bodySmall,
@@ -774,13 +777,13 @@ class RecordsTab extends StatelessWidget {
                   for (final r in records)
                     ListTile(
                       key: Key('record-${r.kind.name}'),
-                      leading: Icon(icon(r.kind), color: AppPalette.amber),
+                      leading: IconBadge(icon: icon(r.kind), color: context.dartColors.record, size: 38),
                       title: Text(label(r.kind)),
                       subtitle: Text([
                         if (r.date != null) formatDate(r.date!),
                         if (r.gameId != null) l10n.gameTitle(r.gameId!),
                       ].join(' · ')),
-                      trailing: Text(value(r), style: theme.textTheme.titleLarge),
+                      trailing: Text(value(r), style: _trailingValue(context)),
                     ),
                 ],
               ),
@@ -794,13 +797,13 @@ class RecordsTab extends StatelessWidget {
                 children: [
                   for (final g in games)
                     ListTile(
-                      leading: Icon(gameIcon(g.gameId)),
+                      leading: IconBadge(icon: gameIcon(g.gameId), size: 38),
                       title: Text(l10n.gameTitle(g.gameId)),
                       subtitle: Text([
                         metricLabel(l10n, PrimaryMetric.forGame(g.gameId).key),
                         if (g.bestAt != null) l10n.statsBestOn(formatDate(g.bestAt!)),
                       ].join(' · ')),
-                      trailing: Text(formatMetric(g.gameId, g.best), style: theme.textTheme.titleLarge),
+                      trailing: Text(formatMetric(g.gameId, g.best), style: _trailingValue(context)),
                     ),
                 ],
               ),
