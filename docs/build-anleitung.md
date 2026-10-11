@@ -19,6 +19,8 @@ iOS-Builds auf einem Mac.
 
 **Voraussetzung:** Visual Studio 2022 (die kostenlose Community-Version reicht) mit der
 Arbeitslast **„Desktopentwicklung mit C++“**. Visual Studio Code reicht nicht.
+Außerdem **`nuget.exe`** im PATH (für die Sprachausgabe des Callers, siehe [caller.md](caller.md)):
+`winget install Microsoft.NuGet` und danach ein neues Terminal öffnen.
 
 ```powershell
 flutter run -d windows             # zum Ausprobieren (Debug)
@@ -34,6 +36,8 @@ kann die Windows-Firewall fragen, ob DartLab ins lokale Netzwerk darf: Für Auto
 
 **Voraussetzung:** Xcode aus dem App Store, danach einmal
 `sudo xcodebuild -runFirstLaunch` und `sudo gem install cocoapods` (oder `brew install cocoapods`).
+CocoaPods wird für die Sprachausgabe des Callers gebraucht (gilt auch für iOS). Beim ersten Build
+trägt `pod install` die Pods ins Xcode-Projekt ein; die geänderten Dateien einfach einchecken.
 
 ```bash
 flutter run -d macos               # zum Ausprobieren
@@ -96,6 +100,7 @@ Exportierte Dateien (Backup, CSV) liegen auf iOS in der Dateien-App unter
 | Problem | Lösung |
 |---|---|
 | `Unable to find suitable Visual Studio toolchain` | In Visual Studio Installer die Arbeitslast „Desktopentwicklung mit C++“ hinzufügen. |
+| `nuget.exe not found. Please install it.` (Windows) | `winget install Microsoft.NuGet`, neues Terminal öffnen, dann `flutter clean && flutter build windows`. |
 | `CocoaPods not installed` | `brew install cocoapods`, dann `flutter clean && flutter pub get`. |
 | iOS: „No profiles for … were found“ | In Xcode bei Signing ein Team wählen und eine eigene Bundle-ID eintragen. |
 | iOS: App startet nach einer Woche nicht mehr | Kostenloses Profil abgelaufen, neu mit `flutter run` installieren. |
