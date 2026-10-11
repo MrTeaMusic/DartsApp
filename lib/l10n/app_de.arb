@@ -609,5 +609,174 @@
         "type": "String"
       }
     }
-  }
+  },
+  "statsTabOverview": "Überblick",
+  "statsTabScoring": "Scoring",
+  "statsTabDoubles": "Doppel & Finish",
+  "statsTabGames": "Spiele",
+  "statsTabRecords": "Rekorde",
+  "statsKeyFigures": "Kennzahlen",
+  "statsCompareHint": "Pfeile: Vergleich mit den {days} Tagen davor",
+  "@statsCompareHint": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "statsPrevious": "Vorher: {value}",
+  "@statsPrevious": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "statsTrainingTime": "Trainingszeit",
+  "statsAccuracy": "Trefferquote aufs Ziel",
+  "statsAccuracyCaption": "{count} Darts mit Ziel",
+  "@statsAccuracyCaption": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsDoubleCaption": "{count} Darts aufs Double",
+  "@statsDoubleCaption": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsTrebleCaption": "{count} Darts aufs Triple",
+  "@statsTrebleCaption": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsActivityWeekly": "Darts pro Woche",
+  "statsPattern": "Trainingsmuster",
+  "statsWeekdays": "Wochentage",
+  "statsWeekdayNames": "Mo,Di,Mi,Do,Fr,Sa,So",
+  "statsDayParts": "Tageszeit",
+  "statsDayMorning": "Morgen",
+  "statsDayAfternoon": "Nachmittag",
+  "statsDayEvening": "Abend",
+  "statsDayNight": "Nacht",
+  "statsHours": "{from}–{to} Uhr",
+  "@statsHours": {
+    "placeholders": {
+      "from": {
+        "type": "int"
+      },
+      "to": {
+        "type": "int"
+      }
+    }
+  },
+  "statsBestDayPart": "Dein bester Average: {part}, Ø {value}",
+  "@statsBestDayPart": {
+    "placeholders": {
+      "part": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "statsSessionsDarts": "{sessions} Sessions · {darts} Darts",
+  "@statsSessionsDarts": {
+    "placeholders": {
+      "sessions": {
+        "type": "int"
+      },
+      "darts": {
+        "type": "int"
+      }
+    }
+  },
+  "statsFirst9": "First 9",
+  "statsFirst9Caption": "Ø der ersten 9 Darts (X01)",
+  "statsSpread": "Streuung",
+  "statsSpreadCaption": "± Punkte je Aufnahme, kleiner ist konstanter",
+  "statsHighestVisit": "Höchste Aufnahme",
+  "statsTons": "Aufnahmen 100+",
+  "statsTon40s": "Aufnahmen 140+",
+  "statsMaxes": "180er",
+  "statsUnder40": "Aufnahmen unter 40",
+  "statsRateOfVisits": "{percent} der Aufnahmen",
+  "@statsRateOfVisits": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "statsAverageTrend": "3-Dart-Average pro Trainingstag",
+  "statsMovingAverage": "Gleitender Durchschnitt ({count})",
+  "@statsMovingAverage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsLegendValue": "Wert",
+  "statsDistribution": "Punkte pro Aufnahme",
+  "statsDistributionHint": "{count} volle Aufnahmen (3 Darts) aus Scoring-Spielen und X01",
+  "@statsDistributionHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsTreblesPerNumber": "Triple-Quote pro Zahl",
+  "statsTreblesHint": "Darts, bei denen das Spiel ein Triple als Ziel vorgab, z. B. T20-Training oder Highscore-Jagd. Zahlen ab 3 Versuchen.",
+  "statsNoData": "Im Zeitraum gibt es dafür noch keine Daten.",
+  "statsDoublesPerNumber": "Doubles im Detail",
+  "statsDoublesHint": "Darts, bei denen genau ein Double das Ziel war: Bob's 27, Around the Clock auf Doubles und Checkout-Darts aufs vorgeschlagene Double.",
+  "statsStrongestDouble": "Stärkstes Double",
+  "statsWeakestDouble": "Schwächstes Double",
+  "statsDoublesLegend": "Grün: besser als deine Double-Quote, rot: schlechter. Stärkstes und schwächstes Double zählen ab {count} Versuchen.",
+  "@statsDoublesLegend": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsCheckoutByRange": "Checkout-Quote nach Rest",
+  "statsLast": "Zuletzt",
+  "statsLastFive": "Ø letzte 5",
+  "statsBestOn": "am {date}",
+  "@statsBestOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "statsRecordsHint": "Über alle Zeiträume, für das aktive Profil.",
+  "statsRecordBestAverage": "Bester Average einer Session",
+  "statsRecordBestFirst9": "Beste First 9",
+  "statsRecordHighestVisit": "Höchste Aufnahme",
+  "statsRecordHighestCheckout": "Höchstes Finish",
+  "statsRecordMost180s": "Meiste 180er in einer Session",
+  "statsRecordMostDartsDay": "Meiste Darts an einem Tag",
+  "statsRecordLongestStreak": "Längste Serie",
+  "statsGameBests": "Bestwerte je Spiel",
+  "statsRecordsEmpty": "Noch keine Rekorde. Spiel ein paar Trainings, dann tauchen sie hier auf.",
+  "statsMetricBestScore": "Bester Stand",
+  "statsMetricMarks": "Marks",
+  "statsMetricReached": "Erreicht",
+  "statsMetricTrebles": "Triples",
+  "statsMetricRounds": "Runden",
+  "statsMetricAttempts": "Versuche",
+  "statsMetricEndTarget": "Letztes Ziel"
 }

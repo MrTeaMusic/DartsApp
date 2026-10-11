@@ -23,7 +23,7 @@ Würfe kommen live vom Autodarts-Board, aus einem Simulator oder per manueller E
 | Checkout-Training, Around the Clock, Bullseye-Drill, T20-Training, Score-Ziel, Highscore-Jagd | fertig |
 | Lokale Datenbank (drift/SQLite): Sessions und jeder einzelne Wurf | fertig |
 | Cricket (Solo), 121, Bob's 27, Drei-Treffer-Runde, Around the World mit Überspringen | fertig |
-| Statistik (Average, Quoten, Verlauf, Darts pro Tag, Heatmap, Treffer pro Zahl) | fertig |
+| Statistik (Überblick mit Vorzeitraum-Vergleich, Scoring-Verteilung, Doubles im Detail, Verläufe, Trainingsmuster, Rekorde) | fertig |
 | Ziele und Serien | fertig |
 | Mehrere Profile | fertig |
 | Export/Import (JSON-Backup, CSV) | fertig |
@@ -82,9 +82,9 @@ lib/
       data/          GameRepository (Speichern, Verlauf, schwache Checkouts)
       presentation/  Spielauswahl, Einstellungen, Spielbildschirm, ActiveGameController
     stats/
-      domain/        StatsCalculator, Ziele (reine Berechnung)
+      domain/        StatsCalculator, Ziel je Dart (Abspielen der Session), Ziele (reine Berechnung)
       data/          StatsRepository
-      presentation/  Statistik-Bildschirm mit fl_chart, Ziele-Karte
+      presentation/  Statistik-Bildschirm mit Reitern (fl_chart), Ziele-Karte
     profiles/        Profile und aktives Profil
     backup/          JSON/CSV-Export, Import, Dateidialoge
     home/ simulator/ settings/   Bildschirme

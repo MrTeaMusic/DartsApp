@@ -41,6 +41,19 @@ Future<void> seed(ProviderContainer c, {int? playerId}) async {
   await repo.endSession(sid, result: const GameResult(metrics: {'points': 140, 'average': 140.0}, summary: []), finished: true);
 }
 
+/// Legt eine Bob's-27-Session an: D1 zweimal getroffen, D2 verfehlt.
+Future<void> seedBobs(ProviderContainer c) async {
+  final repo = c.read(gameRepositoryProvider);
+  final player = await c.read(profileRepositoryProvider).resolve(null);
+  final sid = await repo.startSession(playerId: player, gameId: 'bobs_27', config: const {}, seed: 1);
+  for (final (i, n) in ['D1', 'S1', 'D1', 'S2', 'S2', 'MISS'].indexed) {
+    await repo.addThrow(
+        sessionId: sid, playerId: player, gameId: 'bobs_27', seq: i, visitIndex: i ~/ 3, counted: true, dart: d(n));
+  }
+  await repo.endSession(sid,
+      result: const GameResult(metrics: {'score': 27, 'hits': 2, 'darts': 6}, summary: []), finished: false);
+}
+
 Future<void> openStats(WidgetTester tester) async {
   await tester.tap(find.text('Statistik').first);
   await tester.pumpAndSettle();
@@ -57,28 +70,85 @@ void main() {
   });
 
   for (final size in [const Size(1280, 900), const Size(390, 844)]) {
-    testWidgets('Statistik mit Daten (${size.width.toInt()} px)', (tester) async {
+    testWidgets('Statistik mit Daten: alle Reiter (${size.width.toInt()} px)', (tester) async {
       final c = await pumpApp(tester, size: size);
       await seed(c);
+      await seedBobs(c);
       await openStats(tester);
 
+      // Überblick
       expect(find.byKey(const Key('stat-average')), findsOneWidget);
       expect(find.text('140,0'), findsWidgets);
       expect(find.text('1 Tag'), findsOneWidget);
       expect(find.text('Heute trainiert · Rekord: 1'), findsOneWidget);
+      final overview = find.byKey(const Key('stats-list-overview'));
+      await tester.dragUntilVisible(find.byKey(const Key('stats-activity')), overview, const Offset(0, -300));
+      expect(find.byKey(const Key('stats-activity')), findsOneWidget);
 
-      final list = find.descendant(of: find.byKey(const Key('stats-list')), matching: find.byType(Scrollable)).first;
-      await tester.scrollUntilVisible(find.byKey(const Key('stats-heatmap')), 300, scrollable: list);
+      // Scoring
+      await tester.tap(find.byKey(const Key('stats-tab-scoring')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('stat-scoring-average')), findsOneWidget);
+      expect(find.byKey(const Key('stat-180s')), findsOneWidget);
+      final scoring = find.byKey(const Key('stats-list-scoring'));
+      await tester.dragUntilVisible(find.byKey(const Key('stats-heatmap')), scoring, const Offset(0, -300));
       expect(find.byKey(const Key('stats-heatmap')), findsOneWidget);
 
-      await tester.scrollUntilVisible(find.byKey(const Key('period-week')), -300, scrollable: list);
-      await tester.drag(list, const Offset(0, 200));
+      // Doppel & Finish: Bob's 27 mit D1 (2 von 3) und D2 (0 von 3).
+      await tester.tap(find.byKey(const Key('stats-tab-doubles')));
       await tester.pumpAndSettle();
+      expect(find.byKey(const Key('stat-double-rate')), findsOneWidget);
+      expect(find.text('33,3 %'), findsWidgets);
+      final doubles = find.byKey(const Key('stats-list-doubles'));
+      await tester.dragUntilVisible(find.byKey(const Key('double-1')), doubles, const Offset(0, -300));
+      expect(find.descendant(of: find.byKey(const Key('double-1')), matching: find.text('2/3')), findsOneWidget);
+
+      // Spiele
+      await tester.tap(find.byKey(const Key('stats-tab-games')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('stats-game-trend')), findsOneWidget);
+
+      // Rekorde
+      await tester.tap(find.byKey(const Key('stats-tab-records')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('record-highestVisit')), findsOneWidget);
+
       await tester.tap(find.byKey(const Key('period-week')));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('Spielfilter und Kennzahl im Verlauf wählen', (tester) async {
+    final c = await pumpApp(tester);
+    await seed(c);
+    await seedBobs(c);
+    await openStats(tester);
+    expect(find.byKey(const Key('stat-average')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('stats-game')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text("Bob's 27").last);
+    await tester.pumpAndSettle();
+    // Bob's 27 hat keinen Average, aber eine Double-Quote.
+    expect(find.byKey(const Key('stat-average')), findsNothing);
+    expect(find.text('33,3 %'), findsWidgets);
+
+    await tester.tap(find.byKey(const Key('stats-tab-games')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('metric-score')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('metric-hits')));
+    await tester.pumpAndSettle();
+    expect(tester.widget<ChoiceChip>(find.byKey(const Key('metric-hits'))).selected, isTrue);
+
+    await tester.tap(find.byKey(const Key('stats-game')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Alle Spiele').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('stats-tab-overview')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('stat-average')), findsOneWidget);
+  });
 
   testWidgets('Ziel anlegen und Fortschritt sehen', (tester) async {
     final c = await pumpApp(tester);
