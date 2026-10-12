@@ -248,11 +248,10 @@ class _BracketMatch extends StatelessWidget {
                 padding: const EdgeInsets.only(left: AppSpacing.m - 2, right: AppSpacing.s),
                 child: Align(
                   alignment: Alignment.centerLeft,
-                  child: Text(
-                    tv ? name.toUpperCase() : name,
-                    key: winner ? Key('tournament-winner-${match.id}') : null,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  child: BracketName(
+                    name,
+                    upperCase: tv,
+                    textKey: winner ? Key('tournament-winner-${match.id}') : null,
                     style: nameStyle,
                   ),
                 ),
@@ -321,6 +320,54 @@ class _BracketMatch extends StatelessWidget {
   }
 }
 
+/// Kurzform eines Namens für enge Felder: „Michael van Gerwen“ wird zu
+/// „M. van Gerwen“. Einteilige Namen bleiben, wie sie sind.
+String shortPlayerName(String name) {
+  final parts = name.trim().split(RegExp(r'\s+'));
+  if (parts.length < 2 || parts.first.isEmpty) return name;
+  return '${parts.first.characters.first}. ${parts.skip(1).join(' ')}';
+}
+
+/// Spielername in einem Feld fester Breite. Passt der volle Name nicht,
+/// steht dort die Kurzform (der volle Name als Tooltip); reicht auch die
+/// nicht, wird mit „…“ gekürzt.
+class BracketName extends StatelessWidget {
+  const BracketName(this.name, {super.key, required this.style, this.upperCase = false, this.textKey, this.textAlign});
+
+  final String name;
+  final TextStyle style;
+  final bool upperCase;
+  final Key? textKey;
+  final TextAlign? textAlign;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, c) {
+        String shown(String s) => upperCase ? s.toUpperCase() : s;
+        final full = shown(name);
+        final painter = TextPainter(
+          text: TextSpan(text: full, style: DefaultTextStyle.of(context).style.merge(style)),
+          textDirection: Directionality.of(context),
+          textScaler: MediaQuery.textScalerOf(context),
+          maxLines: 1,
+        )..layout();
+        final fits = painter.width <= c.maxWidth;
+        painter.dispose();
+        final text = Text(
+          fits ? full : shown(shortPlayerName(name)),
+          key: textKey,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: textAlign,
+          style: style,
+        );
+        return fits ? text : Tooltip(message: name, child: text);
+      },
+    );
+  }
+}
+
 /// Feld rechts vom Finale: Pokal und Name des Siegers oder „offen“.
 class _ChampionSlot extends StatelessWidget {
   const _ChampionSlot({required this.tournament});
@@ -375,11 +422,10 @@ class _ChampionSlot extends StatelessWidget {
               color: decided ? accent : colors.textMuted.withValues(alpha: 0.6),
             ),
             const SizedBox(height: AppSpacing.s),
-            Text(
-              look.id == DartLookId.tv ? name.toUpperCase() : name,
-              key: const Key('tournament-champion-name'),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            BracketName(
+              name,
+              upperCase: look.id == DartLookId.tv,
+              textKey: const Key('tournament-champion-name'),
               textAlign: TextAlign.center,
               style: look.sectionTitle.copyWith(
                 fontSize: look.id == DartLookId.tv ? 22 : 16,

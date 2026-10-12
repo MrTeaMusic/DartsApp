@@ -112,6 +112,9 @@ class TournamentScreen extends ConsumerWidget {
   }
 }
 
+/// Kartenbreite, bis zu der Knöpfe die ganze Breite nutzen (Telefon).
+const double _phoneCard = 480;
+
 class _StatusCard extends ConsumerWidget {
   const _StatusCard({required this.tournament});
   final Tournament tournament;
@@ -205,12 +208,14 @@ class _StatusCard extends ConsumerWidget {
                     play,
                   ],
                 )
+              // Schmal: Knopf darunter, auf dem Telefon über die ganze
+              // Breite, sonst mit eigener Breite rechtsbündig.
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     info,
                     const SizedBox(height: AppSpacing.l),
-                    play,
+                    if (c.maxWidth < _phoneCard) play else Align(alignment: Alignment.centerRight, child: play),
                   ],
                 ),
         ),
@@ -225,24 +230,29 @@ class _StatusCard extends ConsumerWidget {
         children: [
           if (out != null) Text(l10n.tourEliminated(l10n.tourRoundName(out.round)), style: theme.textTheme.titleMedium),
           const SizedBox(height: AppSpacing.m),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  key: const Key('tournament-sim-round'),
-                  onPressed: controller.simulateRound,
-                  child: Text(l10n.tourSimRound, textAlign: TextAlign.center),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.m),
-              Expanded(
-                child: FilledButton(
-                  key: const Key('tournament-sim-all'),
-                  onPressed: controller.simulateToEnd,
-                  child: Text(l10n.tourSimAll, textAlign: TextAlign.center),
-                ),
-              ),
-            ],
+          LayoutBuilder(
+            builder: (context, c) {
+              final simRound = OutlinedButton(
+                key: const Key('tournament-sim-round'),
+                onPressed: controller.simulateRound,
+                child: Text(l10n.tourSimRound, textAlign: TextAlign.center),
+              );
+              final simAll = FilledButton(
+                key: const Key('tournament-sim-all'),
+                onPressed: controller.simulateToEnd,
+                child: Text(l10n.tourSimAll, textAlign: TextAlign.center),
+              );
+              // Telefon: beide Knöpfe teilen sich die Breite, sonst rechtsbündig.
+              final phone = c.maxWidth < _phoneCard;
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (phone) Expanded(child: simRound) else simRound,
+                  const SizedBox(width: AppSpacing.m),
+                  if (phone) Expanded(child: simAll) else simAll,
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -265,6 +275,10 @@ class _BracketView extends StatefulWidget {
 class _BracketViewState extends State<_BracketView> {
   ScrollController? _scroll;
 
+  /// Runde, auf die die Ansicht zuletzt ausgerichtet wurde. Das Turnier wird
+  /// an Ort und Stelle geändert, daher merkt sich der State die Zahl.
+  int? _round;
+
   @override
   void dispose() {
     _scroll?.dispose();
@@ -277,10 +291,23 @@ class _BracketViewState extends State<_BracketView> {
     final g = BracketGeometry.forWidth(widget.viewport - widget.page * 2);
     final content = g.size.width + widget.page * 2;
     final overflow = (content - widget.viewport).clamp(0.0, double.infinity);
-    _scroll ??= ScrollController(
-      // Vorrunde und laufende Runde nebeneinander, die Linien dazwischen.
-      initialScrollOffset: (t.currentRound < 1 ? 0.0 : g.x(t.currentRound - 1)).clamp(0.0, overflow),
-    );
+    // Vorrunde und laufende Runde nebeneinander, die Linien dazwischen.
+    final target = (t.currentRound < 1 ? 0.0 : g.x(t.currentRound - 1)).clamp(0.0, overflow);
+    if (_scroll == null) {
+      _scroll = ScrollController(initialScrollOffset: target);
+    } else if (_round != t.currentRound) {
+      // Runde beendet: zur neuen Runde mitscrollen.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final scroll = _scroll;
+        if (!mounted || scroll == null || !scroll.hasClients) return;
+        scroll.animateTo(
+          target.clamp(0.0, scroll.position.maxScrollExtent),
+          duration: const Duration(milliseconds: 450),
+          curve: Curves.easeOutCubic,
+        );
+      });
+    }
+    _round = t.currentRound;
     return Scrollbar(
       controller: _scroll,
       child: SingleChildScrollView(
