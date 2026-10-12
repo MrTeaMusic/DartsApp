@@ -91,6 +91,23 @@ Zugriff im Widget:
   `LookPalettes`, Typografie-Zweig in `AppTypography.textTheme`, Name/Text in
   `app_de.arb` und eine Kachel in der Auswahl der Optionen.
 
+## Scheiben
+
+Unabhängig vom Look wählt man unter Optionen → Darstellung → Scheibe die Optik
+der Dartscheibe (`settings.boardStyle`, Standard: Turnier):
+
+- **Turnier:** breiter schwarzer Fangring, silberne Zahlen, Sisal-Struktur, schmaler Metallrand.
+- **Türkis:** noch breiterer Fangring mit großen türkisen Zahlen entlang des Rings und türkisem Außenring.
+- **Flach:** die grafische Scheibe in den Farben des Looks, ohne Schatten und Struktur.
+
+Maße und Farben stehen in `lib/features/board/presentation/board_style.dart`
+(`BoardSpec`), gezeichnet wird in `dartboard_painter.dart`. Die Feldgeometrie
+ist bei allen gleich; nur `frameExtent` (wie viel Platz die Scheibe samt Rand
+und Schatten braucht) unterscheidet sich, deshalb nehmen `toBoard`, `toCanvas`
+und `ringRadius` die Scheibe als Parameter. Realistische Scheiben haben einen
+Schlagschatten und einen leichten Lichtkranz, damit sie sich auf hellem wie
+dunklem Hintergrund abheben.
+
 ## Schriften
 
 * **Inter** (Fließtext, Clean, Lab) und **Barlow Condensed** (Überschriften und

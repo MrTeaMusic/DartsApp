@@ -12,6 +12,7 @@ import 'package:dartlab/features/matches/domain/match_format.dart';
 import 'package:dartlab/features/matches/domain/match_session.dart';
 import 'package:dartlab/features/matches/presentation/match_controller.dart';
 import 'package:dartlab/features/matches/presentation/match_routes.dart';
+import 'package:dartlab/features/matches/presentation/tournament_bracket.dart';
 import 'package:dartlab/features/matches/presentation/tournament_controller.dart';
 import 'package:dartlab/features/plans/presentation/plan_routes.dart';
 import 'package:flutter/material.dart';
@@ -189,5 +190,63 @@ void main() {
       await c.read(matchControllerProvider.notifier).close();
       await frames(tester, 3);
     });
+  }
+
+  // Turnierbaum mit Linien in jedem Look, auf dem Telefon und am Desktop.
+  for (final look in DartLookId.values) {
+    for (final size in const [Size(390, 844), Size(1440, 900)]) {
+      testWidgets('Look ${look.name}: Turnierbaum bei ${size.width.toInt()} px', (tester) async {
+        final c = await pumpApp(tester, size: size, prefs: {'settings.look': look.name});
+        final ctrl = c.read(tournamentControllerProvider.notifier);
+        await ctrl.create(humanName: 'Ich', difficulty: 0.5, bestOf: const [3, 3, 5, 7], seed: 3);
+        final t = c.read(tournamentControllerProvider)!;
+        final h = t.humanIndex;
+        // Achtelfinale und Viertelfinale gespielt, Halbfinale offen.
+        for (var r = 0; r < 2; r++) {
+          final m = t.humanMatch!;
+          t.record(m, winner: h, scoreA: m.a == h ? 2 : 1, scoreB: m.a == h ? 1 : 2);
+          await ctrl.simulateRound();
+        }
+        c.read(routerProvider).go(MatchRoutes.tournament);
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+
+        expect(find.byKey(const Key('tournament-bracket-lines')), findsOneWidget);
+        final paint = tester.widget<CustomPaint>(find.byKey(const Key('tournament-bracket-lines')));
+        final painter = paint.painter! as BracketConnectorPainter;
+        final segments = painter.segments();
+        // 4 + 2 + 1 Treffpunkte mit je drei Linien, dazu die Linie zum Sieger.
+        expect(segments.length, 7 * 3 + 1);
+        expect(segments.where((s) => s.tier == BracketLineTier.human).length, 4);
+        expect(segments.where((s) => s.tier == BracketLineTier.open), isNotEmpty);
+        expect(find.byKey(const Key('tournament-champion-slot')), findsOneWidget);
+        expect(find.byKey(Key('tournament-winner-${t.rounds[1][0].id}')), findsOneWidget);
+
+        // Spiele der zweiten Runde sitzen mittig zwischen ihren Zubringern.
+        for (var slot = 0; slot < 4; slot++) {
+          final y = tester.getCenter(find.byKey(Key('tournament-match-r1-m$slot'))).dy;
+          final a = tester.getCenter(find.byKey(Key('tournament-match-r0-m${slot * 2}'))).dy;
+          final b = tester.getCenter(find.byKey(Key('tournament-match-r0-m${slot * 2 + 1}'))).dy;
+          expect(y, moreOrLessEquals((a + b) / 2, epsilon: 0.5));
+          expect(y, greaterThan(a));
+          expect(y, lessThan(b));
+        }
+        final finalY = tester.getCenter(find.byKey(const Key('tournament-match-r3-m0'))).dy;
+        expect(tester.getCenter(find.byKey(const Key('tournament-champion-slot'))).dy, moreOrLessEquals(finalY, epsilon: 0.5));
+
+        // Am Desktop hat „Spielen“ seine eigene Breite statt der ganzen Zeile.
+        final play = tester.getSize(find.byKey(const Key('tournament-play')));
+        if (size.width > 1000) {
+          expect(play.width, lessThan(320));
+        }
+
+        // Der Baum lässt sich horizontal scrollen, ohne Fehler.
+        await tester.drag(find.byKey(const Key('tournament-bracket-scroll')), const Offset(-600, 0));
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.byKey(const Key('tournament-champion-slot')));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      });
+    }
   }
 }

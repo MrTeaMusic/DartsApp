@@ -11,6 +11,7 @@ import '../domain/tournament.dart';
 import 'match_controller.dart';
 import 'match_routes.dart';
 import 'match_texts.dart';
+import 'tournament_bracket.dart';
 import 'tournament_controller.dart';
 
 /// Turnierbaum mit dem nächsten eigenen Spiel.
@@ -83,33 +84,26 @@ class TournamentScreen extends ConsumerWidget {
             )
           : LayoutBuilder(
               builder: (context, c) {
-                final wide = c.maxWidth >= 1000;
                 final look = context.look;
                 final page = look.pagePadding(c.maxWidth >= kWidePage);
+                Widget padded(Widget child) => Padding(
+                  padding: EdgeInsets.symmetric(horizontal: page),
+                  child: child,
+                );
                 return ListView(
-                  padding: EdgeInsets.fromLTRB(page, look.page * 0.5, page, page),
+                  key: const Key('tournament-scroll'),
+                  padding: EdgeInsets.only(top: look.page * 0.5, bottom: page),
                   children: [
-                    _StatusCard(tournament: t),
+                    padded(_StatusCard(tournament: t)),
                     const SizedBox(height: AppSpacing.s),
-                    Text(
-                      l10n.tourInfo(t.startScore, (t.difficulty * 100).round()),
-                      style: theme.textTheme.bodySmall?.copyWith(color: context.dartColors.textMuted),
+                    padded(
+                      Text(
+                        l10n.tourInfo(t.startScore, (t.difficulty * 100).round()),
+                        style: theme.textTheme.bodySmall?.copyWith(color: context.dartColors.textMuted),
+                      ),
                     ),
-                    const SectionGap(factor: 0.8),
-                    if (wide)
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          for (var r = 0; r < t.rounds.length; r++) ...[
-                            if (r > 0) SizedBox(width: look.gridGap + AppSpacing.xs),
-                            Expanded(
-                              child: _RoundColumn(tournament: t, round: r),
-                            ),
-                          ],
-                        ],
-                      )
-                    else
-                      for (var r = 0; r < t.rounds.length; r++) _RoundColumn(tournament: t, round: r),
+                    const SectionGap(factor: 0.6),
+                    _BracketView(tournament: t, viewport: c.maxWidth, page: page),
                   ],
                 );
               },
@@ -164,38 +158,61 @@ class _StatusCard extends ConsumerWidget {
       final opponent = m.a == h ? m.b! : m.a!;
       final saved = controller.savedMatch();
       final look = context.look;
+      final play = FilledButton.icon(
+        key: const Key('tournament-play'),
+        onPressed: () => _play(context, ref),
+        style: FilledButton.styleFrom(
+          minimumSize: const Size(0, 52),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+        ),
+        icon: Icon(saved != null ? Icons.play_circle_outline_rounded : Icons.play_arrow_rounded),
+        label: Text(saved != null ? l10n.tourResumeMatch : l10n.tourPlay),
+      );
+      final info = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Kicker(l10n.tourNextMatch, color: theme.colorScheme.primary),
+          const SizedBox(height: AppSpacing.s),
+          Text(
+            '${l10n.tourRoundName(m.round)} · ${l10n.tourBestOf(t.bestOf[m.round])}',
+            style: theme.textTheme.titleMedium,
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            '${t.entrants[h].name} ${l10n.tourVs} ${t.entrants[opponent].name}',
+            key: const Key('tournament-next'),
+            style: look.sectionTitle.copyWith(
+              fontSize: look.id == DartLookId.tv ? 34 : 26,
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
+          Text(
+            l10n.tourCpuAverage(t.botAverage(opponent).round()),
+            style: theme.textTheme.bodySmall?.copyWith(color: colors.textMuted),
+          ),
+        ],
+      );
       return HeroBackdrop(
         padding: EdgeInsets.all(look.cardPadding + AppSpacing.xs),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Kicker(l10n.tourNextMatch, color: theme.colorScheme.primary),
-            const SizedBox(height: AppSpacing.s),
-            Text(
-              '${l10n.tourRoundName(m.round)} · ${l10n.tourBestOf(t.bestOf[m.round])}',
-              style: theme.textTheme.titleMedium,
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              '${t.entrants[h].name} ${l10n.tourVs} ${t.entrants[opponent].name}',
-              key: const Key('tournament-next'),
-              style: look.sectionTitle.copyWith(
-                fontSize: look.id == DartLookId.tv ? 34 : 26,
-                color: theme.colorScheme.onSurface,
-              ),
-            ),
-            Text(
-              l10n.tourCpuAverage(t.botAverage(opponent).round()),
-              style: theme.textTheme.bodySmall?.copyWith(color: colors.textMuted),
-            ),
-            const SizedBox(height: AppSpacing.l),
-            FilledButton.icon(
-              key: const Key('tournament-play'),
-              onPressed: () => _play(context, ref),
-              icon: Icon(saved != null ? Icons.play_circle_outline_rounded : Icons.play_arrow_rounded),
-              label: Text(saved != null ? l10n.tourResumeMatch : l10n.tourPlay),
-            ),
-          ],
+        child: LayoutBuilder(
+          builder: (context, c) => c.maxWidth >= 640
+              // Breit: Knopf mit eigener Breite rechts unten neben dem Text.
+              ? Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(child: info),
+                    const SizedBox(width: AppSpacing.xl),
+                    play,
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    info,
+                    const SizedBox(height: AppSpacing.l),
+                    play,
+                  ],
+                ),
         ),
       );
     }
@@ -233,100 +250,45 @@ class _StatusCard extends ConsumerWidget {
   }
 }
 
-class _RoundColumn extends StatelessWidget {
-  const _RoundColumn({required this.tournament, required this.round});
+/// Horizontal scrollbarer Turnierbaum. Passt er nicht in die Breite, startet
+/// die Ansicht bei der laufenden Runde.
+class _BracketView extends StatefulWidget {
+  const _BracketView({required this.tournament, required this.viewport, required this.page});
   final Tournament tournament;
-  final int round;
+  final double viewport;
+  final double page;
 
   @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SectionHeader(
-          l10n.tourRoundName(round),
-          trailing: Kicker(l10n.tourBestOf(tournament.bestOf[round])),
-        ),
-        for (final m in tournament.rounds[round]) ...[
-          _MatchTile(tournament: tournament, match: m),
-          SizedBox(height: context.look.gridGap * 0.8),
-        ],
-        const SectionGap(factor: 0.6),
-      ],
-    );
-  }
+  State<_BracketView> createState() => _BracketViewState();
 }
 
-class _MatchTile extends StatelessWidget {
-  const _MatchTile({required this.tournament, required this.match});
-  final Tournament tournament;
-  final TournamentMatch match;
+class _BracketViewState extends State<_BracketView> {
+  ScrollController? _scroll;
+
+  @override
+  void dispose() {
+    _scroll?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-    final colors = context.dartColors;
-    final h = tournament.humanIndex;
-    final look = context.look;
-    final mine = match.involves(h);
-
-    Widget line(int? entrant, int score) {
-      final name = entrant == null ? l10n.tourTbd : tournament.entrants[entrant].name;
-      final winner = match.played && match.winner == entrant;
-      final human = entrant == h;
-      final style = theme.textTheme.bodyMedium?.copyWith(
-        fontWeight: winner || human ? FontWeight.w700 : null,
-        color: entrant == null
-            ? colors.textMuted
-            : match.played && !winner
-            ? colors.textMuted
-            : human
-            ? theme.colorScheme.primary
-            : null,
-      );
-      return Row(
-        children: [
-          Expanded(
-            child: Text(name, overflow: TextOverflow.ellipsis, style: style),
-          ),
-          if (match.played)
-            Text(
-              '$score',
-              style: look.chipNumber.copyWith(
-                fontSize: 16,
-                color: winner ? theme.colorScheme.onSurface : colors.textMuted,
-              ),
-            ),
-        ],
-      );
-    }
-
-    final tile = Column(
-      children: [
-        line(match.a, match.scoreA),
-        const SizedBox(height: AppSpacing.xxs),
-        line(match.b, match.scoreB),
-      ],
+    final t = widget.tournament;
+    final g = BracketGeometry.forWidth(widget.viewport - widget.page * 2);
+    final content = g.size.width + widget.page * 2;
+    final overflow = (content - widget.viewport).clamp(0.0, double.infinity);
+    _scroll ??= ScrollController(
+      // Vorrunde und laufende Runde nebeneinander, die Linien dazwischen.
+      initialScrollOffset: (t.currentRound < 1 ? 0.0 : g.x(t.currentRound - 1)).clamp(0.0, overflow),
     );
-    return AppCard(
-      key: Key('tournament-match-${match.id}'),
-      padding: EdgeInsets.zero,
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Eigene Spiele mit Akzentkante.
-            Container(width: 3, color: mine ? theme.colorScheme.primary : Colors.transparent),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(AppSpacing.m - 3, AppSpacing.s, AppSpacing.m, AppSpacing.s),
-                child: tile,
-              ),
-            ),
-          ],
-        ),
+    return Scrollbar(
+      controller: _scroll,
+      child: SingleChildScrollView(
+        key: const Key('tournament-bracket-scroll'),
+        controller: _scroll,
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.fromLTRB(widget.page, 0, widget.page, AppSpacing.l),
+        child: TournamentBracket(tournament: t, geometry: g),
       ),
     );
   }
