@@ -26,6 +26,20 @@ class ScatterMarker {
   final bool hit;
 }
 
+/// Welche Teile [DartboardPainter] zeichnet.
+enum BoardLayer {
+  /// Alles.
+  all,
+
+  /// Nur die Scheibe selbst (Felder, Struktur, Drähte, Zahlen). Ändert sich
+  /// nur mit Größe, Optik und Farben und kann deshalb zwischengespeichert
+  /// werden.
+  base,
+
+  /// Nur, was sich bewegt: Treffer, Hervorhebungen, Heatmap, Streubild.
+  overlay,
+}
+
 /// Zeichnet ein Steeldartboard samt Treffern, Hervorhebungen und Heatmap.
 ///
 /// Koordinaten: siehe [BoardPoint]. Radius 1.0 = Außenkante Double-Ring.
@@ -46,7 +60,10 @@ class DartboardPainter extends CustomPainter {
     this.style = BoardStyle.tournament,
     this.markerScale = 1,
     this.viewRotation = 0,
+    this.layer = BoardLayer.all,
   });
+
+  final BoardLayer layer;
 
   final DartColors colors;
 
@@ -105,8 +122,12 @@ class DartboardPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final c = size.center(Offset.zero);
     final r = ringRadius(size, style);
-    final spec = _spec;
+    if (layer != BoardLayer.overlay) _paintBase(canvas, c, r);
+    if (layer != BoardLayer.base) _paintOverlay(canvas, size, c, r);
+  }
 
+  void _paintBase(Canvas canvas, Offset c, double r) {
+    final spec = _spec;
     _stage(canvas, c, r);
 
     // Felder
@@ -134,7 +155,9 @@ class DartboardPainter extends CustomPainter {
         _number(canvas, c, r, i, BoardGeometry.numbers[i]);
       }
     }
+  }
 
+  void _paintOverlay(Canvas canvas, Size size, Offset c, double r) {
     // Heatmap
     if (heatOpacity > 0 && heat.isNotEmpty) _heat(canvas, size, r);
 
@@ -247,18 +270,29 @@ class DartboardPainter extends CustomPainter {
     canvas.drawCircle(c, outer - r * 0.02, ring);
   }
 
-  /// Feine Sisal-Struktur, einmal pro Größe aufgezeichnet.
+  /// Feine Sisal-Struktur. Aufgezeichnet wird je Größenstufe (Viertel-
+  /// Oktaven) einmal und passend skaliert, damit beim Ändern der Größe nicht
+  /// ständig neue, große Aufzeichnungen entstehen.
   void _sisal(Canvas canvas, Offset c, double r) {
-    final key = (r * 2).round();
-    final picture = _sisalCache[key] ??= _recordSisal(r, 1.45);
+    final step = (math.log(math.max(r, 16)) / math.ln2 * 4).round();
+    final recorded = math.pow(2, step / 4).toDouble();
+    var picture = _sisalCache.remove(step);
+    if (picture == null) {
+      picture = _recordSisal(recorded, 1.45);
+      if (_sisalCache.length >= _sisalCacheSize) _sisalCache.remove(_sisalCache.keys.first)?.dispose();
+    }
+    _sisalCache[step] = picture;
     canvas.save();
     canvas.clipPath(Path()..addOval(Rect.fromCircle(center: c, radius: r * _spec.outerExtent)));
     canvas.translate(c.dx, c.dy);
+    canvas.scale(r / recorded);
     canvas.drawPicture(picture);
     canvas.restore();
   }
 
+  /// Zuletzt benutzte Aufzeichnungen, älteste zuerst.
   static final Map<int, ui.Picture> _sisalCache = {};
+  static const int _sisalCacheSize = 6;
 
   static ui.Picture _recordSisal(double r, double extent) {
     final recorder = ui.PictureRecorder();
@@ -494,5 +528,6 @@ class DartboardPainter extends CustomPainter {
       old.showNumbers != showNumbers ||
       old.markerScale != markerScale ||
       old.viewRotation != viewRotation ||
-      old.style != style;
+      old.style != style ||
+      old.layer != layer;
 }
