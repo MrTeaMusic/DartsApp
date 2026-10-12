@@ -1,3 +1,4 @@
+import '../../../core/database/app_database.dart';
 import '../../games/domain/game_catalog.dart';
 import '../../stats/domain/stats_calculator.dart';
 import 'achievements.dart';
@@ -20,10 +21,24 @@ class AchievementTracker {
     final t = AchievementTracker();
     final sessions = [...calc.sessions]..sort((a, b) => a.endedAt!.compareTo(b.endedAt!));
     for (final s in sessions) {
-      t.add(sessionFacts(calc, s));
+      t.add(_factsOf(calc, s));
     }
     return t;
   }
+
+  /// Eine abgeschlossene Session ändert sich nicht mehr: ihre Auswertung
+  /// (die das Spiel noch einmal durchspielt) wird nur einmal berechnet, nicht
+  /// nach jedem Spiel für die ganze Geschichte neu.
+  static SessionFacts _factsOf(StatsCalculator calc, SessionRow s) {
+    final key = '${s.id}|${s.uid}|${s.endedAt!.microsecondsSinceEpoch}|${s.dartCount}|${s.finished}|${s.resultJson.hashCode}';
+    final cached = _factsCache[key];
+    if (cached != null) return cached;
+    if (_factsCache.length >= _factsCacheSize) _factsCache.clear();
+    return _factsCache[key] = sessionFacts(calc, s);
+  }
+
+  static final Map<String, SessionFacts> _factsCache = {};
+  static const int _factsCacheSize = 50000;
 
   final Map<AchievementMetric, num> _values = {};
   final Set<String> _games = {};

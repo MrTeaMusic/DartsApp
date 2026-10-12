@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -106,6 +108,8 @@ class _DartboardViewState extends ConsumerState<DartboardView> with TickerProvid
 
   @override
   void dispose() {
+    _resize?.cancel();
+    _image?.dispose();
     _hit.dispose();
     _pulse.dispose();
     _heat.dispose();
@@ -137,39 +141,97 @@ class _DartboardViewState extends ConsumerState<DartboardView> with TickerProvid
                 : null,
             child: Semantics(
               label: widget.semanticsLabel,
-              child: AnimatedBuilder(
-                animation: Listenable.merge([_hit, _pulse, _heat]),
-                builder: (context, _) {
-                  final board = DartboardPainter(
-                    colors: colors,
-                    style: style,
-                    hits: [
-                      for (var i = 0; i < widget.hits.length; i++)
-                        HitMarker(widget.hits[i], latest: i == widget.hits.length - 1),
-                    ],
-                    hitProgress: _hit.value,
-                    highlighted: widget.highlighted,
-                    highlightStrength: 0.45 + 0.55 * Curves.easeInOut.transform(_pulse.value),
-                    flash: widget.lastSegment,
-                    flashStrength: 1 - Curves.easeIn.transform(_hit.value),
-                    hover: _hover,
-                    heat: widget.heat,
-                    heatOpacity: _heat.value,
-                    scatter: widget.scatter,
-                    markerScale: view.markerScale,
-                    viewRotation: view.rotation,
-                  );
-                  return CustomPaint(
+              child: Stack(children: [
+                // Die Scheibe selbst ändert sich nur mit Größe und Optik: einmal
+                // als Bild gerastert statt in jedem Frame neu gezeichnet.
+                RepaintBoundary(
+                  child: CustomPaint(
                     size: view.size,
-                    painter: focus == null ? board : _ZoomPainter(board, view),
-                  );
-                },
-              ),
+                    painter: _ImagePainter(_baseImage(context, view, style, colors), _imageKey!),
+                  ),
+                ),
+                // Treffer und Hervorhebungen bewegen sich: nur diese Ebene wird
+                // bei jeder Animation neu gezeichnet.
+                RepaintBoundary(
+                  child: AnimatedBuilder(
+                    animation: Listenable.merge([_hit, _pulse, _heat]),
+                    builder: (context, _) {
+                      final board = DartboardPainter(
+                        colors: colors,
+                        style: style,
+                        layer: BoardLayer.overlay,
+                        hits: [
+                          for (var i = 0; i < widget.hits.length; i++)
+                            HitMarker(widget.hits[i], latest: i == widget.hits.length - 1),
+                        ],
+                        hitProgress: _hit.value,
+                        highlighted: widget.highlighted,
+                        highlightStrength: 0.45 + 0.55 * Curves.easeInOut.transform(_pulse.value),
+                        flash: widget.lastSegment,
+                        flashStrength: 1 - Curves.easeIn.transform(_hit.value),
+                        hover: _hover,
+                        heat: widget.heat,
+                        heatOpacity: _heat.value,
+                        scatter: widget.scatter,
+                        markerScale: view.markerScale,
+                        viewRotation: view.rotation,
+                      );
+                      return CustomPaint(
+                        size: view.size,
+                        painter: focus == null ? board : _ZoomPainter(board, view),
+                      );
+                    },
+                  ),
+                ),
+              ]),
             ),
           ),
         );
       }),
     );
+  }
+
+  // Gerasterte Scheibe und wofür sie gilt.
+  ui.Image? _image;
+  _BaseKey? _imageKey;
+  Timer? _resize;
+
+  /// Die Scheibe als Bild in Pixeln des Bildschirms. Ändert sich nur die
+  /// Größe (z. B. während der Doppel-Zoom ein- oder ausfährt), wird das
+  /// bisherige Bild gestreckt, bis die Größe wieder still steht.
+  ui.Image _baseImage(BuildContext context, _Viewport view, BoardStyle style, DartColors colors) {
+    final key = _BaseKey(view, style, colors, MediaQuery.devicePixelRatioOf(context));
+    final current = _image;
+    final old = _imageKey;
+    if (current != null && old == key) return current;
+    if (current != null && old != null && old.sameExceptSize(key)) {
+      _resize?.cancel();
+      _resize = Timer(const Duration(milliseconds: 120), () {
+        if (mounted) setState(() => _imageKey = null);
+      });
+      return current;
+    }
+    _resize?.cancel();
+    final base = DartboardPainter(
+      colors: colors,
+      style: style,
+      layer: BoardLayer.base,
+      markerScale: view.markerScale,
+      viewRotation: view.rotation,
+    );
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder)..scale(key.pixelRatio);
+    (widget.focus == null ? base : _ZoomPainter(base, view)).paint(canvas, view.size);
+    final picture = recorder.endRecording();
+    final image = picture.toImageSync(
+      math.max(1, (view.size.width * key.pixelRatio).ceil()),
+      math.max(1, (view.size.height * key.pixelRatio).ceil()),
+    );
+    picture.dispose();
+    current?.dispose();
+    _image = image;
+    _imageKey = key;
+    return image;
   }
 
   void _setHover(Segment? s) {
@@ -221,6 +283,58 @@ class _Viewport {
     final p = Offset(v.dx * cos - v.dy * sin, v.dx * sin + v.dy * cos) + target;
     return DartboardPainter.toBoard(p, board, style);
   }
+}
+
+/// Wofür ein gerastertes Bild der Scheibe gilt.
+@immutable
+class _BaseKey {
+  const _BaseKey(this.view, this.style, this.colors, this.pixelRatio);
+  final _Viewport view;
+  final BoardStyle style;
+  final DartColors colors;
+  final double pixelRatio;
+
+  /// Gleich bis auf die Größe der Fläche (bei gleicher Form).
+  bool sameExceptSize(_BaseKey o) =>
+      style == o.style &&
+      identical(colors, o.colors) &&
+      pixelRatio == o.pixelRatio &&
+      view.rotation == o.view.rotation &&
+      view.isZoom == o.view.isZoom &&
+      (view.size.aspectRatio - o.view.size.aspectRatio).abs() < 0.01;
+
+  @override
+  bool operator ==(Object other) =>
+      other is _BaseKey &&
+      sameExceptSize(other) &&
+      view.size == other.view.size &&
+      view.board == other.view.board &&
+      view.target == other.view.target;
+
+  @override
+  int get hashCode => Object.hash(style, colors, pixelRatio, view.size, view.board, view.target, view.rotation);
+}
+
+/// Zeichnet die gerasterte Scheibe: Pixel für Pixel, oder gestreckt, solange
+/// die Fläche gerade ihre Größe ändert.
+class _ImagePainter extends CustomPainter {
+  _ImagePainter(this.image, this.key);
+  final ui.Image image;
+  final _BaseKey key;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final scale = size.width / key.view.size.width / key.pixelRatio;
+    canvas.drawImageRect(
+      image,
+      Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
+      Rect.fromLTWH(0, 0, image.width * scale, image.height * scale),
+      Paint()..filterQuality = FilterQuality.medium,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_ImagePainter old) => !identical(old.image, image);
 }
 
 /// Zeichnet den Ausschnitt einer großen Scheibe in die kleine Fläche.

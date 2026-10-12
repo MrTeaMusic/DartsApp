@@ -142,6 +142,9 @@ class StatsCalculator {
   /// Wie [dayOf], aber zwischengespeichert: Ein lokales Datum zu bauen ist
   /// teuer, und es gibt viele Würfe, aber wenige Tage.
   DateTime _dayOf(DateTime t) => _days.putIfAbsent(t.year * 10000 + t.month * 100 + t.day, () => dayOf(t));
+
+  /// [dayOf] mit Zwischenspeicher, für viele Würfe am Stück.
+  DateTime cachedDayOf(DateTime t) => _dayOf(t);
   final Map<int, DateTime> _days = {};
   static DateTime weekOf(DateTime t) {
     final d = dayOf(t);

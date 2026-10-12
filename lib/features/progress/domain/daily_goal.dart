@@ -74,7 +74,7 @@ Map<DateTime, DayActivity> dailyActivity(StatsCalculator calc) {
     if (dur > StatsCalculator.maxSessionDuration) dur = StatsCalculator.maxSessionDuration;
     minutes[day] = (minutes[day] ?? 0) + dur.inSeconds / 60;
     for (final t in calc.countedOf(s)) {
-      final d = StatsCalculator.dayOf(t.timestamp);
+      final d = calc.cachedDayOf(t.timestamp);
       darts[d] = (darts[d] ?? 0) + 1;
     }
   }
