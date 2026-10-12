@@ -1,3 +1,4 @@
+import '../games/checkout/setup_advisor.dart';
 import '../../../board/domain/segment.dart';
 
 /// Was im Spiel gerade passiert ist. Die UI übersetzt den Typ in Text.
@@ -91,6 +92,7 @@ class GameDisplay {
     required this.headlineKey,
     this.stats = const [],
     this.suggestion,
+    this.setup,
     this.progress,
     this.progressLabel,
   });
@@ -104,6 +106,9 @@ class GameDisplay {
 
   /// Wurfvorschlag (Checkout).
   final List<Segment>? suggestion;
+
+  /// Stell-Vorschlag, wenn mit den restlichen Darts kein Finish mehr geht.
+  final SetupPlan? setup;
 
   /// Fortschritt 0–1.
   final double? progress;

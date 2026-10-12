@@ -66,6 +66,27 @@ void main() {
     expect(planned.style?.color, DartColors.dark.highlight);
   });
 
+  testWidgets('Geht kein Finish mehr, zeigen die freien Felder blau, wie man sich stellt', (tester) async {
+    final c = await startGame(tester, 'x01', config: {'startScore': 170});
+    expect(find.byKey(const Key('checkout-route-label')), findsOneWidget);
+    expect(find.byKey(const Key('setup-route-label')), findsNothing);
+
+    // Daneben: 170 geht mit zwei Darts nicht mehr, also stellen.
+    final source = c.read(dartSourceProvider) as SimulatorSource;
+    source.throwAt(const BoardPoint(0, 1.3));
+    await pumpFrames(tester);
+    final game = c.read(activeGameProvider)!.game;
+    expect(game.display.suggestion, isNull);
+    final setup = game.display.setup!;
+    expect(find.byKey(const Key('checkout-route-label')), findsNothing);
+    expect(find.text('STELLEN AUF ${setup.leave}'), findsOneWidget);
+    for (var i = 0; i < setup.darts.length; i++) {
+      expect(slotText(tester, i + 1), 'planned:${setup.darts[i].name}');
+    }
+    final planned = tester.widget<Text>(find.descendant(of: find.byKey(const Key('dart-slot-1')), matching: find.byType(Text)).last);
+    expect(planned.style?.color, DartColors.dark.setupHint);
+  });
+
   testWidgets('Triple-Treffer sind lila, Doubles grün', (tester) async {
     final c = await startGame(tester, 'highscore_hunt');
     final source = c.read(dartSourceProvider) as SimulatorSource;

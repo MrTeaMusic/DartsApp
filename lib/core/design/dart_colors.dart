@@ -5,6 +5,7 @@ import 'tokens.dart';
 /// App-spezifische Farben, die Material nicht abdeckt. Abrufbar über
 /// `context.dartColors`. Jeder Look (siehe `looks.dart`) liefert eigene Werte;
 /// die Bedeutungen bleiben gleich: [highlight] = geplanter Checkout-Weg,
+/// [setupHint] = Stell-Vorschlag, wenn kein Finish mehr geht,
 /// [tripleHit] = Triple (lila), [doubleHit] = Double (grün).
 @immutable
 class DartColors extends ThemeExtension<DartColors> {
@@ -18,6 +19,7 @@ class DartColors extends ThemeExtension<DartColors> {
     required this.boardNumbers,
     required this.hitGlow,
     required this.highlight,
+    this.setupHint = const Color(0xFF4FC3F7),
     required this.success,
     required this.warning,
     required this.danger,
@@ -49,6 +51,9 @@ class DartColors extends ThemeExtension<DartColors> {
 
   /// Empfohlener Wurf (Checkout-Weg) und Zielhinweise: gelb.
   final Color highlight;
+
+  /// Stell-Vorschlag (kein Checkout mehr möglich).
+  final Color setupHint;
   final Color success;
   final Color warning;
   final Color danger;
@@ -126,6 +131,7 @@ class DartColors extends ThemeExtension<DartColors> {
     boardNumbers: Color(0xFFF4F5F2),
     hitGlow: Color(0xFF1FA855),
     highlight: Color(0xFFD99400),
+    setupHint: Color(0xFF0277BD),
     success: Color(0xFF1FA855),
     warning: Color(0xFFC77700),
     danger: Color(0xFFE5352B),
@@ -150,6 +156,7 @@ class DartColors extends ThemeExtension<DartColors> {
   DartColors copyWith({
     Color? hitGlow,
     Color? highlight,
+    Color? setupHint,
     Color? success,
     Color? warning,
     Color? danger,
@@ -178,6 +185,7 @@ class DartColors extends ThemeExtension<DartColors> {
         boardNumbers: boardNumbers,
         hitGlow: hitGlow ?? this.hitGlow,
         highlight: highlight ?? this.highlight,
+        setupHint: setupHint ?? this.setupHint,
         success: success ?? this.success,
         warning: warning ?? this.warning,
         danger: danger ?? this.danger,
@@ -212,6 +220,7 @@ class DartColors extends ThemeExtension<DartColors> {
       boardNumbers: l(boardNumbers, other.boardNumbers),
       hitGlow: l(hitGlow, other.hitGlow),
       highlight: l(highlight, other.highlight),
+      setupHint: l(setupHint, other.setupHint),
       success: l(success, other.success),
       warning: l(warning, other.warning),
       danger: l(danger, other.danger),

@@ -382,13 +382,16 @@ Color segmentColor(BuildContext context, Segment s) {
 /// Ist noch kein Dart geworfen, kann [planned] den empfohlenen Wurf zeigen
 /// (gelb, z. B. der Checkout-Weg).
 class DartChip extends StatelessWidget {
-  const DartChip({super.key, this.segment, this.planned, this.large = false, this.onTap, this.label});
+  const DartChip({super.key, this.segment, this.planned, this.plannedColor, this.large = false, this.onTap, this.label});
 
   /// `null` = noch nicht geworfen (Platzhalter).
   final Segment? segment;
 
   /// Empfohlenes Feld für einen noch nicht geworfenen Dart.
   final Segment? planned;
+
+  /// Farbe der Empfehlung; Standard ist Gelb (Checkout-Weg).
+  final Color? plannedColor;
   final bool large;
 
   /// Antippen, z. B. zum Korrigieren.
@@ -404,7 +407,7 @@ class DartChip extends StatelessWidget {
     final theme = Theme.of(context);
     final s = segment;
     final p = s == null ? planned : null;
-    final Color accent = s != null ? segmentColor(context, s) : (p != null ? colors.highlight : colors.textMuted);
+    final Color accent = s != null ? segmentColor(context, s) : (p != null ? (plannedColor ?? colors.highlight) : colors.textMuted);
     final size = large ? 92.0 : 64.0;
     final text = s?.name ?? p?.name ?? '–';
     final radius = BorderRadius.circular(switch (look.id) {

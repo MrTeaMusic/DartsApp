@@ -287,6 +287,8 @@ class _PlayerCard extends StatelessWidget {
 
     final look = context.look;
     final lit = active || won;
+    // Geht kein Finish mehr, steht hier, wie man sich stellt.
+    final setup = route == null && state.humanTurn && match.current == index && !match.visitClosed ? match.setup : null;
     Widget stat(String label, String value, {Key? key}) => Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -345,6 +347,13 @@ class _PlayerCard extends StatelessWidget {
                       key: Key('match-route-$index'),
                       overflow: TextOverflow.ellipsis,
                       style: look.chipNumber.copyWith(fontSize: 15, color: colors.highlight),
+                    )
+                  : setup != null
+                  ? Text(
+                      look.caps(l10n.visitSetup(setup.leave)),
+                      key: Key('match-setup-$index'),
+                      overflow: TextOverflow.ellipsis,
+                      style: look.chipNumber.copyWith(fontSize: 15, color: colors.setupHint),
                     )
                   : null,
             ),
@@ -448,7 +457,9 @@ class _VisitCard extends ConsumerWidget {
       if (picked != null) ref.read(matchControllerProvider.notifier).correct(index, picked);
     }
 
-    final r = route;
+    final setup = route == null && state.humanTurn && !match.visitClosed ? match.setup : null;
+    final r = route ?? setup?.darts;
+    final planColor = route != null ? colors.highlight : colors.setupHint;
     final look = context.look;
     return AppCard(
       padding: EdgeInsets.all(look.id == DartLookId.clean ? AppSpacing.l : AppSpacing.m),
@@ -492,6 +503,7 @@ class _VisitCard extends ConsumerWidget {
                         key: Key('match-dart-$i'),
                         segment: i < thrown ? session.records[indexes[i]].dart.segment : null,
                         planned: r != null && i >= thrown && i - thrown < r.length ? r[i - thrown] : null,
+                        plannedColor: planColor,
                         label: '${i + 1}',
                         large: true,
                         onTap: i < thrown && !player.isBot ? () => fix(i) : null,

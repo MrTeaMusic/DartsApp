@@ -1498,5 +1498,13 @@
   "boardStyleClassic": "Flach",
   "boardStyleClassicText": "Grafisch, in den Farben des Looks",
   "tourChampionLabel": "Turniersieger",
-  "tourBracketLabel": "Turnierbaum"
+  "tourBracketLabel": "Turnierbaum",
+  "visitSetup": "Stellen auf {leave}",
+  "@visitSetup": {
+    "placeholders": {
+      "leave": {
+        "type": "int"
+      }
+    }
+  }
 }
