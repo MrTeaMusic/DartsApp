@@ -74,7 +74,7 @@ class PlanStepTile extends StatelessWidget {
             Icon(gameIcon(step.gameId), size: 18, color: colors.textMuted),
             const SizedBox(width: AppSpacing.s),
           ],
-          Expanded(child: Text(l10n.stepTitle(step), overflow: TextOverflow.ellipsis)),
+          Expanded(child: Text(l10n.stepTitle(step), maxLines: 2, overflow: TextOverflow.ellipsis)),
           if (status != null) ...[
             const SizedBox(width: AppSpacing.s),
             Flexible(

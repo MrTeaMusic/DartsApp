@@ -9,6 +9,7 @@ import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
 import '../domain/stats_calculator.dart';
 import '../../games/domain/engine/game_display.dart';
+import 'double_insights.dart';
 import 'stats_widgets.dart';
 
 TextStyle? _axis(BuildContext context) => Theme.of(context)
@@ -366,9 +367,12 @@ class TrendLineChart extends StatelessWidget {
 /// Raster aller Doubles mit Quote; die Farbe zeigt stark (grün) oder
 /// schwach (rot) im Vergleich zur eigenen Gesamtquote.
 class DoublesGrid extends StatelessWidget {
-  const DoublesGrid({super.key, required this.doubles, required this.overall});
+  const DoublesGrid({super.key, required this.doubles, required this.overall, this.trends = const {}});
   final Map<int, HitCount> doubles;
   final double? overall;
+
+  /// Verlauf je Doppel (Pfeil neben dem Namen), nur wo genug Versuche sind.
+  final Map<int, TrendDirection> trends;
 
   @override
   Widget build(BuildContext context) {
@@ -407,7 +411,20 @@ class DoublesGrid extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    Text(n == 25 ? 'BULL' : 'D$n', style: theme.textTheme.labelMedium),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(n == 25 ? 'BULL' : 'D$n', style: theme.textTheme.labelMedium),
+                        if (trends[n] case final d?)
+                          Builder(builder: (context) {
+                            final (icon, color) = trendStyle(context, d);
+                            return Padding(
+                              padding: const EdgeInsets.only(left: 2),
+                              child: Icon(icon, key: Key('double-trend-$n'), size: 13, color: color),
+                            );
+                          }),
+                      ],
+                    ),
                     const SizedBox(height: AppSpacing.xxs),
                     Text(
                       rate == null ? '–' : '${(rate * 100).round()} %',
