@@ -1111,22 +1111,320 @@
       }
     }
   },
-  "callerTitle": "Caller",
-  "callerEnabled": "Caller an",
-  "callerEnabledHint": "Eine Stimme sagt Punkte und Rest an wie bei einem Turnier",
-  "callerLanguageEnglish": "Englisch (wie im TV)",
-  "callerLanguageGerman": "Deutsch",
-  "callerVolume": "Lautstärke",
-  "callerRate": "Tempo",
-  "callerAnnounce": "Ansagen",
-  "callerAnnounceScores": "Punkte jeder Aufnahme",
-  "callerAnnounceRemaining": "Rest auf einem Finish",
-  "callerAnnounceCheckout": "Checkout",
-  "callerAnnounceGameOn": "Spielbeginn",
-  "callerGamesHint": "Angesagt wird bei X01, Scoring- und Checkout-Spielen. Andere Trainingsspiele bleiben still.",
-  "callerPreview": "Probe hören",
-  "callerMute": "Caller stumm schalten",
-  "callerUnmute": "Caller einschalten",
+  "gameMatchX01": "X01-Match",
+  "matchesTitle": "Match & Turnier",
+  "matchesEntryText": "X01 gegen einen Freund oder die CPU, Turnier gegen PDC-Bots.",
+  "matchOpponentTitle": "Gegner-Modus",
+  "matchOpponentText": "X01 gegen einen Freund am selben Board oder gegen einen Bot mit einstellbarem Average.",
+  "tournamentTitle": "Turnier",
+  "tournamentText": "16 Spieler im K.-o.-System gegen CPU-Gegner mit PDC-Namen und einstellbarer Stärke.",
+  "tournamentRunning": "Turnier läuft: {round}",
+  "@tournamentRunning": {
+    "placeholders": {
+      "round": {
+        "type": "String"
+      }
+    }
+  },
+  "cpuPlayersTitle": "CPU-Spieler",
+  "cpuPlayersText": "Namen und Averages der Computergegner bearbeiten.",
+  "matchResume": "Match fortsetzen",
+  "matchResumeText": "{first} gegen {second}, unterbrochen",
+  "@matchResumeText": {
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "second": {
+        "type": "String"
+      }
+    }
+  },
+  "matchOpponent": "Gegner",
+  "matchVsCpu": "CPU",
+  "matchVsFriend": "Freund",
+  "matchCpuAverage": "CPU-Average",
+  "matchCpuName": "Name des Bots",
+  "matchCpuDefaultName": "CPU",
+  "matchCpuHint": "Der Bot wirft echte Darts mit Streuung auf das virtuelle Board. Ein Average von {average} entspricht ungefähr {level}.",
+  "@matchCpuHint": {
+    "placeholders": {
+      "average": {
+        "type": "int"
+      },
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "matchLevelBeginner": "einem Einsteiger",
+  "matchLevelHobby": "einem Hobbyspieler",
+  "matchLevelLeague": "einem guten Ligaspieler",
+  "matchLevelPro": "einem Profi",
+  "matchLevelTop": "der Weltspitze",
+  "matchFriendProfile": "Profil des Freundes",
+  "matchGuest": "Gast (ohne Statistik)",
+  "matchGuestName": "Name des Gastes",
+  "matchGuestDefault": "Gast",
+  "matchFriendHint": "Ihr werft abwechselnd auf dasselbe Board. Mit Profil zählen die Würfe des Freundes in seiner Statistik.",
+  "matchFormat": "Format",
+  "matchStartScore": "Startwert",
+  "matchOutMode": "Ausstieg",
+  "matchOutStraight": "Straight",
+  "matchOutDouble": "Double",
+  "matchOutMaster": "Master",
+  "matchDoubleIn": "Double-In",
+  "matchModeLegs": "Legs",
+  "matchModeSets": "Sätze",
+  "matchLegsToWin": "Legs zum Sieg",
+  "matchLegsPerSet": "Legs zum Satzgewinn",
+  "matchSetsToWin": "Sätze zum Sieg",
+  "matchFormatLegs": "First to {legs} Legs (Best of {bestOf})",
+  "@matchFormatLegs": {
+    "placeholders": {
+      "legs": {
+        "type": "int"
+      },
+      "bestOf": {
+        "type": "int"
+      }
+    }
+  },
+  "matchFormatSets": "First to {sets} Sätze, je first to {legs} Legs",
+  "@matchFormatSets": {
+    "placeholders": {
+      "sets": {
+        "type": "int"
+      },
+      "legs": {
+        "type": "int"
+      }
+    }
+  },
+  "matchStarter": "Anwurf",
+  "matchStarterMe": "Ich",
+  "matchStarterOpponent": "Gegner",
+  "matchStarterRandom": "Zufall",
+  "matchStart": "Match starten",
+  "matchLeaveTitle": "Match abbrechen?",
+  "matchLeaveText": "Das Match wird beendet. Deine bisherigen Würfe bleiben in der Statistik.",
+  "matchPauseTitle": "Match unterbrechen?",
+  "matchPauseText": "Das Turnierspiel bleibt gespeichert und lässt sich später fortsetzen.",
+  "matchLeave": "Abbrechen",
+  "matchPause": "Unterbrechen",
+  "matchStay": "Weiterspielen",
+  "matchLegs": "Legs",
+  "matchSets": "Sätze",
+  "matchAvg": "Avg",
+  "matchDarts": "Darts",
+  "matchLastVisit": "Letzte",
+  "matchTurnOf": "{name} ist dran",
+  "@matchTurnOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "matchBotThrowing": "{name} wirft …",
+  "@matchBotThrowing": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "matchWaitTakeout": "Darts ziehen, dann ist {name} dran",
+  "@matchWaitTakeout": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "matchLegNumber": "Leg {leg}",
+  "@matchLegNumber": {
+    "placeholders": {
+      "leg": {
+        "type": "int"
+      }
+    }
+  },
+  "matchLegSetNumber": "Satz {set} · Leg {leg}",
+  "@matchLegSetNumber": {
+    "placeholders": {
+      "set": {
+        "type": "int"
+      },
+      "leg": {
+        "type": "int"
+      }
+    }
+  },
+  "matchEvBust": "{name}: Bust",
+  "@matchEvBust": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "matchEvLeg": "Leg an {name} ({value} gecheckt)",
+  "@matchEvLeg": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "matchEvSet": "Satz an {name}",
+  "@matchEvSet": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "matchEvMatch": "{name} gewinnt das Match!",
+  "@matchEvMatch": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "matchEv180": "{name}: 180!",
+  "@matchEv180": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "matchResultTitle": "Ergebnis",
+  "matchDone": "Fertig",
+  "matchRematch": "Revanche",
+  "matchBackToTournament": "Zum Turnier",
+  "matchStatAverage": "3-Dart-Average",
+  "matchStatFirst9": "First 9",
+  "matchStatCheckout": "Checkout-Quote",
+  "matchStatHighFinish": "Höchstes Finish",
+  "matchStatBestLeg": "Bestes Leg (Darts)",
+  "matchStatScores": "100+ / 140+ / 180",
+  "matchStatDarts": "Darts",
+  "matchStatLegs": "Legs",
+  "matchStatSets": "Sätze",
+  "matchCorrectHint": "Nur deine Darts im laufenden Leg lassen sich korrigieren.",
+  "matchNoCorrections": "Noch keine eigenen Darts in diesem Leg.",
+  "tourNew": "Neues Turnier",
+  "tourPlayer": "Du spielst als",
+  "tourDifficulty": "Schwierigkeit",
+  "tourDifficultyHint": "Bots spielen mit {percent} % ihres Averages. Stärkster Gegner ≈ {strongest}, schwächster ≈ {weakest}.",
+  "@tourDifficultyHint": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "strongest": {
+        "type": "int"
+      },
+      "weakest": {
+        "type": "int"
+      }
+    }
+  },
+  "tourFormat": "Format",
+  "tourPresetSprint": "Sprint",
+  "tourPresetShort": "Kurz",
+  "tourPresetPdc": "PDC",
+  "tourPresetCustom": "Eigenes",
+  "tourFormatHint": "501 Double-Out, Legs je Runde als „Best of“. Ein volles PDC-Turnier dauert lange, Sprint und Kurz sind in einer Session schaffbar.",
+  "tourRound0": "Achtelfinale",
+  "tourRound1": "Viertelfinale",
+  "tourRound2": "Halbfinale",
+  "tourRound3": "Finale",
+  "tourBestOf": "Best of {count}",
+  "@tourBestOf": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tourStart": "Turnier starten",
+  "tourReplaceTitle": "Neues Turnier starten?",
+  "tourReplaceText": "Das laufende Turnier wird dabei gelöscht.",
+  "tourReplace": "Neu starten",
+  "tourPlay": "Spielen",
+  "tourResumeMatch": "Fortsetzen",
+  "tourNextMatch": "Dein nächstes Spiel",
+  "tourVs": "gegen",
+  "tourEliminated": "Ausgeschieden im {round}.",
+  "@tourEliminated": {
+    "placeholders": {
+      "round": {
+        "type": "String"
+      }
+    }
+  },
+  "tourChampion": "Turniersieger: {name}",
+  "@tourChampion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "tourYouWon": "Du hast das Turnier gewonnen!",
+  "tourSimRound": "Nächste Runde simulieren",
+  "tourSimAll": "Rest simulieren",
+  "tourDiscard": "Turnier beenden",
+  "tourDiscardTitle": "Turnier beenden?",
+  "tourDiscardText": "Der Turnierbaum wird gelöscht. Deine gespielten Würfe bleiben in der Statistik.",
+  "tourTbd": "offen",
+  "tourInfo": "{start} Double-Out · Bots mit {percent} %",
+  "@tourInfo": {
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "tourNone": "Noch kein Turnier. Starte eins gegen 15 CPU-Gegner.",
+  "tourCpuAverage": "≈ {average} Avg",
+  "@tourCpuAverage": {
+    "placeholders": {
+      "average": {
+        "type": "int"
+      }
+    }
+  },
+  "cpuAdd": "Spieler hinzufügen",
+  "cpuEdit": "Spieler bearbeiten",
+  "cpuName": "Name",
+  "cpuAverage": "Average bei 100 %",
+  "cpuReset": "Standardliste",
+  "cpuResetTitle": "Standardliste wiederherstellen?",
+  "cpuResetText": "Deine Änderungen an der Liste gehen verloren.",
+  "cpuHint": "Die Averages sind ungefähre Richtwerte für die Spielstärke, keine offiziellen oder aktuellen Statistiken. Im Turnier werden sie mit der Schwierigkeit multipliziert.",
+  "cpuDelete": "Löschen",
+  "cpuSave": "Speichern",
+  "cpuCancel": "Abbrechen",
+  "cpuCount": "{count} Spieler",
+  "@cpuCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cpuTooFew": "Für ein Turnier braucht es 15 Gegner; fehlende werden aus der Standardliste ergänzt.",
   "autoPlanTitle": "Plan für mich",
   "autoPlanCardTitle": "Plan für mich erstellen",
   "autoPlanCardText": "Aus deiner Statistik: mehr Training für das, was noch nicht sitzt, z. B. dein schwächstes Doppel.",
@@ -1163,5 +1461,21 @@
   "autoPlanSave": "Als eigenen Plan speichern",
   "autoPlanSaved": "Als eigener Plan gespeichert. Über „Bearbeiten“ kannst du ihn anpassen.",
   "autoPlanHint": "Lass dir aus diesen Zahlen einen Trainingsplan vorschlagen.",
-  "autoPlanHintAction": "Plan für mich"
+  "autoPlanHintAction": "Plan für mich",
+  "callerTitle": "Caller",
+  "callerEnabled": "Caller an",
+  "callerEnabledHint": "Eine Stimme sagt Punkte und Rest an wie bei einem Turnier",
+  "callerLanguageEnglish": "Englisch (wie im TV)",
+  "callerLanguageGerman": "Deutsch",
+  "callerVolume": "Lautstärke",
+  "callerRate": "Tempo",
+  "callerAnnounce": "Ansagen",
+  "callerAnnounceScores": "Punkte jeder Aufnahme",
+  "callerAnnounceRemaining": "Rest auf einem Finish",
+  "callerAnnounceCheckout": "Checkout",
+  "callerAnnounceGameOn": "Spielbeginn",
+  "callerGamesHint": "Angesagt wird bei X01, Scoring- und Checkout-Spielen. Andere Trainingsspiele bleiben still.",
+  "callerPreview": "Probe hören",
+  "callerMute": "Caller stumm schalten",
+  "callerUnmute": "Caller einschalten"
 }
