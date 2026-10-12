@@ -34,6 +34,8 @@ class DartboardPainter extends CustomPainter {
     this.heatOpacity = 0.0,
     this.showNumbers = true,
     this.style = BoardStyle.tournament,
+    this.markerScale = 1,
+    this.viewRotation = 0,
   });
 
   final DartColors colors;
@@ -60,6 +62,13 @@ class DartboardPainter extends CustomPainter {
   final List<BoardPoint> heat;
   final double heatOpacity;
   final bool showNumbers;
+
+  /// Größe der Treffer-Marker; im Zoom kleiner, damit sie nicht mitwachsen.
+  final double markerScale;
+
+  /// Um wie viel (Radiant, im Uhrzeigersinn) die Scheibe auf dem Bildschirm
+  /// gedreht erscheint; die Zahlen bleiben trotzdem lesbar.
+  final double viewRotation;
 
   /// Radius des Double-Rings in Pixeln für eine gegebene Größe.
   static double ringRadius(Size size, [BoardStyle style = BoardStyle.tournament]) =>
@@ -359,14 +368,16 @@ class DartboardPainter extends CustomPainter {
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-    if (!spec.rotateNumbers) {
+    if (!spec.rotateNumbers && viewRotation == 0) {
       tp.paint(canvas, pos - Offset(tp.width / 2, tp.height / 2));
       return;
     }
     // Oben stehen die Zahlen mit dem Kopf nach außen, unten mit dem Kopf zur
-    // Mitte, damit keine auf dem Kopf steht.
-    final upper = degrees <= 90 || degrees >= 270;
-    final turn = (upper ? degrees : degrees - 180) * math.pi / 180;
+    // Mitte, damit keine auf dem Kopf steht. Maßgeblich ist die Lage auf dem
+    // Bildschirm.
+    final screen = (degrees + viewRotation * 180 / math.pi) % 360;
+    final upper = screen <= 90 || screen >= 270;
+    final turn = spec.rotateNumbers ? (upper ? screen : screen - 180) * math.pi / 180 - viewRotation : -viewRotation;
     canvas.save();
     canvas.translate(pos.dx, pos.dy);
     canvas.rotate(turn);
@@ -408,15 +419,15 @@ class DartboardPainter extends CustomPainter {
   }
 
   void _hit(Canvas canvas, Offset o, double r, bool latest) {
-    final base = r * 0.028;
+    final base = r * 0.028 * markerScale;
     if (latest && hitProgress < 1) {
       final t = Curves.easeOutCubic.transform(hitProgress);
       canvas.drawCircle(
         o,
-        base + r * 0.16 * t,
+        base + r * 0.16 * markerScale * t,
         Paint()
           ..style = PaintingStyle.stroke
-          ..strokeWidth = r * 0.012 * (1 - t) + 0.5
+          ..strokeWidth = r * 0.012 * markerScale * (1 - t) + 0.5
           ..color = colors.hitGlow.withValues(alpha: 1 - t),
       );
     }
@@ -428,7 +439,7 @@ class DartboardPainter extends CustomPainter {
       base * scale,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = math.max(1, r * 0.006)
+        ..strokeWidth = math.max(1, r * 0.006 * markerScale)
         ..color = Colors.white,
     );
   }
@@ -446,5 +457,7 @@ class DartboardPainter extends CustomPainter {
       old.heat != heat ||
       old.heatOpacity != heatOpacity ||
       old.showNumbers != showNumbers ||
+      old.markerScale != markerScale ||
+      old.viewRotation != viewRotation ||
       old.style != style;
 }

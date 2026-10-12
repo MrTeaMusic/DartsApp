@@ -10,9 +10,11 @@ import '../../../core/design/dart_look.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
 import '../../../core/widgets/fullscreen_button.dart';
+import '../../board/domain/board_geometry.dart';
 import '../../board/domain/segment.dart';
 import '../../caller/presentation/caller_mute_button.dart';
 import '../../board/presentation/dartboard_view.dart';
+import '../../board/presentation/double_zoom.dart';
 import '../../dart_source/data/manual_source.dart';
 import '../../dart_source/data/simulator_source.dart';
 import '../../dart_source/presentation/dart_source_providers.dart';
@@ -81,20 +83,32 @@ class MatchPlayScreen extends ConsumerWidget {
     final visit = [for (final i in state.session.currentVisitIndexes) state.session.records[i]];
     final route = state.humanTurn && !match.visitClosed ? match.suggestion : null;
 
+    final hits = [for (final r in visit) ?r.dart.position];
+    final lastSegment = visit.isEmpty ? null : visit.last.dart.segment;
+    final void Function(BoardPoint, Segment)? onTap = !state.acceptsHumanDarts
+        ? null
+        : switch (source) {
+            SimulatorSource() => (point, _) => source.throwAt(point),
+            ManualSource() => (_, segment) => source.enter(segment),
+            _ => null,
+          };
     final board = DartboardView(
       key: const Key('match-board'),
-      hits: [for (final r in visit) ?r.dart.position],
-      lastSegment: visit.isEmpty ? null : visit.last.dart.segment,
+      hits: hits,
+      lastSegment: lastSegment,
       hitSerial: state.session.records.length,
       highlighted: route == null || route.isEmpty ? const {} : {route.first},
-      onTap: !state.acceptsHumanDarts
-          ? null
-          : switch (source) {
-              SimulatorSource() => (point, _) => source.throwAt(point),
-              ManualSource() => (_, segment) => source.enter(segment),
-              _ => null,
-            },
+      onTap: onTap,
     );
+    final zoomTarget = route == null || state.ended ? null : doubleZoomTarget(route: route);
+    DoubleZoomCard zoom({bool compact = false}) => DoubleZoomCard(
+          target: zoomTarget,
+          hits: hits,
+          lastSegment: lastSegment,
+          hitSerial: state.session.records.length,
+          onTap: onTap,
+          compact: compact,
+        );
 
     final format = state.setup.format;
     final legLabel = format.usesSets
@@ -138,7 +152,7 @@ class MatchPlayScreen extends ConsumerWidget {
                       width: 460,
                       child: SingleChildScrollView(
                         padding: const EdgeInsets.fromLTRB(0, AppSpacing.l, AppSpacing.xl, AppSpacing.xl),
-                        child: _Panel(state: state, route: route),
+                        child: _Panel(state: state, route: route, zoom: zoom()),
                       ),
                     ),
                   ],
@@ -157,6 +171,7 @@ class MatchPlayScreen extends ConsumerWidget {
                     _EventBanner(state: state),
                     _VisitCard(state: state, route: route),
                     const SizedBox(height: AppSpacing.m),
+                    zoom(compact: true),
                     ConstrainedBox(
                       constraints: BoxConstraints(maxHeight: c.maxHeight * 0.42),
                       child: Center(child: board),
@@ -175,10 +190,13 @@ class MatchPlayScreen extends ConsumerWidget {
 }
 
 class _Panel extends ConsumerWidget {
-  const _Panel({required this.state, required this.route, this.showScoreboard = true, this.showVisit = true});
+  const _Panel({required this.state, required this.route, this.showScoreboard = true, this.showVisit = true, this.zoom});
   final MatchState state;
   final List<Segment>? route;
   final bool showScoreboard;
+
+  /// Doppel-Zoom unter der Aufnahme (nur mit [showVisit]).
+  final Widget? zoom;
 
   /// Einblendung und Aufnahme; auf dem Telefon stehen sie über dem Board.
   final bool showVisit;
@@ -199,7 +217,7 @@ class _Panel extends ConsumerWidget {
           const SizedBox(height: AppSpacing.m),
           _ResultActions(state: state),
         ] else ...[
-          if (showVisit) ...[_VisitCard(state: state, route: route), const SizedBox(height: AppSpacing.m)],
+          if (showVisit) ...[_VisitCard(state: state, route: route), const SizedBox(height: AppSpacing.m), ?zoom],
           if (state.acceptsHumanDarts && source is ManualSource)
             ManualKeypad(source: source)
           else
