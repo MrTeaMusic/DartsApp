@@ -38,6 +38,9 @@ class DartColors extends ThemeExtension<DartColors> {
     required this.chartGrid,
     required this.heroStart,
     required this.heroEnd,
+    this.medalBronze = const Color(0xFFCD7F45),
+    this.medalSilver = const Color(0xFFB4BCCB),
+    this.medalGold = const Color(0xFFFFC23D),
   });
 
   final Color boardBlack;
@@ -87,6 +90,11 @@ class DartColors extends ThemeExtension<DartColors> {
   /// Verlauf der Startseiten-Kachel.
   final Color heroStart;
   final Color heroEnd;
+
+  /// Stufen der Erfolge: Bronze, Silber, Gold.
+  final Color medalBronze;
+  final Color medalSilver;
+  final Color medalGold;
 
   /// Look „TV“ (Standard). Bleibt als Name erhalten, damit Tests und
   /// ältere Stellen weiter funktionieren.
@@ -150,6 +158,9 @@ class DartColors extends ThemeExtension<DartColors> {
     chartGrid: Color(0xFFEDEDF2),
     heroStart: Color(0xFFE6F0FF),
     heroEnd: Colors.white,
+    medalBronze: Color(0xFFB0662F),
+    medalSilver: Color(0xFF8A93A3),
+    medalGold: Color(0xFFE09A00),
   );
 
   @override
@@ -174,6 +185,9 @@ class DartColors extends ThemeExtension<DartColors> {
     Color? heroStart,
     Color? heroEnd,
     Color? boardSurround,
+    Color? medalBronze,
+    Color? medalSilver,
+    Color? medalGold,
   }) =>
       DartColors(
         boardBlack: boardBlack,
@@ -204,6 +218,9 @@ class DartColors extends ThemeExtension<DartColors> {
         chartGrid: chartGrid ?? this.chartGrid,
         heroStart: heroStart ?? this.heroStart,
         heroEnd: heroEnd ?? this.heroEnd,
+        medalBronze: medalBronze ?? this.medalBronze,
+        medalSilver: medalSilver ?? this.medalSilver,
+        medalGold: medalGold ?? this.medalGold,
       );
 
   @override
@@ -239,6 +256,9 @@ class DartColors extends ThemeExtension<DartColors> {
       chartGrid: l(chartGrid, other.chartGrid),
       heroStart: l(heroStart, other.heroStart),
       heroEnd: l(heroEnd, other.heroEnd),
+      medalBronze: l(medalBronze, other.medalBronze),
+      medalSilver: l(medalSilver, other.medalSilver),
+      medalGold: l(medalGold, other.medalGold),
     );
   }
 }

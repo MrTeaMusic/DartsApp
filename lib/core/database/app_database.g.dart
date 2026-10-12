@@ -3646,6 +3646,883 @@ class PlanRunsCompanion extends UpdateCompanion<PlanRunRow> {
   }
 }
 
+class $AchievementsTable extends Achievements
+    with TableInfo<$AchievementsTable, AchievementRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AchievementsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _playerIdMeta = const VerificationMeta(
+    'playerId',
+  );
+  @override
+  late final GeneratedColumn<int> playerId = GeneratedColumn<int>(
+    'player_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES players (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _achievementIdMeta = const VerificationMeta(
+    'achievementId',
+  );
+  @override
+  late final GeneratedColumn<String> achievementId = GeneratedColumn<String>(
+    'achievement_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _tierMeta = const VerificationMeta('tier');
+  @override
+  late final GeneratedColumn<int> tier = GeneratedColumn<int>(
+    'tier',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _unlockedAtMeta = const VerificationMeta(
+    'unlockedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> unlockedAt = GeneratedColumn<DateTime>(
+    'unlocked_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    playerId,
+    achievementId,
+    tier,
+    unlockedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'achievements';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AchievementRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('player_id')) {
+      context.handle(
+        _playerIdMeta,
+        playerId.isAcceptableOrUnknown(data['player_id']!, _playerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_playerIdMeta);
+    }
+    if (data.containsKey('achievement_id')) {
+      context.handle(
+        _achievementIdMeta,
+        achievementId.isAcceptableOrUnknown(
+          data['achievement_id']!,
+          _achievementIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_achievementIdMeta);
+    }
+    if (data.containsKey('tier')) {
+      context.handle(
+        _tierMeta,
+        tier.isAcceptableOrUnknown(data['tier']!, _tierMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tierMeta);
+    }
+    if (data.containsKey('unlocked_at')) {
+      context.handle(
+        _unlockedAtMeta,
+        unlockedAt.isAcceptableOrUnknown(data['unlocked_at']!, _unlockedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_unlockedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AchievementRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AchievementRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      playerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}player_id'],
+      )!,
+      achievementId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}achievement_id'],
+      )!,
+      tier: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}tier'],
+      )!,
+      unlockedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}unlocked_at'],
+      )!,
+    );
+  }
+
+  @override
+  $AchievementsTable createAlias(String alias) {
+    return $AchievementsTable(attachedDatabase, alias);
+  }
+}
+
+class AchievementRow extends DataClass implements Insertable<AchievementRow> {
+  final int id;
+  final int playerId;
+
+  /// Kennung aus `AchievementCatalog`.
+  final String achievementId;
+  final int tier;
+  final DateTime unlockedAt;
+  const AchievementRow({
+    required this.id,
+    required this.playerId,
+    required this.achievementId,
+    required this.tier,
+    required this.unlockedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['player_id'] = Variable<int>(playerId);
+    map['achievement_id'] = Variable<String>(achievementId);
+    map['tier'] = Variable<int>(tier);
+    map['unlocked_at'] = Variable<DateTime>(unlockedAt);
+    return map;
+  }
+
+  AchievementsCompanion toCompanion(bool nullToAbsent) {
+    return AchievementsCompanion(
+      id: Value(id),
+      playerId: Value(playerId),
+      achievementId: Value(achievementId),
+      tier: Value(tier),
+      unlockedAt: Value(unlockedAt),
+    );
+  }
+
+  factory AchievementRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AchievementRow(
+      id: serializer.fromJson<int>(json['id']),
+      playerId: serializer.fromJson<int>(json['playerId']),
+      achievementId: serializer.fromJson<String>(json['achievementId']),
+      tier: serializer.fromJson<int>(json['tier']),
+      unlockedAt: serializer.fromJson<DateTime>(json['unlockedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'playerId': serializer.toJson<int>(playerId),
+      'achievementId': serializer.toJson<String>(achievementId),
+      'tier': serializer.toJson<int>(tier),
+      'unlockedAt': serializer.toJson<DateTime>(unlockedAt),
+    };
+  }
+
+  AchievementRow copyWith({
+    int? id,
+    int? playerId,
+    String? achievementId,
+    int? tier,
+    DateTime? unlockedAt,
+  }) => AchievementRow(
+    id: id ?? this.id,
+    playerId: playerId ?? this.playerId,
+    achievementId: achievementId ?? this.achievementId,
+    tier: tier ?? this.tier,
+    unlockedAt: unlockedAt ?? this.unlockedAt,
+  );
+  AchievementRow copyWithCompanion(AchievementsCompanion data) {
+    return AchievementRow(
+      id: data.id.present ? data.id.value : this.id,
+      playerId: data.playerId.present ? data.playerId.value : this.playerId,
+      achievementId: data.achievementId.present
+          ? data.achievementId.value
+          : this.achievementId,
+      tier: data.tier.present ? data.tier.value : this.tier,
+      unlockedAt: data.unlockedAt.present
+          ? data.unlockedAt.value
+          : this.unlockedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AchievementRow(')
+          ..write('id: $id, ')
+          ..write('playerId: $playerId, ')
+          ..write('achievementId: $achievementId, ')
+          ..write('tier: $tier, ')
+          ..write('unlockedAt: $unlockedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, playerId, achievementId, tier, unlockedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AchievementRow &&
+          other.id == this.id &&
+          other.playerId == this.playerId &&
+          other.achievementId == this.achievementId &&
+          other.tier == this.tier &&
+          other.unlockedAt == this.unlockedAt);
+}
+
+class AchievementsCompanion extends UpdateCompanion<AchievementRow> {
+  final Value<int> id;
+  final Value<int> playerId;
+  final Value<String> achievementId;
+  final Value<int> tier;
+  final Value<DateTime> unlockedAt;
+  const AchievementsCompanion({
+    this.id = const Value.absent(),
+    this.playerId = const Value.absent(),
+    this.achievementId = const Value.absent(),
+    this.tier = const Value.absent(),
+    this.unlockedAt = const Value.absent(),
+  });
+  AchievementsCompanion.insert({
+    this.id = const Value.absent(),
+    required int playerId,
+    required String achievementId,
+    required int tier,
+    required DateTime unlockedAt,
+  }) : playerId = Value(playerId),
+       achievementId = Value(achievementId),
+       tier = Value(tier),
+       unlockedAt = Value(unlockedAt);
+  static Insertable<AchievementRow> custom({
+    Expression<int>? id,
+    Expression<int>? playerId,
+    Expression<String>? achievementId,
+    Expression<int>? tier,
+    Expression<DateTime>? unlockedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (playerId != null) 'player_id': playerId,
+      if (achievementId != null) 'achievement_id': achievementId,
+      if (tier != null) 'tier': tier,
+      if (unlockedAt != null) 'unlocked_at': unlockedAt,
+    });
+  }
+
+  AchievementsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? playerId,
+    Value<String>? achievementId,
+    Value<int>? tier,
+    Value<DateTime>? unlockedAt,
+  }) {
+    return AchievementsCompanion(
+      id: id ?? this.id,
+      playerId: playerId ?? this.playerId,
+      achievementId: achievementId ?? this.achievementId,
+      tier: tier ?? this.tier,
+      unlockedAt: unlockedAt ?? this.unlockedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (playerId.present) {
+      map['player_id'] = Variable<int>(playerId.value);
+    }
+    if (achievementId.present) {
+      map['achievement_id'] = Variable<String>(achievementId.value);
+    }
+    if (tier.present) {
+      map['tier'] = Variable<int>(tier.value);
+    }
+    if (unlockedAt.present) {
+      map['unlocked_at'] = Variable<DateTime>(unlockedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AchievementsCompanion(')
+          ..write('id: $id, ')
+          ..write('playerId: $playerId, ')
+          ..write('achievementId: $achievementId, ')
+          ..write('tier: $tier, ')
+          ..write('unlockedAt: $unlockedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ChallengeResultsTable extends ChallengeResults
+    with TableInfo<$ChallengeResultsTable, ChallengeResultRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ChallengeResultsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _playerIdMeta = const VerificationMeta(
+    'playerId',
+  );
+  @override
+  late final GeneratedColumn<int> playerId = GeneratedColumn<int>(
+    'player_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES players (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _challengeIdMeta = const VerificationMeta(
+    'challengeId',
+  );
+  @override
+  late final GeneratedColumn<String> challengeId = GeneratedColumn<String>(
+    'challenge_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _starsMeta = const VerificationMeta('stars');
+  @override
+  late final GeneratedColumn<int> stars = GeneratedColumn<int>(
+    'stars',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _bestMeta = const VerificationMeta('best');
+  @override
+  late final GeneratedColumn<double> best = GeneratedColumn<double>(
+    'best',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _attemptsMeta = const VerificationMeta(
+    'attempts',
+  );
+  @override
+  late final GeneratedColumn<int> attempts = GeneratedColumn<int>(
+    'attempts',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _achievedAtMeta = const VerificationMeta(
+    'achievedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> achievedAt = GeneratedColumn<DateTime>(
+    'achieved_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    playerId,
+    challengeId,
+    stars,
+    best,
+    attempts,
+    achievedAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'challenge_results';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ChallengeResultRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('player_id')) {
+      context.handle(
+        _playerIdMeta,
+        playerId.isAcceptableOrUnknown(data['player_id']!, _playerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_playerIdMeta);
+    }
+    if (data.containsKey('challenge_id')) {
+      context.handle(
+        _challengeIdMeta,
+        challengeId.isAcceptableOrUnknown(
+          data['challenge_id']!,
+          _challengeIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_challengeIdMeta);
+    }
+    if (data.containsKey('stars')) {
+      context.handle(
+        _starsMeta,
+        stars.isAcceptableOrUnknown(data['stars']!, _starsMeta),
+      );
+    }
+    if (data.containsKey('best')) {
+      context.handle(
+        _bestMeta,
+        best.isAcceptableOrUnknown(data['best']!, _bestMeta),
+      );
+    }
+    if (data.containsKey('attempts')) {
+      context.handle(
+        _attemptsMeta,
+        attempts.isAcceptableOrUnknown(data['attempts']!, _attemptsMeta),
+      );
+    }
+    if (data.containsKey('achieved_at')) {
+      context.handle(
+        _achievedAtMeta,
+        achievedAt.isAcceptableOrUnknown(data['achieved_at']!, _achievedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_achievedAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ChallengeResultRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ChallengeResultRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      playerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}player_id'],
+      )!,
+      challengeId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}challenge_id'],
+      )!,
+      stars: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}stars'],
+      )!,
+      best: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}best'],
+      ),
+      attempts: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}attempts'],
+      )!,
+      achievedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}achieved_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ChallengeResultsTable createAlias(String alias) {
+    return $ChallengeResultsTable(attachedDatabase, alias);
+  }
+}
+
+class ChallengeResultRow extends DataClass
+    implements Insertable<ChallengeResultRow> {
+  final int id;
+  final int playerId;
+
+  /// Kennung aus `ChallengeCatalog`, z. B. `c1-01`.
+  final String challengeId;
+
+  /// Beste Sternezahl (0–3).
+  final int stars;
+
+  /// Bester Wert der Wertungs-Kennzahl, `null` ohne gültigen Wert.
+  final double? best;
+
+  /// Regulär beendete Versuche.
+  final int attempts;
+
+  /// Wann das beste Ergebnis erreicht wurde.
+  final DateTime achievedAt;
+  final DateTime updatedAt;
+  const ChallengeResultRow({
+    required this.id,
+    required this.playerId,
+    required this.challengeId,
+    required this.stars,
+    this.best,
+    required this.attempts,
+    required this.achievedAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['player_id'] = Variable<int>(playerId);
+    map['challenge_id'] = Variable<String>(challengeId);
+    map['stars'] = Variable<int>(stars);
+    if (!nullToAbsent || best != null) {
+      map['best'] = Variable<double>(best);
+    }
+    map['attempts'] = Variable<int>(attempts);
+    map['achieved_at'] = Variable<DateTime>(achievedAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  ChallengeResultsCompanion toCompanion(bool nullToAbsent) {
+    return ChallengeResultsCompanion(
+      id: Value(id),
+      playerId: Value(playerId),
+      challengeId: Value(challengeId),
+      stars: Value(stars),
+      best: best == null && nullToAbsent ? const Value.absent() : Value(best),
+      attempts: Value(attempts),
+      achievedAt: Value(achievedAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ChallengeResultRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ChallengeResultRow(
+      id: serializer.fromJson<int>(json['id']),
+      playerId: serializer.fromJson<int>(json['playerId']),
+      challengeId: serializer.fromJson<String>(json['challengeId']),
+      stars: serializer.fromJson<int>(json['stars']),
+      best: serializer.fromJson<double?>(json['best']),
+      attempts: serializer.fromJson<int>(json['attempts']),
+      achievedAt: serializer.fromJson<DateTime>(json['achievedAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'playerId': serializer.toJson<int>(playerId),
+      'challengeId': serializer.toJson<String>(challengeId),
+      'stars': serializer.toJson<int>(stars),
+      'best': serializer.toJson<double?>(best),
+      'attempts': serializer.toJson<int>(attempts),
+      'achievedAt': serializer.toJson<DateTime>(achievedAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  ChallengeResultRow copyWith({
+    int? id,
+    int? playerId,
+    String? challengeId,
+    int? stars,
+    Value<double?> best = const Value.absent(),
+    int? attempts,
+    DateTime? achievedAt,
+    DateTime? updatedAt,
+  }) => ChallengeResultRow(
+    id: id ?? this.id,
+    playerId: playerId ?? this.playerId,
+    challengeId: challengeId ?? this.challengeId,
+    stars: stars ?? this.stars,
+    best: best.present ? best.value : this.best,
+    attempts: attempts ?? this.attempts,
+    achievedAt: achievedAt ?? this.achievedAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  ChallengeResultRow copyWithCompanion(ChallengeResultsCompanion data) {
+    return ChallengeResultRow(
+      id: data.id.present ? data.id.value : this.id,
+      playerId: data.playerId.present ? data.playerId.value : this.playerId,
+      challengeId: data.challengeId.present
+          ? data.challengeId.value
+          : this.challengeId,
+      stars: data.stars.present ? data.stars.value : this.stars,
+      best: data.best.present ? data.best.value : this.best,
+      attempts: data.attempts.present ? data.attempts.value : this.attempts,
+      achievedAt: data.achievedAt.present
+          ? data.achievedAt.value
+          : this.achievedAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ChallengeResultRow(')
+          ..write('id: $id, ')
+          ..write('playerId: $playerId, ')
+          ..write('challengeId: $challengeId, ')
+          ..write('stars: $stars, ')
+          ..write('best: $best, ')
+          ..write('attempts: $attempts, ')
+          ..write('achievedAt: $achievedAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    playerId,
+    challengeId,
+    stars,
+    best,
+    attempts,
+    achievedAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ChallengeResultRow &&
+          other.id == this.id &&
+          other.playerId == this.playerId &&
+          other.challengeId == this.challengeId &&
+          other.stars == this.stars &&
+          other.best == this.best &&
+          other.attempts == this.attempts &&
+          other.achievedAt == this.achievedAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ChallengeResultsCompanion extends UpdateCompanion<ChallengeResultRow> {
+  final Value<int> id;
+  final Value<int> playerId;
+  final Value<String> challengeId;
+  final Value<int> stars;
+  final Value<double?> best;
+  final Value<int> attempts;
+  final Value<DateTime> achievedAt;
+  final Value<DateTime> updatedAt;
+  const ChallengeResultsCompanion({
+    this.id = const Value.absent(),
+    this.playerId = const Value.absent(),
+    this.challengeId = const Value.absent(),
+    this.stars = const Value.absent(),
+    this.best = const Value.absent(),
+    this.attempts = const Value.absent(),
+    this.achievedAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  ChallengeResultsCompanion.insert({
+    this.id = const Value.absent(),
+    required int playerId,
+    required String challengeId,
+    this.stars = const Value.absent(),
+    this.best = const Value.absent(),
+    this.attempts = const Value.absent(),
+    required DateTime achievedAt,
+    required DateTime updatedAt,
+  }) : playerId = Value(playerId),
+       challengeId = Value(challengeId),
+       achievedAt = Value(achievedAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<ChallengeResultRow> custom({
+    Expression<int>? id,
+    Expression<int>? playerId,
+    Expression<String>? challengeId,
+    Expression<int>? stars,
+    Expression<double>? best,
+    Expression<int>? attempts,
+    Expression<DateTime>? achievedAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (playerId != null) 'player_id': playerId,
+      if (challengeId != null) 'challenge_id': challengeId,
+      if (stars != null) 'stars': stars,
+      if (best != null) 'best': best,
+      if (attempts != null) 'attempts': attempts,
+      if (achievedAt != null) 'achieved_at': achievedAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  ChallengeResultsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? playerId,
+    Value<String>? challengeId,
+    Value<int>? stars,
+    Value<double?>? best,
+    Value<int>? attempts,
+    Value<DateTime>? achievedAt,
+    Value<DateTime>? updatedAt,
+  }) {
+    return ChallengeResultsCompanion(
+      id: id ?? this.id,
+      playerId: playerId ?? this.playerId,
+      challengeId: challengeId ?? this.challengeId,
+      stars: stars ?? this.stars,
+      best: best ?? this.best,
+      attempts: attempts ?? this.attempts,
+      achievedAt: achievedAt ?? this.achievedAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (playerId.present) {
+      map['player_id'] = Variable<int>(playerId.value);
+    }
+    if (challengeId.present) {
+      map['challenge_id'] = Variable<String>(challengeId.value);
+    }
+    if (stars.present) {
+      map['stars'] = Variable<int>(stars.value);
+    }
+    if (best.present) {
+      map['best'] = Variable<double>(best.value);
+    }
+    if (attempts.present) {
+      map['attempts'] = Variable<int>(attempts.value);
+    }
+    if (achievedAt.present) {
+      map['achieved_at'] = Variable<DateTime>(achievedAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ChallengeResultsCompanion(')
+          ..write('id: $id, ')
+          ..write('playerId: $playerId, ')
+          ..write('challengeId: $challengeId, ')
+          ..write('stars: $stars, ')
+          ..write('best: $best, ')
+          ..write('attempts: $attempts, ')
+          ..write('achievedAt: $achievedAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3655,6 +4532,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $GoalsTable goals = $GoalsTable(this);
   late final $TrainingPlansTable trainingPlans = $TrainingPlansTable(this);
   late final $PlanRunsTable planRuns = $PlanRunsTable(this);
+  late final $AchievementsTable achievements = $AchievementsTable(this);
+  late final $ChallengeResultsTable challengeResults = $ChallengeResultsTable(
+    this,
+  );
   late final Index playersUid = Index(
     'players_uid',
     'CREATE UNIQUE INDEX players_uid ON players (uid)',
@@ -3683,6 +4564,14 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'plan_runs_uid',
     'CREATE UNIQUE INDEX plan_runs_uid ON plan_runs (uid)',
   );
+  late final Index achievementsKey = Index(
+    'achievements_key',
+    'CREATE UNIQUE INDEX achievements_key ON achievements (player_id, achievement_id, tier)',
+  );
+  late final Index challengeResultsKey = Index(
+    'challenge_results_key',
+    'CREATE UNIQUE INDEX challenge_results_key ON challenge_results (player_id, challenge_id)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3694,6 +4583,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     goals,
     trainingPlans,
     planRuns,
+    achievements,
+    challengeResults,
     playersUid,
     sessionsUid,
     throwsSession,
@@ -3701,6 +4592,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     goalsUid,
     trainingPlansUid,
     planRunsUid,
+    achievementsKey,
+    challengeResultsKey,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -3724,6 +4617,20 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('plan_runs', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'players',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('achievements', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'players',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('challenge_results', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -3820,6 +4727,44 @@ final class $$PlayersTableReferences
     ).filter((f) => f.playerId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_planRunsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$AchievementsTable, List<AchievementRow>>
+  _achievementsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.achievements,
+    aliasName: 'players__id__achievements__player_id',
+  );
+
+  $$AchievementsTableProcessedTableManager get achievementsRefs {
+    final manager = $$AchievementsTableTableManager(
+      $_db,
+      $_db.achievements,
+    ).filter((f) => f.playerId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_achievementsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ChallengeResultsTable, List<ChallengeResultRow>>
+  _challengeResultsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.challengeResults,
+    aliasName: 'players__id__challenge_results__player_id',
+  );
+
+  $$ChallengeResultsTableProcessedTableManager get challengeResultsRefs {
+    final manager = $$ChallengeResultsTableTableManager(
+      $_db,
+      $_db.challengeResults,
+    ).filter((f) => f.playerId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _challengeResultsRefsTable($_db),
+    );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -3961,6 +4906,56 @@ class $$PlayersTableFilterComposer
           }) => $$PlanRunsTableFilterComposer(
             $db: $db,
             $table: $db.planRuns,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> achievementsRefs(
+    Expression<bool> Function($$AchievementsTableFilterComposer f) f,
+  ) {
+    final $$AchievementsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.achievements,
+      getReferencedColumn: (t) => t.playerId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AchievementsTableFilterComposer(
+            $db: $db,
+            $table: $db.achievements,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> challengeResultsRefs(
+    Expression<bool> Function($$ChallengeResultsTableFilterComposer f) f,
+  ) {
+    final $$ChallengeResultsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.challengeResults,
+      getReferencedColumn: (t) => t.playerId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ChallengeResultsTableFilterComposer(
+            $db: $db,
+            $table: $db.challengeResults,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4145,6 +5140,56 @@ class $$PlayersTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> achievementsRefs<T extends Object>(
+    Expression<T> Function($$AchievementsTableAnnotationComposer a) f,
+  ) {
+    final $$AchievementsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.achievements,
+      getReferencedColumn: (t) => t.playerId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AchievementsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.achievements,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> challengeResultsRefs<T extends Object>(
+    Expression<T> Function($$ChallengeResultsTableAnnotationComposer a) f,
+  ) {
+    final $$ChallengeResultsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.challengeResults,
+      getReferencedColumn: (t) => t.playerId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ChallengeResultsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.challengeResults,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$PlayersTableTableManager
@@ -4165,6 +5210,8 @@ class $$PlayersTableTableManager
             bool throwsRefs,
             bool goalsRefs,
             bool planRunsRefs,
+            bool achievementsRefs,
+            bool challengeResultsRefs,
           })
         > {
   $$PlayersTableTableManager(_$AppDatabase db, $PlayersTable table)
@@ -4228,6 +5275,8 @@ class $$PlayersTableTableManager
                 throwsRefs = false,
                 goalsRefs = false,
                 planRunsRefs = false,
+                achievementsRefs = false,
+                challengeResultsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -4236,6 +5285,8 @@ class $$PlayersTableTableManager
                     if (throwsRefs) db.throws,
                     if (goalsRefs) db.goals,
                     if (planRunsRefs) db.planRuns,
+                    if (achievementsRefs) db.achievements,
+                    if (challengeResultsRefs) db.challengeResults,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -4320,6 +5371,48 @@ class $$PlayersTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (achievementsRefs)
+                        await $_getPrefetchedData<
+                          Player,
+                          $PlayersTable,
+                          AchievementRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$PlayersTableReferences
+                              ._achievementsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$PlayersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).achievementsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.playerId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (challengeResultsRefs)
+                        await $_getPrefetchedData<
+                          Player,
+                          $PlayersTable,
+                          ChallengeResultRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$PlayersTableReferences
+                              ._challengeResultsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$PlayersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).challengeResultsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.playerId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -4345,6 +5438,8 @@ typedef $$PlayersTableProcessedTableManager =
         bool throwsRefs,
         bool goalsRefs,
         bool planRunsRefs,
+        bool achievementsRefs,
+        bool challengeResultsRefs,
       })
     >;
 typedef $$SessionsTableCreateCompanionBuilder = SessionsCompanion Function({
@@ -6515,6 +7610,702 @@ typedef $$PlanRunsTableProcessedTableManager =
       PlanRunRow,
       PrefetchHooks Function({bool playerId})
     >;
+typedef $$AchievementsTableCreateCompanionBuilder =
+    AchievementsCompanion Function({
+      Value<int> id,
+      required int playerId,
+      required String achievementId,
+      required int tier,
+      required DateTime unlockedAt,
+    });
+typedef $$AchievementsTableUpdateCompanionBuilder =
+    AchievementsCompanion Function({
+      Value<int> id,
+      Value<int> playerId,
+      Value<String> achievementId,
+      Value<int> tier,
+      Value<DateTime> unlockedAt,
+    });
+
+final class $$AchievementsTableReferences
+    extends BaseReferences<_$AppDatabase, $AchievementsTable, AchievementRow> {
+  $$AchievementsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $PlayersTable _playerIdTable(_$AppDatabase db) =>
+      db.players.createAlias('achievements__player_id__players__id');
+
+  $$PlayersTableProcessedTableManager get playerId {
+    final $_column = $_itemColumn<int>('player_id')!;
+
+    final manager = $$PlayersTableTableManager(
+      $_db,
+      $_db.players,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_playerIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$AchievementsTableFilterComposer
+    extends Composer<_$AppDatabase, $AchievementsTable> {
+  $$AchievementsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get achievementId => $composableBuilder(
+    column: $table.achievementId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get tier => $composableBuilder(
+    column: $table.tier,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get unlockedAt => $composableBuilder(
+    column: $table.unlockedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$PlayersTableFilterComposer get playerId {
+    final $$PlayersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.playerId,
+      referencedTable: $db.players,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlayersTableFilterComposer(
+            $db: $db,
+            $table: $db.players,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AchievementsTableOrderingComposer
+    extends Composer<_$AppDatabase, $AchievementsTable> {
+  $$AchievementsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get achievementId => $composableBuilder(
+    column: $table.achievementId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get tier => $composableBuilder(
+    column: $table.tier,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get unlockedAt => $composableBuilder(
+    column: $table.unlockedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$PlayersTableOrderingComposer get playerId {
+    final $$PlayersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.playerId,
+      referencedTable: $db.players,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlayersTableOrderingComposer(
+            $db: $db,
+            $table: $db.players,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AchievementsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AchievementsTable> {
+  $$AchievementsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get achievementId => $composableBuilder(
+    column: $table.achievementId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get tier =>
+      $composableBuilder(column: $table.tier, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get unlockedAt => $composableBuilder(
+    column: $table.unlockedAt,
+    builder: (column) => column,
+  );
+
+  $$PlayersTableAnnotationComposer get playerId {
+    final $$PlayersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.playerId,
+      referencedTable: $db.players,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlayersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.players,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AchievementsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $AchievementsTable,
+          AchievementRow,
+          $$AchievementsTableFilterComposer,
+          $$AchievementsTableOrderingComposer,
+          $$AchievementsTableAnnotationComposer,
+          $$AchievementsTableCreateCompanionBuilder,
+          $$AchievementsTableUpdateCompanionBuilder,
+          (AchievementRow, $$AchievementsTableReferences),
+          AchievementRow,
+          PrefetchHooks Function({bool playerId})
+        > {
+  $$AchievementsTableTableManager(_$AppDatabase db, $AchievementsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AchievementsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AchievementsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AchievementsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> playerId = const Value.absent(),
+                Value<String> achievementId = const Value.absent(),
+                Value<int> tier = const Value.absent(),
+                Value<DateTime> unlockedAt = const Value.absent(),
+              }) => AchievementsCompanion(
+                id: id,
+                playerId: playerId,
+                achievementId: achievementId,
+                tier: tier,
+                unlockedAt: unlockedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int playerId,
+                required String achievementId,
+                required int tier,
+                required DateTime unlockedAt,
+              }) => AchievementsCompanion.insert(
+                id: id,
+                playerId: playerId,
+                achievementId: achievementId,
+                tier: tier,
+                unlockedAt: unlockedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$AchievementsTable, AchievementRow>(table),
+                  $$AchievementsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({playerId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (playerId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.playerId,
+                        referencedTable: $$AchievementsTableReferences
+                            ._playerIdTable(db),
+                        referencedColumn: $$AchievementsTableReferences
+                            ._playerIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$AchievementsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $AchievementsTable,
+      AchievementRow,
+      $$AchievementsTableFilterComposer,
+      $$AchievementsTableOrderingComposer,
+      $$AchievementsTableAnnotationComposer,
+      $$AchievementsTableCreateCompanionBuilder,
+      $$AchievementsTableUpdateCompanionBuilder,
+      (AchievementRow, $$AchievementsTableReferences),
+      AchievementRow,
+      PrefetchHooks Function({bool playerId})
+    >;
+typedef $$ChallengeResultsTableCreateCompanionBuilder =
+    ChallengeResultsCompanion Function({
+      Value<int> id,
+      required int playerId,
+      required String challengeId,
+      Value<int> stars,
+      Value<double?> best,
+      Value<int> attempts,
+      required DateTime achievedAt,
+      required DateTime updatedAt,
+    });
+typedef $$ChallengeResultsTableUpdateCompanionBuilder =
+    ChallengeResultsCompanion Function({
+      Value<int> id,
+      Value<int> playerId,
+      Value<String> challengeId,
+      Value<int> stars,
+      Value<double?> best,
+      Value<int> attempts,
+      Value<DateTime> achievedAt,
+      Value<DateTime> updatedAt,
+    });
+
+final class $$ChallengeResultsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $ChallengeResultsTable,
+          ChallengeResultRow
+        > {
+  $$ChallengeResultsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $PlayersTable _playerIdTable(_$AppDatabase db) =>
+      db.players.createAlias('challenge_results__player_id__players__id');
+
+  $$PlayersTableProcessedTableManager get playerId {
+    final $_column = $_itemColumn<int>('player_id')!;
+
+    final manager = $$PlayersTableTableManager(
+      $_db,
+      $_db.players,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_playerIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ChallengeResultsTableFilterComposer
+    extends Composer<_$AppDatabase, $ChallengeResultsTable> {
+  $$ChallengeResultsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get challengeId => $composableBuilder(
+    column: $table.challengeId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get stars => $composableBuilder(
+    column: $table.stars,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get best => $composableBuilder(
+    column: $table.best,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get attempts => $composableBuilder(
+    column: $table.attempts,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get achievedAt => $composableBuilder(
+    column: $table.achievedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$PlayersTableFilterComposer get playerId {
+    final $$PlayersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.playerId,
+      referencedTable: $db.players,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlayersTableFilterComposer(
+            $db: $db,
+            $table: $db.players,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ChallengeResultsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ChallengeResultsTable> {
+  $$ChallengeResultsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get challengeId => $composableBuilder(
+    column: $table.challengeId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get stars => $composableBuilder(
+    column: $table.stars,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get best => $composableBuilder(
+    column: $table.best,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get attempts => $composableBuilder(
+    column: $table.attempts,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get achievedAt => $composableBuilder(
+    column: $table.achievedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$PlayersTableOrderingComposer get playerId {
+    final $$PlayersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.playerId,
+      referencedTable: $db.players,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlayersTableOrderingComposer(
+            $db: $db,
+            $table: $db.players,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ChallengeResultsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ChallengeResultsTable> {
+  $$ChallengeResultsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get challengeId => $composableBuilder(
+    column: $table.challengeId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get stars =>
+      $composableBuilder(column: $table.stars, builder: (column) => column);
+
+  GeneratedColumn<double> get best =>
+      $composableBuilder(column: $table.best, builder: (column) => column);
+
+  GeneratedColumn<int> get attempts =>
+      $composableBuilder(column: $table.attempts, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get achievedAt => $composableBuilder(
+    column: $table.achievedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$PlayersTableAnnotationComposer get playerId {
+    final $$PlayersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.playerId,
+      referencedTable: $db.players,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlayersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.players,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ChallengeResultsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ChallengeResultsTable,
+          ChallengeResultRow,
+          $$ChallengeResultsTableFilterComposer,
+          $$ChallengeResultsTableOrderingComposer,
+          $$ChallengeResultsTableAnnotationComposer,
+          $$ChallengeResultsTableCreateCompanionBuilder,
+          $$ChallengeResultsTableUpdateCompanionBuilder,
+          (ChallengeResultRow, $$ChallengeResultsTableReferences),
+          ChallengeResultRow,
+          PrefetchHooks Function({bool playerId})
+        > {
+  $$ChallengeResultsTableTableManager(
+    _$AppDatabase db,
+    $ChallengeResultsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ChallengeResultsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ChallengeResultsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ChallengeResultsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> playerId = const Value.absent(),
+                Value<String> challengeId = const Value.absent(),
+                Value<int> stars = const Value.absent(),
+                Value<double?> best = const Value.absent(),
+                Value<int> attempts = const Value.absent(),
+                Value<DateTime> achievedAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => ChallengeResultsCompanion(
+                id: id,
+                playerId: playerId,
+                challengeId: challengeId,
+                stars: stars,
+                best: best,
+                attempts: attempts,
+                achievedAt: achievedAt,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int playerId,
+                required String challengeId,
+                Value<int> stars = const Value.absent(),
+                Value<double?> best = const Value.absent(),
+                Value<int> attempts = const Value.absent(),
+                required DateTime achievedAt,
+                required DateTime updatedAt,
+              }) => ChallengeResultsCompanion.insert(
+                id: id,
+                playerId: playerId,
+                challengeId: challengeId,
+                stars: stars,
+                best: best,
+                attempts: attempts,
+                achievedAt: achievedAt,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$ChallengeResultsTable, ChallengeResultRow>(
+                    table,
+                  ),
+                  $$ChallengeResultsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({playerId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (playerId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.playerId,
+                        referencedTable: $$ChallengeResultsTableReferences
+                            ._playerIdTable(db),
+                        referencedColumn: $$ChallengeResultsTableReferences
+                            ._playerIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$ChallengeResultsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ChallengeResultsTable,
+      ChallengeResultRow,
+      $$ChallengeResultsTableFilterComposer,
+      $$ChallengeResultsTableOrderingComposer,
+      $$ChallengeResultsTableAnnotationComposer,
+      $$ChallengeResultsTableCreateCompanionBuilder,
+      $$ChallengeResultsTableUpdateCompanionBuilder,
+      (ChallengeResultRow, $$ChallengeResultsTableReferences),
+      ChallengeResultRow,
+      PrefetchHooks Function({bool playerId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -6531,4 +8322,8 @@ class $AppDatabaseManager {
       $$TrainingPlansTableTableManager(_db, _db.trainingPlans);
   $$PlanRunsTableTableManager get planRuns =>
       $$PlanRunsTableTableManager(_db, _db.planRuns);
+  $$AchievementsTableTableManager get achievements =>
+      $$AchievementsTableTableManager(_db, _db.achievements);
+  $$ChallengeResultsTableTableManager get challengeResults =>
+      $$ChallengeResultsTableTableManager(_db, _db.challengeResults);
 }

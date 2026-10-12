@@ -148,7 +148,7 @@ void main() {
       await a.plans.delete(deleted);
       final json = await BackupService(a.db).exportJson();
       final data = jsonDecode(json) as Map<String, Object?>;
-      expect(data['version'], 3);
+      expect(data['version'], greaterThanOrEqualTo(3));
       expect(data['plans'], hasLength(2));
 
       final r = await BackupService(b.db).importJson(json);

@@ -3,6 +3,9 @@ import 'package:dartlab/core/design/looks.dart';
 import 'package:dartlab/core/router/app_router.dart';
 import 'package:dartlab/core/settings/app_settings.dart';
 import 'package:dartlab/features/board/domain/board_geometry.dart';
+import 'package:dartlab/features/challenges/domain/challenge_catalog.dart';
+import 'package:dartlab/features/challenges/presentation/challenge_routes.dart';
+import 'package:dartlab/features/challenges/presentation/challenge_run_controller.dart';
 import 'package:dartlab/features/dart_source/data/simulator_source.dart';
 import 'package:dartlab/features/dart_source/presentation/dart_source_providers.dart';
 import 'package:dartlab/features/games/domain/game_catalog.dart';
@@ -138,6 +141,9 @@ void main() {
       await visit(Routes.gameSetup('x01_solo'));
       await visit(PlanRoutes.list);
       await visit(PlanRoutes.auto);
+      await visit(ChallengeRoutes.list);
+      await visit(ChallengeRoutes.detail('c1-1'));
+      await visit(ChallengeRoutes.detail('c2-1'));
       await visit(Routes.board);
       await visit(Routes.settings);
       await visit(MatchRoutes.hub);
@@ -152,7 +158,7 @@ void main() {
           );
       await visit(MatchRoutes.tournament);
       await visit(Routes.stats);
-      for (final tab in ['scoring', 'doubles', 'games', 'records', 'overview']) {
+      for (final tab in ['scoring', 'doubles', 'games', 'records', 'achievements', 'overview']) {
         await tester.ensureVisible(find.byKey(Key('stats-tab-$tab')));
         await tester.pumpAndSettle();
         await tester.tap(find.byKey(Key('stats-tab-$tab')));
@@ -171,6 +177,22 @@ void main() {
       await c.read(activeGameProvider.notifier).end();
       await frames(tester);
       expect(tester.takeException(), isNull, reason: 'result');
+      await c.read(activeGameProvider.notifier).close();
+      await frames(tester, 3);
+
+      // Challenge: Aufgabe über dem Spiel, am Ende die Wertung mit Sternen.
+      await c.read(challengeRunProvider.notifier).start(ChallengeCatalog.byId('c1-4')!);
+      router.go(Routes.play);
+      await frames(tester);
+      expect(find.byKey(const Key('challenge-task')), findsOneWidget);
+      for (var i = 0; i < 30; i++) {
+        (c.read(dartSourceProvider) as SimulatorSource).throwAt(BoardGeometry.centerOf(Segment.bull));
+        await tester.pump(const Duration(milliseconds: 20));
+      }
+      await frames(tester, 20);
+      expect(find.byKey(const Key('challenge-result')), findsOneWidget);
+      expect(tester.takeException(), isNull, reason: 'challenge');
+      c.read(challengeRunProvider.notifier).clear();
       await c.read(activeGameProvider.notifier).close();
       await frames(tester, 3);
 

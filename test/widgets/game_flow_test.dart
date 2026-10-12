@@ -21,6 +21,9 @@ void main() {
     final container = await pumpApp(tester, prefs: {'game.config.bull_drill': '{"visits":1}'});
     await tester.tap(find.text('Training').first);
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.byKey(const Key('game-bull_drill')), 200, scrollable: find.byType(Scrollable).last);
+    await tester.ensureVisible(find.byKey(const Key('game-bull_drill')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('game-bull_drill')));
     await tester.pumpAndSettle();
 
@@ -52,6 +55,9 @@ void main() {
     final container = await pumpApp(tester, size: const Size(390, 844));
     await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text('Training')));
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.byKey(const Key('game-around_the_clock')), 200, scrollable: find.byType(Scrollable).last);
+    await tester.ensureVisible(find.byKey(const Key('game-around_the_clock')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('game-around_the_clock')));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(find.byKey(const Key('start-game')), 300, scrollable: find.byType(Scrollable).last);
@@ -63,6 +69,7 @@ void main() {
     await tester.tap(find.byKey(const Key('confirm-end')));
     await tester.pumpAndSettle();
     expect(container.read(activeGameProvider), isNull);
+    await tester.scrollUntilVisible(find.byKey(const Key('game-around_the_clock')), 200, scrollable: find.byType(Scrollable).last);
     expect(find.byKey(const Key('game-around_the_clock')), findsOneWidget);
   });
 

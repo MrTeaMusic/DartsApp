@@ -20,6 +20,8 @@ import '../../dart_source/presentation/diagnostics_dialog.dart';
 import '../../dart_source/presentation/recording_sheet.dart';
 import '../../dart_source/presentation/source_status_badge.dart';
 import '../../profiles/presentation/profiles_card.dart';
+import '../../progress/presentation/daily_goal_card.dart';
+import '../../progress/presentation/progress_texts.dart';
 import '../../sync/presentation/sync_card.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -101,6 +103,19 @@ class SettingsScreen extends ConsumerWidget {
                   title: Text(l10n.settingsDoubleZoom),
                   subtitle: Text(l10n.settingsDoubleZoomHint),
                   secondary: const Icon(Icons.zoom_in_rounded),
+                ),
+              ),
+              const SectionGap(),
+              SectionHeader(l10n.settingsDailyGoal),
+              AppCard(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                child: ListTile(
+                  key: const Key('settings-daily-goal'),
+                  leading: const Icon(Icons.track_changes_rounded),
+                  title: Text(l10n.dgPerDay(settings.dailyGoal.amount, l10n.goalUnit(settings.dailyGoal.unit))),
+                  subtitle: Text(l10n.dgRules),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => showDailyGoalEditor(context),
                 ),
               ),
               const SectionGap(),

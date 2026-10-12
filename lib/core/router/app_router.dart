@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/challenges/presentation/challenge_routes.dart';
 import '../../features/dart_source/presentation/debug_screen.dart';
 import '../../features/games/presentation/game_play_screen.dart';
 import '../../features/games/presentation/game_setup_screen.dart';
@@ -46,6 +47,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                 // Trainingspläne vor :gameId, damit "plaene" kein Spiel ist.
                 ...planRoutes,
                 ...matchRoutes,
+                ...challengeRoutes,
                 GoRoute(
                   path: ':gameId',
                   builder: (_, state) => GameSetupScreen(gameId: state.pathParameters['gameId']!),

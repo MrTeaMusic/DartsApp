@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../challenges/domain/challenge_catalog.dart';
 
 /// Ergebnis eines Abgleichs oder Imports.
 class MergeResult {
@@ -11,6 +12,8 @@ class MergeResult {
     this.throws = 0,
     this.goals = 0,
     this.plans = 0,
+    this.achievements = 0,
+    this.challenges = 0,
     this.skipped = 0,
     this.updated = 0,
   });
@@ -24,13 +27,17 @@ class MergeResult {
   /// Neu angelegte eigene Trainingspläne.
   final int plans;
 
+  /// Neue Erfolgs-Stufen und neue bzw. verbesserte Challenge-Ergebnisse.
+  final int achievements;
+  final int challenges;
+
   /// Sessions, die schon vorhanden waren.
   final int skipped;
 
   /// Geänderte oder gelöschte Profile, Ziele und Trainingspläne.
   final int updated;
 
-  bool get changedAnything => players + sessions + goals + plans + updated > 0;
+  bool get changedAnything => players + sessions + goals + plans + achievements + challenges + updated > 0;
 
   MergeResult operator +(MergeResult o) => MergeResult(
         players: players + o.players,
@@ -38,12 +45,23 @@ class MergeResult {
         throws: throws + o.throws,
         goals: goals + o.goals,
         plans: plans + o.plans,
+        achievements: achievements + o.achievements,
+        challenges: challenges + o.challenges,
         skipped: skipped + o.skipped,
         updated: updated + o.updated,
       );
 
-  Map<String, int> toJson() =>
-      {'players': players, 'sessions': sessions, 'throws': throws, 'goals': goals, 'plans': plans, 'skipped': skipped, 'updated': updated};
+  Map<String, int> toJson() => {
+        'players': players,
+        'sessions': sessions,
+        'throws': throws,
+        'goals': goals,
+        'plans': plans,
+        'achievements': achievements,
+        'challenges': challenges,
+        'skipped': skipped,
+        'updated': updated,
+      };
 
   static MergeResult fromJson(Map<String, Object?> j) {
     int n(String k) => (j[k] as num?)?.toInt() ?? 0;
@@ -53,27 +71,48 @@ class MergeResult {
       throws: n('throws'),
       goals: n('goals'),
       plans: n('plans'),
+      achievements: n('achievements'),
+      challenges: n('challenges'),
       skipped: n('skipped'),
       updated: n('updated'),
     );
   }
 }
 
-/// Was ein Gerät hat: alle Profile, Ziele und eigenen Trainingspläne (klein,
-/// inklusive gelöschter) und die IDs der abgeschlossenen Sessions.
+/// Was ein Gerät hat: alle Profile, Ziele, eigenen Trainingspläne, Erfolge
+/// und Challenge-Ergebnisse (klein, inklusive gelöschter) und die IDs der
+/// abgeschlossenen Sessions.
 class SyncManifest {
-  const SyncManifest({required this.players, required this.goals, this.plans = const [], required this.sessionUids});
+  const SyncManifest({
+    required this.players,
+    required this.goals,
+    this.plans = const [],
+    this.achievements = const [],
+    this.challenges = const [],
+    required this.sessionUids,
+  });
   final List<Map<String, Object?>> players;
   final List<Map<String, Object?>> goals;
   final List<Map<String, Object?>> plans;
+  final List<Map<String, Object?>> achievements;
+  final List<Map<String, Object?>> challenges;
   final Set<String> sessionUids;
 
-  Map<String, Object?> toJson() => {'players': players, 'goals': goals, 'plans': plans, 'sessions': sessionUids.toList()};
+  Map<String, Object?> toJson() => {
+        'players': players,
+        'goals': goals,
+        'plans': plans,
+        'achievements': achievements,
+        'challenges': challenges,
+        'sessions': sessionUids.toList(),
+      };
 
   static SyncManifest fromJson(Map<String, Object?> j) => SyncManifest(
         players: _maps(j['players']),
         goals: _maps(j['goals']),
         plans: _maps(j['plans']),
+        achievements: _maps(j['achievements']),
+        challenges: _maps(j['challenges']),
         sessionUids: {for (final u in (j['sessions'] as List? ?? const [])) if (u is String) u},
       );
 }
@@ -86,7 +125,8 @@ List<Map<String, Object?>> _maps(Object? l) =>
 ///
 /// Ältere Backups (Version 1) haben keine `uid`; dann wird wie früher über
 /// Profilnamen und Startzeit zugeordnet, verknüpft über die lokalen `id`s.
-/// Trainingspläne gibt es ab Version 3; ältere Pakete haben keine.
+/// Trainingspläne gibt es ab Version 3, Erfolge und Challenge-Ergebnisse
+/// ab Version 4; ältere Pakete haben keine.
 class SyncBundle {
   const SyncBundle({
     this.players = const [],
@@ -94,14 +134,26 @@ class SyncBundle {
     this.throws = const [],
     this.goals = const [],
     this.plans = const [],
+    this.achievements = const [],
+    this.challenges = const [],
   });
   final List<Map<String, Object?>> players;
   final List<Map<String, Object?>> sessions;
   final List<Map<String, Object?>> throws;
   final List<Map<String, Object?>> goals;
   final List<Map<String, Object?>> plans;
+  final List<Map<String, Object?>> achievements;
+  final List<Map<String, Object?>> challenges;
 
-  Map<String, Object?> toJson() => {'players': players, 'sessions': sessions, 'throws': throws, 'goals': goals, 'plans': plans};
+  Map<String, Object?> toJson() => {
+        'players': players,
+        'sessions': sessions,
+        'throws': throws,
+        'goals': goals,
+        'plans': plans,
+        'achievements': achievements,
+        'challenges': challenges,
+      };
 
   static SyncBundle fromJson(Map<String, Object?> j) => SyncBundle(
         players: _maps(j['players']),
@@ -109,6 +161,8 @@ class SyncBundle {
         throws: _maps(j['throws']),
         goals: _maps(j['goals']),
         plans: _maps(j['plans']),
+        achievements: _maps(j['achievements']),
+        challenges: _maps(j['challenges']),
       );
 }
 
@@ -124,6 +178,10 @@ class SyncBundle {
 /// * Gleich benannte Profile bzw. gleiche Zielart auf zwei Geräten werden zu
 ///   einem; beide Seiten übernehmen die kleinere `uid` und landen so beim
 ///   selben Ergebnis.
+/// * Erfolge (je Profil, Erfolg und Stufe): fehlende werden übernommen, bei
+///   beiden gilt das frühere Datum.
+/// * Challenge-Ergebnisse (je Profil und Challenge): mehr Sterne, besserer
+///   Bestwert und mehr Versuche gewinnen, jeweils für sich.
 class SyncStore {
   SyncStore(this.db);
   final AppDatabase db;
@@ -135,6 +193,8 @@ class SyncStore {
     final byId = {for (final p in players) p.id: p.uid};
     final goals = await db.select(db.goals).get();
     final plans = await db.select(db.trainingPlans).get();
+    final achievements = await db.select(db.achievements).get();
+    final challenges = await db.select(db.challengeResults).get();
     final sessions = await (db.selectOnly(db.sessions)
           ..addColumns([db.sessions.uid])
           ..where(db.sessions.endedAt.isNotNull()))
@@ -144,6 +204,8 @@ class SyncStore {
       players: [for (final p in players) _player(p)],
       goals: [for (final g in goals) if (byId[g.playerId] != null) _goal(g, byId[g.playerId]!)],
       plans: [for (final p in plans) _plan(p)],
+      achievements: [for (final a in achievements) if (byId[a.playerId] != null) _achievement(a, byId[a.playerId]!)],
+      challenges: [for (final c in challenges) if (byId[c.playerId] != null) _challenge(c, byId[c.playerId]!)],
       sessionUids: sessions.toSet(),
     );
   }
@@ -153,14 +215,18 @@ SELECT
   (SELECT count(*) FROM sessions WHERE ended_at IS NOT NULL) || ':' ||
   (SELECT count(*) || '-' || coalesce(max(coalesce(updated_at, created_at)), 0) FROM players) || ':' ||
   (SELECT count(*) || '-' || coalesce(max(coalesce(updated_at, created_at)), 0) FROM goals) || ':' ||
-  (SELECT count(*) || '-' || coalesce(max(coalesce(updated_at, created_at)), 0) FROM training_plans) AS sig''';
+  (SELECT count(*) || '-' || coalesce(max(coalesce(updated_at, created_at)), 0) FROM training_plans) || ':' ||
+  (SELECT count(*) FROM achievements) || ':' ||
+  (SELECT count(*) || '-' || coalesce(max(updated_at), 0) FROM challenge_results) AS sig''';
 
   /// Kurzer Fingerabdruck dessen, was abgeglichen wird. Ändert er sich, gibt
-  /// es etwas Neues (abgeschlossene Session, Profil, Ziel oder Plan geändert).
+  /// es etwas Neues (abgeschlossene Session, Profil, Ziel, Plan, Erfolg oder
+  /// Challenge-Ergebnis geändert).
   Future<String> signature() => db.customSelect(_signatureSql).map((r) => r.read<String>('sig')).getSingle();
 
   Stream<String> watchSignature() => db
-      .customSelect(_signatureSql, readsFrom: {db.sessions, db.players, db.goals, db.trainingPlans})
+      .customSelect(_signatureSql,
+          readsFrom: {db.sessions, db.players, db.goals, db.trainingPlans, db.achievements, db.challengeResults})
       .map((r) => r.read<String>('sig'))
       .watchSingle();
 
@@ -194,12 +260,19 @@ SELECT
             .get();
     final goals = await (db.select(db.goals)..where((g) => playerId == null ? const Constant(true) : g.playerId.equals(playerId))).get();
     final plans = await (db.select(db.trainingPlans)..orderBy([(p) => OrderingTerm.asc(p.id)])).get();
+    final achievements =
+        await (db.select(db.achievements)..where((a) => playerId == null ? const Constant(true) : a.playerId.equals(playerId))).get();
+    final challenges = await (db.select(db.challengeResults)
+          ..where((c) => playerId == null ? const Constant(true) : c.playerId.equals(playerId)))
+        .get();
     return SyncBundle(
       players: [for (final p in players) _player(p)],
       sessions: [for (final s in sessions) _session(s, playerUids[s.playerId]!)],
       throws: [for (final t in throws) _throw(t, sessionUid[t.sessionId]!, playerUids[t.playerId]!)],
       goals: [for (final g in goals) if (playerUids[g.playerId] != null) _goal(g, playerUids[g.playerId]!)],
       plans: [for (final p in plans) _plan(p)],
+      achievements: [for (final a in achievements) if (playerUids[a.playerId] != null) _achievement(a, playerUids[a.playerId]!)],
+      challenges: [for (final c in challenges) if (playerUids[c.playerId] != null) _challenge(c, playerUids[c.playerId]!)],
     );
   }
 
@@ -240,6 +313,23 @@ SELECT
         'createdAt': _time(p.createdAt),
         'updatedAt': _time(p.updatedAt),
         'deletedAt': _time(p.deletedAt),
+      };
+
+  Map<String, Object?> _achievement(AchievementRow a, String playerUid) => {
+        'playerUid': playerUid,
+        'achievementId': a.achievementId,
+        'tier': a.tier,
+        'unlockedAt': _time(a.unlockedAt),
+      };
+
+  Map<String, Object?> _challenge(ChallengeResultRow c, String playerUid) => {
+        'playerUid': playerUid,
+        'challengeId': c.challengeId,
+        'stars': c.stars,
+        'best': c.best,
+        'attempts': c.attempts,
+        'achievedAt': _time(c.achievedAt),
+        'updatedAt': _time(c.updatedAt),
       };
 
   Map<String, Object?> _session(SessionRow s, String playerUid) => {
@@ -286,15 +376,20 @@ SELECT
         final goals = await _mergeGoals(bundle.goals, players);
         final plans = await _mergePlans(bundle.plans);
         final sessions = await _mergeSessions(bundle.sessions, bundle.throws, players);
-        return players.result + goals + plans + sessions;
+        final achievements = await _mergeAchievements(bundle.achievements, players);
+        final challenges = await _mergeChallenges(bundle.challenges, players);
+        return players.result + goals + plans + sessions + achievements + challenges;
       });
 
-  /// Nur Profile, Ziele und Trainingspläne (aus einem Manifest).
+  /// Nur Profile, Ziele, Trainingspläne, Erfolge und Challenge-Ergebnisse
+  /// (aus einem Manifest).
   Future<MergeResult> mergeMeta(SyncManifest m) => db.transaction(() async {
         final players = await _mergePlayers(m.players);
         final goals = await _mergeGoals(m.goals, players);
         final plans = await _mergePlans(m.plans);
-        return players.result + goals + plans;
+        final achievements = await _mergeAchievements(m.achievements, players);
+        final challenges = await _mergeChallenges(m.challenges, players);
+        return players.result + goals + plans + achievements + challenges;
       });
 
   static DateTime _stamp(DateTime created, DateTime? updated) => updated ?? created;
@@ -366,6 +461,8 @@ SELECT
     await (db.delete(db.sessions)..where((s) => s.playerId.equals(id))).go();
     await (db.delete(db.throws)..where((t) => t.playerId.equals(id))).go();
     await (db.delete(db.goals)..where((g) => g.playerId.equals(id))).go();
+    await (db.delete(db.achievements)..where((a) => a.playerId.equals(id))).go();
+    await (db.delete(db.challengeResults)..where((c) => c.playerId.equals(id))).go();
     await (db.update(db.players)..where((p) => p.id.equals(id)))
         .write(PlayersCompanion(isDefault: const Value(false), deletedAt: Value(at), updatedAt: Value(at)));
     final rest = active.where((p) => p.id != id).toList();
@@ -479,6 +576,101 @@ SELECT
       }
     }
     return MergeResult(plans: created, updated: updated);
+  }
+
+  /// Erfolgs-Stufen: fehlende übernehmen, bei vorhandenen gilt das frühere
+  /// Datum.
+  Future<MergeResult> _mergeAchievements(List<Map<String, Object?>> incoming, _PlayerMap players) async {
+    var created = 0;
+    var updated = 0;
+    for (final j in incoming) {
+      final player = await players.resolve(this, j);
+      if (player == null || player.deleted) continue;
+      final id = j['achievementId'];
+      final tier = j['tier'];
+      final at = _parse(j['unlockedAt']);
+      if (id is! String || id.isEmpty || tier is! num || at == null) continue;
+      final local = await (db.select(db.achievements)
+            ..where((a) => a.playerId.equals(player.id) & a.achievementId.equals(id) & a.tier.equals(tier.toInt())))
+          .getSingleOrNull();
+      if (local == null) {
+        await db.into(db.achievements).insert(AchievementsCompanion.insert(
+              playerId: player.id,
+              achievementId: id,
+              tier: tier.toInt(),
+              unlockedAt: at,
+            ));
+        created++;
+      } else if (at.isBefore(local.unlockedAt)) {
+        await (db.update(db.achievements)..where((a) => a.id.equals(local.id)))
+            .write(AchievementsCompanion(unlockedAt: Value(at)));
+        updated++;
+      }
+    }
+    return MergeResult(achievements: created, updated: updated);
+  }
+
+  /// Challenge-Ergebnisse: Sterne, Bestwert und Versuche jeweils das Bessere.
+  /// Das Datum gehört zum besseren Ergebnis, bei Gleichstand das frühere.
+  Future<MergeResult> _mergeChallenges(List<Map<String, Object?>> incoming, _PlayerMap players) async {
+    var changed = 0;
+    for (final j in incoming) {
+      final player = await players.resolve(this, j);
+      if (player == null || player.deleted) continue;
+      final id = j['challengeId'];
+      final rawStars = j['stars'];
+      if (id is! String || id.isEmpty || rawStars is! num) continue;
+      final stars = rawStars.toInt().clamp(0, 3);
+      final best = (j['best'] as num?)?.toDouble();
+      final attempts = (j['attempts'] as num?)?.toInt() ?? 0;
+      final achievedAt = _parse(j['achievedAt']) ?? DateTime.now();
+      final updatedAt = _parse(j['updatedAt']) ?? achievedAt;
+      final local = await (db.select(db.challengeResults)
+            ..where((c) => c.playerId.equals(player.id) & c.challengeId.equals(id)))
+          .getSingleOrNull();
+      if (local == null) {
+        await db.into(db.challengeResults).insert(ChallengeResultsCompanion.insert(
+              playerId: player.id,
+              challengeId: id,
+              stars: Value(stars),
+              best: Value(best),
+              attempts: Value(attempts),
+              achievedAt: achievedAt,
+              updatedAt: updatedAt,
+            ));
+        changed++;
+        continue;
+      }
+      final lower = ChallengeCatalog.byId(id)?.lowerIsBetter ?? false;
+      final localBest = local.best;
+      final theirBestBetter = best != null && (localBest == null || (lower ? best < localBest : best > localBest));
+      final theirStarsBetter = stars > local.stars;
+      final theirsBetter = theirStarsBetter || (stars == local.stars && theirBestBetter);
+      final same = stars == local.stars && best == localBest;
+      final next = (
+        stars: theirStarsBetter ? stars : local.stars,
+        best: theirBestBetter ? best : localBest,
+        attempts: attempts > local.attempts ? attempts : local.attempts,
+        achievedAt: theirsBetter || (same && achievedAt.isBefore(local.achievedAt)) ? achievedAt : local.achievedAt,
+        updatedAt: updatedAt.isAfter(local.updatedAt) ? updatedAt : local.updatedAt,
+      );
+      if (next.stars == local.stars &&
+          next.best == localBest &&
+          next.attempts == local.attempts &&
+          next.achievedAt == local.achievedAt &&
+          next.updatedAt == local.updatedAt) {
+        continue;
+      }
+      await (db.update(db.challengeResults)..where((c) => c.id.equals(local.id))).write(ChallengeResultsCompanion(
+        stars: Value(next.stars),
+        best: Value(next.best),
+        attempts: Value(next.attempts),
+        achievedAt: Value(next.achievedAt),
+        updatedAt: Value(next.updatedAt),
+      ));
+      changed++;
+    }
+    return MergeResult(challenges: changed);
   }
 
   Future<MergeResult> _mergeSessions(
