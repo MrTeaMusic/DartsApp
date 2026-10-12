@@ -7,6 +7,7 @@ import '../../../core/l10n.dart';
 import '../../games/domain/game_catalog.dart';
 import '../../games/presentation/game_texts.dart';
 import '../../profiles/presentation/active_player.dart';
+import '../../progress/presentation/achievements_tab.dart';
 import '../data/stats_repository.dart';
 import '../domain/game_metrics.dart';
 import '../domain/stats_calculator.dart';
@@ -82,7 +83,7 @@ class StatsScreen extends ConsumerWidget {
       // Reiter bündig mit dem Seitenrand (Label-Abstand 16 abziehen).
       final inset = AppPageBar.contentInset(context, outer.maxWidth, double.infinity);
       return DefaultTabController(
-        length: 5,
+        length: 6,
         child: Scaffold(
           appBar: AppPageBar(
             title: Text(l10n.statsTitle),
@@ -101,6 +102,7 @@ class StatsScreen extends ConsumerWidget {
                 Tab(key: const Key('stats-tab-doubles'), text: l10n.statsTabDoubles),
                 Tab(key: const Key('stats-tab-games'), text: l10n.statsTabGames),
                 Tab(key: const Key('stats-tab-records'), text: l10n.statsTabRecords),
+                Tab(key: const Key('stats-tab-achievements'), text: l10n.statsTabAchievements),
               ],
             ),
           ),
@@ -110,9 +112,13 @@ class StatsScreen extends ConsumerWidget {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Padding(
-                  padding: EdgeInsets.fromLTRB(pad, AppSpacing.m, pad, AppSpacing.s),
-                  child: _Filters(view: view),
+                // Zeitraum und Spiel gelten nicht für die Erfolge.
+                _HideOnTab(
+                  index: _achievementsTab,
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(pad, AppSpacing.m, pad, AppSpacing.s),
+                    child: _Filters(view: view),
+                  ),
                 ),
                 Expanded(
                   child: view == null
@@ -124,6 +130,7 @@ class StatsScreen extends ConsumerWidget {
                             DoublesTab(view: view, wide: wide, pad: pad),
                             GamesTab(view: view, wide: wide, pad: pad),
                             RecordsTab(view: view, wide: wide, pad: pad),
+                            AchievementsTab(wide: wide, pad: pad),
                           ],
                         ),
                 ),
@@ -133,6 +140,30 @@ class StatsScreen extends ConsumerWidget {
         ),
       );
     });
+  }
+}
+
+/// Index des Reiters „Erfolge“.
+const int _achievementsTab = 5;
+
+/// Blendet [child] aus, solange der Reiter [index] gewählt ist.
+class _HideOnTab extends StatelessWidget {
+  const _HideOnTab({required this.index, required this.child});
+  final int index;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = DefaultTabController.of(context);
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, child) => AnimatedSize(
+        duration: const Duration(milliseconds: 200),
+        alignment: Alignment.topCenter,
+        child: controller.index == index ? const SizedBox(width: double.infinity) : child,
+      ),
+      child: child,
+    );
   }
 }
 

@@ -1509,5 +1509,486 @@
   },
   "doubleZoomLabel": "Doppel-Zoom",
   "settingsDoubleZoom": "Doppel-Zoom",
-  "settingsDoubleZoomHint": "Zeigt das Doppel, auf das du werfen musst, vergrößert neben der Scheibe"
+  "settingsDoubleZoomHint": "Zeigt das Doppel, auf das du werfen musst, vergrößert neben der Scheibe",
+  "dgTitle": "Tagesziel",
+  "dgToday": "Heute",
+  "dgOf": "von {amount} {unit}",
+  "@dgOf": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "dgTodayLine": "Heute {value} / {amount} {unit}",
+  "@dgTodayLine": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "dgRemaining": "Noch {count} {unit}",
+  "@dgRemaining": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "dgReached": "Tagesziel erreicht",
+  "dgStreak": "Serie",
+  "dgStreakDays": "{count, plural, =1{1 Tag} other{{count} Tage}}",
+  "@dgStreakDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dgBest": "Bestwert {count}",
+  "@dgBest": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dgFreeDayOpen": "Freier Tag diese Woche noch frei",
+  "dgFreeDayUsed": "Freier Tag diese Woche genutzt",
+  "dgEdit": "Tagesziel ändern",
+  "dgUnitLabel": "Einheit",
+  "dgAmountLabel": "Menge",
+  "dgSave": "Speichern",
+  "dgCancel": "Abbrechen",
+  "dgPerDay": "{amount} {unit} pro Tag",
+  "@dgPerDay": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "dgRules": "Die Serie zählt Tage mit erreichtem Tagesziel. Ein freier Tag pro Kalenderwoche (Mo–So) unterbricht sie nicht.",
+  "dgCelebration": "{amount} {unit} heute",
+  "@dgCelebration": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "dgUnitDarts": "Darts",
+  "dgUnitMinutes": "Minuten",
+  "dgUnitSessions": "Sessions",
+  "statsTabAchievements": "Erfolge",
+  "achTitle": "Erfolge",
+  "achSummary": "{unlocked} von {total} Stufen erreicht",
+  "@achSummary": {
+    "placeholders": {
+      "unlocked": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "achGroupCount": "{unlocked} / {total}",
+  "@achGroupCount": {
+    "placeholders": {
+      "unlocked": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "achUnlockedOn": "Erreicht am {date}",
+  "@achUnlockedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "achProgress": "{value} / {target}",
+  "@achProgress": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "achBestTarget": "Bestwert {value} · Ziel {target}",
+  "@achBestTarget": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "achAllTiers": "Alle Stufen erreicht",
+  "achLatest": "Zuletzt erreicht",
+  "achNone": "Noch keine Erfolge – jeder Wurf zählt.",
+  "achCelebration": "Erfolg freigeschaltet",
+  "achGroupScoring": "Scoring",
+  "achGroupFinish": "Finish",
+  "achGroupDoubles": "Doppel",
+  "achGroupEndurance": "Ausdauer",
+  "achGroupGames": "Spiele",
+  "achTierBronze": "Bronze",
+  "achTierSilver": "Silber",
+  "achTierGold": "Gold",
+  "achFirst100": "Die erste Tonne",
+  "achFirst100Desc": "Eine Aufnahme mit mindestens 100 Punkten",
+  "achFirst140": "Ton-Forty",
+  "achFirst140Desc": "Eine Aufnahme mit mindestens 140 Punkten",
+  "achFirst180": "Die erste 180",
+  "achFirst180Desc": "Drei Darts in die Triple 20",
+  "achMany180": "180er-Sammler",
+  "achMany180Desc": "180er insgesamt",
+  "achTons": "Tonnen-Maschine",
+  "achTonsDesc": "Aufnahmen mit mindestens 100 Punkten insgesamt",
+  "achAverage": "Scoring-Average",
+  "achAverageDesc": "3-Dart-Average in einer Session (ab 18 Darts)",
+  "achFinish100": "Ton-Plus-Finish",
+  "achFinish100Desc": "Ein Checkout über 100",
+  "achFinish170": "Big Fish",
+  "achFinish170Desc": "Das höchste Finish: 170",
+  "achFinishBull": "Bull-Finish",
+  "achFinishBullDesc": "Ein Checkout mit dem Bullseye",
+  "achCheckouts": "Checkout-Routine",
+  "achCheckoutsDesc": "Checkouts insgesamt",
+  "achFastLeg": "Schnelles Leg",
+  "achFastLegDesc": "501 mit Double-Out in möglichst wenigen Darts",
+  "achBobs200": "Bob's 200",
+  "achBobs200Desc": "Mindestens 200 Punkte in Bob's 27, ohne unter 0 zu fallen",
+  "achBobsSurvive": "Überlebt",
+  "achBobsSurviveDesc": "Bob's 27 bis zum Bull durchspielen",
+  "achDoubleRun": "Doppel-Serie",
+  "achDoubleRunDesc": "5 Doppel-Ziele hintereinander getroffen",
+  "achDoubleHits": "Doppel-Treffer",
+  "achDoubleHitsDesc": "Getroffene Doppel-Ziele insgesamt",
+  "achDarts": "Fleißig",
+  "achDartsDesc": "Geworfene Darts insgesamt",
+  "achGoalStreak": "Am Ball",
+  "achGoalStreakDesc": "Tagesziel-Serie in Tagen",
+  "achGoalDays": "Zielstrebig",
+  "achGoalDaysDesc": "Tage mit erreichtem Tagesziel",
+  "achHours": "Trainingsstunden",
+  "achHoursDesc": "Trainingszeit insgesamt in Stunden",
+  "achAllGames": "Allrounder",
+  "achAllGamesDesc": "Jedes Trainingsspiel einmal zu Ende gespielt",
+  "achCpuWins": "Gegen den Computer",
+  "achCpuWinsDesc": "Gewonnene Matches gegen den Computer",
+  "achTournament": "Turniersieger",
+  "achTournamentDesc": "Ein Turnier gewinnen",
+  "achNineDarter": "Neun-Darter",
+  "achNineDarterDesc": "Ein 501-Leg mit 9 Darts",
+  "achShanghai": "Shanghai!",
+  "achShanghaiDesc": "Single, Double und Triple derselben Zahl in einer Aufnahme",
+  "achStars": "Sternesammler",
+  "achStarsDesc": "Challenge-Sterne insgesamt",
+  "chalTitle": "Challenges",
+  "chalEntryText": "40 Aufgaben in 5 Kapiteln. Sammle Sterne und schalte schwerere Kapitel frei.",
+  "chalStarsOf": "{stars} / {total}",
+  "@chalStarsOf": {
+    "placeholders": {
+      "stars": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "chalStarsTotal": "{stars} von {total} Sternen",
+  "@chalStarsTotal": {
+    "placeholders": {
+      "stars": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "chalChapterBeginner": "Einsteiger",
+  "chalChapterAmateur": "Amateur",
+  "chalChapterLeague": "Ligaspieler",
+  "chalChapterPro": "Profi",
+  "chalChapterWorldClass": "Weltklasse",
+  "chalChapterLabel": "Kapitel {number}",
+  "@chalChapterLabel": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "chalChapterLocked": "Gesperrt – {stars} Sterne in „{chapter}“ schalten es frei",
+  "@chalChapterLocked": {
+    "placeholders": {
+      "stars": {
+        "type": "int"
+      },
+      "chapter": {
+        "type": "String"
+      }
+    }
+  },
+  "chalCode": "{chapter} · {number}",
+  "@chalCode": {
+    "placeholders": {
+      "chapter": {
+        "type": "String"
+      },
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "chalLocked": "Gesperrt",
+  "chalLockedHint": "Hol mindestens einen Stern in einer der beiden Challenges davor.",
+  "chalTask": "Aufgabe",
+  "chalStarsTitle": "Sterne",
+  "chalAtMost": "höchstens {value} {unit}",
+  "@chalAtMost": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "chalAtLeast": "mindestens {value} {unit}",
+  "@chalAtLeast": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "chalAtLeastLevel": "mindestens Stufe {value}",
+  "@chalAtLeastLevel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "chalUnitDarts": "Darts",
+  "chalUnitPoints": "Punkte",
+  "chalUnitCheckouts": "Checkouts",
+  "chalUnitSuccesses": "Erfolge",
+  "chalUnitHits": "Treffer",
+  "chalUnitStrokes": "Schläge",
+  "chalUnitVisits": "Aufnahmen",
+  "chalUnitLevel": "Stufe",
+  "chalUnitAverage": "Average",
+  "chalMatchStar1": "Match gewinnen",
+  "chalMatchStar2": "Ohne Leg-Verlust gewinnen",
+  "chalMatchStar3": "Ohne Leg-Verlust, Average ab {average}",
+  "@chalMatchStar3": {
+    "placeholders": {
+      "average": {
+        "type": "int"
+      }
+    }
+  },
+  "chalMatchFormat": "Best of {legs} Legs · 501 · Double-Out",
+  "@chalMatchFormat": {
+    "placeholders": {
+      "legs": {
+        "type": "int"
+      }
+    }
+  },
+  "chalOpponent": "Gegner: Computer mit Average {average}",
+  "@chalOpponent": {
+    "placeholders": {
+      "average": {
+        "type": "int"
+      }
+    }
+  },
+  "chalRules": "Nur ein regulär beendetes Spiel zählt. Das beste Ergebnis bleibt gespeichert.",
+  "chalBest": "Bestwert",
+  "chalNoAttempt": "Noch nicht gespielt",
+  "chalAttempts": "{count, plural, =1{1 Versuch} other{{count} Versuche}}",
+  "@chalAttempts": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chalStart": "Challenge starten",
+  "chalNow": "Jetzt {value}",
+  "@chalNow": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "chalResultStars": "{count, plural, =0{Kein Stern} =1{1 Stern} other{{count} Sterne}}",
+  "@chalResultStars": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chalResultNone": "Diesmal kein Stern – versuch es noch einmal.",
+  "chalResultScore": "Ergebnis: {value}",
+  "@chalResultScore": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "chalNewBest": "Neuer Bestwert",
+  "chalBestSoFar": "Bisher: {value}",
+  "@chalBestSoFar": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "chalAborted": "Challenge abgebrochen – ohne Wertung.",
+  "chalAgain": "Nochmal",
+  "chalNext": "Nächste",
+  "chalOverview": "Übersicht",
+  "chalUnlockedChallenge": "Freigeschaltet: {name}",
+  "@chalUnlockedChallenge": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "chalUnlockedChapter": "Neues Kapitel: {name}",
+  "@chalUnlockedChapter": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "chalSaving": "Wird gewertet …",
+  "chal1x1Name": "Rund um die Uhr",
+  "chal1x1Task": "Triff 1 bis 20 und das Bull der Reihe nach, jedes Feld zählt. So wenige Darts wie möglich.",
+  "chal1x2Name": "Erster Checkout",
+  "chal1x2Task": "Spiele 101 mit Double-Out aus. So wenige Darts wie möglich.",
+  "chal1x3Name": "Auf die 20",
+  "chal1x3Task": "10 Aufnahmen auf die 20. Sammle so viele Punkte wie möglich.",
+  "chal1x4Name": "Bull-Training",
+  "chal1x4Task": "10 Aufnahmen aufs Bull: Single Bull 25, Bullseye 50 Punkte.",
+  "chal1x5Name": "Sechzig plus",
+  "chal1x5Task": "10 Aufnahmen: Wie oft schaffst du mindestens 60 Punkte?",
+  "chal1x6Name": "Kleines Shanghai",
+  "chal1x6Task": "Shanghai auf 1 bis 7, eine Aufnahme pro Zahl. Sammle so viele Punkte wie möglich.",
+  "chal1x7Name": "Neun Löcher",
+  "chal1x7Task": "Darts-Golf über 9 Löcher. So wenige Schläge wie möglich.",
+  "chal1x8Name": "Doppelt hält besser",
+  "chal1x8Task": "Triff jede Zahl von 1 bis 20 und das Bull zweimal, Double und Triple zählen mehrfach. So wenige Darts wie möglich.",
+  "chal2x1Name": "Erster Gegner",
+  "chal2x1Task": "Gewinne ein Best of 3 (501, Double-Out) gegen den Computer mit Average 50.",
+  "chal2x2Name": "301 sauber",
+  "chal2x2Task": "Spiele 301 mit Double-Out aus. So wenige Darts wie möglich.",
+  "chal2x3Name": "Kleine Finishes",
+  "chal2x3Task": "10 zufällige Checkouts von 2 bis 40, je 3 Darts. Wie viele schaffst du?",
+  "chal2x4Name": "Cricket solo",
+  "chal2x4Task": "Schließe 20 bis 15 und das Bull. So wenige Darts wie möglich.",
+  "chal2x5Name": "Mit Sprüngen um die Welt",
+  "chal2x5Task": "S=1, D=2, T=3 Punkte; ab 4 Punkten in einer Aufnahme springst du eine Zahl weiter. Sammle so viele Punkte wie möglich.",
+  "chal2x6Name": "Bermuda-Dreieck",
+  "chal2x6Task": "Halve-It: Verfehlst du ein Ziel, halbiert sich dein Stand. Sammle so viele Punkte wie möglich.",
+  "chal2x7Name": "Bob's 27",
+  "chal2x7Task": "Start mit 27 Punkten, Doppel 1 bis 20 und Bull. Überstehe das Spiel, ohne unter 0 zu fallen.",
+  "chal2x8Name": "Leiter ab 121",
+  "chal2x8Task": "Checke ab 121 mit je 9 Darts, geschafft heißt eins höher. Wie viele Checkouts in 10 Runden?",
+  "chal3x1Name": "Liga-Leg",
+  "chal3x1Task": "Spiele 501 mit Double-Out aus. So wenige Darts wie möglich.",
+  "chal3x2Name": "Zwei Aufnahmen",
+  "chal3x2Task": "10 zufällige Checkouts von 61 bis 80, je 6 Darts. Wie viele schaffst du?",
+  "chal3x3Name": "Ligaabend",
+  "chal3x3Task": "Gewinne ein Best of 5 (501, Double-Out) gegen den Computer mit Average 65.",
+  "chal3x4Name": "Punktejagd",
+  "chal3x4Task": "10 Aufnahmen: Sammle so viele Punkte wie möglich.",
+  "chal3x5Name": "Doppelrunde",
+  "chal3x5Task": "Triff die Doppel von 1 bis 20 und das Bull der Reihe nach. So wenige Darts wie möglich.",
+  "chal3x6Name": "JDC-Prüfung",
+  "chal3x6Task": "Shanghai 10–15, alle Doppel, Shanghai 15–20: Sammle so viele Punkte wie möglich.",
+  "chal3x7Name": "Countdown 420",
+  "chal3x7Task": "Start bei 420, jeder Treffer auf das aktuelle Doppel zieht ab. So wenige Restpunkte wie möglich.",
+  "chal3x8Name": "Catch 40",
+  "chal3x8Task": "Finishes von 61 bis 100 der Reihe nach, je 6 Darts. Schnelle Checkouts bringen mehr Punkte.",
+  "chal4x1Name": "Die 170",
+  "chal4x1Task": "Spiele 170 mit Double-Out aus. Drei Darts für drei Sterne.",
+  "chal4x2Name": "Ton-Plus-Checkouts",
+  "chal4x2Task": "10 zufällige Checkouts von 81 bis 120, je 3 Darts. Wie viele schaffst du?",
+  "chal4x3Name": "Profi-Duell",
+  "chal4x3Task": "Gewinne ein Best of 5 (501, Double-Out) gegen den Computer mit Average 80.",
+  "chal4x4Name": "Ton-Forty-Serie",
+  "chal4x4Task": "10 Aufnahmen: Wie oft schaffst du mindestens 140 Punkte?",
+  "chal4x5Name": "Wechselspiel",
+  "chal4x5Task": "Triple 20, Triple 19, Bullseye im Wechsel, 10 Runden. Wie viele Treffer?",
+  "chal4x6Name": "Bob's 27 Profi",
+  "chal4x6Task": "Bob's 27 überstehen und dabei möglichst viele Punkte sammeln.",
+  "chal4x7Name": "Doppelleiter",
+  "chal4x7Task": "Doppel von D1 aufwärts, genug Treffer heißt eine Stufe höher. Welche Stufe erreichst du in 60 Aufnahmen?",
+  "chal4x8Name": "Stellen",
+  "chal4x8Task": "Mit einem Dart einen Rest von 41 bis 100 auf ein klassisches Doppel stellen. Wie oft gelingt es in 30 Darts?",
+  "chal5x1Name": "Neun-Darter-Jagd",
+  "chal5x1Task": "Spiele 501 mit Double-Out aus. Neun Darts für drei Sterne.",
+  "chal5x2Name": "Weltmeister",
+  "chal5x2Task": "Gewinne ein Best of 7 (501, Double-Out) gegen den Computer mit Average 100.",
+  "chal5x3Name": "Maximum",
+  "chal5x3Task": "10 Aufnahmen: Sammle so viele Punkte wie möglich.",
+  "chal5x4Name": "Große Finishes",
+  "chal5x4Task": "10 zufällige Checkouts von 121 bis 170, je 3 Darts. Wie viele schaffst du?",
+  "chal5x5Name": "Drei in einem Bett",
+  "chal5x5Task": "Alle drei Darts einer Aufnahme ins gleiche Segment, für jede Zahl von 1 bis 20. So wenige Aufnahmen wie möglich.",
+  "chal5x6Name": "Frustration",
+  "chal5x6Task": "Mit zwei Darts mindestens 80 scoren, dann mit dem dritten das Doppel, D1 bis Bull. So wenige Aufnahmen wie möglich.",
+  "chal5x7Name": "JDC-Meister",
+  "chal5x7Task": "Shanghai 10–15, alle Doppel, Shanghai 15–20: ein Ergebnis auf Weltklasse-Niveau.",
+  "chal5x8Name": "Genau 100",
+  "chal5x8Task": "Genau 100 Punkte mit höchstens 2 Aufnahmen, Überwerfen ist ein Fehlversuch. Wie oft in 5 Versuchen?",
+  "settingsDailyGoal": "Tagesziel"
 }

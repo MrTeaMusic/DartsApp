@@ -13,12 +13,15 @@ import '../../../core/widgets/fullscreen_button.dart';
 import '../../board/domain/board_geometry.dart';
 import '../../board/domain/segment.dart';
 import '../../caller/presentation/caller_mute_button.dart';
+import '../../challenges/presentation/challenge_run_controller.dart';
+import '../../challenges/presentation/challenge_widgets.dart';
 import '../../board/presentation/dartboard_view.dart';
 import '../../board/presentation/double_zoom.dart';
 import '../../dart_source/data/manual_source.dart';
 import '../../dart_source/data/simulator_source.dart';
 import '../../dart_source/presentation/dart_source_providers.dart';
 import '../../dart_source/presentation/source_status_badge.dart';
+import '../../progress/presentation/celebration_banner.dart';
 import '../../games/domain/engine/game_display.dart';
 import '../../simulator/presentation/manual_keypad.dart';
 import '../../simulator/presentation/segment_picker.dart';
@@ -43,6 +46,8 @@ class MatchPlayScreen extends ConsumerWidget {
   static Future<void> leave(BuildContext context, WidgetRef ref) async {
     final state = ref.read(matchControllerProvider);
     final inTournament = state?.setup.tournamentMatch != null;
+    final run = ref.read(challengeRunProvider);
+    final challenge = run != null && run.ownsMatch(state) ? run : null;
     if (state != null && !state.ended) {
       final l10n = context.l10n;
       final ok = await showDialog<bool>(
@@ -62,8 +67,15 @@ class MatchPlayScreen extends ConsumerWidget {
       );
       if (ok != true) return;
     }
+    // Vorzeitig verlassen: die Challenge endet ohne Wertung.
+    if (challenge != null) ref.read(challengeRunProvider.notifier).clear();
     await ref.read(matchControllerProvider.notifier).close(keepForResume: inTournament);
-    if (context.mounted) context.go(inTournament ? MatchRoutes.tournament : MatchRoutes.hub);
+    if (!context.mounted) return;
+    if (challenge != null) {
+      context.go(challengeLeaveLocation(challenge));
+    } else {
+      context.go(inTournament ? MatchRoutes.tournament : MatchRoutes.hub);
+    }
   }
 
   @override
@@ -137,7 +149,8 @@ class MatchPlayScreen extends ConsumerWidget {
           ],
         ),
         body: SafeArea(
-          child: LayoutBuilder(
+          child: CelebrationOverlay(
+            child: LayoutBuilder(
             builder: (context, c) {
               final wide = c.maxWidth >= 900;
               if (wide) {
@@ -163,6 +176,7 @@ class MatchPlayScreen extends ConsumerWidget {
               return ListView(
                 padding: EdgeInsets.fromLTRB(page, AppSpacing.s, page, page),
                 children: [
+                  const ChallengeTaskBar(),
                   _Scoreboard(state: state, route: route),
                   const SizedBox(height: AppSpacing.m),
                   if (state.ended)
@@ -182,6 +196,7 @@ class MatchPlayScreen extends ConsumerWidget {
                 ],
               );
             },
+          ),
           ),
         ),
       ),
@@ -210,12 +225,18 @@ class _Panel extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (showScoreboard) ...[_Scoreboard(state: state, route: route), const SizedBox(height: AppSpacing.m)],
+        if (showScoreboard) ...[
+          const ChallengeTaskBar(),
+          _Scoreboard(state: state, route: route),
+          const SizedBox(height: AppSpacing.m),
+        ],
         if (showVisit || state.ended) _EventBanner(state: state),
         if (state.ended) ...[
+          // Bei einer Challenge ersetzt ihre Wertung die Knöpfe.
+          if (ChallengeResultPanel.shows(ref)) const ChallengeResultPanel(),
           _ResultCard(state: state),
           const SizedBox(height: AppSpacing.m),
-          _ResultActions(state: state),
+          if (!ChallengeResultPanel.shows(ref)) _ResultActions(state: state),
         ] else ...[
           if (showVisit) ...[_VisitCard(state: state, route: route), const SizedBox(height: AppSpacing.m), ?zoom],
           if (state.acceptsHumanDarts && source is ManualSource)

@@ -16,11 +16,14 @@ import '../../board/presentation/dartboard_view.dart';
 import '../../board/presentation/double_zoom.dart';
 import '../../board/presentation/live_visit_controller.dart';
 import '../../caller/presentation/caller_mute_button.dart';
+import '../../challenges/presentation/challenge_run_controller.dart';
+import '../../challenges/presentation/challenge_widgets.dart';
 import '../../dart_source/data/manual_source.dart';
 import '../../dart_source/data/simulator_source.dart';
 import '../../dart_source/presentation/dart_source_providers.dart';
 import '../../dart_source/presentation/source_status_badge.dart';
 import '../../plans/presentation/plan_run_panel.dart';
+import '../../progress/presentation/celebration_banner.dart';
 import '../../simulator/presentation/manual_keypad.dart';
 import '../../simulator/presentation/segment_picker.dart';
 import '../../../core/widgets/fullscreen_button.dart';
@@ -34,6 +37,8 @@ class GamePlayScreen extends ConsumerWidget {
 
   Future<void> _leave(BuildContext context, WidgetRef ref) async {
     final active = ref.read(activeGameProvider);
+    final run = ref.read(challengeRunProvider);
+    final challenge = run != null && run.ownsGame(active) ? run : null;
     if (active != null && !active.ended) {
       final l10n = context.l10n;
       final ok = await showDialog<bool>(
@@ -53,8 +58,10 @@ class GamePlayScreen extends ConsumerWidget {
       );
       if (ok != true) return;
     }
+    // Vorzeitig verlassen: die Challenge endet ohne Wertung.
+    if (challenge != null) ref.read(challengeRunProvider.notifier).clear();
     await ref.read(activeGameProvider.notifier).close();
-    if (context.mounted) context.go(Routes.games);
+    if (context.mounted) context.go(challenge != null ? challengeLeaveLocation(challenge) : Routes.games);
   }
 
   @override
@@ -126,7 +133,8 @@ class GamePlayScreen extends ConsumerWidget {
           ],
         ),
         body: SafeArea(
-          child: LayoutBuilder(builder: (context, c) {
+          child: CelebrationOverlay(
+            child: LayoutBuilder(builder: (context, c) {
             final wide = c.maxWidth >= 900;
             final panel = _GamePanel(active: active, large: wide, zoom: zoom());
             if (wide) {
@@ -149,8 +157,10 @@ class GamePlayScreen extends ConsumerWidget {
             return ListView(
               padding: EdgeInsets.fromLTRB(page, AppSpacing.s, page, page),
               children: [
+                const ChallengeTaskBar(),
                 _Headline(active: active, large: false, compact: true),
                 const SizedBox(height: AppSpacing.m),
+                const ChallengeResultPanel(),
                 _EventBanner(active: active),
                 _VisitCard(active: active, large: false),
                 const SizedBox(height: AppSpacing.m),
@@ -164,6 +174,7 @@ class GamePlayScreen extends ConsumerWidget {
               ],
             );
           }),
+          ),
         ),
       ),
     );
@@ -227,8 +238,10 @@ class _GamePanel extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (showTop) ...[
+          const ChallengeTaskBar(),
           _Headline(active: active, large: large),
           const SizedBox(height: AppSpacing.m),
+          const ChallengeResultPanel(),
           _EventBanner(active: active),
           _VisitCard(active: active, large: large),
           const SizedBox(height: AppSpacing.m),
@@ -238,7 +251,8 @@ class _GamePanel extends ConsumerWidget {
         const SizedBox(height: AppSpacing.m),
         const PlanRunPanel(),
         if (active.ended)
-          _ResultActions(active: active)
+          // Bei einer Challenge stehen die Knöpfe in ihrer Wertung.
+          ChallengeResultPanel.shows(ref) ? const SizedBox.shrink() : _ResultActions(active: active)
         else if (source is ManualSource)
           ManualKeypad(source: source)
         else
