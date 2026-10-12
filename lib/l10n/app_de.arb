@@ -1489,5 +1489,7 @@
       }
     }
   },
-  "cpuTooFew": "Für ein Turnier braucht es 15 Gegner; fehlende werden aus der Standardliste ergänzt."
+  "cpuTooFew": "Für ein Turnier braucht es 15 Gegner; fehlende werden aus der Standardliste ergänzt.",
+  "tourChampionLabel": "Turniersieger",
+  "tourBracketLabel": "Turnierbaum"
 }
