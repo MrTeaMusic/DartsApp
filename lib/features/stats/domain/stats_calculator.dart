@@ -126,6 +126,9 @@ class StatsCalculator {
   final List<ThrowRow> throws;
   final DateTime now;
 
+  /// Abgeschlossene Sessions, älteste zuerst.
+  List<SessionRow> get sessions => _sessions;
+
   /// Gleitender Durchschnitt über so viele Punkte.
   static const int movingWindow = 5;
 
@@ -157,6 +160,15 @@ class StatsCalculator {
   final Map<int, List<ThrowRow>> _countedCache = {};
   final Map<int, List<AimedDart>> _aimedCache = {};
   final Map<int, Map<String, num>> _metricsCache = {};
+
+  /// Alle Würfe einer Session (auch nicht gezählte) in Wurfreihenfolge.
+  List<ThrowRow> throwsOf(SessionRow s) => _bySession[s.id] ?? const [];
+
+  /// Gespeichertes Ergebnis einer Session (Kennzahlen und Details).
+  Map<String, Object?> resultOf(SessionRow s) => _result(s);
+
+  /// Kennzahlen einer Session (einmal dekodiert).
+  Map<String, num> metricsOfSession(SessionRow s) => _metrics(s);
 
   /// Gezählte Würfe einer Session in Wurfreihenfolge.
   List<ThrowRow> countedOf(SessionRow s) =>

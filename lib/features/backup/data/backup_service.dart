@@ -22,8 +22,8 @@ class BackupFormatException implements Exception {
 /// Export und Import aller Daten.
 ///
 /// * JSON: vollständige Sicherung (Profile, Sessions, Würfe, Ziele,
-///   eigene Trainingspläne), lässt
-///   sich wieder importieren.
+///   eigene Trainingspläne, Erfolge, Challenge-Ergebnisse), lässt sich
+///   wieder importieren.
 /// * CSV: Würfe bzw. Sessions als Tabelle für Excel/Numbers, nur Export.
 class BackupService {
   BackupService(this.db);
@@ -34,8 +34,10 @@ class BackupService {
   /// 2: geräteübergreifende IDs (`uid`), Zeiten als ISO-Text, gelöschte
   /// Profile und Ziele als Markierung.
   /// 3: zusätzlich eigene Trainingspläne (`plans`).
-  /// Versionen 1 und 2 werden weiter gelesen.
-  static const int version = 3;
+  /// 4: zusätzlich Erfolge (`achievements`) und Challenge-Ergebnisse
+  /// (`challenges`).
+  /// Ältere Versionen werden weiter gelesen.
+  static const int version = 4;
 
   // ---------------------------------------------------------------- JSON
 

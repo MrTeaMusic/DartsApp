@@ -133,7 +133,46 @@ class PlanRuns extends Table {
   TextColumn get resultsJson => text().withDefault(const Constant('[]'))();
 }
 
-@DriftDatabase(tables: [Players, Sessions, Throws, Goals, TrainingPlans, PlanRuns])
+/// Freigeschaltete Erfolge, eine Zeile je Stufe (Bronze = 1, Silber = 2,
+/// Gold = 3; Erfolge ohne Stufen haben nur Stufe 1). Die Freischaltung wird
+/// aus den Daten berechnet; die Tabelle merkt sich, wann es so weit war.
+@DataClassName('AchievementRow')
+@TableIndex(name: 'achievements_key', columns: {#playerId, #achievementId, #tier}, unique: true)
+class Achievements extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get playerId => integer().references(Players, #id, onDelete: KeyAction.cascade)();
+
+  /// Kennung aus `AchievementCatalog`.
+  TextColumn get achievementId => text()();
+  IntColumn get tier => integer()();
+  DateTimeColumn get unlockedAt => dateTime()();
+}
+
+/// Bestes Ergebnis je Challenge und Profil.
+@DataClassName('ChallengeResultRow')
+@TableIndex(name: 'challenge_results_key', columns: {#playerId, #challengeId}, unique: true)
+class ChallengeResults extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get playerId => integer().references(Players, #id, onDelete: KeyAction.cascade)();
+
+  /// Kennung aus `ChallengeCatalog`, z. B. `c1-01`.
+  TextColumn get challengeId => text()();
+
+  /// Beste Sternezahl (0–3).
+  IntColumn get stars => integer().withDefault(const Constant(0))();
+
+  /// Bester Wert der Wertungs-Kennzahl, `null` ohne gültigen Wert.
+  RealColumn get best => real().nullable()();
+
+  /// Regulär beendete Versuche.
+  IntColumn get attempts => integer().withDefault(const Constant(0))();
+
+  /// Wann das beste Ergebnis erreicht wurde.
+  DateTimeColumn get achievedAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+}
+
+@DriftDatabase(tables: [Players, Sessions, Throws, Goals, TrainingPlans, PlanRuns, Achievements, ChallengeResults])
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
@@ -142,7 +181,7 @@ class AppDatabase extends _$AppDatabase {
 
   /// Bei Schemaänderungen erhöhen und in [migration] einen Schritt ergänzen.
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -186,6 +225,17 @@ class AppDatabase extends _$AppDatabase {
             for (final table in ['training_plans', 'plan_runs']) {
               await customStatement('CREATE UNIQUE INDEX IF NOT EXISTS ${table}_uid ON $table (uid)');
             }
+          }
+          // Version 5: Erfolge und Challenge-Ergebnisse (wiederholbar wie oben).
+          if (from < 5) {
+            await m.createTable(achievements);
+            await m.createTable(challengeResults);
+            await customStatement(
+              'CREATE UNIQUE INDEX IF NOT EXISTS achievements_key ON achievements (player_id, achievement_id, tier)',
+            );
+            await customStatement(
+              'CREATE UNIQUE INDEX IF NOT EXISTS challenge_results_key ON challenge_results (player_id, challenge_id)',
+            );
           }
         },
         beforeOpen: (details) async {

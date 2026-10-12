@@ -6,6 +6,7 @@ import '../../features/dart_source/domain/coordinate_calibration.dart';
 import '../../features/dart_source/domain/dart_event.dart';
 import '../../features/sync/domain/sync_role.dart';
 import '../../features/board/presentation/board_style.dart';
+import '../../features/progress/domain/daily_goal.dart';
 import '../design/dart_look.dart';
 
 /// Einstellungen der App. Unveränderlich, Änderungen über [SettingsNotifier].
@@ -27,6 +28,8 @@ class AppSettings {
     this.syncHost = '',
     this.syncPort = defaultSyncPort,
     this.syncKey = '',
+    this.dailyGoalUnit = DailyGoalUnit.darts,
+    this.dailyGoalAmount = 200,
   });
 
   /// Gewählter Look (Optionen → Darstellung).
@@ -59,6 +62,12 @@ class AppSettings {
   final int syncPort;
   final String syncKey;
 
+  /// Tagesziel (Startseite, Optionen → Tagesziel): Einheit und Menge.
+  final DailyGoalUnit dailyGoalUnit;
+  final int dailyGoalAmount;
+
+  DailyGoal get dailyGoal => DailyGoal(dailyGoalUnit, dailyGoalUnit.clamp(dailyGoalAmount));
+
   AppSettings copyWith({
     DartLookId? look,
     BoardStyle? boardStyle,
@@ -75,6 +84,8 @@ class AppSettings {
     String? syncHost,
     int? syncPort,
     String? syncKey,
+    DailyGoalUnit? dailyGoalUnit,
+    int? dailyGoalAmount,
   }) =>
       AppSettings(
         look: look ?? this.look,
@@ -92,6 +103,8 @@ class AppSettings {
         syncHost: syncHost ?? this.syncHost,
         syncPort: syncPort ?? this.syncPort,
         syncKey: syncKey ?? this.syncKey,
+        dailyGoalUnit: dailyGoalUnit ?? this.dailyGoalUnit,
+        dailyGoalAmount: dailyGoalAmount ?? this.dailyGoalAmount,
       );
 
   static const _kLook = 'settings.look';
@@ -109,6 +122,8 @@ class AppSettings {
   static const _kSyncHost = 'sync.host';
   static const _kSyncPort = 'sync.port';
   static const _kSyncKey = 'sync.key';
+  static const _kGoalUnit = 'goals.dailyUnit';
+  static const _kGoalAmount = 'goals.dailyAmount';
 
   static AppSettings load(SharedPreferences prefs) {
     const d = AppSettings();
@@ -130,6 +145,8 @@ class AppSettings {
       syncHost: prefs.getString(_kSyncHost) ?? d.syncHost,
       syncPort: prefs.getInt(_kSyncPort) ?? d.syncPort,
       syncKey: prefs.getString(_kSyncKey) ?? d.syncKey,
+      dailyGoalUnit: DailyGoalUnit.byName(prefs.getString(_kGoalUnit)),
+      dailyGoalAmount: prefs.getInt(_kGoalAmount) ?? d.dailyGoalAmount,
     );
   }
 
@@ -149,6 +166,8 @@ class AppSettings {
     await prefs.setString(_kSyncHost, syncHost);
     await prefs.setInt(_kSyncPort, syncPort);
     await prefs.setString(_kSyncKey, syncKey);
+    await prefs.setString(_kGoalUnit, dailyGoalUnit.name);
+    await prefs.setInt(_kGoalAmount, dailyGoalAmount);
   }
 }
 

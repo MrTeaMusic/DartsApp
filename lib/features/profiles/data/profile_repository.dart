@@ -46,6 +46,8 @@ class ProfileRepository {
         await (db.delete(db.sessions)..where((s) => s.playerId.equals(id))).go();
         await (db.delete(db.throws)..where((t) => t.playerId.equals(id))).go();
         await (db.delete(db.goals)..where((g) => g.playerId.equals(id))).go();
+        await (db.delete(db.achievements)..where((a) => a.playerId.equals(id))).go();
+        await (db.delete(db.challengeResults)..where((c) => c.playerId.equals(id))).go();
         // Markierung statt Löschen, damit andere Geräte es beim Abgleich erfahren.
         final now = at ?? DateTime.now();
         await (db.update(db.players)..where((p) => p.id.equals(id))).write(
