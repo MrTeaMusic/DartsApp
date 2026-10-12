@@ -23,6 +23,7 @@ import '../domain/games/shanghai.dart';
 import '../domain/games/switch_drill.dart';
 import '../domain/games/three_in_a_bed.dart';
 import '../domain/games/x01_solo.dart';
+import '../../matches/domain/match_result.dart';
 
 /// Übersetzt die stabilen Schlüssel der Spiel-Domäne in Text und Icons.
 /// Unbekannte Schlüssel erscheinen unverändert, damit nichts verschwindet.
@@ -52,6 +53,7 @@ extension GameTexts on AppLocalizations {
         ExactScore.id => gameExactScore,
         ThreeInABed.id => gameThreeInABed,
         SetupShot.id => gameSetupShot,
+        matchGameId => gameMatchX01,
         _ => id,
       };
 
@@ -313,6 +315,7 @@ IconData gameIcon(String id) => switch (id) {
       ExactScore.id => Icons.ads_click_rounded,
       ThreeInABed.id => Icons.bed_rounded,
       SetupShot.id => Icons.tune_rounded,
+      matchGameId => Icons.people_alt_rounded,
       _ => Icons.sports_esports_rounded,
     };
 

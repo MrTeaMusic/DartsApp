@@ -71,6 +71,8 @@ void main() {
     await tester.tap(find.text('Training').first);
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(find.byKey(const Key('game-cricket')), 200, scrollable: find.byType(Scrollable).last);
+    await tester.ensureVisible(find.byKey(const Key('game-cricket')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('game-cricket')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('start-game')));

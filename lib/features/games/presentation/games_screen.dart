@@ -11,6 +11,7 @@ import '../../../core/router/app_router.dart';
 import '../data/game_repository.dart';
 import '../domain/engine/game_display.dart';
 import '../domain/game_catalog.dart';
+import '../../matches/presentation/match_routes.dart';
 import '../../plans/presentation/plan_routes.dart';
 import '../../stats/domain/game_metrics.dart';
 import '../../profiles/presentation/active_player.dart';
@@ -60,6 +61,22 @@ class GamesScreen extends ConsumerWidget {
                     title: l10n.plansTitle,
                     description: l10n.plansEntryText,
                     onTap: () => context.go(PlanRoutes.list),
+                  ),
+                ]),
+              ),
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(page, look.sectionGap, page, 0),
+                sliver: SliverToBoxAdapter(child: SectionHeader(l10n.matchesTitle)),
+              ),
+              SliverPadding(
+                padding: EdgeInsets.symmetric(horizontal: page),
+                sliver: grid([
+                  _GameCard(
+                    key: const Key('open-matches'),
+                    icon: Icons.people_alt_rounded,
+                    title: l10n.matchesTitle,
+                    description: l10n.matchesEntryText,
+                    onTap: () => context.go(MatchRoutes.hub),
                   ),
                 ]),
               ),

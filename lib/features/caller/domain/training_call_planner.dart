@@ -64,7 +64,12 @@ class TrainingCallPlanner {
     if (display.headlineKey != 'remaining') return null;
     final n = int.tryParse(display.headline);
     if (n == null || n < 1 || n > 170) return null;
-    final finishable = display.suggestion != null || CheckoutRules.isCheckout(n, out: OutMode.double);
+    final finishable = display.suggestion != null || isFinishable(n);
     return finishable ? n : null;
   }
+
+  /// Ist [remaining] mit drei Darts auscheckbar (für „You require“)?
+  /// Auch von Matches genutzt.
+  static bool isFinishable(int remaining, {OutMode out = OutMode.double}) =>
+      remaining >= 1 && remaining <= 170 && CheckoutRules.isCheckout(remaining, out: out);
 }

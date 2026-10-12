@@ -28,6 +28,7 @@ class PrimaryMetric {
     'three_hits': PrimaryMetric('darts', higherIsBetter: false, format: MetricFormat.integer, onlyCompleted: true),
     'skip_world': PrimaryMetric('points', format: MetricFormat.integer),
     'x01': PrimaryMetric('average'),
+    'x01_match': PrimaryMetric('average'),
     'halve_it': PrimaryMetric('score', format: MetricFormat.integer),
     'catch_40': PrimaryMetric('points', format: MetricFormat.integer, onlyCompleted: true),
     'jdc_challenge': PrimaryMetric('score', format: MetricFormat.integer, onlyCompleted: true),
