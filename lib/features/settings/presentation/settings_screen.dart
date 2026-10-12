@@ -91,6 +91,18 @@ class SettingsScreen extends ConsumerWidget {
               Kicker(l10n.settingsBoardStyle),
               const SizedBox(height: AppSpacing.s),
               const _BoardStylePicker(),
+              const SizedBox(height: AppSpacing.m),
+              AppCard(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                child: SwitchListTile(
+                  key: const Key('double-zoom-switch'),
+                  value: settings.doubleZoom,
+                  onChanged: (v) => notifier.update((x) => x.copyWith(doubleZoom: v)),
+                  title: Text(l10n.settingsDoubleZoom),
+                  subtitle: Text(l10n.settingsDoubleZoomHint),
+                  secondary: const Icon(Icons.zoom_in_rounded),
+                ),
+              ),
               const SectionGap(),
               SectionHeader(l10n.settingsFeedback),
               AppCard(

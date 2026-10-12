@@ -1506,5 +1506,8 @@
         "type": "int"
       }
     }
-  }
+  },
+  "doubleZoomLabel": "Doppel-Zoom",
+  "settingsDoubleZoom": "Doppel-Zoom",
+  "settingsDoubleZoomHint": "Zeigt das Doppel, auf das du werfen musst, vergrößert neben der Scheibe"
 }

@@ -10,7 +10,10 @@ import '../../../core/design/dart_look.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
 import '../../../core/router/app_router.dart';
+import '../../board/domain/board_geometry.dart';
+import '../../board/domain/segment.dart';
 import '../../board/presentation/dartboard_view.dart';
+import '../../board/presentation/double_zoom.dart';
 import '../../board/presentation/live_visit_controller.dart';
 import '../../caller/presentation/caller_mute_button.dart';
 import '../../dart_source/data/manual_source.dart';
@@ -70,20 +73,33 @@ class GamePlayScreen extends ConsumerWidget {
     final live = ref.watch(liveVisitProvider);
     final game = active.game;
 
+    final hits = [for (final d in live.visit) if (d.position != null) d.position!];
+    final void Function(BoardPoint, Segment)? onTap = active.ended
+        ? null
+        : switch (source) {
+            SimulatorSource() => (point, _) => source.throwAt(point),
+            ManualSource() => (_, segment) => source.enter(segment),
+            _ => null,
+          };
     final board = DartboardView(
       key: const Key('game-board'),
-      hits: [for (final d in live.visit) if (d.position != null) d.position!],
+      hits: hits,
       lastSegment: live.lastDart?.segment,
       hitSerial: live.history.length,
       highlighted: active.ended ? const {} : game.targets,
-      onTap: active.ended
-          ? null
-          : switch (source) {
-              SimulatorSource() => (point, _) => source.throwAt(point),
-              ManualSource() => (_, segment) => source.enter(segment),
-              _ => null,
-            },
+      onTap: onTap,
     );
+    // Nach Bust/Checkout wartet die Aufnahme nur noch auf "Weiter".
+    final waiting = active.ended || (game.visitClosed && live.visit.isNotEmpty);
+    final zoomTarget = waiting ? null : doubleZoomTarget(route: game.display.suggestion, targets: game.targets);
+    DoubleZoomCard zoom({bool compact = false}) => DoubleZoomCard(
+          target: zoomTarget,
+          hits: hits,
+          lastSegment: live.lastDart?.segment,
+          hitSerial: live.history.length,
+          onTap: onTap,
+          compact: compact,
+        );
 
     return PopScope(
       canPop: false,
@@ -112,7 +128,7 @@ class GamePlayScreen extends ConsumerWidget {
         body: SafeArea(
           child: LayoutBuilder(builder: (context, c) {
             final wide = c.maxWidth >= 900;
-            final panel = _GamePanel(active: active, large: wide);
+            final panel = _GamePanel(active: active, large: wide, zoom: zoom());
             if (wide) {
               return Row(
                 children: [
@@ -138,6 +154,7 @@ class GamePlayScreen extends ConsumerWidget {
                 _EventBanner(active: active),
                 _VisitCard(active: active, large: false),
                 const SizedBox(height: AppSpacing.m),
+                zoom(compact: true),
                 ConstrainedBox(
                   constraints: BoxConstraints(maxHeight: c.maxHeight * 0.45),
                   child: Center(child: board),
@@ -188,9 +205,12 @@ class _Headline extends StatelessWidget {
 }
 
 class _GamePanel extends ConsumerWidget {
-  const _GamePanel({required this.active, required this.large, this.showTop = true});
+  const _GamePanel({required this.active, required this.large, this.showTop = true, this.zoom});
   final ActiveGame active;
   final bool large;
+
+  /// Doppel-Zoom unter den Darts (nur mit [showTop]).
+  final Widget? zoom;
 
   /// Spielstand, Einblendung und Darts; auf dem Telefon stehen sie über dem Board.
   final bool showTop;
@@ -212,6 +232,7 @@ class _GamePanel extends ConsumerWidget {
           _EventBanner(active: active),
           _VisitCard(active: active, large: large),
           const SizedBox(height: AppSpacing.m),
+          ?zoom,
         ],
         _StatsGrid(stats: active.ended ? active.game.result.summary : display.stats),
         const SizedBox(height: AppSpacing.m),

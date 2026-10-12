@@ -108,6 +108,22 @@ und `ringRadius` die Scheibe als Parameter. Realistische Scheiben haben einen
 Schlagschatten und einen leichten Lichtkranz, damit sie sich auf hellem wie
 dunklem Hintergrund abheben.
 
+### Doppel-Zoom
+
+Muss als nächster Dart ein Doppel geworfen werden (Checkout-Weg, oder ein
+Trainingsspiel mit genau einem Doppel als Ziel), zeigt eine eigene Karte das
+Doppel vergrößert (`DoubleZoomCard` in `double_zoom.dart`, welches Doppel
+entscheidet `doubleZoomTarget`). Am PC steht sie im Seitenpanel unter den
+Darts, am Telefon als flacher Streifen zwischen Darts und Scheibe. Das Bull
+wird nur gezoomt, wenn es der letzte Dart ist.
+
+Gezeichnet wird mit demselben `DartboardView`, nur mit `focus`: eine große,
+virtuelle Scheibe, so gedreht, dass das Doppel waagerecht oben liegt, mit der
+Zahl darüber. Die Zahlen bleiben dabei lesbar (`viewRotation` im Painter),
+Treffer-Marker wachsen kaum mit (`markerScale`). Antippen im Zoom wirft im
+Simulator genau auf die Stelle, die man dort sieht. Abschalten lässt sich der
+Zoom unter Optionen → Darstellung (`settings.doubleZoom`, Standard: an).
+
 ## Schriften
 
 * **Inter** (Fließtext, Clean, Lab) und **Barlow Condensed** (Überschriften und
