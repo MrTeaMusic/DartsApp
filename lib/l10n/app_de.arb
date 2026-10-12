@@ -1281,6 +1281,8 @@
   "matchAvg": "Avg",
   "matchDarts": "Darts",
   "matchLastVisit": "Letzte",
+  "matchYourTurn": "Du bist dran",
+  "matchWaitTakeoutYou": "Darts ziehen, dann bist du dran",
   "matchTurnOf": "{name} ist dran",
   "@matchTurnOf": {
     "placeholders": {

@@ -76,7 +76,7 @@ void main() {
     final state = container.read(matchControllerProvider)!;
     expect(state.setup.players[1].name, 'Robo');
     expect(state.setup.players[1].isBot, isTrue);
-    expect(find.text('Ich ist dran'), findsOneWidget);
+    expect(find.text('Du bist dran'), findsOneWidget);
     expect(speech.spoken, ['Game on!']);
     expect(find.byKey(const Key('caller-mute')), findsOneWidget);
     expect(tester.widget<Text>(find.byKey(const Key('match-remaining-0'))).data, '101');

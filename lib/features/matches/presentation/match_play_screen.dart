@@ -428,10 +428,14 @@ class _VisitCard extends ConsumerWidget {
     final thrown = indexes.length;
     final player = state.setup.players[match.current];
     final next = state.setup.players[match.nextPlayer];
+    // Gegen CPUs gibt es genau einen Menschen: den sprechen wir direkt an.
+    final soloHuman = state.setup.players.where((p) => !p.isBot).length == 1;
     final status = match.visitClosed && match.nextPlayer != match.current
-        ? l10n.matchWaitTakeout(next.name)
+        ? (soloHuman && !next.isBot ? l10n.matchWaitTakeoutYou : l10n.matchWaitTakeout(next.name))
         : player.isBot
         ? l10n.matchBotThrowing(player.name)
+        : soloHuman
+        ? l10n.matchYourTurn
         : l10n.matchTurnOf(player.name);
 
     Future<void> fix(int slot) async {
