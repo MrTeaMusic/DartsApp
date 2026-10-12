@@ -54,7 +54,8 @@ Zugriff im Widget:
 | `SectionGap` | Abstand zwischen Abschnitten (Rhythmus des Looks). |
 | `SectionHeader` | Abschnittstitel (TV: roter Balken, Clean: ruhig, Lab: Versalien mit Linie). Optionaler Zusatz rechts (Knopf, Statusschild), höchstens 200 px breit. |
 | `AppCard` | Jede Karte. Rahmen/Schatten/Radius kommen vom Look. |
-| `ScorePanel` | Große Zahl mit Beschriftung, optional Fortschritt und Inhalt darunter (Restpunkte, Aufnahme, Ergebnis). |
+| `ScorePanel` | Große Zahl mit Beschriftung, optional Fortschritt und Inhalt darunter (Restpunkte, Aufnahme, Ergebnis). Mit `active` für mehrere Tafeln nebeneinander (Spieler im Match): `true` hervorgehoben, `false` zurückgenommen. |
+| `LookBanner` | Einblendung eines Ereignisses (Checkout, Bust, 180, Leg gewonnen) im Stil des Looks; optional kleine Beschriftung davor. |
 | `StatTile` | Kennzahl-Kachel (Beschriftung, große Zahl, Zusatz). |
 | `Kicker` | Kleine Beschriftung über einer Zahl. |
 | `DartChip` + `segmentColor` | Dart-Feld, eingefärbt nach Bedeutung. |

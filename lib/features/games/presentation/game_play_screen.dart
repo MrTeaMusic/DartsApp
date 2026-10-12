@@ -127,17 +127,23 @@ class GamePlayScreen extends ConsumerWidget {
                 ],
               );
             }
+            // Telefon: Spielstand und Darts oben, damit der Checkout-Weg
+            // ohne Scrollen sichtbar ist; darunter das Board.
+            final page = context.look.pagePadding(false);
             return ListView(
-              padding: const EdgeInsets.all(AppSpacing.page),
+              padding: EdgeInsets.fromLTRB(page, AppSpacing.s, page, page),
               children: [
-                _Headline(active: active, large: false),
+                _Headline(active: active, large: false, compact: true),
+                const SizedBox(height: AppSpacing.m),
+                _EventBanner(active: active),
+                _VisitCard(active: active, large: false),
                 const SizedBox(height: AppSpacing.m),
                 ConstrainedBox(
-                  constraints: BoxConstraints(maxHeight: c.maxHeight * 0.5),
+                  constraints: BoxConstraints(maxHeight: c.maxHeight * 0.45),
                   child: Center(child: board),
                 ),
                 const SizedBox(height: AppSpacing.m),
-                _GamePanel(active: active, large: false, showHeadline: false),
+                _GamePanel(active: active, large: false, showTop: false),
               ],
             );
           }),
@@ -148,9 +154,10 @@ class GamePlayScreen extends ConsumerWidget {
 }
 
 class _Headline extends StatelessWidget {
-  const _Headline({required this.active, required this.large});
+  const _Headline({required this.active, required this.large, this.compact = false});
   final ActiveGame active;
   final bool large;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -173,7 +180,7 @@ class _Headline extends StatelessWidget {
         child: Text(
           headline,
           key: ValueKey(headline),
-          style: ScorePanel.valueStyle(context, hero: large),
+          style: ScorePanel.valueStyle(context, hero: large, compact: compact),
         ),
       ),
     );
@@ -181,10 +188,12 @@ class _Headline extends StatelessWidget {
 }
 
 class _GamePanel extends ConsumerWidget {
-  const _GamePanel({required this.active, required this.large, this.showHeadline = true});
+  const _GamePanel({required this.active, required this.large, this.showTop = true});
   final ActiveGame active;
   final bool large;
-  final bool showHeadline;
+
+  /// Spielstand, Einblendung und Darts; auf dem Telefon stehen sie über dem Board.
+  final bool showTop;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -197,13 +206,13 @@ class _GamePanel extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (showHeadline) ...[
+        if (showTop) ...[
           _Headline(active: active, large: large),
           const SizedBox(height: AppSpacing.m),
+          _EventBanner(active: active),
+          _VisitCard(active: active, large: large),
+          const SizedBox(height: AppSpacing.m),
         ],
-        _EventBanner(active: active),
-        _VisitCard(active: active, large: large),
-        const SizedBox(height: AppSpacing.m),
         _StatsGrid(stats: active.ended ? active.game.result.summary : display.stats),
         const SizedBox(height: AppSpacing.m),
         const PlanRunPanel(),
@@ -270,7 +279,6 @@ class _EventBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final colors = context.dartColors;
-    final look = context.look;
     final theme = Theme.of(context);
     final event = active.events.isEmpty ? null : active.events.last;
     final color = switch (event == null ? EventTone.neutral : eventTone(event.type)) {
@@ -278,58 +286,19 @@ class _EventBanner extends StatelessWidget {
       EventTone.negative => colors.danger,
       EventTone.neutral => theme.colorScheme.primary,
     };
-    final Widget banner;
-    if (event == null) {
-      banner = const SizedBox(width: double.infinity);
-    } else {
-      final text = l10n.eventText(event);
-      banner = Padding(
-        key: ValueKey(active.revision),
-        padding: const EdgeInsets.only(bottom: AppSpacing.m),
-        child: switch (look.id) {
-          // TV: volle Farbfläche wie eine Einblendung.
-          DartLookId.tv => Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l, vertical: AppSpacing.s + 2),
-              decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(look.radiusM)),
-              child: Text(
-                text,
-                key: const Key('game-event'),
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  color: ThemeData.estimateBrightnessForColor(color) == Brightness.dark ? Colors.white : Colors.black,
-                ),
-              ),
+    final Widget banner = event == null
+        ? const SizedBox(width: double.infinity)
+        : Padding(
+            key: ValueKey(active.revision),
+            padding: const EdgeInsets.only(bottom: AppSpacing.m),
+            child: LookBanner(
+              text: l10n.eventText(event),
+              color: color,
+              textKey: const Key('game-event'),
+              // Ein Treffer zeigt nur Feld oder Punkte: kleine Beschriftung davor.
+              kicker: event.type == GameEventType.hit ? l10n.statHitsOnTarget : null,
             ),
-          DartLookId.clean => Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l + 4, vertical: AppSpacing.m + 2),
-              decoration: BoxDecoration(color: color.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(look.radiusL)),
-              child: Text(text, key: const Key('game-event'), style: theme.textTheme.headlineSmall?.copyWith(color: color)),
-            ),
-          DartLookId.lab => Container(
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(look.radiusM),
-                border: Border.all(color: color.withValues(alpha: 0.5)),
-              ),
-              child: IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Container(width: 3, color: color),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: AppSpacing.s + 2),
-                        child: Text(text, key: const Key('game-event'), style: theme.textTheme.titleLarge?.copyWith(color: color)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-        },
-      );
-    }
+          );
     return AnimatedSwitcher(
       duration: AppDurations.medium,
       transitionBuilder: (child, a) => SizeTransition(sizeFactor: a, child: FadeTransition(opacity: a, child: child)),

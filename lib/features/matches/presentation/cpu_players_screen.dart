@@ -54,7 +54,8 @@ class CpuPlayersScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final players = ref.watch(cpuPlayersProvider);
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppPageBar(
+        maxWidth: 640,
         title: Text(l10n.cpuPlayersTitle),
         actions: [
           TextButton.icon(
@@ -72,12 +73,10 @@ class CpuPlayersScreen extends ConsumerWidget {
         icon: const Icon(Icons.add_rounded),
         label: Text(l10n.cpuAdd),
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 640),
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.page, AppSpacing.page, AppSpacing.page, 96),
-            children: [
+      body: AppPage(
+        maxWidth: 640,
+        extraBottom: 64,
+        children: [
               Text(l10n.cpuHint, style: theme.textTheme.bodySmall?.copyWith(color: context.dartColors.textMuted)),
               const SizedBox(height: AppSpacing.l),
               SectionHeader(l10n.cpuCount(players.length)),
@@ -97,8 +96,6 @@ class CpuPlayersScreen extends ConsumerWidget {
                 ),
               ),
             ],
-          ),
-        ),
       ),
     );
   }

@@ -7,6 +7,12 @@ import 'package:dartlab/features/dart_source/data/simulator_source.dart';
 import 'package:dartlab/features/dart_source/presentation/dart_source_providers.dart';
 import 'package:dartlab/features/games/domain/game_catalog.dart';
 import 'package:dartlab/features/games/presentation/active_game_controller.dart';
+import 'package:dartlab/features/board/domain/segment.dart';
+import 'package:dartlab/features/matches/domain/match_format.dart';
+import 'package:dartlab/features/matches/domain/match_session.dart';
+import 'package:dartlab/features/matches/presentation/match_controller.dart';
+import 'package:dartlab/features/matches/presentation/match_routes.dart';
+import 'package:dartlab/features/matches/presentation/tournament_controller.dart';
 import 'package:dartlab/features/plans/presentation/plan_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -103,7 +109,18 @@ void main() {
   // Alle Hauptbildschirme in jedem Look auf Telefonbreite: keine Überläufe.
   for (final look in DartLookId.values) {
     testWidgets('Look ${look.name}: alle Bildschirme bei 390 px ohne Fehler', (tester) async {
-      final c = await pumpApp(tester, size: const Size(390, 844), prefs: {'settings.look': look.name});
+      final c = await pumpApp(
+        tester,
+        size: const Size(390, 844),
+        prefs: {'settings.look': look.name},
+        overrides: [
+          botTimingProvider.overrideWithValue(const BotTiming(
+            firstDart: Duration(milliseconds: 100),
+            betweenDarts: Duration(milliseconds: 100),
+            takeout: Duration(milliseconds: 100),
+          )),
+        ],
+      );
       await seed(c);
       await seedBobs(c);
       final router = c.read(routerProvider);
@@ -122,6 +139,17 @@ void main() {
       await visit(PlanRoutes.auto);
       await visit(Routes.board);
       await visit(Routes.settings);
+      await visit(MatchRoutes.hub);
+      await visit(MatchRoutes.opponent);
+      await visit(MatchRoutes.tournamentNew);
+      await visit(MatchRoutes.cpuPlayers);
+      await c.read(tournamentControllerProvider.notifier).create(
+            humanName: 'Ich',
+            difficulty: 0.5,
+            bestOf: const [3, 3, 5, 7],
+            seed: 3,
+          );
+      await visit(MatchRoutes.tournament);
       await visit(Routes.stats);
       for (final tab in ['scoring', 'doubles', 'games', 'records', 'overview']) {
         await tester.ensureVisible(find.byKey(Key('stats-tab-$tab')));
@@ -143,6 +171,22 @@ void main() {
       await frames(tester);
       expect(tester.takeException(), isNull, reason: 'result');
       await c.read(activeGameProvider.notifier).close();
+      await frames(tester, 3);
+
+      // Match gegen die CPU: Anzeigetafel, Checkout-Weg und Aufnahme.
+      await c.read(matchControllerProvider.notifier).start(const MatchSetup(
+        format: MatchFormat(startScore: 501, legsToWin: 3),
+        players: [MatchPlayer.human('Ich'), MatchPlayer.bot('Robo', average: 60)],
+      ));
+      router.go(MatchRoutes.play);
+      await frames(tester);
+      final src = c.read(dartSourceProvider) as SimulatorSource;
+      src.throwAt(BoardGeometry.centerOf(Segment.triple(20)));
+      src.throwAt(BoardGeometry.centerOf(Segment.fromNumber(19, 3)));
+      await frames(tester);
+      expect(find.byKey(const Key('match-board')), findsOneWidget);
+      expect(tester.takeException(), isNull, reason: 'match');
+      await c.read(matchControllerProvider.notifier).close();
       await frames(tester, 3);
     });
   }

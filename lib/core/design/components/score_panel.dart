@@ -19,6 +19,7 @@ class ScorePanel extends StatelessWidget {
     this.progress,
     this.badge,
     this.footer,
+    this.active,
   });
 
   /// Beschriftung („Rest“, „Aufnahme“).
@@ -39,10 +40,20 @@ class ScorePanel extends StatelessWidget {
   /// Inhalt unter der Zahl, z. B. die drei Darts der Aufnahme.
   final Widget? footer;
 
+  /// Mehrere Tafeln nebeneinander (Spieler im Match): `true` hebt die
+  /// Tafel hervor (Beschriftung in Akzentfarbe), `false` lässt sie
+  /// zurücktreten (TV ohne rote Leiste). `null` = einzelne Tafel.
+  final bool? active;
+
   /// Stil der großen Zahl im aktuellen Look.
-  static TextStyle valueStyle(BuildContext context, {bool hero = true}) {
+  ///
+  /// [compact] für schmale Bildschirme: etwa drei Viertel der großen Zahl,
+  /// damit Darts und Board auf dem Telefon sichtbar bleiben.
+  static TextStyle valueStyle(BuildContext context, {bool hero = true, bool compact = false}) {
     final look = context.look;
-    return (hero ? look.scoreHero : look.scoreLarge).copyWith(color: Theme.of(context).colorScheme.onSurface);
+    final base = hero ? look.scoreHero : look.scoreLarge;
+    final style = base.copyWith(color: Theme.of(context).colorScheme.onSurface);
+    return compact ? style.copyWith(fontSize: (base.fontSize ?? 96) * 0.7) : style;
   }
 
   @override
@@ -61,7 +72,7 @@ class ScorePanel extends StatelessWidget {
 
     switch (look.id) {
       case DartLookId.tv:
-        final headerStyle = look.kicker.copyWith(color: colors.onPanelHeader, fontSize: 16);
+        final headerStyle = look.kicker.copyWith(color: active == false ? colors.textMuted : colors.onPanelHeader, fontSize: 16);
         return ClipRRect(
           borderRadius: BorderRadius.circular(look.radiusL),
           child: ColoredBox(
@@ -76,7 +87,7 @@ class ScorePanel extends StatelessWidget {
                     children: [
                       Flexible(
                         child: Container(
-                          color: colors.panelHeader,
+                          color: active == false ? colors.surfaceHigh : colors.panelHeader,
                           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m + 2),
                           alignment: Alignment.centerLeft,
                           child: Text(look.caps(label), style: headerStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
@@ -130,7 +141,16 @@ class ScorePanel extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Expanded(child: Text(label, style: theme.textTheme.titleMedium?.copyWith(color: colors.textMuted))),
+                  Expanded(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: active == true ? theme.colorScheme.primary : colors.textMuted,
+                      ),
+                    ),
+                  ),
                   ?badge,
                   if (trailing != null)
                     Text(trailing!, style: theme.textTheme.titleMedium?.copyWith(color: colors.textMuted)),
@@ -154,7 +174,7 @@ class ScorePanel extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: look.cardPadding, vertical: AppSpacing.s + 1),
                 child: Row(
                   children: [
-                    Expanded(child: Kicker(label)),
+                    Expanded(child: Kicker(label, color: active == true ? theme.colorScheme.primary : null)),
                     ?badge,
                     if (trailing != null)
                       Text(

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/design/components/components.dart';
+import '../../../core/design/dart_look.dart';
 import '../../../core/design/tokens.dart';
 
 /// Beschriftete Auswahl aus festen Werten als Chips.
@@ -26,7 +28,7 @@ class ChoiceRow<T> extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: Theme.of(context).textTheme.titleSmall),
+        Kicker(label, maxLines: 2),
         const SizedBox(height: AppSpacing.s),
         Wrap(
           spacing: AppSpacing.s,
@@ -78,7 +80,7 @@ class StepperRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: theme.textTheme.titleSmall),
+              Text(label, style: theme.textTheme.titleSmall, maxLines: 2, overflow: TextOverflow.ellipsis),
               if (caption != null) Text(caption!, style: theme.textTheme.bodySmall),
             ],
           ),
@@ -94,7 +96,7 @@ class StepperRow extends StatelessWidget {
             '$value',
             key: Key('$keyPrefix-value'),
             textAlign: TextAlign.center,
-            style: theme.textTheme.headlineSmall,
+            style: context.look.chipNumber.copyWith(fontSize: 24, color: theme.colorScheme.onSurface),
           ),
         ),
         IconButton.outlined(

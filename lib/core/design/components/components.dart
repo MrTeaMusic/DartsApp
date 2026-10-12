@@ -6,6 +6,7 @@ import '../dart_look.dart';
 import '../tokens.dart';
 
 export 'app_page.dart';
+export 'event_banner.dart';
 export 'hero_backdrop.dart';
 export 'look_picker_tile.dart';
 export 'score_panel.dart';

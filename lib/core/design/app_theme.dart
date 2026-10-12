@@ -286,6 +286,8 @@ abstract final class AppTheme {
           backgroundColor: isClean ? p.surface : null,
           selectedBackgroundColor: isTv ? p.primary : p.primary.withValues(alpha: 0.16),
           selectedForegroundColor: isTv ? p.onPrimary : p.primary,
+          // Nicht gewählte Segmente neutral statt in Akzentfarbe.
+          foregroundColor: p.muted,
           textStyle: textTheme.labelLarge,
         ),
       ),
