@@ -1490,6 +1490,13 @@
     }
   },
   "cpuTooFew": "Für ein Turnier braucht es 15 Gegner; fehlende werden aus der Standardliste ergänzt.",
+  "settingsBoardStyle": "Scheibe",
+  "boardStyleTournament": "Turnier",
+  "boardStyleTournamentText": "Silberne Zahlen, Sisal, Metallrand",
+  "boardStyleTurquoise": "Türkis",
+  "boardStyleTurquoiseText": "Große türkise Zahlen, breiter Fangring",
+  "boardStyleClassic": "Flach",
+  "boardStyleClassicText": "Grafisch, in den Farben des Looks",
   "tourChampionLabel": "Turniersieger",
   "tourBracketLabel": "Turnierbaum"
 }

@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
@@ -6,6 +7,7 @@ import '../../../core/design/app_theme.dart';
 import '../../../core/design/dart_colors.dart';
 import '../domain/board_geometry.dart';
 import '../domain/segment.dart';
+import 'board_style.dart';
 
 /// Ein Treffer, der auf dem Board markiert wird.
 @immutable
@@ -31,12 +33,14 @@ class DartboardPainter extends CustomPainter {
     this.heat = const [],
     this.heatOpacity = 0.0,
     this.showNumbers = true,
+    this.style = BoardStyle.tournament,
   });
 
-  /// Außenradius des Boards (inkl. Zahlenring) relativ zum Double-Ring.
-  static const double outerExtent = 1.24;
-
   final DartColors colors;
+
+  /// Optik der Scheibe (Rand, Zahlen, Oberfläche).
+  final BoardStyle style;
+  BoardSpec get _spec => style.spec;
   final List<HitMarker> hits;
 
   /// 0 → 1: Fortschritt der Trefferanimation des neuesten Darts.
@@ -58,18 +62,19 @@ class DartboardPainter extends CustomPainter {
   final bool showNumbers;
 
   /// Radius des Double-Rings in Pixeln für eine gegebene Größe.
-  static double ringRadius(Size size) => size.shortestSide / 2 / outerExtent;
+  static double ringRadius(Size size, [BoardStyle style = BoardStyle.tournament]) =>
+      size.shortestSide / 2 / style.spec.frameExtent;
 
   /// Pixelposition → Board-Koordinate.
-  static BoardPoint toBoard(Offset local, Size size) {
-    final r = ringRadius(size);
+  static BoardPoint toBoard(Offset local, Size size, [BoardStyle style = BoardStyle.tournament]) {
+    final r = ringRadius(size, style);
     final c = size.center(Offset.zero);
     return BoardPoint((local.dx - c.dx) / r, -(local.dy - c.dy) / r);
   }
 
   /// Board-Koordinate → Pixelposition.
-  static Offset toCanvas(BoardPoint p, Size size) {
-    final r = ringRadius(size);
+  static Offset toCanvas(BoardPoint p, Size size, [BoardStyle style = BoardStyle.tournament]) {
+    final r = ringRadius(size, style);
     final c = size.center(Offset.zero);
     return Offset(c.dx + p.x * r, c.dy - p.y * r);
   }
@@ -77,17 +82,16 @@ class DartboardPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final c = size.center(Offset.zero);
-    final r = ringRadius(size);
+    final r = ringRadius(size, style);
+    final spec = _spec;
 
-    // Umrandung
-    canvas.drawCircle(c, r * outerExtent, Paint()..color = colors.boardSurround);
+    _stage(canvas, c, r);
 
     // Felder
     for (var i = 0; i < 20; i++) {
-      final number = BoardGeometry.numbers[i];
       final even = i.isEven;
-      final single = even ? colors.boardBlack : colors.boardCream;
-      final ring = even ? colors.boardRed : colors.boardGreen;
+      final single = even ? spec.blackOf(colors) : spec.creamOf(colors);
+      final ring = even ? spec.redOf(colors) : spec.greenOf(colors);
       final start = _canvasAngle(i * 18.0 - 9);
       const sweep = 18 * math.pi / 180;
       void fill(double r1, double r2, Color color) =>
@@ -96,12 +100,18 @@ class DartboardPainter extends CustomPainter {
       fill(BoardGeometry.tripleInnerR, BoardGeometry.tripleOuterR, ring);
       fill(BoardGeometry.tripleOuterR, BoardGeometry.doubleInnerR, single);
       fill(BoardGeometry.doubleInnerR, BoardGeometry.doubleOuterR, ring);
-      if (showNumbers) _number(canvas, c, r, i, number);
     }
-    canvas.drawCircle(c, BoardGeometry.outerBullR * r, Paint()..color = colors.boardGreen);
-    canvas.drawCircle(c, BoardGeometry.innerBullR * r, Paint()..color = colors.boardRed);
+    canvas.drawCircle(c, BoardGeometry.outerBullR * r, Paint()..color = spec.greenOf(colors));
+    canvas.drawCircle(c, BoardGeometry.innerBullR * r, Paint()..color = spec.redOf(colors));
 
+    if (spec.realistic) _sisal(canvas, c, r);
     _wires(canvas, c, r);
+    if (spec.realistic) _light(canvas, c, r);
+    if (showNumbers) {
+      for (var i = 0; i < 20; i++) {
+        _number(canvas, c, r, i, BoardGeometry.numbers[i]);
+      }
+    }
 
     // Heatmap
     if (heatOpacity > 0 && heat.isNotEmpty) _heat(canvas, size, r);
@@ -123,7 +133,7 @@ class DartboardPainter extends CustomPainter {
 
     // Treffer
     for (final hit in hits) {
-      _hit(canvas, toCanvas(hit.position, size), r, hit.latest);
+      _hit(canvas, toCanvas(hit.position, size, style), r, hit.latest);
     }
   }
 
@@ -164,9 +174,151 @@ class DartboardPainter extends CustomPainter {
     return _sector(c, r1 * r, r2 * r, start, sweep);
   }
 
+  /// Schatten, Lichtkranz, Fangring und Außenring: hebt das Board von
+  /// jedem Hintergrund ab, ob hell oder dunkel.
+  void _stage(Canvas canvas, Offset c, double r) {
+    final spec = _spec;
+    final outer = r * spec.outerExtent;
+    final surround = spec.surroundOf(colors);
+    if (!spec.realistic) {
+      canvas.drawCircle(c, outer, Paint()..color = surround);
+      return;
+    }
+    canvas.drawCircle(
+      c + Offset(0, r * 0.025),
+      outer,
+      Paint()
+        ..color = Colors.black.withValues(alpha: 0.55)
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, r * 0.035),
+    );
+    canvas.drawCircle(
+      c,
+      outer + r * 0.01,
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.10)
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, r * 0.03),
+    );
+    canvas.drawCircle(
+      c,
+      outer,
+      Paint()
+        ..shader = RadialGradient(
+          colors: [Color.lerp(surround, Colors.white, 0.04)!, surround],
+          stops: const [0.8, 1],
+        ).createShader(Rect.fromCircle(center: c, radius: outer)),
+    );
+    final edge = spec.edge;
+    if (edge == null) return;
+    final ring = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = math.max(1, r * 0.01);
+    if (spec.edgeMetal) {
+      ring.shader = const SweepGradient(
+        colors: [Color(0xFF5E6266), Color(0xFFD9DCDF), Color(0xFF6E7276), Color(0xFFB8BCC0), Color(0xFF5E6266)],
+        transform: GradientRotation(-math.pi / 3),
+      ).createShader(Rect.fromCircle(center: c, radius: outer));
+    } else {
+      ring.color = edge;
+    }
+    canvas.drawCircle(c, outer - r * 0.02, ring);
+  }
+
+  /// Feine Sisal-Struktur, einmal pro Größe aufgezeichnet.
+  void _sisal(Canvas canvas, Offset c, double r) {
+    final key = (r * 2).round();
+    final picture = _sisalCache[key] ??= _recordSisal(r, 1.45);
+    canvas.save();
+    canvas.clipPath(Path()..addOval(Rect.fromCircle(center: c, radius: r * _spec.outerExtent)));
+    canvas.translate(c.dx, c.dy);
+    canvas.drawPicture(picture);
+    canvas.restore();
+  }
+
+  static final Map<int, ui.Picture> _sisalCache = {};
+
+  static ui.Picture _recordSisal(double r, double extent) {
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    final random = math.Random(180);
+    // Kurze, radial laufende Fasern wie bei gepresstem Sisal.
+    final dark = Paint()
+      ..color = Colors.black.withValues(alpha: 0.07)
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = math.max(0.4, r * 0.0022);
+    final light = Paint()
+      ..color = Colors.white.withValues(alpha: 0.06)
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = math.max(0.4, r * 0.0022);
+    final count = (r * r * 0.4 * extent * extent / 1.6).clamp(1200, 40000).toInt();
+    for (var i = 0; i < count; i++) {
+      final d = math.sqrt(random.nextDouble()) * r * extent;
+      final a = random.nextDouble() * 2 * math.pi;
+      final p = Offset(math.cos(a) * d, math.sin(a) * d);
+      final fibre = Offset(math.cos(a), math.sin(a)) * (r * (0.004 + random.nextDouble() * 0.008));
+      canvas.drawLine(p - fibre, p + fibre, i.isEven ? dark : light);
+    }
+    return recorder.endRecording();
+  }
+
+  /// Weiches Licht von oben links, Schatten unten rechts.
+  void _light(Canvas canvas, Offset c, double r) {
+    final rect = Rect.fromCircle(center: c, radius: r * _spec.outerExtent);
+    canvas.drawCircle(
+      c,
+      r * _spec.outerExtent,
+      Paint()
+        ..shader = RadialGradient(
+          center: const Alignment(-0.45, -0.55),
+          radius: 1.15,
+          colors: [
+            Colors.white.withValues(alpha: 0.10),
+            Colors.white.withValues(alpha: 0),
+            Colors.black.withValues(alpha: 0.22),
+          ],
+          stops: const [0, 0.5, 1],
+        ).createShader(rect),
+    );
+  }
+
   void _wires(Canvas canvas, Offset c, double r) {
+    final spec = _spec;
+    if (!spec.realistic) {
+      _flatWires(canvas, c, r);
+      return;
+    }
+    final width = math.max(0.8, r * 0.0055);
+    final shade = Paint()
+      ..color = Colors.black.withValues(alpha: 0.45)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = width * 1.6;
     final wire = Paint()
-      ..color = colors.boardWire.withValues(alpha: 0.55)
+      ..color = spec.wireOf(colors)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = width;
+    final shadow = Offset(width * 0.6, width * 0.8);
+    const radii = [
+      BoardGeometry.innerBullR,
+      BoardGeometry.outerBullR,
+      BoardGeometry.tripleInnerR,
+      BoardGeometry.tripleOuterR,
+      BoardGeometry.doubleInnerR,
+      BoardGeometry.doubleOuterR,
+    ];
+    for (final pass in [(shade, shadow), (wire, Offset.zero)]) {
+      for (final radius in radii) {
+        canvas.drawCircle(c + pass.$2, radius * r, pass.$1);
+      }
+      for (var i = 0; i < 20; i++) {
+        final a = _canvasAngle(i * 18.0 - 9);
+        final dir = Offset(math.cos(a), math.sin(a));
+        canvas.drawLine(c + pass.$2 + dir * (BoardGeometry.outerBullR * r), c + pass.$2 + dir * (r * spec.spiderOverhang), pass.$1);
+      }
+    }
+  }
+
+  void _flatWires(Canvas canvas, Offset c, double r) {
+    final wire = Paint()
+      ..color = _spec.wireOf(colors).withValues(alpha: 0.55)
       ..style = PaintingStyle.stroke
       ..strokeWidth = math.max(0.8, r * 0.006);
     for (final radius in const [
@@ -187,21 +339,39 @@ class DartboardPainter extends CustomPainter {
   }
 
   void _number(Canvas canvas, Offset c, double r, int index, int number) {
-    final a = _canvasAngle(index * 18.0);
-    final pos = c + Offset(math.cos(a), math.sin(a)) * (r * 1.12);
+    final spec = _spec;
+    final degrees = index * 18.0;
+    final a = _canvasAngle(degrees);
+    final pos = c + Offset(math.cos(a), math.sin(a)) * (r * spec.numberRadius);
     final tp = TextPainter(
       text: TextSpan(
         text: '$number',
         style: TextStyle(
-          fontFamily: AppTypography.family,
-          color: colors.boardNumbers,
-          fontSize: r * 0.115,
-          fontWeight: FontWeight.w700,
+          fontFamily: spec.numberFamily ?? AppTypography.family,
+          color: spec.numbersOf(colors),
+          fontSize: r * spec.numberSize,
+          fontWeight: spec.numberWeight,
+          height: 1,
+          shadows: spec.realistic
+              ? const [Shadow(color: Color(0x99000000), offset: Offset(0.6, 1), blurRadius: 1.5)]
+              : null,
         ),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-    tp.paint(canvas, pos - Offset(tp.width / 2, tp.height / 2));
+    if (!spec.rotateNumbers) {
+      tp.paint(canvas, pos - Offset(tp.width / 2, tp.height / 2));
+      return;
+    }
+    // Oben stehen die Zahlen mit dem Kopf nach außen, unten mit dem Kopf zur
+    // Mitte, damit keine auf dem Kopf steht.
+    final upper = degrees <= 90 || degrees >= 270;
+    final turn = (upper ? degrees : degrees - 180) * math.pi / 180;
+    canvas.save();
+    canvas.translate(pos.dx, pos.dy);
+    canvas.rotate(turn);
+    tp.paint(canvas, Offset(-tp.width / 2, -tp.height / 2));
+    canvas.restore();
   }
 
   void _glow(Canvas canvas, Path path, Color color, double strength) {
@@ -275,5 +445,6 @@ class DartboardPainter extends CustomPainter {
       old.hover != hover ||
       old.heat != heat ||
       old.heatOpacity != heatOpacity ||
-      old.showNumbers != showNumbers;
+      old.showNumbers != showNumbers ||
+      old.style != style;
 }
