@@ -37,9 +37,19 @@ class StringChoice extends Notifier<String?> {
 /// Alles, was die Reiter für den gewählten Zeitraum brauchen. Einmal
 /// berechnet und von allen Reitern geteilt.
 class StatsView {
-  const StatsView({required this.calc, required this.report, required this.previous, required this.period, this.gameId});
+  const StatsView({
+    required this.calc,
+    required this.report,
+    required this.previous,
+    required this.doubles,
+    required this.period,
+    this.gameId,
+  });
   final StatsCalculator calc;
   final StatsReport report;
+
+  /// Doppel-Auswertung (Streubild, Daneben-Richtung, Verlauf …).
+  final DoubleStats doubles;
 
   /// Gleich langer Zeitraum davor; `null` bei "Alles" oder ohne Daten.
   final StatsReport? previous;
@@ -58,6 +68,7 @@ final statsViewProvider = Provider<StatsView?>((ref) {
     report: calc.report(period, gameId: gameId),
     // Ohne Training im Zeitraum davor gibt es nichts zu vergleichen.
     previous: previous == null || previous.isEmpty ? null : previous,
+    doubles: calc.doubleStats(period, gameId: gameId),
     period: period,
     gameId: gameId,
   );

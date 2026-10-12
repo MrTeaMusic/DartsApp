@@ -12,6 +12,7 @@ import '../../games/presentation/game_texts.dart';
 import '../../plans/presentation/auto_plan_screen.dart';
 import '../domain/game_metrics.dart';
 import '../domain/stats_calculator.dart';
+import 'double_insights.dart';
 import 'goals_card.dart';
 import 'stats_charts.dart';
 import 'stats_screen.dart';
@@ -516,10 +517,25 @@ class DoublesTab extends StatelessWidget {
           ],
         ]),
         _gap,
+        DoubleFocusCard(stats: view.doubles, wide: wide),
+        _gap,
+        TwoColumns(
+          wide: wide,
+          left: CheckoutVsTrainingCard(stats: view.doubles),
+          right: DoubleTipCard(stats: view.doubles, minAttempts: _minDoubleAttempts),
+        ),
+        _gap,
         ChartCard(
           title: l10n.statsDoublesPerNumber,
-          hint: '${l10n.statsDoublesHint} ${l10n.statsDoublesLegend(_minDoubleAttempts)}',
-          child: r.doubles.isEmpty ? const NoDataHint() : DoublesGrid(doubles: r.doubles, overall: r.doubleRate),
+          hint: '${l10n.statsDoublesHint} ${l10n.statsDoublesLegend(_minDoubleAttempts)} '
+              '${l10n.statsDoublesTrendLegend(DoubleStats.trendMinAttempts)}',
+          child: r.doubles.isEmpty
+              ? const NoDataHint()
+              : DoublesGrid(
+                  doubles: r.doubles,
+                  overall: r.doubleRate,
+                  trends: {for (final e in view.doubles.trends.entries) e.key: ?e.value.direction},
+                ),
         ),
         _gap,
         ChartCard(
