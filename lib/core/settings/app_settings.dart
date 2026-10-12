@@ -5,12 +5,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/dart_source/domain/coordinate_calibration.dart';
 import '../../features/dart_source/domain/dart_event.dart';
 import '../../features/sync/domain/sync_role.dart';
+import '../design/dart_look.dart';
 
 /// Einstellungen der App. Unveränderlich, Änderungen über [SettingsNotifier].
 @immutable
 class AppSettings {
   const AppSettings({
-    this.themeMode = ThemeMode.dark,
+    this.look = DartLookId.tv,
+    this.themeMode = ThemeMode.system,
     this.sourceKind = DartSourceKind.simulator,
     this.autodartsHost = '127.0.0.1',
     this.autodartsPort = 3180,
@@ -24,6 +26,10 @@ class AppSettings {
     this.syncKey = '',
   });
 
+  /// Gewählter Look (Optionen → Darstellung).
+  final DartLookId look;
+
+  /// Helligkeit; gilt nur für Looks mit heller Variante (Clean).
   final ThemeMode themeMode;
   final DartSourceKind sourceKind;
   final String autodartsHost;
@@ -45,6 +51,7 @@ class AppSettings {
   final String syncKey;
 
   AppSettings copyWith({
+    DartLookId? look,
     ThemeMode? themeMode,
     DartSourceKind? sourceKind,
     String? autodartsHost,
@@ -59,6 +66,7 @@ class AppSettings {
     String? syncKey,
   }) =>
       AppSettings(
+        look: look ?? this.look,
         themeMode: themeMode ?? this.themeMode,
         sourceKind: sourceKind ?? this.sourceKind,
         autodartsHost: autodartsHost ?? this.autodartsHost,
@@ -73,6 +81,7 @@ class AppSettings {
         syncKey: syncKey ?? this.syncKey,
       );
 
+  static const _kLook = 'settings.look';
   static const _kTheme = 'settings.themeMode';
   static const _kSource = 'settings.sourceKind';
   static const _kHost = 'settings.autodartsHost';
@@ -91,6 +100,7 @@ class AppSettings {
     T byName<T extends Enum>(List<T> values, String? name, T fallback) =>
         values.where((v) => v.name == name).firstOrNull ?? fallback;
     return AppSettings(
+      look: DartLookId.byName(prefs.getString(_kLook)),
       themeMode: byName(ThemeMode.values, prefs.getString(_kTheme), d.themeMode),
       sourceKind: byName(DartSourceKind.values, prefs.getString(_kSource), d.sourceKind),
       autodartsHost: prefs.getString(_kHost) ?? d.autodartsHost,
@@ -107,6 +117,7 @@ class AppSettings {
   }
 
   Future<void> save(SharedPreferences prefs) async {
+    await prefs.setString(_kLook, look.name);
     await prefs.setString(_kTheme, themeMode.name);
     await prefs.setString(_kSource, sourceKind.name);
     await prefs.setString(_kHost, autodartsHost);

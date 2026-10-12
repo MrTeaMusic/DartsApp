@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/design/dart_look.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/design/components/components.dart';
 import '../../../core/design/dart_colors.dart';
@@ -157,13 +158,10 @@ class _MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
     final friendProfile = profiles.any((p) => p.id == _friendProfile) ? _friendProfile : null;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.matchOpponentTitle)),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 640),
-          child: ListView(
-            padding: const EdgeInsets.all(AppSpacing.page),
-            children: [
+      appBar: AppPageBar(maxWidth: 640, title: Text(l10n.matchOpponentTitle)),
+      body: AppPage(
+        maxWidth: 640,
+        children: [
               SectionHeader(l10n.matchOpponent),
               AppCard(
                 child: Column(
@@ -193,7 +191,7 @@ class _MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
                           Text(
                             '${_cpuAverage.round()}',
                             key: const Key('match-cpu-average-value'),
-                            style: theme.textTheme.headlineSmall,
+                            style: context.look.chipNumber.copyWith(fontSize: 24, color: theme.colorScheme.onSurface),
                           ),
                         ],
                       ),
@@ -243,7 +241,7 @@ class _MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: AppSpacing.xl),
+              const SectionGap(),
               SectionHeader(l10n.matchFormat),
               AppCard(
                 child: Column(
@@ -331,7 +329,7 @@ class _MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: AppSpacing.xl),
+              const SectionGap(),
               FilledButton.icon(
                 key: const Key('start-match'),
                 onPressed: _starting ? null : _start,
@@ -339,8 +337,6 @@ class _MatchSetupScreenState extends ConsumerState<MatchSetupScreen> {
                 label: Text(l10n.matchStart),
               ),
             ],
-          ),
-        ),
       ),
     );
   }

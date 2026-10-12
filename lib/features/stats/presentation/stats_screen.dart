@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/design/components/components.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
 import '../../games/domain/game_catalog.dart';
@@ -77,59 +78,61 @@ class StatsScreen extends ConsumerWidget {
     final view = ref.watch(statsViewProvider);
     final player = ref.watch(activePlayerProvider);
 
-    return DefaultTabController(
-      length: 5,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(l10n.statsTitle),
-          actions: [
-            if (player != null)
-              Padding(
-                padding: const EdgeInsets.only(right: AppSpacing.l),
-                child: Chip(avatar: const Icon(Icons.person_rounded, size: 18), label: Text(player.name)),
-              ),
-          ],
-          bottom: TabBar(
-            key: const Key('stats-tabs'),
-            isScrollable: true,
-            tabAlignment: TabAlignment.start,
-            tabs: [
-              Tab(key: const Key('stats-tab-overview'), text: l10n.statsTabOverview),
-              Tab(key: const Key('stats-tab-scoring'), text: l10n.statsTabScoring),
-              Tab(key: const Key('stats-tab-doubles'), text: l10n.statsTabDoubles),
-              Tab(key: const Key('stats-tab-games'), text: l10n.statsTabGames),
-              Tab(key: const Key('stats-tab-records'), text: l10n.statsTabRecords),
+    return LayoutBuilder(builder: (context, outer) {
+      // Reiter bündig mit dem Seitenrand (Label-Abstand 16 abziehen).
+      final inset = AppPageBar.contentInset(context, outer.maxWidth, double.infinity);
+      return DefaultTabController(
+        length: 5,
+        child: Scaffold(
+          appBar: AppPageBar(
+            title: Text(l10n.statsTitle),
+            actions: [
+              if (player != null)
+                Chip(avatar: const Icon(Icons.person_rounded, size: 18), label: Text(player.name)),
             ],
+            bottom: TabBar(
+              key: const Key('stats-tabs'),
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
+              padding: EdgeInsets.symmetric(horizontal: (inset - AppSpacing.l).clamp(0, double.infinity)),
+              tabs: [
+                Tab(key: const Key('stats-tab-overview'), text: l10n.statsTabOverview),
+                Tab(key: const Key('stats-tab-scoring'), text: l10n.statsTabScoring),
+                Tab(key: const Key('stats-tab-doubles'), text: l10n.statsTabDoubles),
+                Tab(key: const Key('stats-tab-games'), text: l10n.statsTabGames),
+                Tab(key: const Key('stats-tab-records'), text: l10n.statsTabRecords),
+              ],
+            ),
           ),
+          body: LayoutBuilder(builder: (context, c) {
+            final wide = c.maxWidth >= 900;
+            final pad = inset;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: EdgeInsets.fromLTRB(pad, AppSpacing.m, pad, AppSpacing.s),
+                  child: _Filters(view: view),
+                ),
+                Expanded(
+                  child: view == null
+                      ? const Center(child: CircularProgressIndicator())
+                      : TabBarView(
+                          children: [
+                            OverviewTab(view: view, wide: wide, pad: pad),
+                            ScoringTab(view: view, wide: wide, pad: pad),
+                            DoublesTab(view: view, wide: wide, pad: pad),
+                            GamesTab(view: view, wide: wide, pad: pad),
+                            RecordsTab(view: view, wide: wide, pad: pad),
+                          ],
+                        ),
+                ),
+              ],
+            );
+          }),
         ),
-        body: LayoutBuilder(builder: (context, c) {
-          final wide = c.maxWidth >= 900;
-          final pad = wide ? AppSpacing.pageWide : AppSpacing.page;
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: EdgeInsets.fromLTRB(pad, AppSpacing.m, pad, AppSpacing.s),
-                child: _Filters(view: view),
-              ),
-              Expanded(
-                child: view == null
-                    ? const Center(child: CircularProgressIndicator())
-                    : TabBarView(
-                        children: [
-                          OverviewTab(view: view, wide: wide, pad: pad),
-                          ScoringTab(view: view, wide: wide, pad: pad),
-                          DoublesTab(view: view, wide: wide, pad: pad),
-                          GamesTab(view: view, wide: wide, pad: pad),
-                          RecordsTab(view: view, wide: wide, pad: pad),
-                        ],
-                      ),
-              ),
-            ],
-          );
-        }),
-      ),
-    );
+      );
+    });
   }
 }
 

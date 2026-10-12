@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/design/components/components.dart';
 import '../../../core/design/dart_colors.dart';
+import '../../../core/design/dart_look.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
 import '../../../core/router/app_router.dart';
@@ -29,28 +30,12 @@ class SettingsScreen extends ConsumerWidget {
     final notifier = ref.read(settingsProvider.notifier);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.settingsTitle)),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
-          child: ListView(
-            padding: const EdgeInsets.all(AppSpacing.page),
+      appBar: AppPageBar(maxWidth: 720, title: Text(l10n.settingsTitle)),
+      body: AppPage(
             children: [
               SectionHeader(l10n.profilesTitle),
               const ProfilesCard(),
-              const SizedBox(height: AppSpacing.xl),
-              SectionHeader(l10n.settingsAppearance),
-              SegmentedButton<ThemeMode>(
-                key: const Key('theme-selector'),
-                segments: [
-                  ButtonSegment(value: ThemeMode.dark, label: Text(l10n.themeDark), icon: const Icon(Icons.dark_mode_rounded)),
-                  ButtonSegment(value: ThemeMode.light, label: Text(l10n.themeLight), icon: const Icon(Icons.light_mode_rounded)),
-                  ButtonSegment(value: ThemeMode.system, label: Text(l10n.themeSystem), icon: const Icon(Icons.brightness_auto_rounded)),
-                ],
-                selected: {settings.themeMode},
-                onSelectionChanged: (s) => notifier.update((x) => x.copyWith(themeMode: s.first)),
-              ),
-              const SizedBox(height: AppSpacing.xl),
+              const SectionGap(),
               SectionHeader(l10n.settingsSource, trailing: const SourceStatusBadge()),
               AppCard(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
@@ -81,7 +66,26 @@ class SettingsScreen extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.m),
                 _AutodartsConnectionCard(settings: settings),
               ],
-              const SizedBox(height: AppSpacing.xl),
+              const SectionGap(),
+              SectionHeader(l10n.settingsAppearance),
+              const _LookPicker(),
+              const SizedBox(height: AppSpacing.l),
+              if (settings.look.supportsLight) ...[
+                Kicker(l10n.settingsBrightness),
+                const SizedBox(height: AppSpacing.s),
+                SegmentedButton<ThemeMode>(
+                  key: const Key('theme-selector'),
+                  segments: [
+                    ButtonSegment(value: ThemeMode.dark, label: Text(l10n.themeDark), icon: const Icon(Icons.dark_mode_rounded)),
+                    ButtonSegment(value: ThemeMode.light, label: Text(l10n.themeLight), icon: const Icon(Icons.light_mode_rounded)),
+                    ButtonSegment(value: ThemeMode.system, label: Text(l10n.themeSystem), icon: const Icon(Icons.brightness_auto_rounded)),
+                  ],
+                  selected: {settings.themeMode},
+                  onSelectionChanged: (s) => notifier.update((x) => x.copyWith(themeMode: s.first)),
+                ),
+              ] else
+                Text(l10n.settingsBrightnessFixed, key: const Key('theme-fixed'), style: Theme.of(context).textTheme.bodySmall),
+              const SectionGap(),
               SectionHeader(l10n.settingsFeedback),
               AppCard(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
@@ -104,16 +108,16 @@ class SettingsScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: AppSpacing.xl),
+              const SectionGap(),
               SectionHeader(l10n.callerTitle),
               const CallerSettingsCard(),
-              const SizedBox(height: AppSpacing.xl),
+              const SectionGap(),
               SectionHeader(l10n.syncTitle),
               const SyncCard(),
-              const SizedBox(height: AppSpacing.xl),
+              const SectionGap(),
               SectionHeader(l10n.backupTitle),
               const BackupCard(),
-              const SizedBox(height: AppSpacing.xl),
+              const SectionGap(),
               SectionHeader(l10n.settingsDeveloper),
               AppCard(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
@@ -140,10 +144,64 @@ class SettingsScreen extends ConsumerWidget {
               const SizedBox(height: AppSpacing.xl),
               Center(child: Text(l10n.settingsVersion(appVersion), style: Theme.of(context).textTheme.bodySmall)),
             ],
-          ),
-        ),
       ),
     );
+  }
+}
+
+/// Drei Vorschau-Kacheln; Antippen wechselt den Look sofort.
+class _LookPicker extends ConsumerWidget {
+  const _LookPicker();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final settings = ref.watch(settingsProvider);
+    final platform = MediaQuery.platformBrightnessOf(context);
+    final cleanBrightness = switch (settings.themeMode) {
+      ThemeMode.light => Brightness.light,
+      ThemeMode.dark => Brightness.dark,
+      ThemeMode.system => platform,
+    };
+    final looks = [
+      (DartLookId.tv, l10n.lookTvName, l10n.lookTvText),
+      (DartLookId.clean, l10n.lookCleanName, l10n.lookCleanText),
+      (DartLookId.lab, l10n.lookLabName, l10n.lookLabText),
+    ];
+    return LayoutBuilder(builder: (context, c) {
+      final row = c.maxWidth >= 560;
+      final gap = context.look.gridGap;
+      Widget tile(DartLookId id, String name, String text) => LookPickerTile(
+            key: Key('look-${id.name}'),
+            id: id,
+            title: name,
+            subtitle: text,
+            previewLabel: l10n.lookPreviewScore,
+            selected: settings.look == id,
+            brightness: id.supportsLight ? cleanBrightness : Brightness.dark,
+            horizontal: !row,
+            onTap: () => ref.read(settingsProvider.notifier).update((x) => x.copyWith(look: id)),
+          );
+      if (row) {
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final (i, (id, name, text)) in looks.indexed) ...[
+              if (i > 0) SizedBox(width: gap),
+              Expanded(child: tile(id, name, text)),
+            ],
+          ],
+        );
+      }
+      return Column(
+        children: [
+          for (final (i, (id, name, text)) in looks.indexed) ...[
+            if (i > 0) SizedBox(height: gap),
+            tile(id, name, text),
+          ],
+        ],
+      );
+    });
   }
 }
 

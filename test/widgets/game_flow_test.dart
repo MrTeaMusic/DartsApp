@@ -105,6 +105,7 @@ void main() {
     await tester.tap(find.byKey(const Key('opt-startScore-170')));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(find.byKey(const Key('start-game')), 300, scrollable: find.byType(Scrollable).last);
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('start-game')));
     await pumpFrames(tester);
     expect(container.read(activeGameProvider)?.gameId, 'x01');

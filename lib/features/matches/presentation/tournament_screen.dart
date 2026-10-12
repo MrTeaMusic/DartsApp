@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/design/components/components.dart';
 import '../../../core/design/dart_colors.dart';
+import '../../../core/design/dart_look.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
 import '../domain/tournament.dart';
@@ -47,7 +48,7 @@ class TournamentScreen extends ConsumerWidget {
     ref.watch(matchControllerProvider.select((s) => s?.ended));
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppPageBar(
         title: Text(l10n.tournamentTitle),
         actions: [
           if (t != null)
@@ -67,26 +68,26 @@ class TournamentScreen extends ConsumerWidget {
       body: t == null
           ? Center(
               child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.xl),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(l10n.tourNone, textAlign: TextAlign.center, style: theme.textTheme.bodyLarge),
-                    const SizedBox(height: AppSpacing.l),
-                    FilledButton.icon(
-                      onPressed: () => context.go(MatchRoutes.tournamentNew),
-                      icon: const Icon(Icons.add_rounded),
-                      label: Text(l10n.tourNew),
-                    ),
-                  ],
+                padding: EdgeInsets.all(context.look.page),
+                child: ComingSoon(
+                  icon: Icons.emoji_events_rounded,
+                  title: l10n.tournamentTitle,
+                  text: l10n.tourNone,
+                  action: FilledButton.icon(
+                    onPressed: () => context.go(MatchRoutes.tournamentNew),
+                    icon: const Icon(Icons.add_rounded),
+                    label: Text(l10n.tourNew),
+                  ),
                 ),
               ),
             )
           : LayoutBuilder(
               builder: (context, c) {
                 final wide = c.maxWidth >= 1000;
+                final look = context.look;
+                final page = look.pagePadding(c.maxWidth >= kWidePage);
                 return ListView(
-                  padding: const EdgeInsets.all(AppSpacing.page),
+                  padding: EdgeInsets.fromLTRB(page, look.page * 0.5, page, page),
                   children: [
                     _StatusCard(tournament: t),
                     const SizedBox(height: AppSpacing.s),
@@ -94,13 +95,13 @@ class TournamentScreen extends ConsumerWidget {
                       l10n.tourInfo(t.startScore, (t.difficulty * 100).round()),
                       style: theme.textTheme.bodySmall?.copyWith(color: context.dartColors.textMuted),
                     ),
-                    const SizedBox(height: AppSpacing.l),
+                    const SectionGap(factor: 0.8),
                     if (wide)
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           for (var r = 0; r < t.rounds.length; r++) ...[
-                            if (r > 0) const SizedBox(width: AppSpacing.m),
+                            if (r > 0) SizedBox(width: look.gridGap + AppSpacing.xs),
                             Expanded(
                               child: _RoundColumn(tournament: t, round: r),
                             ),
@@ -144,7 +145,7 @@ class _StatusCard extends ConsumerWidget {
       return AppCard(
         child: Row(
           children: [
-            Icon(Icons.emoji_events_rounded, size: 40, color: won ? colors.highlight : theme.colorScheme.primary),
+            IconBadge(icon: Icons.emoji_events_rounded, size: 52, color: won ? colors.record : theme.colorScheme.primary),
             const SizedBox(width: AppSpacing.l),
             Expanded(
               child: Text(
@@ -162,11 +163,13 @@ class _StatusCard extends ConsumerWidget {
     if (m != null) {
       final opponent = m.a == h ? m.b! : m.a!;
       final saved = controller.savedMatch();
-      return AppCard(
+      final look = context.look;
+      return HeroBackdrop(
+        padding: EdgeInsets.all(look.cardPadding + AppSpacing.xs),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(l10n.tourNextMatch.toUpperCase(), style: theme.textTheme.labelMedium),
+            Kicker(l10n.tourNextMatch, color: theme.colorScheme.primary),
             const SizedBox(height: AppSpacing.s),
             Text(
               '${l10n.tourRoundName(m.round)} · ${l10n.tourBestOf(t.bestOf[m.round])}',
@@ -176,13 +179,16 @@ class _StatusCard extends ConsumerWidget {
             Text(
               '${t.entrants[h].name} ${l10n.tourVs} ${t.entrants[opponent].name}',
               key: const Key('tournament-next'),
-              style: theme.textTheme.headlineSmall,
+              style: look.sectionTitle.copyWith(
+                fontSize: look.id == DartLookId.tv ? 34 : 26,
+                color: theme.colorScheme.onSurface,
+              ),
             ),
             Text(
               l10n.tourCpuAverage(t.botAverage(opponent).round()),
               style: theme.textTheme.bodySmall?.copyWith(color: colors.textMuted),
             ),
-            const SizedBox(height: AppSpacing.m),
+            const SizedBox(height: AppSpacing.l),
             FilledButton.icon(
               key: const Key('tournament-play'),
               onPressed: () => _play(context, ref),
@@ -240,13 +246,13 @@ class _RoundColumn extends StatelessWidget {
       children: [
         SectionHeader(
           l10n.tourRoundName(round),
-          trailing: Text(l10n.tourBestOf(tournament.bestOf[round]), style: Theme.of(context).textTheme.labelMedium),
+          trailing: Kicker(l10n.tourBestOf(tournament.bestOf[round])),
         ),
         for (final m in tournament.rounds[round]) ...[
           _MatchTile(tournament: tournament, match: m),
-          const SizedBox(height: AppSpacing.s),
+          SizedBox(height: context.look.gridGap * 0.8),
         ],
-        const SizedBox(height: AppSpacing.m),
+        const SectionGap(factor: 0.6),
       ],
     );
   }
@@ -263,6 +269,8 @@ class _MatchTile extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = context.dartColors;
     final h = tournament.humanIndex;
+    final look = context.look;
+    final mine = match.involves(h);
 
     Widget line(int? entrant, int score) {
       final name = entrant == null ? l10n.tourTbd : tournament.entrants[entrant].name;
@@ -283,20 +291,42 @@ class _MatchTile extends StatelessWidget {
           Expanded(
             child: Text(name, overflow: TextOverflow.ellipsis, style: style),
           ),
-          if (match.played) Text('$score', style: style?.copyWith(fontFeatures: const [FontFeature.tabularFigures()])),
+          if (match.played)
+            Text(
+              '$score',
+              style: look.chipNumber.copyWith(
+                fontSize: 16,
+                color: winner ? theme.colorScheme.onSurface : colors.textMuted,
+              ),
+            ),
         ],
       );
     }
 
+    final tile = Column(
+      children: [
+        line(match.a, match.scoreA),
+        const SizedBox(height: AppSpacing.xxs),
+        line(match.b, match.scoreB),
+      ],
+    );
     return AppCard(
       key: Key('tournament-match-${match.id}'),
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: AppSpacing.s),
-      child: Column(
-        children: [
-          line(match.a, match.scoreA),
-          const SizedBox(height: AppSpacing.xxs),
-          line(match.b, match.scoreB),
-        ],
+      padding: EdgeInsets.zero,
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Eigene Spiele mit Akzentkante.
+            Container(width: 3, color: mine ? theme.colorScheme.primary : Colors.transparent),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(AppSpacing.m - 3, AppSpacing.s, AppSpacing.m, AppSpacing.s),
+                child: tile,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

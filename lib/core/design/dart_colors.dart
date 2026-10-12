@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'tokens.dart';
 
 /// App-spezifische Farben, die Material nicht abdeckt. Abrufbar über
-/// `context.dartColors`.
+/// `context.dartColors`. Jeder Look (siehe `looks.dart`) liefert eigene Werte;
+/// die Bedeutungen bleiben gleich: [highlight] = geplanter Checkout-Weg,
+/// [tripleHit] = Triple (lila), [doubleHit] = Double (grün).
 @immutable
 class DartColors extends ThemeExtension<DartColors> {
   const DartColors({
@@ -25,6 +27,15 @@ class DartColors extends ThemeExtension<DartColors> {
     required this.heatHot,
     required this.tripleHit,
     required this.doubleHit,
+    required this.panel,
+    required this.panelHeader,
+    required this.onPanelHeader,
+    required this.record,
+    required this.chartPrimary,
+    required this.chartSecondary,
+    required this.chartGrid,
+    required this.heroStart,
+    required this.heroEnd,
   });
 
   final Color boardBlack;
@@ -35,6 +46,8 @@ class DartColors extends ThemeExtension<DartColors> {
   final Color boardSurround;
   final Color boardNumbers;
   final Color hitGlow;
+
+  /// Empfohlener Wurf (Checkout-Weg) und Zielhinweise: gelb.
   final Color highlight;
   final Color success;
   final Color warning;
@@ -50,68 +63,139 @@ class DartColors extends ThemeExtension<DartColors> {
   /// Treffer im Double-Ring.
   final Color doubleHit;
 
+  /// Fläche großer Anzeigen (Restpunkte, Aufnahme), z. B. die
+  /// Scoreboard-Tafel im Look „TV“.
+  final Color panel;
+
+  /// Kopfleiste großer Anzeigen (TV: Akzentbalken).
+  final Color panelHeader;
+  final Color onPanelHeader;
+
+  /// Rekorde, Serie, Bestwerte.
+  final Color record;
+
+  /// Diagramme: Hauptreihe, zweite Reihe (z. B. gleitender Schnitt), Raster.
+  final Color chartPrimary;
+  final Color chartSecondary;
+  final Color chartGrid;
+
+  /// Verlauf der Startseiten-Kachel.
+  final Color heroStart;
+  final Color heroEnd;
+
+  /// Look „TV“ (Standard). Bleibt als Name erhalten, damit Tests und
+  /// ältere Stellen weiter funktionieren.
   static const DartColors dark = DartColors(
     boardBlack: AppPalette.boardBlack,
     boardCream: AppPalette.boardCream,
     boardRed: AppPalette.boardRed,
     boardGreen: AppPalette.boardGreen,
     boardWire: AppPalette.boardWire,
-    boardSurround: AppPalette.boardSurround,
-    boardNumbers: Color(0xFFF4F5F2),
-    hitGlow: AppPalette.greenBright,
-    highlight: Color(0xFFFFD45C),
-    success: AppPalette.greenBright,
-    warning: AppPalette.amber,
-    danger: AppPalette.red,
-    textMuted: AppPalette.darkTextMuted,
-    surfaceHigh: AppPalette.darkSurfaceHigh,
+    boardSurround: Color(0xFF05070B),
+    boardNumbers: Color(0xFFF5F6FA),
+    hitGlow: Color(0xFF2EE59D),
+    highlight: Color(0xFFFFD23F),
+    success: Color(0xFF2EE59D),
+    warning: Color(0xFFFFA62B),
+    danger: Color(0xFFFF4D4F),
+    textMuted: Color(0xFF8F98AD),
+    surfaceHigh: Color(0xFF1C2232),
     heatCold: Color(0xFF3D8BEF),
     heatHot: Color(0xFFFF4D3D),
-    tripleHit: Color(0xFFB18CFF),
-    doubleHit: Color(0xFF35D69C),
+    tripleHit: Color(0xFFB98CFF),
+    doubleHit: Color(0xFF2EE59D),
+    panel: Color(0xFF0B0E16),
+    panelHeader: Color(0xFFE3122C),
+    onPanelHeader: Colors.white,
+    record: Color(0xFFFFC23D),
+    chartPrimary: Color(0xFFE3122C),
+    chartSecondary: Color(0xFFFFD23F),
+    chartGrid: Color(0xFF1C2232),
+    heroStart: Color(0xFF1A0A12),
+    heroEnd: Color(0xFF0B0E16),
   );
 
+  /// Look „Clean“, hell.
   static const DartColors light = DartColors(
     boardBlack: AppPalette.boardBlack,
     boardCream: AppPalette.boardCream,
     boardRed: AppPalette.boardRed,
     boardGreen: AppPalette.boardGreen,
     boardWire: AppPalette.boardWire,
-    boardSurround: Color(0xFF1C1C1C),
+    boardSurround: Color(0xFF1C1C1E),
     boardNumbers: Color(0xFFF4F5F2),
-    hitGlow: AppPalette.green,
-    highlight: Color(0xFFFFC21F),
-    success: AppPalette.green,
-    warning: Color(0xFFB27600),
-    danger: Color(0xFFC4352C),
-    textMuted: AppPalette.lightTextMuted,
-    surfaceHigh: AppPalette.lightSurfaceHigh,
+    hitGlow: Color(0xFF1FA855),
+    highlight: Color(0xFFD99400),
+    success: Color(0xFF1FA855),
+    warning: Color(0xFFC77700),
+    danger: Color(0xFFE5352B),
+    textMuted: Color(0xFF6E6E73),
+    surfaceHigh: Color(0xFFEDEDF2),
     heatCold: Color(0xFF2A78D6),
     heatHot: Color(0xFFE5392B),
-    tripleHit: Color(0xFF7A4FE0),
-    doubleHit: Color(0xFF128A5F),
+    tripleHit: Color(0xFF8B46E6),
+    doubleHit: Color(0xFF1FA855),
+    panel: Colors.white,
+    panelHeader: Color(0x00000000),
+    onPanelHeader: Color(0xFF6E6E73),
+    record: Color(0xFFF2A100),
+    chartPrimary: Color(0xFF0A7AFF),
+    chartSecondary: Color(0xFFFF9F0A),
+    chartGrid: Color(0xFFEDEDF2),
+    heroStart: Color(0xFFE6F0FF),
+    heroEnd: Colors.white,
   );
 
   @override
-  DartColors copyWith({Color? hitGlow, Color? highlight}) => DartColors(
+  DartColors copyWith({
+    Color? hitGlow,
+    Color? highlight,
+    Color? success,
+    Color? warning,
+    Color? danger,
+    Color? textMuted,
+    Color? surfaceHigh,
+    Color? tripleHit,
+    Color? doubleHit,
+    Color? panel,
+    Color? panelHeader,
+    Color? onPanelHeader,
+    Color? record,
+    Color? chartPrimary,
+    Color? chartSecondary,
+    Color? chartGrid,
+    Color? heroStart,
+    Color? heroEnd,
+    Color? boardSurround,
+  }) =>
+      DartColors(
         boardBlack: boardBlack,
         boardCream: boardCream,
         boardRed: boardRed,
         boardGreen: boardGreen,
         boardWire: boardWire,
-        boardSurround: boardSurround,
+        boardSurround: boardSurround ?? this.boardSurround,
         boardNumbers: boardNumbers,
         hitGlow: hitGlow ?? this.hitGlow,
         highlight: highlight ?? this.highlight,
-        success: success,
-        warning: warning,
-        danger: danger,
-        textMuted: textMuted,
-        surfaceHigh: surfaceHigh,
+        success: success ?? this.success,
+        warning: warning ?? this.warning,
+        danger: danger ?? this.danger,
+        textMuted: textMuted ?? this.textMuted,
+        surfaceHigh: surfaceHigh ?? this.surfaceHigh,
         heatCold: heatCold,
         heatHot: heatHot,
-        tripleHit: tripleHit,
-        doubleHit: doubleHit,
+        tripleHit: tripleHit ?? this.tripleHit,
+        doubleHit: doubleHit ?? this.doubleHit,
+        panel: panel ?? this.panel,
+        panelHeader: panelHeader ?? this.panelHeader,
+        onPanelHeader: onPanelHeader ?? this.onPanelHeader,
+        record: record ?? this.record,
+        chartPrimary: chartPrimary ?? this.chartPrimary,
+        chartSecondary: chartSecondary ?? this.chartSecondary,
+        chartGrid: chartGrid ?? this.chartGrid,
+        heroStart: heroStart ?? this.heroStart,
+        heroEnd: heroEnd ?? this.heroEnd,
       );
 
   @override
@@ -137,11 +221,19 @@ class DartColors extends ThemeExtension<DartColors> {
       heatHot: l(heatHot, other.heatHot),
       tripleHit: l(tripleHit, other.tripleHit),
       doubleHit: l(doubleHit, other.doubleHit),
+      panel: l(panel, other.panel),
+      panelHeader: l(panelHeader, other.panelHeader),
+      onPanelHeader: l(onPanelHeader, other.onPanelHeader),
+      record: l(record, other.record),
+      chartPrimary: l(chartPrimary, other.chartPrimary),
+      chartSecondary: l(chartSecondary, other.chartSecondary),
+      chartGrid: l(chartGrid, other.chartGrid),
+      heroStart: l(heroStart, other.heroStart),
+      heroEnd: l(heroEnd, other.heroEnd),
     );
   }
 }
 
 extension DartColorsContext on BuildContext {
-  DartColors get dartColors =>
-      Theme.of(this).extension<DartColors>() ?? DartColors.dark;
+  DartColors get dartColors => Theme.of(this).extension<DartColors>() ?? DartColors.dark;
 }

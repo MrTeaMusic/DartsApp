@@ -76,7 +76,7 @@ class CallerSettingsCard extends ConsumerWidget {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(AppSpacing.l, AppSpacing.s, AppSpacing.l, 0),
-              child: Text(l10n.callerAnnounce.toUpperCase(), style: theme.textTheme.labelMedium),
+              child: Kicker(l10n.callerAnnounce),
             ),
             announceSwitch(
               'scores',
@@ -108,18 +108,25 @@ class CallerSettingsCard extends ConsumerWidget {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(AppSpacing.l, AppSpacing.s, AppSpacing.l, AppSpacing.s),
-              child: Row(
-                children: [
-                  Expanded(child: Text(l10n.callerGamesHint, style: theme.textTheme.bodySmall)),
-                  const SizedBox(width: AppSpacing.m),
-                  OutlinedButton.icon(
-                    key: const Key('caller-preview'),
-                    onPressed: () => ref.read(callerProvider).preview(),
-                    icon: const Icon(Icons.play_arrow_rounded),
-                    label: Text(l10n.callerPreview),
-                  ),
-                ],
-              ),
+              child: LayoutBuilder(builder: (context, c) {
+                final hint = Text(l10n.callerGamesHint, style: theme.textTheme.bodySmall);
+                final preview = OutlinedButton.icon(
+                  key: const Key('caller-preview'),
+                  onPressed: () => ref.read(callerProvider).preview(),
+                  icon: const Icon(Icons.play_arrow_rounded),
+                  label: Text(l10n.callerPreview),
+                );
+                // Schmal: Hinweis über dem Knopf, sonst nebeneinander.
+                if (c.maxWidth < 440) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [hint, const SizedBox(height: AppSpacing.s), preview],
+                  );
+                }
+                return Row(
+                  children: [Expanded(child: hint), const SizedBox(width: AppSpacing.m), preview],
+                );
+              }),
             ),
           ],
         ],
@@ -154,7 +161,7 @@ class _SliderRow extends StatelessWidget {
           children: [
             Icon(icon, size: 20),
             const SizedBox(width: AppSpacing.m),
-            SizedBox(width: 110, child: Text(label)),
+            SizedBox(width: 96, child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis)),
             Expanded(
               child: Slider(
                 key: sliderKey,

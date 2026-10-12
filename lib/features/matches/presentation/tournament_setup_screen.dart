@@ -86,13 +86,10 @@ class _TournamentSetupScreenState extends ConsumerState<TournamentSetupScreen> {
     final preset = TournamentPreset.of(_bestOf);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.tourNew)),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 640),
-          child: ListView(
-            padding: const EdgeInsets.all(AppSpacing.page),
-            children: [
+      appBar: AppPageBar(maxWidth: 640, title: Text(l10n.tourNew)),
+      body: AppPage(
+        maxWidth: 640,
+        children: [
               Text(l10n.tournamentText, style: theme.textTheme.bodyLarge),
               const SizedBox(height: AppSpacing.l),
               if (me != null) ...[
@@ -135,7 +132,7 @@ class _TournamentSetupScreenState extends ConsumerState<TournamentSetupScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: AppSpacing.xl),
+              const SectionGap(),
               SectionHeader(l10n.tourFormat),
               AppCard(
                 child: Column(
@@ -181,7 +178,7 @@ class _TournamentSetupScreenState extends ConsumerState<TournamentSetupScreen> {
                 const SizedBox(height: AppSpacing.m),
                 Text(l10n.cpuTooFew, style: theme.textTheme.bodySmall?.copyWith(color: colors.warning)),
               ],
-              const SizedBox(height: AppSpacing.xl),
+              const SectionGap(),
               FilledButton.icon(
                 key: const Key('start-tournament'),
                 onPressed: _starting ? null : _start,
@@ -189,8 +186,6 @@ class _TournamentSetupScreenState extends ConsumerState<TournamentSetupScreen> {
                 label: Text(l10n.tourStart),
               ),
             ],
-          ),
-        ),
       ),
     );
   }

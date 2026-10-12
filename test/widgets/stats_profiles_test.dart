@@ -86,6 +86,8 @@ void main() {
       expect(find.byKey(const Key('stats-activity')), findsOneWidget);
 
       // Scoring
+      await tester.ensureVisible(find.byKey(const Key('stats-tab-scoring')));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('stats-tab-scoring')));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('stat-scoring-average')), findsOneWidget);
@@ -95,6 +97,8 @@ void main() {
       expect(find.byKey(const Key('stats-heatmap')), findsOneWidget);
 
       // Doppel & Finish: Bob's 27 mit D1 (2 von 3) und D2 (0 von 3).
+      await tester.ensureVisible(find.byKey(const Key('stats-tab-doubles')));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('stats-tab-doubles')));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('stat-double-rate')), findsOneWidget);
@@ -104,11 +108,15 @@ void main() {
       expect(find.descendant(of: find.byKey(const Key('double-1')), matching: find.text('2/3')), findsOneWidget);
 
       // Spiele
+      await tester.ensureVisible(find.byKey(const Key('stats-tab-games')));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('stats-tab-games')));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('stats-game-trend')), findsOneWidget);
 
       // Rekorde
+      await tester.ensureVisible(find.byKey(const Key('stats-tab-records')));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('stats-tab-records')));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('record-highestVisit')), findsOneWidget);
@@ -137,6 +145,8 @@ void main() {
     expect(find.byKey(const Key('stat-average')), findsNothing);
     expect(find.text('33,3 %'), findsWidgets);
 
+    await tester.ensureVisible(find.byKey(const Key('stats-tab-games')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('stats-tab-games')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('metric-score')), findsOneWidget);
@@ -150,6 +160,8 @@ void main() {
     await tester.ensureVisible(find.text('Alle Spiele').last);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Alle Spiele').last);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const Key('stats-tab-overview')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('stats-tab-overview')));
     await tester.pumpAndSettle();

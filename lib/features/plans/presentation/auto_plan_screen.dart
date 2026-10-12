@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/design/components/components.dart';
 import '../../../core/design/dart_colors.dart';
+import '../../../core/design/dart_look.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
 import '../../../core/router/app_router.dart';
@@ -61,7 +62,9 @@ class _AutoPlanScreenState extends ConsumerState<AutoPlanScreen> {
   Future<void> _save(TrainingPlan plan) async {
     if (_busy) return;
     setState(() => _busy = true);
-    final id = await ref.read(planRepositoryProvider).create(name: plan.name, description: plan.description, steps: plan.steps);
+    final id = await ref
+        .read(planRepositoryProvider)
+        .create(name: plan.name, description: plan.description, steps: plan.steps);
     if (!mounted) return;
     setState(() => _busy = false);
     ScaffoldMessenger.of(context)
@@ -79,7 +82,8 @@ class _AutoPlanScreenState extends ConsumerState<AutoPlanScreen> {
     final resumable = open != null && open.currentStep > 0 && !open.allStepsDone;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppPageBar(
+        maxWidth: 640,
         title: Text(l10n.autoPlanTitle),
         actions: [
           IconButton(
@@ -92,83 +96,85 @@ class _AutoPlanScreenState extends ConsumerState<AutoPlanScreen> {
       ),
       body: auto == null
           ? const SizedBox.shrink()
-          : Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 640),
-                child: ListView(
-                  key: const Key('auto-plan-list'),
-                  padding: const EdgeInsets.all(AppSpacing.page),
-                  children: [
-                    _Notice(plan: auto),
-                    const SizedBox(height: AppSpacing.xl),
-                    SectionHeader(l10n.autoPlanLength),
-                    SegmentedButton<int>(
-                      segments: [
-                        for (final m in AutoPlanGenerator.lengths)
-                          ButtonSegment(value: m, label: Text(l10n.autoPlanMinutes(m), key: Key('auto-plan-length-$m'))),
-                      ],
-                      selected: {_minutes},
-                      showSelectedIcon: false,
-                      onSelectionChanged: (s) => setState(() => _minutes = s.first),
-                    ),
-                    if (_focus(auto).isNotEmpty) ...[
-                      const SizedBox(height: AppSpacing.xl),
-                      SectionHeader(l10n.autoPlanFocus),
-                      _FocusTiles(weaknesses: _focus(auto)),
-                    ],
-                    const SizedBox(height: AppSpacing.xl),
-                    SectionHeader('${l10n.planSteps} · ${l10n.autoPlanAbout(auto.minutes.round())}'),
-                    AppCard(
-                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-                      child: Column(
-                        children: [
-                          for (final (i, s) in auto.steps.indexed)
-                            PlanStepTile(
-                              key: Key('auto-plan-step-$i'),
-                              index: i,
-                              step: s.step,
-                              status: _role(l10n, s.role),
-                              trailing: Text(l10n.autoPlanMinutes(s.minutes.round()), style: Theme.of(context).textTheme.labelMedium),
-                            ),
-                        ],
+          : AppPage(
+              maxWidth: 640,
+              listKey: const Key('auto-plan-list'),
+              children: [
+                _Notice(plan: auto),
+                const SectionGap(),
+                SectionHeader(l10n.autoPlanLength),
+                SegmentedButton<int>(
+                  segments: [
+                    for (final m in AutoPlanGenerator.lengths)
+                      ButtonSegment(
+                        value: m,
+                        label: Text(l10n.autoPlanMinutes(m), key: Key('auto-plan-length-$m')),
                       ),
-                    ),
-                    const SizedBox(height: AppSpacing.xl),
-                    if (resumable) ...[
-                      FilledButton.icon(
-                        key: const Key('auto-plan-resume'),
-                        onPressed: _busy
-                            ? null
-                            : () => _run(TrainingPlan(id: open.planId, name: open.planName, steps: open.steps), resume: true),
-                        icon: const Icon(Icons.play_arrow_rounded),
-                        label: Text(l10n.planResume(open.currentStep + 1, open.steps.length)),
-                      ),
-                      const SizedBox(height: AppSpacing.m),
-                    ],
-                    if (resumable)
-                      OutlinedButton.icon(
-                        key: const Key('auto-plan-start'),
-                        onPressed: _busy ? null : () => _run(auto.plan, resume: false),
-                        icon: const Icon(Icons.restart_alt_rounded),
-                        label: Text(l10n.planRestart),
-                      )
-                    else
-                      FilledButton.icon(
-                        key: const Key('auto-plan-start'),
-                        onPressed: _busy ? null : () => _run(auto.plan, resume: false),
-                        icon: const Icon(Icons.play_arrow_rounded),
-                        label: Text(l10n.planStart),
-                      ),
-                    const SizedBox(height: AppSpacing.m),
-                    OutlinedButton.icon(
-                      key: const Key('auto-plan-save'),
-                      onPressed: _busy ? null : () => _save(auto.plan),
-                      icon: const Icon(Icons.bookmark_add_outlined),
-                      label: Text(l10n.autoPlanSave),
-                    ),
                   ],
+                  selected: {_minutes},
+                  showSelectedIcon: false,
+                  onSelectionChanged: (s) => setState(() => _minutes = s.first),
                 ),
-              ),
+                if (_focus(auto).isNotEmpty) ...[
+                  const SectionGap(),
+                  SectionHeader(l10n.autoPlanFocus),
+                  _FocusTiles(weaknesses: _focus(auto)),
+                ],
+                const SectionGap(),
+                SectionHeader('${l10n.planSteps} · ${l10n.autoPlanAbout(auto.minutes.round())}'),
+                AppCard(
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                  child: Column(
+                    children: [
+                      for (final (i, s) in auto.steps.indexed)
+                        PlanStepTile(
+                          key: Key('auto-plan-step-$i'),
+                          index: i,
+                          step: s.step,
+                          status: _role(l10n, s.role),
+                          trailing: Text(
+                            l10n.autoPlanMinutes(s.minutes.round()),
+                            style: Theme.of(context).textTheme.labelMedium,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SectionGap(),
+                if (resumable) ...[
+                  FilledButton.icon(
+                    key: const Key('auto-plan-resume'),
+                    onPressed: _busy
+                        ? null
+                        : () =>
+                              _run(TrainingPlan(id: open.planId, name: open.planName, steps: open.steps), resume: true),
+                    icon: const Icon(Icons.play_arrow_rounded),
+                    label: Text(l10n.planResume(open.currentStep + 1, open.steps.length)),
+                  ),
+                  const SizedBox(height: AppSpacing.m),
+                ],
+                if (resumable)
+                  OutlinedButton.icon(
+                    key: const Key('auto-plan-start'),
+                    onPressed: _busy ? null : () => _run(auto.plan, resume: false),
+                    icon: const Icon(Icons.restart_alt_rounded),
+                    label: Text(l10n.planRestart),
+                  )
+                else
+                  FilledButton.icon(
+                    key: const Key('auto-plan-start'),
+                    onPressed: _busy ? null : () => _run(auto.plan, resume: false),
+                    icon: const Icon(Icons.play_arrow_rounded),
+                    label: Text(l10n.planStart),
+                  ),
+                const SizedBox(height: AppSpacing.m),
+                OutlinedButton.icon(
+                  key: const Key('auto-plan-save'),
+                  onPressed: _busy ? null : () => _save(auto.plan),
+                  icon: const Icon(Icons.bookmark_add_outlined),
+                  label: Text(l10n.autoPlanSave),
+                ),
+              ],
             ),
     );
   }
@@ -177,10 +183,10 @@ class _AutoPlanScreenState extends ConsumerState<AutoPlanScreen> {
   static List<Weakness> _focus(AutoPlan plan) => [for (final s in plan.steps) ?s.weakness];
 
   static String _role(AppLocalizations l10n, AutoStepRole role) => switch (role) {
-        AutoStepRole.warmup => l10n.autoPlanRoleWarmup,
-        AutoStepRole.focus => l10n.autoPlanRoleFocus,
-        AutoStepRole.finish => l10n.autoPlanRoleFinish,
-      };
+    AutoStepRole.warmup => l10n.autoPlanRoleWarmup,
+    AutoStepRole.focus => l10n.autoPlanRoleFocus,
+    AutoStepRole.finish => l10n.autoPlanRoleFinish,
+  };
 }
 
 class _Notice extends StatelessWidget {
@@ -196,8 +202,10 @@ class _Notice extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(plan.enoughData ? Icons.insights_rounded : Icons.info_outline_rounded,
-              color: plan.enoughData ? theme.colorScheme.primary : colors.warning),
+          IconBadge(
+            icon: plan.enoughData ? Icons.insights_rounded : Icons.info_outline_rounded,
+            color: plan.enoughData ? theme.colorScheme.primary : colors.warning,
+          ),
           const SizedBox(width: AppSpacing.m),
           Expanded(
             child: Column(
@@ -222,21 +230,24 @@ class _FocusTiles extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return LayoutBuilder(builder: (context, c) {
-      final columns = (c.maxWidth / 150).floor().clamp(1, 4);
-      final width = (c.maxWidth - AppSpacing.m * (columns - 1)) / columns;
-      return Wrap(
-        spacing: AppSpacing.m,
-        runSpacing: AppSpacing.m,
-        children: [
-          for (final w in weaknesses)
-            SizedBox(
-              width: width,
-              child: StatTile(label: w.label, value: w.value, caption: l10n.autoPlanGoal(w.goal)),
-            ),
-        ],
-      );
-    });
+    return LayoutBuilder(
+      builder: (context, c) {
+        final gap = context.look.gridGap;
+        final columns = (c.maxWidth / 150).floor().clamp(1, 4);
+        final width = (c.maxWidth - gap * (columns - 1)) / columns;
+        return Wrap(
+          spacing: gap,
+          runSpacing: gap,
+          children: [
+            for (final w in weaknesses)
+              SizedBox(
+                width: width,
+                child: StatTile(label: w.label, value: w.value, caption: l10n.autoPlanGoal(w.goal)),
+              ),
+          ],
+        );
+      },
+    );
   }
 }
 
@@ -259,7 +270,7 @@ class AutoPlanCard extends StatelessWidget {
             height: 52,
             decoration: BoxDecoration(
               color: theme.colorScheme.primary,
-              borderRadius: BorderRadius.circular(AppRadii.m),
+              borderRadius: BorderRadius.circular(context.look.id == DartLookId.clean ? 16 : context.look.radiusM),
             ),
             child: Icon(Icons.auto_awesome_rounded, color: theme.colorScheme.onPrimary),
           ),

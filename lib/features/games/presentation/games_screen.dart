@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/design/components/components.dart';
 import '../../../core/design/dart_colors.dart';
+import '../../../core/design/dart_look.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
 import '../../../core/router/app_router.dart';
@@ -30,27 +31,29 @@ class GamesScreen extends ConsumerWidget {
     final recent = ref.watch(recentSessionsProvider).value ?? const [];
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.gamesTitle)),
+      appBar: AppPageBar(title: Text(l10n.gamesTitle)),
       body: LayoutBuilder(
         builder: (context, c) {
-          final columns = (c.maxWidth / 360).floor().clamp(1, 3);
+          final look = context.look;
+          final page = look.pagePadding(c.maxWidth >= kWidePage);
+          final columns = ((c.maxWidth - 2 * page) / 340).floor().clamp(1, 4);
           SliverGrid grid(List<Widget> children) => SliverGrid(
             delegate: SliverChildListDelegate(children),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: columns,
-              mainAxisSpacing: AppSpacing.m,
-              crossAxisSpacing: AppSpacing.m,
-              mainAxisExtent: 124,
+              mainAxisSpacing: look.gridGap,
+              crossAxisSpacing: look.gridGap,
+              mainAxisExtent: look.id == DartLookId.lab ? 104 : (look.id == DartLookId.clean ? 132 : 120),
             ),
           );
           return CustomScrollView(
             slivers: [
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(AppSpacing.page, AppSpacing.s, AppSpacing.page, 0),
+                padding: EdgeInsets.fromLTRB(page, AppSpacing.s, page, 0),
                 sliver: SliverToBoxAdapter(child: SectionHeader(l10n.plansTitle)),
               ),
               SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.page),
+                padding: EdgeInsets.symmetric(horizontal: page),
                 sliver: grid([
                   _GameCard(
                     key: const Key('open-plans'),
@@ -62,11 +65,11 @@ class GamesScreen extends ConsumerWidget {
                 ]),
               ),
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(AppSpacing.page, AppSpacing.xl, AppSpacing.page, 0),
+                padding: EdgeInsets.fromLTRB(page, look.sectionGap, page, 0),
                 sliver: SliverToBoxAdapter(child: SectionHeader(l10n.matchesTitle)),
               ),
               SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.page),
+                padding: EdgeInsets.symmetric(horizontal: page),
                 sliver: grid([
                   _GameCard(
                     key: const Key('open-matches'),
@@ -78,11 +81,11 @@ class GamesScreen extends ConsumerWidget {
                 ]),
               ),
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(AppSpacing.page, AppSpacing.xl, AppSpacing.page, 0),
+                padding: EdgeInsets.fromLTRB(page, look.sectionGap, page, 0),
                 sliver: SliverToBoxAdapter(child: SectionHeader(l10n.gamesPlayable)),
               ),
               SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.page),
+                padding: EdgeInsets.symmetric(horizontal: page),
                 sliver: grid([
                   for (final def in GameCatalog.all)
                     _GameCard(
@@ -95,17 +98,22 @@ class GamesScreen extends ConsumerWidget {
                 ]),
               ),
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(AppSpacing.page, AppSpacing.xl, AppSpacing.page, 0),
+                padding: EdgeInsets.fromLTRB(page, look.sectionGap, page, 0),
                 sliver: SliverToBoxAdapter(child: SectionHeader(l10n.gameRecent)),
               ),
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(AppSpacing.page, 0, AppSpacing.page, AppSpacing.page),
+                padding: EdgeInsets.fromLTRB(page, 0, page, page),
                 sliver: SliverToBoxAdapter(
                   child: recent.isEmpty
-                      ? Text(l10n.gameRecentEmpty, style: Theme.of(context).textTheme.bodySmall)
+                      ? AppCard(child: Text(l10n.gameRecentEmpty, style: Theme.of(context).textTheme.bodySmall))
                       : AppCard(
                           padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-                          child: Column(children: [for (final s in recent) _RecentTile(summary: s)]),
+                          child: Column(children: [
+                            for (final (i, s) in recent.indexed) ...[
+                              if (i > 0) Divider(indent: look.cardPadding + 52, endIndent: look.cardPadding),
+                              _RecentTile(summary: s),
+                            ],
+                          ]),
                         ),
                 ),
               ),
@@ -129,29 +137,31 @@ class _GameCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = context.dartColors;
-    final accent = theme.colorScheme.primary;
+    final look = context.look;
     return AppCard(
       onTap: onTap,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: accent.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(AppRadii.m),
-            ),
-            child: Icon(icon, color: accent),
-          ),
-          const SizedBox(width: AppSpacing.l),
+          IconBadge(icon: icon, size: look.id == DartLookId.lab ? 36 : 44),
+          SizedBox(width: look.id == DartLookId.lab ? AppSpacing.m : AppSpacing.l),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: theme.textTheme.titleMedium, overflow: TextOverflow.ellipsis),
+                Text(
+                  title,
+                  style: look.id == DartLookId.tv ? theme.textTheme.titleLarge?.copyWith(fontSize: 20) : theme.textTheme.titleMedium,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: AppSpacing.xs),
-                Text(description, maxLines: 3, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodySmall),
+                Text(
+                  description,
+                  maxLines: look.id == DartLookId.lab ? 2 : 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall,
+                ),
               ],
             ),
           ),
@@ -196,13 +206,14 @@ class _RecentTile extends StatelessWidget {
       'three_hits' => '${m['darts'] ?? '–'} ${l10n.statDarts}',
       _ => _primaryText(summary.gameId, m),
     };
+    final look = context.look;
     return ListTile(
-      leading: Icon(gameIcon(summary.gameId)),
-      title: Text(l10n.gameTitle(summary.gameId)),
+      leading: IconBadge(icon: gameIcon(summary.gameId), size: 38),
+      title: Text(l10n.gameTitle(summary.gameId), overflow: TextOverflow.ellipsis),
       subtitle: Text(
         '$date · ${summary.dartCount} ${l10n.statDarts}${summary.finished ? '' : ' · ${l10n.gameAborted}'}',
       ),
-      trailing: Text(headline, style: Theme.of(context).textTheme.titleMedium),
+      trailing: Text(headline, style: look.chipNumber.copyWith(color: Theme.of(context).colorScheme.onSurface)),
     );
   }
 }

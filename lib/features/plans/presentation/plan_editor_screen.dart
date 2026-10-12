@@ -108,7 +108,8 @@ class _PlanEditorScreenState extends ConsumerState<PlanEditorScreen> {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppPageBar(
+        maxWidth: 640,
         title: Text(widget.planId == null ? l10n.planNew : l10n.planEditTitle),
         actions: [
           TextButton(
@@ -120,12 +121,9 @@ class _PlanEditorScreenState extends ConsumerState<PlanEditorScreen> {
       ),
       body: _loading
           ? const SizedBox.shrink()
-          : Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 640),
-                child: ListView(
-                  padding: const EdgeInsets.all(AppSpacing.page),
-                  children: [
+          : AppPage(
+        maxWidth: 640,
+        children: [
                     TextField(
                       key: const Key('plan-name'),
                       controller: _name,
@@ -193,9 +191,7 @@ class _PlanEditorScreenState extends ConsumerState<PlanEditorScreen> {
                       Text(_error!, key: const Key('plan-error'), style: theme.textTheme.bodyMedium?.copyWith(color: context.dartColors.danger)),
                     ],
                   ],
-                ),
-              ),
-            ),
+      ),
     );
   }
 }
@@ -244,7 +240,8 @@ class _PlanStepEditorState extends State<PlanStepEditor> {
     final theme = Theme.of(context);
     final def = GameCatalog.byId(_gameId)!;
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppPageBar(
+        maxWidth: 640,
         title: Text(l10n.planStepTitle),
         actions: [
           TextButton(
@@ -257,12 +254,9 @@ class _PlanStepEditorState extends State<PlanStepEditor> {
           ),
         ],
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 640),
-          child: ListView(
-            padding: const EdgeInsets.all(AppSpacing.page),
-            children: [
+      body: AppPage(
+        maxWidth: 640,
+        children: [
               SectionHeader(l10n.planStepGame),
               Wrap(
                 spacing: AppSpacing.s,
@@ -307,8 +301,6 @@ class _PlanStepEditorState extends State<PlanStepEditor> {
                 decoration: InputDecoration(labelText: l10n.planStepNote),
               ),
             ],
-          ),
-        ),
       ),
     );
   }

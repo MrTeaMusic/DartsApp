@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/design/dart_look.dart';
 import '../../../core/design/components/components.dart';
 import '../../../core/design/dart_colors.dart';
 import '../../../core/design/tokens.dart';
@@ -34,13 +35,10 @@ class MatchesScreen extends ConsumerWidget {
     final running = tournament != null && !tournament.finished;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.matchesTitle)),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
-          child: ListView(
-            padding: const EdgeInsets.all(AppSpacing.page),
-            children: [
+      appBar: AppPageBar(maxWidth: 720, title: Text(l10n.matchesTitle)),
+      body: AppPage(
+        maxWidth: 720,
+        children: [
               if (saved != null) ...[
                 MatchEntryCard(
                   key: const Key('match-resume'),
@@ -53,7 +51,7 @@ class MatchesScreen extends ConsumerWidget {
                     if (context.mounted) context.go(MatchRoutes.play);
                   },
                 ),
-                const SizedBox(height: AppSpacing.m),
+                SizedBox(height: context.look.gridGap),
               ],
               MatchEntryCard(
                 key: const Key('open-opponent-mode'),
@@ -62,7 +60,7 @@ class MatchesScreen extends ConsumerWidget {
                 description: l10n.matchOpponentText,
                 onTap: () => context.go(MatchRoutes.opponent),
               ),
-              const SizedBox(height: AppSpacing.m),
+              SizedBox(height: context.look.gridGap),
               MatchEntryCard(
                 key: const Key('open-tournament'),
                 icon: Icons.emoji_events_rounded,
@@ -73,7 +71,7 @@ class MatchesScreen extends ConsumerWidget {
                 highlight: running,
                 onTap: () => context.go(tournament != null ? MatchRoutes.tournament : MatchRoutes.tournamentNew),
               ),
-              const SizedBox(height: AppSpacing.m),
+              SizedBox(height: context.look.gridGap),
               MatchEntryCard(
                 key: const Key('open-cpu-players'),
                 icon: Icons.smart_toy_outlined,
@@ -82,8 +80,6 @@ class MatchesScreen extends ConsumerWidget {
                 onTap: () => context.go(MatchRoutes.cpuPlayers),
               ),
             ],
-          ),
-        ),
       ),
     );
   }
@@ -115,15 +111,7 @@ class MatchEntryCard extends StatelessWidget {
       onTap: onTap,
       child: Row(
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: accent.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(AppRadii.m),
-            ),
-            child: Icon(icon, color: accent),
-          ),
+          IconBadge(icon: icon, color: accent),
           const SizedBox(width: AppSpacing.l),
           Expanded(
             child: Column(

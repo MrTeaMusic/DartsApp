@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/design/app_theme.dart';
 import '../../../core/design/components/components.dart';
 import '../../../core/design/dart_colors.dart';
+import '../../../core/design/dart_look.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
 import '../../../core/widgets/fullscreen_button.dart';
@@ -25,6 +25,13 @@ import '../domain/x01_match.dart';
 import 'match_controller.dart';
 import 'match_routes.dart';
 import 'match_texts.dart';
+
+/// Restpunkte und Endstand: kleiner als die große Zahl im Training, weil
+/// zwei Tafeln nebeneinander stehen und das Ergebnis darunter Platz braucht.
+TextStyle _matchScore(BuildContext context) {
+  final style = ScorePanel.valueStyle(context, hero: false);
+  return style.copyWith(fontSize: (style.fontSize ?? 96) * 0.6);
+}
 
 /// Spielansicht eines Matches: Anzeigetafel je Spieler, Board mit den Darts
 /// der laufenden Aufnahme (auch denen des Bots) und die Aufnahme-Karte.
@@ -137,19 +144,26 @@ class MatchPlayScreen extends ConsumerWidget {
                   ],
                 );
               }
+              // Telefon: Tafel, Einblendung und Darts oben, darunter das Board.
+              final page = context.look.pagePadding(false);
               return ListView(
-                padding: const EdgeInsets.all(AppSpacing.page),
+                padding: EdgeInsets.fromLTRB(page, AppSpacing.s, page, page),
                 children: [
                   _Scoreboard(state: state, route: route),
                   const SizedBox(height: AppSpacing.m),
-                  if (!state.ended) ...[
+                  if (state.ended)
+                    _Panel(state: state, route: route, showScoreboard: false)
+                  else ...[
+                    _EventBanner(state: state),
+                    _VisitCard(state: state, route: route),
+                    const SizedBox(height: AppSpacing.m),
                     ConstrainedBox(
-                      constraints: BoxConstraints(maxHeight: c.maxHeight * 0.45),
+                      constraints: BoxConstraints(maxHeight: c.maxHeight * 0.42),
                       child: Center(child: board),
                     ),
                     const SizedBox(height: AppSpacing.m),
+                    _Panel(state: state, route: route, showScoreboard: false, showVisit: false),
                   ],
-                  _Panel(state: state, route: route, showScoreboard: false),
                 ],
               );
             },
@@ -161,10 +175,13 @@ class MatchPlayScreen extends ConsumerWidget {
 }
 
 class _Panel extends ConsumerWidget {
-  const _Panel({required this.state, required this.route, this.showScoreboard = true});
+  const _Panel({required this.state, required this.route, this.showScoreboard = true, this.showVisit = true});
   final MatchState state;
   final List<Segment>? route;
   final bool showScoreboard;
+
+  /// Einblendung und Aufnahme; auf dem Telefon stehen sie über dem Board.
+  final bool showVisit;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -176,14 +193,13 @@ class _Panel extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (showScoreboard) ...[_Scoreboard(state: state, route: route), const SizedBox(height: AppSpacing.m)],
-        _EventBanner(state: state),
+        if (showVisit || state.ended) _EventBanner(state: state),
         if (state.ended) ...[
           _ResultCard(state: state),
           const SizedBox(height: AppSpacing.m),
           _ResultActions(state: state),
         ] else ...[
-          _VisitCard(state: state, route: route),
-          const SizedBox(height: AppSpacing.m),
+          if (showVisit) ...[_VisitCard(state: state, route: route), const SizedBox(height: AppSpacing.m)],
           if (state.acceptsHumanDarts && source is ManualSource)
             ManualKeypad(source: source)
           else
@@ -238,7 +254,7 @@ class _Scoreboard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           for (var i = 0; i < players.length; i++) ...[
-            if (i > 0) const SizedBox(width: AppSpacing.m),
+            if (i > 0) SizedBox(width: context.look.gridGap),
             Expanded(
               child: _PlayerCard(state: state, index: i, route: i == state.match.current ? route : null),
             ),
@@ -269,88 +285,83 @@ class _PlayerCard extends StatelessWidget {
     final format = state.setup.format;
     final starter = !state.ended && match.legStarter == index;
 
+    final look = context.look;
+    final lit = active || won;
     Widget stat(String label, String value, {Key? key}) => Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(label, style: theme.textTheme.labelSmall?.copyWith(color: colors.textMuted)),
+        Kicker(label),
         Text(
           value,
           key: key,
-          style: theme.textTheme.titleMedium?.copyWith(fontFeatures: AppTypography.tabular),
+          style: look.chipNumber.copyWith(fontSize: 16, color: theme.colorScheme.onSurface),
         ),
       ],
     );
 
-    return AppCard(
-      padding: const EdgeInsets.all(AppSpacing.m),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Markierung, wer am Zug ist (bzw. gewonnen hat).
-          AnimatedContainer(
-            key: Key('match-active-$index-$active'),
-            duration: AppDurations.medium,
-            height: 4,
-            margin: const EdgeInsets.only(bottom: AppSpacing.s),
-            decoration: BoxDecoration(
-              color: active || won ? accent : colors.surfaceHigh,
-              borderRadius: BorderRadius.circular(AppRadii.pill),
-            ),
-          ),
-          Row(
-            children: [
-              Icon(
-                player.isBot ? Icons.smart_toy_outlined : Icons.person_rounded,
-                size: 18,
-                color: active ? accent : colors.textMuted,
+    return KeyedSubtree(
+      // Markierung, wer am Zug ist (bzw. gewonnen hat).
+      key: Key('match-active-$index-$active'),
+      child: ScorePanel(
+        label: player.name,
+        active: lit,
+        badge: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (starter) ...[
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(color: colors.highlight, shape: BoxShape.circle),
               ),
               const SizedBox(width: AppSpacing.xs),
-              Expanded(
-                child: Text(player.name, overflow: TextOverflow.ellipsis, style: theme.textTheme.titleSmall),
-              ),
-              if (starter)
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(color: colors.highlight, shape: BoxShape.circle),
-                ),
-              if (won) Icon(Icons.emoji_events_rounded, size: 18, color: colors.success),
             ],
-          ),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              '${p.remaining}',
-              key: Key('match-remaining-$index'),
-              style: AppTypography.scoreLarge.copyWith(color: active ? theme.colorScheme.onSurface : colors.textMuted),
+            if (won) ...[
+              Icon(Icons.emoji_events_rounded, size: 16, color: colors.success),
+              const SizedBox(width: AppSpacing.xs),
+            ],
+            Icon(
+              player.isBot ? Icons.smart_toy_outlined : Icons.person_rounded,
+              size: 16,
+              color: lit ? (look.id == DartLookId.tv ? theme.colorScheme.onSurface : accent) : colors.textMuted,
             ),
-          ),
-          SizedBox(
-            height: 20,
-            child: route != null && route!.isNotEmpty
-                ? Text(
-                    route!.map((s) => s.name).join(' · '),
-                    key: Key('match-route-$index'),
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.labelLarge?.copyWith(color: colors.highlight),
-                  )
-                : null,
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Wrap(
-            spacing: AppSpacing.l,
-            runSpacing: AppSpacing.xs,
-            children: [
-              if (format.usesSets) stat(l10n.matchSets, '${p.sets}', key: Key('match-sets-$index')),
-              stat(l10n.matchLegs, '${format.usesSets ? p.legs : p.totalLegs}', key: Key('match-legs-$index')),
-              stat(l10n.matchAvg, formatDecimal(p.average)),
-              stat(l10n.matchDarts, '${p.darts}', key: Key('match-darts-$index')),
-              if (p.lastVisit != null) stat(l10n.matchLastVisit, '${p.lastVisit}'),
-            ],
-          ),
-        ],
+          ],
+        ),
+        value: Text(
+          '${p.remaining}',
+          key: Key('match-remaining-$index'),
+          style: _matchScore(context)
+              .copyWith(color: lit ? theme.colorScheme.onSurface : colors.textMuted),
+        ),
+        footer: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: 20,
+              child: route != null && route!.isNotEmpty
+                  ? Text(
+                      look.caps(route!.map((s) => s.name).join(' · ')),
+                      key: Key('match-route-$index'),
+                      overflow: TextOverflow.ellipsis,
+                      style: look.chipNumber.copyWith(fontSize: 15, color: colors.highlight),
+                    )
+                  : null,
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Wrap(
+              spacing: AppSpacing.l,
+              runSpacing: AppSpacing.s,
+              children: [
+                if (format.usesSets) stat(l10n.matchSets, '${p.sets}', key: Key('match-sets-$index')),
+                stat(l10n.matchLegs, '${format.usesSets ? p.legs : p.totalLegs}', key: Key('match-legs-$index')),
+                stat(l10n.matchAvg, formatDecimal(p.average)),
+                stat(l10n.matchDarts, '${p.darts}', key: Key('match-darts-$index')),
+                if (p.lastVisit != null) stat(l10n.matchLastVisit, '${p.lastVisit}'),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -393,19 +404,7 @@ class _EventBanner extends StatelessWidget {
           : Padding(
               key: ValueKey(state.revision),
               padding: const EdgeInsets.only(bottom: AppSpacing.m),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l, vertical: AppSpacing.m),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.16),
-                  borderRadius: BorderRadius.circular(AppRadii.m),
-                  border: Border.all(color: color.withValues(alpha: 0.5)),
-                ),
-                child: Text(
-                  l10n.matchEventText(event, names),
-                  key: const Key('match-event'),
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: color),
-                ),
-              ),
+              child: LookBanner(text: l10n.matchEventText(event, names), color: color, textKey: const Key('match-event')),
             ),
     );
   }
@@ -429,10 +428,14 @@ class _VisitCard extends ConsumerWidget {
     final thrown = indexes.length;
     final player = state.setup.players[match.current];
     final next = state.setup.players[match.nextPlayer];
+    // Gegen CPUs gibt es genau einen Menschen: den sprechen wir direkt an.
+    final soloHuman = state.setup.players.where((p) => !p.isBot).length == 1;
     final status = match.visitClosed && match.nextPlayer != match.current
-        ? l10n.matchWaitTakeout(next.name)
+        ? (soloHuman && !next.isBot ? l10n.matchWaitTakeoutYou : l10n.matchWaitTakeout(next.name))
         : player.isBot
         ? l10n.matchBotThrowing(player.name)
+        : soloHuman
+        ? l10n.matchYourTurn
         : l10n.matchTurnOf(player.name);
 
     Future<void> fix(int slot) async {
@@ -446,8 +449,9 @@ class _VisitCard extends ConsumerWidget {
     }
 
     final r = route;
+    final look = context.look;
     return AppCard(
-      padding: const EdgeInsets.all(AppSpacing.m),
+      padding: EdgeInsets.all(look.id == DartLookId.clean ? AppSpacing.l : AppSpacing.m),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -460,7 +464,7 @@ class _VisitCard extends ConsumerWidget {
                     status,
                     key: const Key('match-status'),
                     overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.labelLarge?.copyWith(
+                    style: (look.id == DartLookId.clean ? theme.textTheme.titleSmall : look.kicker)?.copyWith(
                       color: player.isBot ? colors.textMuted : theme.colorScheme.primary,
                     ),
                   ),
@@ -468,15 +472,15 @@ class _VisitCard extends ConsumerWidget {
                 Text(
                   match.visitBust ? 'BUST' : '${match.visitScore}',
                   key: const Key('match-visit-score'),
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontFeatures: AppTypography.tabular,
-                    color: match.visitBust ? colors.danger : null,
+                  style: look.chipNumber.copyWith(
+                    fontSize: (look.chipNumber.fontSize ?? 18) + 4,
+                    color: match.visitBust ? colors.danger : theme.colorScheme.onSurface,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: AppSpacing.s),
+          SizedBox(height: look.id == DartLookId.clean ? AppSpacing.m : AppSpacing.s),
           Row(
             children: [
               for (var i = 0; i < 3; i++)
@@ -534,7 +538,7 @@ class _ResultCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(l10n.matchResultTitle.toUpperCase(), style: theme.textTheme.labelMedium),
+          Kicker(l10n.matchResultTitle),
           const SizedBox(height: AppSpacing.s),
           FittedBox(
             fit: BoxFit.scaleDown,
@@ -542,7 +546,7 @@ class _ResultCard extends StatelessWidget {
             child: Text(
               score,
               key: const Key('match-final-score'),
-              style: AppTypography.scoreLarge.copyWith(color: colors.success),
+              style: _matchScore(context).copyWith(color: colors.success),
             ),
           ),
           const SizedBox(height: AppSpacing.m),
@@ -576,7 +580,7 @@ class _ResultCard extends StatelessWidget {
                       Text(
                         v,
                         textAlign: TextAlign.end,
-                        style: theme.textTheme.titleSmall?.copyWith(fontFeatures: AppTypography.tabular),
+                        style: context.look.chipNumber.copyWith(fontSize: 15, color: theme.colorScheme.onSurface),
                       ),
                   ],
                 ),

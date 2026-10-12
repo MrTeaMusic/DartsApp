@@ -1111,6 +1111,69 @@
       }
     }
   },
+  "callerTitle": "Caller",
+  "callerEnabled": "Caller an",
+  "callerEnabledHint": "Eine Stimme sagt Punkte und Rest an wie bei einem Turnier",
+  "callerLanguageEnglish": "Englisch (wie im TV)",
+  "callerLanguageGerman": "Deutsch",
+  "callerVolume": "Lautstärke",
+  "callerRate": "Tempo",
+  "callerAnnounce": "Ansagen",
+  "callerAnnounceScores": "Punkte jeder Aufnahme",
+  "callerAnnounceRemaining": "Rest auf einem Finish",
+  "callerAnnounceCheckout": "Checkout",
+  "callerAnnounceGameOn": "Spielbeginn",
+  "callerGamesHint": "Angesagt wird bei X01, Scoring- und Checkout-Spielen. Andere Trainingsspiele bleiben still.",
+  "callerPreview": "Probe hören",
+  "callerMute": "Caller stumm schalten",
+  "callerUnmute": "Caller einschalten",
+  "autoPlanTitle": "Plan für mich",
+  "autoPlanCardTitle": "Plan für mich erstellen",
+  "autoPlanCardText": "Aus deiner Statistik: mehr Training für das, was noch nicht sitzt, z. B. dein schwächstes Doppel.",
+  "autoPlanLength": "Dauer",
+  "autoPlanMinutes": "{minutes} min",
+  "@autoPlanMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "autoPlanAbout": "ca. {minutes} min",
+  "@autoPlanAbout": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "autoPlanFocus": "Schwerpunkte",
+  "autoPlanGoal": "Ziel: {goal}",
+  "@autoPlanGoal": {
+    "placeholders": {
+      "goal": {
+        "type": "String"
+      }
+    }
+  },
+  "autoPlanRoleWarmup": "Aufwärmen",
+  "autoPlanRoleFocus": "Schwerpunkt",
+  "autoPlanRoleFinish": "Abschluss",
+  "autoPlanRegenerate": "Neu vorschlagen",
+  "autoPlanSave": "Als eigenen Plan speichern",
+  "autoPlanSaved": "Als eigener Plan gespeichert. Über „Bearbeiten“ kannst du ihn anpassen.",
+  "autoPlanHint": "Lass dir aus diesen Zahlen einen Trainingsplan vorschlagen.",
+  "autoPlanHintAction": "Plan für mich",
+  "lookTitle": "Look",
+  "lookTvName": "TV",
+  "lookTvText": "Scoreboard wie bei der Übertragung: dunkel, kräftige Farben, große Zahlen.",
+  "lookCleanName": "Clean",
+  "lookCleanText": "Ruhig und aufgeräumt mit viel Weißraum. Hell oder dunkel.",
+  "lookLabName": "Lab",
+  "lookLabText": "Dunkel, datendicht und technisch, alle Werte auf einen Blick.",
+  "lookPreviewScore": "Rest",
+  "settingsBrightness": "Helligkeit",
+  "settingsBrightnessFixed": "TV und Lab sind immer dunkel. Hell, Dunkel und System gibt es im Look Clean.",
   "gameMatchX01": "X01-Match",
   "matchesTitle": "Match & Turnier",
   "matchesEntryText": "X01 gegen einen Freund oder die CPU, Turnier gegen PDC-Bots.",
@@ -1218,6 +1281,8 @@
   "matchAvg": "Avg",
   "matchDarts": "Darts",
   "matchLastVisit": "Letzte",
+  "matchYourTurn": "Du bist dran",
+  "matchWaitTakeoutYou": "Darts ziehen, dann bist du dran",
   "matchTurnOf": "{name} ist dran",
   "@matchTurnOf": {
     "placeholders": {
@@ -1424,58 +1489,5 @@
       }
     }
   },
-  "cpuTooFew": "Für ein Turnier braucht es 15 Gegner; fehlende werden aus der Standardliste ergänzt.",
-  "autoPlanTitle": "Plan für mich",
-  "autoPlanCardTitle": "Plan für mich erstellen",
-  "autoPlanCardText": "Aus deiner Statistik: mehr Training für das, was noch nicht sitzt, z. B. dein schwächstes Doppel.",
-  "autoPlanLength": "Dauer",
-  "autoPlanMinutes": "{minutes} min",
-  "@autoPlanMinutes": {
-    "placeholders": {
-      "minutes": {
-        "type": "int"
-      }
-    }
-  },
-  "autoPlanAbout": "ca. {minutes} min",
-  "@autoPlanAbout": {
-    "placeholders": {
-      "minutes": {
-        "type": "int"
-      }
-    }
-  },
-  "autoPlanFocus": "Schwerpunkte",
-  "autoPlanGoal": "Ziel: {goal}",
-  "@autoPlanGoal": {
-    "placeholders": {
-      "goal": {
-        "type": "String"
-      }
-    }
-  },
-  "autoPlanRoleWarmup": "Aufwärmen",
-  "autoPlanRoleFocus": "Schwerpunkt",
-  "autoPlanRoleFinish": "Abschluss",
-  "autoPlanRegenerate": "Neu vorschlagen",
-  "autoPlanSave": "Als eigenen Plan speichern",
-  "autoPlanSaved": "Als eigener Plan gespeichert. Über „Bearbeiten“ kannst du ihn anpassen.",
-  "autoPlanHint": "Lass dir aus diesen Zahlen einen Trainingsplan vorschlagen.",
-  "autoPlanHintAction": "Plan für mich",
-  "callerTitle": "Caller",
-  "callerEnabled": "Caller an",
-  "callerEnabledHint": "Eine Stimme sagt Punkte und Rest an wie bei einem Turnier",
-  "callerLanguageEnglish": "Englisch (wie im TV)",
-  "callerLanguageGerman": "Deutsch",
-  "callerVolume": "Lautstärke",
-  "callerRate": "Tempo",
-  "callerAnnounce": "Ansagen",
-  "callerAnnounceScores": "Punkte jeder Aufnahme",
-  "callerAnnounceRemaining": "Rest auf einem Finish",
-  "callerAnnounceCheckout": "Checkout",
-  "callerAnnounceGameOn": "Spielbeginn",
-  "callerGamesHint": "Angesagt wird bei X01, Scoring- und Checkout-Spielen. Andere Trainingsspiele bleiben still.",
-  "callerPreview": "Probe hören",
-  "callerMute": "Caller stumm schalten",
-  "callerUnmute": "Caller einschalten"
+  "cpuTooFew": "Für ein Turnier braucht es 15 Gegner; fehlende werden aus der Standardliste ergänzt."
 }

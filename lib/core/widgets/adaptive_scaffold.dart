@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../design/dart_colors.dart';
+import '../design/dart_look.dart';
 import '../design/tokens.dart';
 import '../l10n.dart';
 import 'fullscreen_button.dart';
@@ -28,15 +29,24 @@ class AdaptiveScaffold extends StatelessWidget {
     void go(int index) => shell.goBranch(index, initialLocation: index == shell.currentIndex);
 
     if (width < AppBreakpoints.sidebar) {
+      final look = context.look;
       return Scaffold(
         body: shell,
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: shell.currentIndex,
-          onDestinationSelected: go,
-          destinations: [
-            for (final (icon, selected, label) in destinations)
-              NavigationDestination(icon: Icon(icon), selectedIcon: Icon(selected), label: label),
-          ],
+        bottomNavigationBar: DecoratedBox(
+          decoration: BoxDecoration(
+            border: look.id == DartLookId.tv
+                ? null
+                : Border(top: BorderSide(color: Theme.of(context).colorScheme.outline)),
+          ),
+          child: NavigationBar(
+            selectedIndex: shell.currentIndex,
+            onDestinationSelected: go,
+            labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+            destinations: [
+              for (final (icon, selected, label) in destinations)
+                NavigationDestination(icon: Icon(icon), selectedIcon: Icon(selected), label: label),
+            ],
+          ),
         ),
       );
     }
@@ -47,12 +57,12 @@ class AdaptiveScaffold extends StatelessWidget {
         children: [
           NavigationRail(
             extended: extended,
-            minExtendedWidth: 220,
+            minExtendedWidth: context.look.id == DartLookId.lab ? 200 : 228,
             selectedIndex: shell.currentIndex,
             onDestinationSelected: go,
             labelType: extended ? NavigationRailLabelType.none : NavigationRailLabelType.all,
             leading: Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.l),
+              padding: const EdgeInsets.fromLTRB(AppSpacing.s, AppSpacing.l, AppSpacing.s, AppSpacing.xl),
               child: _Logo(extended: extended),
             ),
             trailing: const Expanded(
@@ -81,13 +91,15 @@ class _Logo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.dartColors;
+    final look = context.look;
+    final theme = Theme.of(context);
     final mark = Container(
-      width: 36,
-      height: 36,
+      width: 34,
+      height: 34,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: colors.boardSurround,
-        border: Border.all(color: colors.boardRed, width: 5),
+        border: Border.all(color: look.id == DartLookId.tv ? theme.colorScheme.primary : colors.boardRed, width: 5),
       ),
       alignment: Alignment.center,
       child: Container(
@@ -97,13 +109,23 @@ class _Logo extends StatelessWidget {
       ),
     );
     if (!extended) return mark;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        mark,
-        const SizedBox(width: AppSpacing.m),
-        Text(context.l10n.appTitle, style: Theme.of(context).textTheme.titleLarge),
-      ],
+    final title = context.l10n.appTitle;
+    final style = switch (look.id) {
+      DartLookId.tv => look.sectionTitle.copyWith(fontSize: 26, fontWeight: FontWeight.w800, letterSpacing: 1.5, color: theme.colorScheme.onSurface),
+      DartLookId.clean => theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700, fontSize: 20),
+      DartLookId.lab => theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: 0.2),
+    };
+    return SizedBox(
+      width: 196,
+      child: Row(
+        children: [
+          mark,
+          const SizedBox(width: AppSpacing.m),
+          Flexible(
+            child: FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: Text(title, style: style)),
+          ),
+        ],
+      ),
     );
   }
 }

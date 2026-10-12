@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/design/components/components.dart';
-import '../../../core/design/dart_colors.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
 import '../../games/presentation/active_game_controller.dart';
@@ -58,24 +57,13 @@ class _PlanRunPanelState extends ConsumerState<PlanRunPanel> {
             Row(
               children: [
                 Expanded(
-                  child: Text(
-                    '${l10n.planLabel} · ${run.run.planName}'.toUpperCase(),
-                    style: theme.textTheme.labelMedium,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  child: Kicker('${l10n.planLabel} · ${run.run.planName}'),
                 ),
                 Text(l10n.planProgress(index + 1, run.total), key: const Key('plan-progress'), style: theme.textTheme.titleSmall),
               ],
             ),
             const SizedBox(height: AppSpacing.s),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(AppRadii.pill),
-              child: LinearProgressIndicator(
-                value: (index + (active.ended ? 1 : 0)) / run.total,
-                minHeight: 6,
-                backgroundColor: context.dartColors.surfaceHigh,
-              ),
-            ),
+            LookProgressBar(value: (index + (active.ended ? 1 : 0)) / run.total),
             if (note != null) ...[
               const SizedBox(height: AppSpacing.s),
               Text(note, style: theme.textTheme.bodySmall),
