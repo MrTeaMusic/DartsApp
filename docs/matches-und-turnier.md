@@ -32,6 +32,8 @@ der nächste ist ein Bot, dann beendet der Dart nur die Aufnahme.
 * **Board** mit den Darts der laufenden Aufnahme – auch denen des Bots. Bei Menschen pulsiert
   das erste Feld des Checkout-Wegs.
 * **Aufnahme-Karte** mit den drei Dart-Plätzen; offene Plätze zeigen den Checkout-Weg in Gelb.
+  Geht mit den restlichen Darts kein Finish mehr, zeigen sie in Blau, wie man sich stellt
+  („Stellen auf 32“, siehe unten).
   Eigene Darts lassen sich antippen und korrigieren, **Würfe korrigieren** listet alle eigenen
   Darts des laufenden Legs. **Rückgängig** nimmt den letzten eigenen Dart der laufenden Aufnahme
   zurück.
@@ -147,3 +149,21 @@ Matches streuen natürlich stärker – auch ein 50er-Bot wirft mal eine 140.
 * Mehr als zwei Spieler sind in der Engine vorbereitet, aber noch nicht in der Oberfläche.
 * Die Streuung des Bots ist rund (gleich in x und y). Echte Spieler streuen meist stärker in der
   Höhe; für die Spielstärke spielt das kaum eine Rolle.
+
+## Stellen statt Checkout
+
+Wenn mit den restlichen Darts der Aufnahme kein Finish mehr geht, rechnet
+`SetupAdvisor` (`lib/features/games/domain/games/checkout/setup_advisor.dart`)
+aus, welche Darts einen guten Rest für die nächste Aufnahme lassen. Das gilt im
+Match und im X01-Training.
+
+* Am besten ist ein Lieblings-Double (32, 40, 16, 36, 24, 20, 8), dann jedes
+  andere Ein-Dart-Finish, dann ein leichtes Zwei-Dart-Finish (Single + Double).
+  Reste ohne Finish (169, 168, 166, 165, 163, 162, 159) und über 170 sind schlecht.
+* Große Single-Felder kosten fast nichts, Triples mehr, das Bull am meisten.
+* Beispiele: 169 mit drei Darts → T20 T20 S17 (Rest 32); 120 mit zwei → T20 S20
+  (40); 41 mit einem → S9 (32).
+* Nach jedem Dart wird neu gerechnet; geht wieder ein Finish, erscheint der
+  gelbe Checkout-Weg.
+* Bleibt selbst mit maximalen Punkten über 170 nur ein Drei-Dart-Finish (z. B.
+  301), geht es nur ums Punkten und es erscheint kein Vorschlag.

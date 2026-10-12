@@ -4,6 +4,7 @@ import '../engine/game_definition.dart';
 import '../engine/game_display.dart';
 import '../engine/training_game.dart';
 import 'checkout/checkout_rules.dart';
+import 'checkout/setup_advisor.dart';
 
 /// Ein gespieltes Leg.
 class X01Leg {
@@ -234,6 +235,17 @@ class X01Solo extends TrainingGame {
     return CheckoutRules.suggest(remaining, darts: darts, out: outMode);
   }
 
+  /// Wie man sich stellt, wenn kein Finish mehr geht (sonst `null`).
+  SetupPlan? get setup {
+    if (!showSuggestion || finished || !opened || suggestion != null) return null;
+    var darts = dartsLeftInVisit;
+    if (dartLimit > 0) {
+      final left = dartLimit - legDarts;
+      if (left < darts) darts = left;
+    }
+    return SetupAdvisor.suggest(remaining, darts: darts, out: outMode);
+  }
+
   static final Set<Segment> _allDoubles = {for (var n = 1; n <= 20; n++) Segment.double(n), Segment.bull};
 
   @override
@@ -265,6 +277,7 @@ class X01Solo extends TrainingGame {
         headline: '$remaining',
         headlineKey: opened ? 'remaining' : 'doubleToStart',
         suggestion: suggestion,
+        setup: setup,
         progress: legResults.length / legs,
         progressLabel: 'Leg $legNumber/$legs',
         stats: [

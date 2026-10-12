@@ -1,6 +1,7 @@
 import '../../board/domain/segment.dart';
 import '../../dart_source/domain/dart_event.dart';
 import '../../games/domain/games/checkout/checkout_rules.dart';
+import '../../games/domain/games/checkout/setup_advisor.dart';
 import 'match_format.dart';
 
 /// Was im Match gerade passiert ist. Die UI übersetzt den Typ in Text.
@@ -211,6 +212,14 @@ class X01Match {
     final p = currentPlayer;
     if (!p.opened) return null;
     return CheckoutRules.suggest(p.remaining, darts: dartsLeft, out: format.outMode);
+  }
+
+  /// Stell-Vorschlag für den Spieler am Zug, wenn kein Finish mehr geht.
+  SetupPlan? get setup {
+    if (finished || visitClosed) return null;
+    final p = currentPlayer;
+    if (!p.opened || suggestion != null) return null;
+    return SetupAdvisor.suggest(p.remaining, darts: dartsLeft, out: format.outMode);
   }
 
   void _snapshot() {

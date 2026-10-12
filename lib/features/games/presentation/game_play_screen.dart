@@ -408,6 +408,10 @@ class _VisitCard extends ConsumerWidget {
     final thrown = live.visit.length;
     // Nach Bust/Checkout gilt der Weg erst wieder für die nächste Aufnahme.
     final route = active.ended || (game.visitClosed && thrown > 0) ? null : game.display.suggestion;
+    // Geht kein Finish mehr, zeigen wir stattdessen, wie man sich stellt.
+    final setup = route == null && !active.ended && !(game.visitClosed && thrown > 0) ? game.display.setup : null;
+    final plan = route ?? setup?.darts;
+    final planColor = route != null ? colors.highlight : colors.setupHint;
     final records = active.session.records;
     final liveStart = records.length - thrown;
 
@@ -443,6 +447,15 @@ class _VisitCard extends ConsumerWidget {
                       style: look.kicker.copyWith(color: colors.highlight),
                     ),
                   )
+                else if (setup != null)
+                  Flexible(
+                    child: Text(
+                      look.caps(l10n.visitSetup(setup.leave)),
+                      key: const Key('setup-route-label'),
+                      overflow: TextOverflow.ellipsis,
+                      style: look.kicker.copyWith(color: colors.setupHint),
+                    ),
+                  )
                 else if (route != null && thrown == 0)
                   Flexible(
                     child: Text(l10n.gameNoCheckout, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodySmall),
@@ -467,7 +480,8 @@ class _VisitCard extends ConsumerWidget {
                       child: DartChip(
                         key: Key('dart-slot-$i'),
                         segment: i < thrown ? live.visit[i].segment : null,
-                        planned: route != null && i >= thrown && i - thrown < route.length ? route[i - thrown] : null,
+                        planned: plan != null && i >= thrown && i - thrown < plan.length ? plan[i - thrown] : null,
+                        plannedColor: planColor,
                         label: '${i + 1}',
                         large: true,
                         onTap: !active.ended && i < thrown ? () => fix(i) : null,
