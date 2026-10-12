@@ -4,10 +4,12 @@ import 'dart:math' as math;
 import '../../../core/database/app_database.dart';
 import '../../board/domain/board_geometry.dart';
 import '../../board/domain/segment.dart';
+import 'double_stats.dart';
 import 'game_metrics.dart';
 import 'stats_models.dart';
 import 'target_replay.dart';
 
+export 'double_stats.dart';
 export 'stats_models.dart';
 
 /// Alle Kennzahlen eines Zeitraums. Reine Berechnung aus Sessions und
@@ -299,6 +301,56 @@ class StatsCalculator {
     if (since == null) return null;
     final from = DateTime(since.year, since.month, since.day - period.days!);
     return _report(_between(from, since, gameId), from: from, to: since);
+  }
+
+  /// Spiele, deren Darts aufs Doppel Checkout-Darts sind.
+  static const Set<String> checkoutGames = {'checkout', 'one_twenty_one'};
+
+  /// X01-Spiele: Checkout-Darts und gewonnene Legs kommen aus den
+  /// Kennzahlen `checkoutDarts` und `legsWon` (Matches speichern nur die
+  /// eigenen Darts, deshalb lässt sich dort kein Ziel je Dart nachbauen).
+  static const Set<String> x01Games = {'x01', 'x01_match'};
+
+  /// Doppel-Auswertung des Zeitraums: je Doppel Quote, Daneben-Richtung und
+  /// Streubild, dazu der Verlauf (letzte 30 Tage gegen die 30 davor) und
+  /// Checkout gegen Training.
+  DoubleStats doubleStats(StatsPeriod period, {String? gameId}) {
+    DoubleSource sourceOf(String id) => checkoutGames.contains(id)
+        ? DoubleSource.checkout
+        : (x01Games.contains(id) ? DoubleSource.none : DoubleSource.training);
+    Iterable<DoubleAttempt> attemptsOf(List<SessionRow> sessions) sync* {
+      for (final s in sessions) {
+        final source = sourceOf(s.gameId);
+        for (final a in aimedOf(s)) {
+          final n = a.aimedDouble;
+          if (n == null) continue;
+          final x = a.row.x, y = a.row.y;
+          yield DoubleAttempt(
+            target: n,
+            landed: a.segment,
+            time: a.row.timestamp,
+            position: x == null || y == null ? null : BoardPoint(x, y),
+            source: source,
+          );
+        }
+      }
+    }
+
+    final sessions = sessionsIn(period, gameId: gameId);
+    var x01 = HitCount.zero;
+    for (final s in sessions) {
+      if (!x01Games.contains(s.gameId)) continue;
+      final m = _metrics(s);
+      final darts = (m['checkoutDarts'] ?? 0).toInt();
+      if (darts > 0) x01 += HitCount(darts, math.min(darts, (m['legsWon'] ?? 0).toInt()));
+    }
+    final trendFrom = DateTime(now.year, now.month, now.day - 2 * DoubleStats.trendDays + 1);
+    return DoubleStats.build(
+      attempts: attemptsOf(sessions),
+      trendAttempts: attemptsOf(_between(trendFrom, null, gameId)),
+      now: now,
+      extraCheckout: x01,
+    );
   }
 
   StatsReport _report(List<SessionRow> sessions, {required DateTime? from, required DateTime? to}) {

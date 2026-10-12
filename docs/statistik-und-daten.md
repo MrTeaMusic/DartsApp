@@ -13,8 +13,9 @@ Die Statistik hat fünf Reiter:
   Tage) bzw. pro Woche (90 Tage, alles), Trainingsmuster nach Wochentag und Tageszeit.
 * **Scoring:** 3-Dart-Average, First 9, Streuung, Punkteverteilung der Aufnahmen, Average-Verlauf,
   Triple-Quote je Zahl, Heatmap, Treffer je Zahl.
-* **Doppel & Finish:** Checkout- und Double-Quote, Quote je Double (D1–D20, Bull) mit stärkstem und
-  schwächstem Double, Checkout-Quote nach Rest.
+* **Doppel & Finish:** Checkout- und Double-Quote, stärkstes und schwächstes Double, „Doppel im
+  Fokus“ (Streubild, Daneben-Richtung, Verlauf), Checkout gegen Training, Tipp, Quote je Double
+  (D1–D20, Bull) mit Verlaufspfeilen, Checkout-Quote nach Rest. Siehe „Doppel im Detail“.
 * **Spiele:** Verlauf jeder Kennzahl eines Spiels mit gleitendem Durchschnitt, Bestwert, letzter Wert,
   Durchschnitt der letzten fünf, Liste aller Spiele mit Trefferquote aufs Ziel.
 * **Rekorde:** persönliche Rekorde und Bestwerte je Spiel mit Datum, immer über alle Zeiträume.
@@ -70,6 +71,33 @@ Aufnahme-Index.
 Im Raster „Doubles im Detail“ ist ein Double grün, wenn seine Quote mindestens 15 % über der eigenen
 Double-Quote liegt, rot bei mindestens 15 % darunter (ab drei Versuchen). Stärkstes und schwächstes
 Double zählen ab fünf Versuchen; im Triple-Diagramm erscheinen Zahlen ab drei Versuchen.
+
+### Doppel im Detail
+
+Grundlage sind die Darts mit genau einem Doppel als Ziel (siehe „Ziel je Dart“) im gewählten Zeitraum
+und mit dem gewählten Spielfilter. Die Berechnung steckt in `DoubleStats` (`double_stats.dart`, reine
+Dart-Klasse mit Unit-Tests), aufgerufen über `StatsCalculator.doubleStats`.
+
+* **Doppel im Fokus:** Chips D1–D20 und Bull; vorausgewählt ist das meistgeworfene Doppel (bei
+  Gleichstand ein Zahlen-Doppel vor dem Bull, dann das höhere). Darunter ein vergrößerter Ausschnitt
+  der Scheibe wie beim Doppel-Zoom mit allen Darts aufs Doppel als Punkte: Treffer grün, Fehlwürfe
+  grau. Punkte gibt es nur für Würfe mit Position (Simulator, Autodarts); der Hinweis darunter nennt,
+  wie viele Darts das sind.
+* **Daneben-Richtung** (nur aus dem getroffenen Feld, ohne Koordinaten): *außen* = neben der
+  Scheibe, *innen* = Single oder Triple derselben Zahl (auch Bull), *seitlich* = eine andere Zahl.
+  Beim Bull: *Single* = Single-Bull, *Zahlen* = ein Zahlenfeld, *außen* = neben der Scheibe. Die
+  Anteile beziehen sich auf alle Darts aufs Doppel, Treffer und die drei Richtungen ergeben 100 %.
+  Die häufigste Richtung steht im Satz darüber („D16: 41 % Treffer, daneben meist außen (32 %)“).
+* **Verlauf:** je Doppel die letzten 30 Tage (heute eingeschlossen) gegen die 30 Tage davor,
+  unabhängig vom gewählten Zeitraum. Pfeil nur, wenn beide Zeiträume mindestens fünf Versuche haben;
+  unter zwei Prozentpunkten Unterschied gilt der Wert als gleich. Die Pfeile stehen auch im Raster
+  „Doubles im Detail“.
+* **Checkout gegen Training:** Checkout = Darts aufs vorgeschlagene Doppel in Checkout-Training und
+  121 plus die Checkout-Darts aus X01 und Matches (Kennzahlen `checkoutDarts` und `legsWon`, denn
+  Matches speichern nur die eigenen Darts, dort lässt sich kein Ziel je Dart nachbauen). Training =
+  alle übrigen Darts aufs Doppel (Bob's 27, Doppel-Spiele, Around the Clock auf Doubles …).
+* **Tipp:** das Doppel mit der besten Quote ab fünf Versuchen, sobald mindestens zwei Doppel so viele
+  Versuche haben („Dein bestes Doppel ist D20 (52 %). Stell dich beim Stellen lieber darauf.“).
 
 ### Trainingsmuster
 

@@ -17,6 +17,15 @@ class HitMarker {
   final bool latest;
 }
 
+/// Ein Punkt im Streubild (Statistik): Treffer farbig, Fehlwurf grau. Anders
+/// als [HitMarker] ohne Animation und kleiner, damit viele Punkte passen.
+@immutable
+class ScatterMarker {
+  const ScatterMarker(this.position, {required this.hit});
+  final BoardPoint position;
+  final bool hit;
+}
+
 /// Zeichnet ein Steeldartboard samt Treffern, Hervorhebungen und Heatmap.
 ///
 /// Koordinaten: siehe [BoardPoint]. Radius 1.0 = Außenkante Double-Ring.
@@ -32,6 +41,7 @@ class DartboardPainter extends CustomPainter {
     this.hover,
     this.heat = const [],
     this.heatOpacity = 0.0,
+    this.scatter = const [],
     this.showNumbers = true,
     this.style = BoardStyle.tournament,
     this.markerScale = 1,
@@ -61,6 +71,9 @@ class DartboardPainter extends CustomPainter {
 
   final List<BoardPoint> heat;
   final double heatOpacity;
+
+  /// Streubild-Punkte, Fehlwürfe unter den Treffern.
+  final List<ScatterMarker> scatter;
   final bool showNumbers;
 
   /// Größe der Treffer-Marker; im Zoom kleiner, damit sie nicht mitwachsen.
@@ -124,6 +137,8 @@ class DartboardPainter extends CustomPainter {
 
     // Heatmap
     if (heatOpacity > 0 && heat.isNotEmpty) _heat(canvas, size, r);
+
+    if (scatter.isNotEmpty) _scatter(canvas, size, r);
 
     // Hover
     if (hover != null && !hover!.isMiss) {
@@ -418,6 +433,25 @@ class DartboardPainter extends CustomPainter {
     canvas.restore();
   }
 
+  void _scatter(Canvas canvas, Size size, double r) {
+    final radius = r * 0.017 * markerScale;
+    final outline = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = math.max(1, radius * 0.3)
+      ..color = Colors.black.withValues(alpha: 0.55);
+    final miss = Paint()..color = const Color(0xFFB4B9C0).withValues(alpha: 0.9);
+    final hit = Paint()..color = colors.success;
+    // Erst die Fehlwürfe, dann die Treffer obenauf.
+    for (final pass in [false, true]) {
+      for (final p in scatter) {
+        if (p.hit != pass) continue;
+        final o = toCanvas(p.position, size, style);
+        canvas.drawCircle(o, radius, pass ? hit : miss);
+        canvas.drawCircle(o, radius, outline);
+      }
+    }
+  }
+
   void _hit(Canvas canvas, Offset o, double r, bool latest) {
     final base = r * 0.028 * markerScale;
     if (latest && hitProgress < 1) {
@@ -456,6 +490,7 @@ class DartboardPainter extends CustomPainter {
       old.hover != hover ||
       old.heat != heat ||
       old.heatOpacity != heatOpacity ||
+      old.scatter != scatter ||
       old.showNumbers != showNumbers ||
       old.markerScale != markerScale ||
       old.viewRotation != viewRotation ||

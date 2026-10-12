@@ -1509,5 +1509,144 @@
   },
   "doubleZoomLabel": "Doppel-Zoom",
   "settingsDoubleZoom": "Doppel-Zoom",
-  "settingsDoubleZoomHint": "Zeigt das Doppel, auf das du werfen musst, vergrößert neben der Scheibe"
+  "settingsDoubleZoomHint": "Zeigt das Doppel, auf das du werfen musst, vergrößert neben der Scheibe",
+  "statsDoubleFocus": "Doppel im Fokus",
+  "statsDoubleFocusHint": "Wähle ein Doppel: Streubild, Trefferquote und wohin die Fehlwürfe gingen.",
+  "statsDoubleScatterHint": "Nur Würfe mit Position (Simulator, Autodarts): {count} von {total} Darts",
+  "@statsDoubleScatterHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "statsDoubleNoPositions": "Für dieses Doppel gibt es im Zeitraum keine Würfe mit Position (Simulator, Autodarts).",
+  "statsDoubleSummary": "{double}: {rate} Treffer, daneben meist {direction} ({share})",
+  "@statsDoubleSummary": {
+    "placeholders": {
+      "double": {
+        "type": "String"
+      },
+      "rate": {
+        "type": "String"
+      },
+      "direction": {
+        "type": "String"
+      },
+      "share": {
+        "type": "String"
+      }
+    }
+  },
+  "statsDoubleSummaryNoMiss": "{double}: {rate} Treffer, bisher kein Fehlwurf",
+  "@statsDoubleSummaryNoMiss": {
+    "placeholders": {
+      "double": {
+        "type": "String"
+      },
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "statsDoubleHits": "Treffer",
+  "statsDoubleMissed": "Daneben",
+  "statsDoubleOutside": "Außen",
+  "statsDoubleInside": "Innen",
+  "statsDoubleSide": "Seitlich",
+  "statsBullInside": "Single",
+  "statsBullSide": "Zahlen",
+  "statsDoubleDirOutside": "außen",
+  "statsDoubleDirInside": "innen",
+  "statsDoubleDirSide": "seitlich",
+  "statsBullDirInside": "im Single-Bull",
+  "statsBullDirSide": "in den Zahlenfeldern",
+  "statsDoubleMissLegend": "Außen: neben der Scheibe. Innen: Single oder Triple derselben Zahl. Seitlich: eine andere Zahl.",
+  "statsBullMissLegend": "Single: Single-Bull. Zahlen: ein Zahlenfeld. Außen: neben der Scheibe.",
+  "statsDoubleTrend": "Verlauf",
+  "statsDoubleTrendValue": "Letzte 30 Tage {recent} · davor {before}",
+  "@statsDoubleTrendValue": {
+    "placeholders": {
+      "recent": {
+        "type": "String"
+      },
+      "before": {
+        "type": "String"
+      }
+    }
+  },
+  "statsDoubleTrendTooFew": "Verlauf ab {count} Versuchen in den letzten 30 Tagen und in den 30 Tagen davor.",
+  "@statsDoubleTrendTooFew": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsDoubleTrendUp": "besser",
+  "statsDoubleTrendDown": "schlechter",
+  "statsDoubleTrendFlat": "gleich",
+  "statsDoublesTrendLegend": "Pfeile: letzte 30 Tage gegen die 30 Tage davor, ab {count} Versuchen in beiden Zeiträumen.",
+  "@statsDoublesTrendLegend": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsCheckoutVsTraining": "Checkout gegen Training",
+  "statsCheckoutVsTrainingHint": "Checkout: Darts auf ein Finish-Doppel in X01, Matches, Checkout-Training und 121. Training: Darts aufs Doppel in Bob's 27, Doppel-Spielen und anderen Trainings.",
+  "statsCheckoutDarts": "Checkout",
+  "statsTrainingDarts": "Training",
+  "statsDoubleDarts": "{hits} von {attempts} Darts",
+  "@statsDoubleDarts": {
+    "placeholders": {
+      "hits": {
+        "type": "int"
+      },
+      "attempts": {
+        "type": "int"
+      }
+    }
+  },
+  "statsCheckoutBetter": "Im Checkout {diff, plural, =1{1 Prozentpunkt} other{{diff} Prozentpunkte}} besser als im Training.",
+  "@statsCheckoutBetter": {
+    "placeholders": {
+      "diff": {
+        "type": "int"
+      }
+    }
+  },
+  "statsCheckoutWorse": "Im Checkout {diff, plural, =1{1 Prozentpunkt} other{{diff} Prozentpunkte}} schwächer als im Training.",
+  "@statsCheckoutWorse": {
+    "placeholders": {
+      "diff": {
+        "type": "int"
+      }
+    }
+  },
+  "statsCheckoutSame": "Im Checkout triffst du so gut wie im Training.",
+  "statsDoubleTipTitle": "Tipp",
+  "statsDoubleTip": "Dein bestes Doppel ist {double} ({rate}). Stell dich beim Stellen lieber darauf.",
+  "@statsDoubleTip": {
+    "placeholders": {
+      "double": {
+        "type": "String"
+      },
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "statsDoubleTipTooFew": "Ab {count} Versuchen auf mindestens zwei Doppel gibt es hier einen Tipp, auf welches Doppel du dich stellen solltest.",
+  "@statsDoubleTipTooFew": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }
