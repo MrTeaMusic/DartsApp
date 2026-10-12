@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/design/dart_colors.dart';
+import '../../../core/settings/app_settings.dart';
 import '../../../core/design/tokens.dart';
 import '../domain/board_geometry.dart';
 import '../domain/segment.dart';
+import 'board_style.dart';
 import 'dartboard_painter.dart';
 
 /// Großes, animiertes Dartboard.
@@ -12,7 +15,7 @@ import 'dartboard_painter.dart';
 /// * Der neueste Treffer pulsiert, das getroffene Feld leuchtet kurz auf.
 /// * [highlighted] hebt Zielfelder dauerhaft pulsierend hervor.
 /// * [heat] zeichnet eine Heatmap über das Board.
-class DartboardView extends StatefulWidget {
+class DartboardView extends ConsumerStatefulWidget {
   const DartboardView({
     super.key,
     this.hits = const [],
@@ -22,7 +25,11 @@ class DartboardView extends StatefulWidget {
     this.showHeat = false,
     this.hitSerial = 0,
     this.onTap,
+    this.style,
   });
+
+  /// Feste Optik (z. B. Vorschau); sonst die Wahl aus den Optionen.
+  final BoardStyle? style;
 
   /// Zählt geworfene Darts. Steigt der Wert, startet die Trefferanimation.
   final int hitSerial;
@@ -39,10 +46,10 @@ class DartboardView extends StatefulWidget {
   final void Function(BoardPoint point, Segment segment)? onTap;
 
   @override
-  State<DartboardView> createState() => _DartboardViewState();
+  ConsumerState<DartboardView> createState() => _DartboardViewState();
 }
 
-class _DartboardViewState extends State<DartboardView> with TickerProviderStateMixin {
+class _DartboardViewState extends ConsumerState<DartboardView> with TickerProviderStateMixin {
   late final AnimationController _hit = AnimationController(vsync: this, duration: AppDurations.hit, value: 1);
   late final AnimationController _pulse = AnimationController(vsync: this, duration: const Duration(milliseconds: 1400));
   late final AnimationController _heat = AnimationController(vsync: this, duration: AppDurations.slow);
@@ -84,11 +91,12 @@ class _DartboardViewState extends State<DartboardView> with TickerProviderStateM
   @override
   Widget build(BuildContext context) {
     final colors = context.dartColors;
+    final BoardStyle style = widget.style ?? ref.watch(settingsProvider.select((s) => s.boardStyle));
     return AspectRatio(
       aspectRatio: 1,
       child: LayoutBuilder(builder: (context, constraints) {
         final size = constraints.biggest;
-        Segment segmentAt(Offset local) => BoardGeometry.segmentAt(DartboardPainter.toBoard(local, size));
+        Segment segmentAt(Offset local) => BoardGeometry.segmentAt(DartboardPainter.toBoard(local, size, style));
         final interactive = widget.onTap != null;
         return MouseRegion(
           cursor: interactive ? SystemMouseCursors.precise : MouseCursor.defer,
@@ -98,7 +106,7 @@ class _DartboardViewState extends State<DartboardView> with TickerProviderStateM
             behavior: HitTestBehavior.opaque,
             onTapUp: interactive
                 ? (d) {
-                    final p = DartboardPainter.toBoard(d.localPosition, size);
+                    final p = DartboardPainter.toBoard(d.localPosition, size, style);
                     widget.onTap!(p, BoardGeometry.segmentAt(p));
                   }
                 : null,
@@ -110,6 +118,7 @@ class _DartboardViewState extends State<DartboardView> with TickerProviderStateM
                   size: size,
                   painter: DartboardPainter(
                     colors: colors,
+                    style: style,
                     hits: [
                       for (var i = 0; i < widget.hits.length; i++)
                         HitMarker(widget.hits[i], latest: i == widget.hits.length - 1),

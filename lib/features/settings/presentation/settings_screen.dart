@@ -11,6 +11,8 @@ import '../../../core/router/app_router.dart';
 import '../../../core/app_version.dart';
 import '../../../core/settings/app_settings.dart';
 import '../../backup/presentation/backup_card.dart';
+import '../../board/presentation/board_style.dart';
+import '../../board/presentation/dartboard_view.dart';
 import '../../caller/presentation/caller_settings_card.dart';
 import '../../dart_source/domain/coordinate_calibration.dart';
 import '../../dart_source/domain/dart_event.dart';
@@ -85,6 +87,10 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               ] else
                 Text(l10n.settingsBrightnessFixed, key: const Key('theme-fixed'), style: Theme.of(context).textTheme.bodySmall),
+              const SizedBox(height: AppSpacing.l),
+              Kicker(l10n.settingsBoardStyle),
+              const SizedBox(height: AppSpacing.s),
+              const _BoardStylePicker(),
               const SectionGap(),
               SectionHeader(l10n.settingsFeedback),
               AppCard(
@@ -199,6 +205,82 @@ class _LookPicker extends ConsumerWidget {
             if (i > 0) SizedBox(height: gap),
             tile(id, name, text),
           ],
+        ],
+      );
+    });
+  }
+}
+
+/// Auswahl der Scheibe mit kleiner Vorschau; gilt sofort überall.
+class _BoardStylePicker extends ConsumerWidget {
+  const _BoardStylePicker();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final look = context.look;
+    final current = ref.watch(settingsProvider.select((s) => s.boardStyle));
+    final styles = [
+      (BoardStyle.tournament, l10n.boardStyleTournament, l10n.boardStyleTournamentText),
+      (BoardStyle.turquoise, l10n.boardStyleTurquoise, l10n.boardStyleTurquoiseText),
+      (BoardStyle.classic, l10n.boardStyleClassic, l10n.boardStyleClassicText),
+    ];
+    Widget tile(BoardStyle style, String name, String text, BoxConstraints c) {
+      final selected = style == current;
+      return Semantics(
+        selected: selected,
+        button: true,
+        label: name,
+        child: Material(
+          color: theme.colorScheme.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(look.radiusL),
+            side: BorderSide(
+              color: selected ? theme.colorScheme.primary : theme.colorScheme.outlineVariant,
+              width: selected ? 2 : 1,
+            ),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            key: Key('board-style-${style.name}'),
+            onTap: () => ref.read(settingsProvider.notifier).update((x) => x.copyWith(boardStyle: style)),
+            child: Padding(
+              padding: EdgeInsets.all(c.maxWidth >= 560 ? AppSpacing.m : AppSpacing.s),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 132),
+                      child: IgnorePointer(child: ExcludeSemantics(child: DartboardView(style: style))),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.s),
+                  Row(
+                    children: [
+                      Expanded(child: Text(name, style: theme.textTheme.titleMedium, overflow: TextOverflow.ellipsis)),
+                      if (selected) Icon(Icons.check_circle_rounded, size: 20, color: theme.colorScheme.primary),
+                    ],
+                  ),
+                  Text(text, style: theme.textTheme.bodySmall, maxLines: 3, overflow: TextOverflow.ellipsis),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return LayoutBuilder(builder: (context, c) {
+      final columns = c.maxWidth >= 300 ? 3 : 2;
+      final gap = look.gridGap;
+      final width = (c.maxWidth - gap * (columns - 1)) / columns;
+      return Wrap(
+        spacing: gap,
+        runSpacing: gap,
+        children: [
+          for (final (style, name, text) in styles) SizedBox(width: width, child: tile(style, name, text, c)),
         ],
       );
     });

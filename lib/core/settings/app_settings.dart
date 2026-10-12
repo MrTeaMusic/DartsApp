@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/dart_source/domain/coordinate_calibration.dart';
 import '../../features/dart_source/domain/dart_event.dart';
 import '../../features/sync/domain/sync_role.dart';
+import '../../features/board/presentation/board_style.dart';
 import '../design/dart_look.dart';
 
 /// Einstellungen der App. Unveränderlich, Änderungen über [SettingsNotifier].
@@ -12,6 +13,7 @@ import '../design/dart_look.dart';
 class AppSettings {
   const AppSettings({
     this.look = DartLookId.tv,
+    this.boardStyle = BoardStyle.tournament,
     this.themeMode = ThemeMode.system,
     this.sourceKind = DartSourceKind.simulator,
     this.autodartsHost = '127.0.0.1',
@@ -28,6 +30,9 @@ class AppSettings {
 
   /// Gewählter Look (Optionen → Darstellung).
   final DartLookId look;
+
+  /// Optik der Dartscheibe (Optionen → Darstellung → Scheibe).
+  final BoardStyle boardStyle;
 
   /// Helligkeit; gilt nur für Looks mit heller Variante (Clean).
   final ThemeMode themeMode;
@@ -52,6 +57,7 @@ class AppSettings {
 
   AppSettings copyWith({
     DartLookId? look,
+    BoardStyle? boardStyle,
     ThemeMode? themeMode,
     DartSourceKind? sourceKind,
     String? autodartsHost,
@@ -67,6 +73,7 @@ class AppSettings {
   }) =>
       AppSettings(
         look: look ?? this.look,
+        boardStyle: boardStyle ?? this.boardStyle,
         themeMode: themeMode ?? this.themeMode,
         sourceKind: sourceKind ?? this.sourceKind,
         autodartsHost: autodartsHost ?? this.autodartsHost,
@@ -82,6 +89,7 @@ class AppSettings {
       );
 
   static const _kLook = 'settings.look';
+  static const _kBoardStyle = 'settings.boardStyle';
   static const _kTheme = 'settings.themeMode';
   static const _kSource = 'settings.sourceKind';
   static const _kHost = 'settings.autodartsHost';
@@ -101,6 +109,7 @@ class AppSettings {
         values.where((v) => v.name == name).firstOrNull ?? fallback;
     return AppSettings(
       look: DartLookId.byName(prefs.getString(_kLook)),
+      boardStyle: BoardStyle.byName(prefs.getString(_kBoardStyle)),
       themeMode: byName(ThemeMode.values, prefs.getString(_kTheme), d.themeMode),
       sourceKind: byName(DartSourceKind.values, prefs.getString(_kSource), d.sourceKind),
       autodartsHost: prefs.getString(_kHost) ?? d.autodartsHost,
@@ -118,6 +127,7 @@ class AppSettings {
 
   Future<void> save(SharedPreferences prefs) async {
     await prefs.setString(_kLook, look.name);
+    await prefs.setString(_kBoardStyle, boardStyle.name);
     await prefs.setString(_kTheme, themeMode.name);
     await prefs.setString(_kSource, sourceKind.name);
     await prefs.setString(_kHost, autodartsHost);
