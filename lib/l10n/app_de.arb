@@ -2130,5 +2130,52 @@
         "type": "int"
       }
     }
-  }
+  },
+  "callerSounds": "Eigene Sounddateien",
+  "callerSoundsHint": "Sprich deinen eigenen Caller ein oder nimm ein fertiges Paket: Dateien wie 0.mp3 bis 180.mp3, bust, game_on, game_shot. Fehlt eine Datei, spricht an der Stelle die normale Stimme. Die Dateien bleiben nur auf diesem Gerät.",
+  "callerSoundsPickFolder": "Ordner wählen",
+  "callerSoundsPickFiles": "Dateien oder Zip wählen",
+  "callerSoundsReplace": "Ersetzen",
+  "callerSoundsRemove": "Entfernen",
+  "callerSoundsUse": "Eigene Sounds nutzen",
+  "callerSoundsCount": "{count} Dateien",
+  "@callerSoundsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "callerSoundsScoresComplete": "alle Punkte 0–180",
+  "callerSoundsScoresMissing": "{count} Punkte fehlen: {list}",
+  "@callerSoundsScoresMissing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "list": {
+        "type": "String"
+      }
+    }
+  },
+  "callerSoundsVoiceFor": "Normale Stimme für: {list}",
+  "@callerSoundsVoiceFor": {
+    "placeholders": {
+      "list": {
+        "type": "String"
+      }
+    }
+  },
+  "callerSoundsImported": "{count} Sounddateien übernommen",
+  "@callerSoundsImported": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "callerSoundsNone": "Keine Sounddateien gefunden (mp3, wav, m4a, aac, ogg)",
+  "callerSoundsFailed": "Import fehlgeschlagen",
+  "callerSoundsNames": "Welche Dateinamen?",
+  "callerSoundsNamesList": "0 bis 180: Punkte einer Aufnahme (0 oder no_score für „No score“)\nbust: Überworfen\ngame_on: Spielbeginn\ngame_shot: Checkout, optional game_shot_leg, game_shot_set, game_shot_match\nyou_require: Rest, danach die Zahl als eigene Datei (oder require_32 usw.)\n\nGroß-/Kleinschreibung ist egal, Unterordner werden mitgelesen."
 }

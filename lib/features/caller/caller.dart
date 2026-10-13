@@ -5,12 +5,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/settings/app_settings.dart';
 import 'data/flutter_tts_speech_engine.dart';
+import 'data/sound_pack_store.dart';
+import 'data/sound_player.dart';
 import 'data/speech_engine.dart';
 import 'domain/caller_phrases.dart';
 import 'domain/caller_settings.dart';
+import 'domain/sound_pack.dart';
 
 export 'domain/caller_phrases.dart';
 export 'domain/caller_settings.dart';
+export 'domain/sound_pack.dart';
 
 /// Der Caller: eine Stimme sagt Punkte und Rest an wie bei einem Turnier.
 ///
@@ -30,13 +34,22 @@ export 'domain/caller_settings.dart';
 /// aus/stumm, Sprache, Lautstärke, Tempo und welche Ausrufe gewünscht sind.
 /// `remaining` wird nur angesagt, wenn der Aufrufer weiß, dass der Rest
 /// auscheckbar ist. Ein neuer Aufruf unterbricht einen noch laufenden.
+/// Sind eigene Sounddateien importiert ([CallerSoundPack]), werden sie statt
+/// der Stimme abgespielt; fehlt eine Datei, spricht die Stimme diese Ansage.
 /// Alle Methoden sind „fire and forget“: Fehler der Plattform werden
 /// geschluckt, das Future endet, wenn alles gesprochen ist.
 class Caller {
-  Caller({required this._engine, required this._settings});
+  Caller({
+    required this._engine,
+    required this._settings,
+    this._player = const SilentSoundPlayer(),
+    CallerSoundPack Function()? soundPack,
+  }) : _soundPack = soundPack ?? (() => CallerSoundPack.empty);
 
   final SpeechEngine _engine;
   final CallerSettings Function() _settings;
+  final SoundPlayer _player;
+  final CallerSoundPack Function() _soundPack;
   int _generation = 0;
   bool _speaking = false;
 
@@ -73,11 +86,14 @@ class Caller {
 
   Future<void> _speak(List<CallerCall> wanted, CallerSettings settings) async {
     final phrases = CallerPhrases.of(settings.language);
+    final pack = settings.useSoundPack ? _soundPack() : CallerSoundPack.empty;
     final generation = ++_generation;
-    if (_speaking) await _engine.stop();
+    if (_speaking) await Future.wait([_engine.stop(), _player.stop()]);
     _speaking = true;
     try {
       for (final call in wanted) {
+        if (generation != _generation) return;
+        if (await _playSounds(pack.pathsFor(call), settings, generation)) continue;
         if (generation != _generation) return;
         final phrase = phrases.forCall(call);
         await _engine
@@ -99,11 +115,23 @@ class Caller {
     }
   }
 
+  /// Spielt [paths] nacheinander. `false`, wenn es keine Dateien gibt oder
+  /// die erste nicht abspielbar war: dann spricht die Stimme.
+  Future<bool> _playSounds(List<String>? paths, CallerSettings settings, int generation) async {
+    if (paths == null) return false;
+    for (final (i, path) in paths.indexed) {
+      if (generation != _generation) return true;
+      final ok = await _player.play(path, settings.volume);
+      if (!ok && i == 0) return false;
+    }
+    return true;
+  }
+
   /// Laufende Ansage abbrechen.
   Future<void> stop() async {
     _generation++;
     _speaking = false;
-    await _engine.stop();
+    await Future.wait([_engine.stop(), _player.stop()]);
   }
 
   static bool _wanted(CallerCall call, CallerSettings s) => switch (call) {
@@ -117,6 +145,43 @@ class Caller {
 /// Sprachausgabe. In Tests mit einem Fake überschreiben, damit das echte
 /// Plugin nicht angesprochen wird.
 final speechEngineProvider = Provider<SpeechEngine>((ref) => FlutterTtsSpeechEngine());
+
+/// Wiedergabe eigener Sounddateien. In Tests mit einem Fake überschreiben.
+final soundPlayerProvider = Provider<SoundPlayer>((ref) => AudioplayersSoundPlayer());
+
+/// Ablage der eigenen Sounddateien. In Tests mit einem Temp-Ordner.
+final soundPackStoreProvider = Provider<SoundPackStore>((ref) => SoundPackStore());
+
+/// Die importierten eigenen Sounddateien des Callers.
+final soundPackProvider = AsyncNotifierProvider<SoundPackNotifier, CallerSoundPack>(SoundPackNotifier.new);
+
+class SoundPackNotifier extends AsyncNotifier<CallerSoundPack> {
+  @override
+  Future<CallerSoundPack> build() async {
+    try {
+      return await ref.watch(soundPackStoreProvider).load();
+    } catch (e) {
+      // Kein App-Ordner (z. B. in Tests): normale Stimme.
+      debugPrint('Caller: Sounddateien nicht lesbar: $e');
+      return CallerSoundPack.empty;
+    }
+  }
+
+  /// Ersetzt das Paket durch die Sounds aus Ordnern, Dateien oder Zips.
+  /// Gibt die Zahl der übernommenen Dateien zurück, `null`, wenn keine
+  /// Sounds dabei waren (das alte Paket bleibt dann).
+  Future<int?> import(List<String> sources) async {
+    final pack = await ref.read(soundPackStoreProvider).import(sources);
+    if (pack == null) return null;
+    state = AsyncData(pack);
+    return pack.length;
+  }
+
+  Future<void> clear() async {
+    await ref.read(soundPackStoreProvider).clear();
+    state = const AsyncData(CallerSoundPack.empty);
+  }
+}
 
 final callerSettingsProvider = NotifierProvider<CallerSettingsNotifier, CallerSettings>(CallerSettingsNotifier.new);
 
@@ -135,7 +200,14 @@ class CallerSettingsNotifier extends Notifier<CallerSettings> {
 
 /// Der Caller-Dienst, siehe [Caller].
 final callerProvider = Provider<Caller>((ref) {
-  final caller = Caller(engine: ref.watch(speechEngineProvider), settings: () => ref.read(callerSettingsProvider));
+  final caller = Caller(
+    engine: ref.watch(speechEngineProvider),
+    settings: () => ref.read(callerSettingsProvider),
+    player: ref.watch(soundPlayerProvider),
+    soundPack: () => ref.read(soundPackProvider).value ?? CallerSoundPack.empty,
+  );
+  // Paket schon beim Start laden, damit die erste Ansage es kennt.
+  ref.listen(soundPackProvider, (_, _) {});
   // Stummschalten bricht eine laufende Ansage sofort ab.
   ref.listen(callerSettingsProvider.select((s) => s.enabled), (_, enabled) {
     if (!enabled) unawaited(caller.stop());

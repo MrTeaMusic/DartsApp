@@ -5,6 +5,7 @@ import '../../../core/design/components/components.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
 import '../caller.dart';
+import 'caller_sound_pack_section.dart';
 
 /// Einstellungen des Callers für den Optionen-Bildschirm.
 class CallerSettingsCard extends ConsumerWidget {
@@ -106,6 +107,7 @@ class CallerSettingsCard extends ConsumerWidget {
               examples([phrases.gameOn()]),
               (v) => s.copyWith(announceGameOn: v),
             ),
+            const CallerSoundPackSection(),
             Padding(
               padding: const EdgeInsets.fromLTRB(AppSpacing.l, AppSpacing.s, AppSpacing.l, AppSpacing.s),
               child: LayoutBuilder(builder: (context, c) {
