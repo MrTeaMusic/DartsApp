@@ -16,6 +16,7 @@ class CallerSettings {
     this.announceRemaining = true,
     this.announceCheckout = true,
     this.announceGameOn = true,
+    this.useSoundPack = true,
   });
 
   /// Sprechtempo der Plattform: 0,5 ist auf allen Zielplattformen normal.
@@ -45,6 +46,10 @@ class CallerSettings {
   /// „Game on“ zu Spielbeginn.
   final bool announceGameOn;
 
+  /// Eigene Sounddateien abspielen, sofern welche importiert sind
+  /// (siehe `CallerSoundPack`). Fehlende Ansagen spricht die Stimme.
+  final bool useSoundPack;
+
   CallerSettings copyWith({
     bool? enabled,
     CallerLanguage? language,
@@ -54,6 +59,7 @@ class CallerSettings {
     bool? announceRemaining,
     bool? announceCheckout,
     bool? announceGameOn,
+    bool? useSoundPack,
   }) =>
       CallerSettings(
         enabled: enabled ?? this.enabled,
@@ -64,6 +70,7 @@ class CallerSettings {
         announceRemaining: announceRemaining ?? this.announceRemaining,
         announceCheckout: announceCheckout ?? this.announceCheckout,
         announceGameOn: announceGameOn ?? this.announceGameOn,
+        useSoundPack: useSoundPack ?? this.useSoundPack,
       );
 
   static const _kEnabled = 'caller.enabled';
@@ -74,6 +81,7 @@ class CallerSettings {
   static const _kRemaining = 'caller.remaining';
   static const _kCheckout = 'caller.checkout';
   static const _kGameOn = 'caller.gameOn';
+  static const _kSoundPack = 'caller.soundPack';
 
   static CallerSettings load(SharedPreferences prefs) {
     const d = CallerSettings();
@@ -87,6 +95,7 @@ class CallerSettings {
       announceRemaining: prefs.getBool(_kRemaining) ?? d.announceRemaining,
       announceCheckout: prefs.getBool(_kCheckout) ?? d.announceCheckout,
       announceGameOn: prefs.getBool(_kGameOn) ?? d.announceGameOn,
+      useSoundPack: prefs.getBool(_kSoundPack) ?? d.useSoundPack,
     );
   }
 
@@ -99,5 +108,6 @@ class CallerSettings {
     await prefs.setBool(_kRemaining, announceRemaining);
     await prefs.setBool(_kCheckout, announceCheckout);
     await prefs.setBool(_kGameOn, announceGameOn);
+    await prefs.setBool(_kSoundPack, useSoundPack);
   }
 }
