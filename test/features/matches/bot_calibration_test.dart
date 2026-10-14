@@ -24,14 +24,16 @@ void main() {
         expect(t[i].$1, lessThan(t[i - 1].$1));
         expect(t[i].$2, greaterThanOrEqualTo(t[i - 1].$2));
         expect(t[i].$3, greaterThanOrEqualTo(t[i - 1].$3));
+        expect(t[i].$2, lessThanOrEqualTo(BotCalibration.maxScoringSigma));
       }
       expect(BotCalibration.sigmaFor(500), t.first.$2);
       expect(BotCalibration.sigmaFor(1), t.last.$2);
       expect(BotCalibration.finishSigmaFor(1), t.last.$3);
     });
 
-    // Bei 30 % Turnier-Stärke haben die CPUs einen Average um 28. Vorher
-    // standen sie im Schnitt acht Aufnahmen auf dem Finish, manchmal über 50.
+    // Bei 30 % Turnier-Stärke haben die CPUs einen Average um 28 (gespielt
+    // wird wie ein 30er). Vorher standen sie im Schnitt acht Aufnahmen auf dem
+    // Finish, manchmal über 50.
     for (final target in [28.0, 50.0]) {
       test('Bot mit Average $target steht nicht ewig auf dem Finish', () {
         final bot = DartBot.forAverage(target, random: math.Random(5));

@@ -37,13 +37,16 @@ abstract final class BotCalibration {
     (45.0, 0.1238, 0.0839),
     (40.0, 0.1517, 0.0896),
     (35.0, 0.2112, 0.0934),
-    (30.0, 0.3345, 0.0934),
-    (25.0, 0.4951, 0.0934),
-    (20.0, 0.6800, 0.0934),
+    (30.0, 0.3200, 0.0934),
   ];
 
   static const double minAverage = 15;
   static const double maxAverage = 120;
+
+  /// Mehr Scoring-Streuung bekommt kein Bot, sonst ginge gut jeder sechste
+  /// Dart neben die Scheibe. Bots unter einem 30er spielen deshalb wie ein
+  /// 30er (die Tabelle endet dort).
+  static const double maxScoringSigma = 0.32;
 
   /// Scoring-Streuung für den gewünschten Average (linear interpoliert).
   static double sigmaFor(double average) => _lookup(average, (r) => r.$2);
@@ -129,7 +132,7 @@ abstract final class BotCalibration {
 
   /// Hilfsfunktion zum Neuberechnen der [table]: sucht für jeden Average
   /// die Scoring-Streuung, mit der ein Bot mit der Finish-Streuung aus
-  /// [checkoutRateFor] ihn erreicht.
+  /// [checkoutRateFor] ihn erreicht, höchstens [maxScoringSigma].
   static List<(double, double, double)> calibrate(List<double> averages, {int legs = 4000, int seed = 1}) => [
     for (final a in averages) _calibrateOne(a, legs, seed),
   ];
@@ -147,6 +150,6 @@ abstract final class BotCalibration {
         hi = mid;
       }
     }
-    return (average, (lo + hi) / 2, finish);
+    return (average, math.min((lo + hi) / 2, maxScoringSigma), finish);
   }
 }

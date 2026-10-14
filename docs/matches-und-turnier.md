@@ -113,7 +113,9 @@ Das Finish-σ folgt einer Trefferquote aufs Doppel wie bei echten Spielern (22 %
 40 % bei einem 100er), nie unter 18 %. Ohne diese Untergrenze standen schwache Bots, etwa im
 Turnier mit 30 % (Average um 28), im Schnitt acht Aufnahmen auf dem Finish, manchmal über 50,
 meist auf D1. Das Scoring-σ ist dann so gewählt, dass der Bot seinen Average trifft; schwache
-Bots verlieren ihre Punkte also beim Scoren (auch mal neben der Scheibe) statt am Doppel.
+Bots verlieren ihre Punkte also beim Scoren statt am Doppel. Damit nicht zu viele Darts neben
+die Scheibe gehen, ist das Scoring-σ auf 0,32 begrenzt: Bots unter einem 30er spielen wie ein
+30er.
 
 Die Zuordnung steht als Tabelle in `BotCalibration`, gemessen durch Simulation von je 4000 Legs
 501 Double-Out mit genau diesem Bot (`BotCalibration.calibrate`). Zwischenwerte werden linear
@@ -121,8 +123,7 @@ interpoliert.
 
 | Ziel-Average | σ Scoren | σ Finish | Doppelquote |
 |---|---|---|---|
-| 25 | 0,495 (84 mm) | 0,093 (16 mm) | 18 % |
-| 30 | 0,335 (57 mm) | 0,093 (16 mm) | 18 % |
+| 30 und weniger | 0,320 (54 mm) | 0,093 (16 mm) | 18 % |
 | 40 | 0,152 (26 mm) | 0,090 (15 mm) | 19 % |
 | 50 | 0,105 (18 mm) | 0,079 (13 mm) | 22 % |
 | 60 | 0,083 (14 mm) | 0,069 (12 mm) | 26 % |
