@@ -38,6 +38,23 @@ enum BoardLayer {
 
   /// Nur, was sich bewegt: Treffer, Hervorhebungen, Heatmap, Streubild.
   overlay,
+
+  /// Nur die Heatmap (eigene Ebene bzw. zwischengespeichertes Bild).
+  heat,
+}
+
+/// Werte der laufenden Animationen. [DartboardPainter] liest sie erst beim
+/// Zeichnen, damit eine Animation nur die Ebene neu zeichnet, ohne Neuaufbau
+/// und Layout.
+abstract interface class BoardAnimation implements Listenable {
+  /// 0 → 1: Fortschritt der Trefferanimation des neuesten Darts.
+  double get hitProgress;
+
+  /// Stärke der Hervorhebung der Zielfelder.
+  double get highlightStrength;
+
+  /// Stärke des Aufleuchtens des zuletzt getroffenen Felds.
+  double get flashStrength;
 }
 
 /// Zeichnet ein Steeldartboard samt Treffern, Hervorhebungen und Heatmap.
@@ -61,7 +78,16 @@ class DartboardPainter extends CustomPainter {
     this.markerScale = 1,
     this.viewRotation = 0,
     this.layer = BoardLayer.all,
-  });
+    this.animation,
+  }) : super(repaint: animation);
+
+  /// Liefert [hitProgress], [highlightStrength] und [flashStrength] beim
+  /// Zeichnen; ohne gelten die festen Werte.
+  final BoardAnimation? animation;
+
+  double get _hitProgress => animation?.hitProgress ?? hitProgress;
+  double get _highlightStrength => animation?.highlightStrength ?? highlightStrength;
+  double get _flashStrength => animation?.flashStrength ?? flashStrength;
 
   final BoardLayer layer;
 
@@ -122,6 +148,10 @@ class DartboardPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final c = size.center(Offset.zero);
     final r = ringRadius(size, style);
+    if (layer == BoardLayer.heat) {
+      if (heatOpacity > 0 && heat.isNotEmpty) _heat(canvas, size, r);
+      return;
+    }
     if (layer != BoardLayer.overlay) _paintBase(canvas, c, r);
     if (layer != BoardLayer.base) _paintOverlay(canvas, size, c, r);
   }
@@ -169,18 +199,21 @@ class DartboardPainter extends CustomPainter {
     }
 
     // Hervorhebungen
+    final highlightStrength = _highlightStrength;
     if (highlighted.isNotEmpty && highlightStrength > 0) {
       for (final s in highlighted) {
         _glow(canvas, segmentPath(s, c, r), colors.highlight, highlightStrength);
       }
     }
+    final flashStrength = _flashStrength;
     if (flash != null && !flash!.isMiss && flashStrength > 0) {
       _glow(canvas, segmentPath(flash!, c, r), colors.hitGlow, flashStrength);
     }
 
     // Treffer
+    final hitProgress = _hitProgress;
     for (final hit in hits) {
-      _hit(canvas, toCanvas(hit.position, size, style), r, hit.latest);
+      _hit(canvas, toCanvas(hit.position, size, style), r, hit.latest, hitProgress);
     }
   }
 
@@ -486,7 +519,7 @@ class DartboardPainter extends CustomPainter {
     }
   }
 
-  void _hit(Canvas canvas, Offset o, double r, bool latest) {
+  void _hit(Canvas canvas, Offset o, double r, bool latest, double hitProgress) {
     final base = r * 0.028 * markerScale;
     if (latest && hitProgress < 1) {
       final t = Curves.easeOutCubic.transform(hitProgress);
@@ -529,5 +562,6 @@ class DartboardPainter extends CustomPainter {
       old.markerScale != markerScale ||
       old.viewRotation != viewRotation ||
       old.style != style ||
-      old.layer != layer;
+      old.layer != layer ||
+      old.animation != animation;
 }

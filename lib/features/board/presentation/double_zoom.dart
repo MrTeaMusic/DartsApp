@@ -28,7 +28,7 @@ Segment? doubleZoomTarget({List<Segment>? route, Set<Segment> targets = const {}
 /// Eigene Karte neben der großen Scheibe: zeigt das Doppel, auf das geworfen
 /// werden muss, stark vergrößert. Erscheint nur, wenn [target] gesetzt und der
 /// Zoom in den Optionen an ist.
-class DoubleZoomCard extends ConsumerWidget {
+class DoubleZoomCard extends ConsumerStatefulWidget {
   const DoubleZoomCard({
     super.key,
     required this.target,
@@ -53,9 +53,30 @@ class DoubleZoomCard extends ConsumerWidget {
   final double spacing;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DoubleZoomCard> createState() => _DoubleZoomCardState();
+}
+
+class _DoubleZoomCardState extends ConsumerState<DoubleZoomCard> {
+  /// Zählt Wechsel des angezeigten Ziels. Wechselt es schneller, als die
+  /// Überblendung dauert (z. B. D16 → keins → D16), bekäme der neue Inhalt
+  /// sonst denselben Schlüssel wie der noch ausblendende.
+  int _switches = 0;
+  Segment? _shown;
+
+  @override
+  Widget build(BuildContext context) {
     final enabled = ref.watch(settingsProvider.select((s) => s.doubleZoom));
-    final target = enabled ? this.target : null;
+    final target = enabled ? widget.target : null;
+    if (target != _shown) {
+      _shown = target;
+      _switches++;
+    }
+    final hits = widget.hits;
+    final lastSegment = widget.lastSegment;
+    final hitSerial = widget.hitSerial;
+    final onTap = widget.onTap;
+    final compact = widget.compact;
+    final spacing = widget.spacing;
     return AnimatedSize(
       duration: AppDurations.medium,
       curve: Curves.easeOutCubic,
@@ -63,9 +84,9 @@ class DoubleZoomCard extends ConsumerWidget {
       child: AnimatedSwitcher(
         duration: AppDurations.medium,
         child: target == null
-            ? const SizedBox(width: double.infinity)
+            ? SizedBox(key: ValueKey((_switches, null)), width: double.infinity)
             : Padding(
-                key: ValueKey(target),
+                key: ValueKey((_switches, target)),
                 padding: EdgeInsets.only(bottom: spacing),
                 child: _ZoomCard(
                   target: target,

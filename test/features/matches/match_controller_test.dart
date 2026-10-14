@@ -170,6 +170,47 @@ void main() {
     expect(container.read(matchStoreProvider).currentMatch(), isNull);
   });
 
+  test('Zum Fortsetzen gesichert wird am Aufnahme-Ende, nicht nach jedem Dart', () async {
+    final prefs = container.read(sharedPreferencesProvider);
+    var writes = 0;
+    int? inputs() => container.read(matchStoreProvider).currentMatch()?.inputs.length;
+    await controller().start(vsBot);
+    expect(inputs(), 0);
+    final before = prefs.getString(MatchStore.currentKey);
+    for (final n in ['S20', 'S20', 'S20']) {
+      controller().handle(DartThrown(d(n)));
+      if (prefs.getString(MatchStore.currentKey) != before) writes++;
+    }
+    expect(writes, 0, reason: 'keine Sicherung je Dart');
+    expect(inputs(), 0);
+    controller().handle(TakeoutFinished(at));
+    expect(inputs(), 4, reason: 'Aufnahme-Ende sichert');
+    expect(state().match.current, 1);
+    await controller().pendingWrites;
+  });
+
+  test('Laufende Aufnahme wird beim Wechsel in den Hintergrund und beim Aufräumen gesichert', () async {
+    const twoHumans = MatchSetup(
+      format: MatchFormat(startScore: 301, legsToWin: 1),
+      players: [MatchPlayer.human('Ben', profileId: 1), MatchPlayer.human('Gast')],
+    );
+    int? inputs() => container.read(matchStoreProvider).currentMatch()?.inputs.length;
+    await controller().start(twoHumans);
+    controller().handle(DartThrown(d('T20')));
+    expect(inputs(), 0);
+    controller().saveProgress();
+    expect(inputs(), 1);
+    controller().handle(DartThrown(d('T19')));
+    expect(inputs(), 1);
+    await controller().pendingWrites;
+    final prefs = container.read(sharedPreferencesProvider);
+    container.dispose();
+    final saved = MatchStore(prefs).currentMatch()!;
+    expect(saved.inputs, hasLength(2));
+    final resumed = MatchSession.restore(saved.setup, saved.inputs);
+    expect(resumed.match.players[0].remaining, 301 - 60 - 57);
+  });
+
   test('Abbrechen speichert eine unvollständige Session, Fortsetzen ersetzt sie', () async {
     await controller().start(vsBot.copyWithTournament('t1/r0-m0'));
     controller().handle(DartThrown(d('T20')));

@@ -127,7 +127,8 @@ class MatchPlayScreen extends ConsumerWidget {
         ? l10n.matchLegSetNumber(match.setNumber, match.legNumber)
         : l10n.matchLegNumber(match.legNumber);
 
-    return PopScope(
+    return _SaveOnBackground(
+      child: PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) unawaited(leave(context, ref));
@@ -201,8 +202,40 @@ class MatchPlayScreen extends ConsumerWidget {
           ),
         ),
       ),
+      ),
     );
   }
+}
+
+/// Sichert das laufende Match zum Fortsetzen, wenn die App in den
+/// Hintergrund geht oder beendet wird (sonst nur am Aufnahme-Ende).
+class _SaveOnBackground extends ConsumerStatefulWidget {
+  const _SaveOnBackground({required this.child});
+  final Widget child;
+
+  @override
+  ConsumerState<_SaveOnBackground> createState() => _SaveOnBackgroundState();
+}
+
+class _SaveOnBackgroundState extends ConsumerState<_SaveOnBackground> {
+  late final AppLifecycleListener _lifecycle;
+
+  void _save() => ref.read(matchControllerProvider.notifier).saveProgress();
+
+  @override
+  void initState() {
+    super.initState();
+    _lifecycle = AppLifecycleListener(onHide: _save, onPause: _save, onDetach: _save);
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 class _Panel extends ConsumerWidget {

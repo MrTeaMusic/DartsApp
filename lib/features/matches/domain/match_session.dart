@@ -144,6 +144,9 @@ class MatchSession {
     return true;
   }
 
+  /// Endet die Eingabe mit einem Aufnahme-Ende (Takeout)?
+  bool get endsWithVisitEnd => _inputs.isNotEmpty && _inputs.last is MatchVisitEndInput;
+
   /// Darf der letzte Dart zurückgenommen werden? Nur ein Dart eines Menschen
   /// in der laufenden Aufnahme.
   bool get canUndo {

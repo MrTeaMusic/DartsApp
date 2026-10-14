@@ -81,13 +81,24 @@ class MatchController extends Notifier<MatchState?> {
   final Map<int, int> _sessionIds = {};
   Future<void> _writes = Future.value();
 
+  /// Stand, der noch nicht zum Fortsetzen gesichert ist (Darts der laufenden
+  /// Aufnahme). Gesichert wird am Aufnahme-Ende, nicht nach jedem Dart.
+  MatchState? _unsaved;
+
   @override
   MatchState? build() {
     ref.listen(dartEventsProvider, (_, next) {
       final event = next.value;
       if (event != null) handle(event);
     });
-    ref.onDispose(() => _botTimer?.cancel());
+    // Im onDispose ist ref nicht mehr nutzbar.
+    final store = ref.read(matchStoreProvider);
+    ref.onDispose(() {
+      _botTimer?.cancel();
+      final unsaved = _unsaved;
+      _unsaved = null;
+      if (unsaved != null) unawaited(store.saveCurrentMatch(_saved(unsaved)));
+    });
     return null;
   }
 
@@ -164,13 +175,14 @@ class MatchController extends Notifier<MatchState?> {
     final session = s.session;
     final m = s.match;
     final ownerIsBot = s.setup.players[m.current].isBot;
+    var visitEnded = false;
     switch (event) {
       case DartThrown(:final dart):
         if (ownerIsBot) {
           // Der Mensch wirft schon, während die Bot-Darts noch stecken.
           if (!m.visitClosed || s.setup.players[m.nextPlayer].isBot) return;
           _botTimer?.cancel();
-          session.endVisit();
+          visitEnded = session.endVisit();
         } else if (m.visitClosed &&
             m.physicalDartsInVisit >= X01Match.dartsPerVisit &&
             s.setup.players[m.nextPlayer].isBot) {
@@ -181,7 +193,7 @@ class MatchController extends Notifier<MatchState?> {
         }
         session.addDart(dart);
         _persistLast(session);
-        _after(s);
+        _after(s, save: visitEnded);
         _releaseVisit(session);
       case DartCorrected(:final index, :final dart):
         if (ownerIsBot) return;
@@ -189,13 +201,13 @@ class MatchController extends Notifier<MatchState?> {
         if (index < 0 || index >= visit.length) return;
         if (session.correctAt(visit[index], dart)) {
           _persistAll(session);
-          _after(s);
+          _after(s, save: true);
         }
       case DartUndone():
         if (ownerIsBot) return;
         if (session.undoLastDart()) {
           _persistAll(session);
-          _after(s);
+          _after(s, save: true);
         }
       case TakeoutFinished() || TurnReset():
         if (ownerIsBot) return;
@@ -243,7 +255,7 @@ class MatchController extends Notifier<MatchState?> {
     final dart = DartThrow(segment: segment, timestamp: old.timestamp, source: old.source, raw: old.raw);
     if (!s.session.correctAt(index, dart)) return false;
     _persistAll(s.session);
-    _after(s);
+    _after(s, save: true);
     return true;
   }
 
@@ -265,6 +277,7 @@ class MatchController extends Notifier<MatchState?> {
   Future<void> close({bool keepForResume = false}) async {
     _botTimer?.cancel();
     final s = state;
+    _unsaved = null;
     if (s == null) return;
     if (!s.ended) {
       if (keepForResume) {
@@ -277,19 +290,35 @@ class MatchController extends Notifier<MatchState?> {
     state = null;
   }
 
-  void _after(MatchState s, {bool keepEvents = false}) {
+  /// Nach jeder Eingabe. Zum Fortsetzen gesichert wird am Aufnahme-Ende
+  /// (auch beim Bot) und nach Rückgängig/Korrektur ([save]), sonst erst beim
+  /// Verlassen, Beenden der App oder Wechsel in den Hintergrund
+  /// ([saveProgress]). Bis dahin stehen die Darts schon in der Datenbank.
+  void _after(MatchState s, {bool keepEvents = false, bool save = false}) {
     final m = s.session.match;
     final latest = state ?? s;
     final events = keepEvents ? latest.events : List.of(m.events);
     if (m.finished) {
       _botTimer?.cancel();
+      _unsaved = null;
       state = latest.copyWith(events: events, ended: true);
       unawaited(_finish(s));
       return;
     }
-    state = latest.copyWith(events: events);
-    _saveProgress();
+    final next = latest.copyWith(events: events);
+    state = next;
+    if (save || s.session.endsWithVisitEnd) {
+      _saveProgress();
+    } else {
+      _unsaved = next;
+    }
     _scheduleBot();
+  }
+
+  /// Sichert den Stand zum Fortsetzen, falls seit dem letzten Mal Darts
+  /// dazukamen (z. B. wenn die App in den Hintergrund geht).
+  void saveProgress() {
+    if (_unsaved != null) _saveProgress();
   }
 
   Future<void> _finish(MatchState s) async {
@@ -309,12 +338,14 @@ class MatchController extends Notifier<MatchState?> {
   }
 
   void _saveProgress() {
+    _unsaved = null;
     final s = state;
     if (s == null || s.ended) return;
-    unawaited(
-      _store.saveCurrentMatch(SavedMatch(setup: s.setup, inputs: s.session.inputs, sessionIds: Map.of(_sessionIds))),
-    );
+    unawaited(_store.saveCurrentMatch(_saved(s)));
   }
+
+  SavedMatch _saved(MatchState s) =>
+      SavedMatch(setup: s.setup, inputs: s.session.inputs, sessionIds: Map.of(_sessionIds));
 
   // --- Bot ---
 
