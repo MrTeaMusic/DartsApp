@@ -123,8 +123,12 @@ class AchievementRecorder extends Notifier<UnlockBatch?> {
     if (playerId == null) return;
     if (calc.sessions.any((s) => s.playerId != playerId)) return;
     final results = await ref.read(challengeRepositoryProvider).results(playerId);
-    final status = dailyGoalStatus(dailyActivity(calc), ref.read(dailyGoalProvider), DateTime.now());
-    final cached = identical(ref.read(statsCalculatorProvider).value, calc) ? ref.read(sessionTrackerProvider) : null;
+    // Gehört der Rechner noch zum aktuellen Stand, sind Tage und Erfolge schon
+    // berechnet (die Provider halten sie für Einblendungen ohnehin bereit).
+    final current = identical(ref.read(statsCalculatorProvider).value, calc);
+    final activity = (current ? ref.read(dailyActivityProvider) : null) ?? dailyActivity(calc);
+    final status = dailyGoalStatus(activity, ref.read(dailyGoalProvider), DateTime.now());
+    final cached = current ? ref.read(sessionTrackerProvider) : null;
     final tracker = (cached ?? AchievementTracker.fromCalculator(calc)).copy()
       ..applyGoals(status.streak)
       ..applyStars([for (final r in results) (stars: r.stars, at: r.achievedAt)]);
