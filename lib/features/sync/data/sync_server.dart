@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import '../../../core/background_json.dart';
 import 'sync_store.dart';
 
 /// Kennung im Antwort-Header und im Gruß, damit der Client weiß, dass er
@@ -112,14 +112,14 @@ class SyncServer {
       bytes.add(chunk);
       if (bytes.length > maxBodyBytes) return null;
     }
-    final decoded = jsonDecode(utf8.decode(bytes.takeBytes()));
+    final decoded = await BackgroundJson.decodeUtf8(bytes.takeBytes());
     if (decoded is! Map<String, Object?>) throw const FormatException('Objekt erwartet');
     return decoded;
   }
 
   static Future<void> _json(HttpResponse res, Object body) async {
     res.headers.contentType = ContentType.json;
-    res.write(jsonEncode(body));
+    res.add(await BackgroundJson.encodeUtf8(body, large: BackgroundJson.isLargeBundle(body)));
     await res.close();
   }
 

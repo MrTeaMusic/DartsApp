@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dartlab/core/background_json.dart';
 import 'package:dartlab/core/database/app_database.dart';
 import 'package:dartlab/features/backup/data/backup_service.dart';
 import 'package:dartlab/features/games/data/game_repository.dart';
@@ -132,6 +133,31 @@ void main() {
       expect(() => backup.importJson('kein json'), throwsA(isA<BackupFormatException>()));
       expect(() => backup.importJson('{"format":"anders"}'), throwsA(isA<BackupFormatException>()));
       expect(() => backup.importJson('{"format":"dartlab-backup","version":99}'), throwsA(isA<BackupFormatException>()));
+    });
+
+    test('große Sicherung wird im Hintergrund umgewandelt: gleicher Text, gleiches Ergebnis', () async {
+      final me = await profiles.resolve(null);
+      final darts = [for (var i = 0; i < 400; i++) ['T20', 'S5', 'MISS', 'D16', 'BULL'][i % 5]];
+      for (var seed = 1; seed <= 3; seed++) {
+        await play(me, darts: darts, seed: seed);
+      }
+      String withoutTime(String json) => json.replaceFirst(RegExp(r'"exportedAt": "[^"]*"'), '');
+      final text = await backup.exportJson();
+      expect(withoutTime(text), withoutTime(const JsonEncoder.withIndent('  ').convert(await backup.exportData())));
+
+      final other = AppDatabase(NativeDatabase.memory());
+      addTearDown(other.close);
+      final r = await BackupService(other).importJson(text);
+      expect(r.sessions, 3);
+      expect(r.throws, 1200);
+
+      final csv = (await backup.exportThrowsCsv()).split('\r\n');
+      expect(csv, hasLength(1202));
+      expect(csv[1], contains(',T20,20,3,60,1,,,manual'));
+
+      final padding = 'x' * (BackgroundJson.threshold + 10);
+      expect(() => backup.importJson(padding), throwsA(isA<BackupFormatException>()));
+      expect(() => backup.importJson('{"format":"anders","pad":"$padding"}'), throwsA(isA<BackupFormatException>()));
     });
 
     test('CSV der Würfe und Sessions', () async {

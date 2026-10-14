@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import '../../../core/background_json.dart';
 import 'sync_server.dart';
 import 'sync_store.dart';
 
@@ -44,7 +45,7 @@ enum SyncFailure {
 /// Gleicht mit einem [SyncServer] ab. Läuft auf iPhone, iPad oder einem
 /// zweiten Rechner.
 class SyncClient {
-  SyncClient(this.store, {required this.host, required this.port, required this.key, this.timeout = const Duration(seconds: 8), this.chunk = 200});
+  SyncClient(this.store, {required this.host, required this.port, required this.key, this.timeout = const Duration(seconds: 8), this.chunk = 25});
 
   final SyncStore store;
   final String host;
@@ -53,7 +54,8 @@ class SyncClient {
   final Duration timeout;
 
   /// Sessions pro Anfrage, damit große Bestände nicht in einer riesigen
-  /// Nachricht landen.
+  /// Nachricht landen. Klein genug, dass Lesen, Umwandeln und Übernehmen
+  /// eines Pakets die Oberfläche (auch auf dem Hub) nicht spürbar anhalten.
   final int chunk;
 
   Future<SyncReport> sync() async {
@@ -93,7 +95,7 @@ class SyncClient {
       final req = await http.post(host, port, path).timeout(timeout);
       req.headers.contentType = ContentType.json;
       req.headers.set(syncKeyHeader, key);
-      req.add(utf8.encode(jsonEncode(body)));
+      req.add(await BackgroundJson.encodeUtf8(body, large: BackgroundJson.isLargeBundle(body)));
       res = await req.close().timeout(timeout * 4);
     } on SocketException catch (e) {
       throw SyncException(SyncFailure.unreachable, e.message);
@@ -107,7 +109,7 @@ class SyncClient {
     if (res.statusCode == HttpStatus.unauthorized) throw const SyncException(SyncFailure.wrongKey);
     Object? decoded;
     try {
-      decoded = jsonDecode(text);
+      decoded = await BackgroundJson.decode(text);
     } on FormatException {
       throw const SyncException(SyncFailure.notDartLab);
     }

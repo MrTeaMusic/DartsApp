@@ -271,11 +271,26 @@ class StatsCalculator {
     return v?.toDouble();
   }
 
+  // Ergebnisse je Zeitraum und Spiel. Ein Rechner gehört zu genau einem
+  // Datenstand (und einem Tag), deshalb rechnen die Reiter, der Plan-
+  // Vorschlag und die Ziele jede Auswertung nur einmal; ein Neuaufbau eines
+  // Reiters liest sie nur noch. Die Ergebnisse werden nicht verändert.
+  final Map<(StatsPeriod, String?), StatsReport> _reports = {};
+  final Map<(StatsPeriod, String?), StatsReport?> _previousReports = {};
+  final Map<(StatsPeriod, String?), DoubleStats> _doubleStats = {};
+  final Map<(String, StatsPeriod), List<TrendPoint>> _trends = {};
+  final Map<(String, String, StatsPeriod), List<TrendPoint>> _metricTrends = {};
+  final Map<(String, StatsPeriod), List<String>> _metricKeys = {};
+  late final List<PersonalRecord> _records = _computeRecords();
+  late final Streak _streak = _computeStreak();
+
   /// Verlauf der Hauptkennzahl eines Spiels.
-  List<TrendPoint> trend(String gameId, StatsPeriod period) => [
-        for (final s in sessionsIn(period, gameId: gameId))
-          if (primaryValue(s) case final v?) TrendPoint(s.id, s.startedAt, v),
-      ];
+  List<TrendPoint> trend(String gameId, StatsPeriod period) => _trends.putIfAbsent(
+      (gameId, period),
+      () => [
+            for (final s in sessionsIn(period, gameId: gameId))
+              if (primaryValue(s) case final v?) TrendPoint(s.id, s.startedAt, v),
+          ]);
 
   /// Verlauf einer beliebigen Kennzahl [key] eines Spiels. Für die
   /// Hauptkennzahl gilt dieselbe Regel wie in [trend] (nur vollständige
@@ -283,14 +298,19 @@ class StatsCalculator {
   List<TrendPoint> metricTrend(String gameId, String key, StatsPeriod period) {
     final pm = PrimaryMetric.forGame(gameId);
     if (key == pm.key) return trend(gameId, period);
-    return [
-      for (final s in sessionsIn(period, gameId: gameId))
-        if (_metrics(s)[key] case final v?) TrendPoint(s.id, s.startedAt, v.toDouble()),
-    ];
+    return _metricTrends.putIfAbsent(
+        (gameId, key, period),
+        () => [
+              for (final s in sessionsIn(period, gameId: gameId))
+                if (_metrics(s)[key] case final v?) TrendPoint(s.id, s.startedAt, v.toDouble()),
+            ]);
   }
 
   /// Kennzahlen eines Spiels, die im Zeitraum vorkommen; Hauptkennzahl zuerst.
-  List<String> metricKeys(String gameId, StatsPeriod period) {
+  List<String> metricKeys(String gameId, StatsPeriod period) =>
+      _metricKeys.putIfAbsent((gameId, period), () => _computeMetricKeys(gameId, period));
+
+  List<String> _computeMetricKeys(String gameId, StatsPeriod period) {
     final keys = <String>{};
     for (final s in sessionsIn(period, gameId: gameId)) {
       keys.addAll(_metrics(s).keys.where((k) => !nonTrendMetrics.contains(k)));
@@ -341,14 +361,20 @@ class StatsCalculator {
   }
 
   /// Kennzahlen des gewählten Zeitraums.
-  StatsReport report(StatsPeriod period, {String? gameId}) {
-    final since = _since(period);
-    return _report(_between(since, null, gameId), from: since, to: null);
-  }
+  StatsReport report(StatsPeriod period, {String? gameId}) => _reports.putIfAbsent((period, gameId), () {
+        final since = _since(period);
+        return _report(_between(since, null, gameId), from: since, to: null);
+      });
 
   /// Kennzahlen des gleich langen Zeitraums davor (für den Vergleich);
   /// `null` bei "Alles".
   StatsReport? previousReport(StatsPeriod period, {String? gameId}) {
+    final key = (period, gameId);
+    if (_previousReports.containsKey(key)) return _previousReports[key];
+    return _previousReports[key] = _computePreviousReport(period, gameId);
+  }
+
+  StatsReport? _computePreviousReport(StatsPeriod period, String? gameId) {
     final since = _since(period);
     if (since == null) return null;
     final from = DateTime(since.year, since.month, since.day - period.days!);
@@ -366,7 +392,10 @@ class StatsCalculator {
   /// Doppel-Auswertung des Zeitraums: je Doppel Quote, Daneben-Richtung und
   /// Streubild, dazu der Verlauf (letzte 30 Tage gegen die 30 davor) und
   /// Checkout gegen Training.
-  DoubleStats doubleStats(StatsPeriod period, {String? gameId}) {
+  DoubleStats doubleStats(StatsPeriod period, {String? gameId}) =>
+      _doubleStats.putIfAbsent((period, gameId), () => _computeDoubleStats(period, gameId));
+
+  DoubleStats _computeDoubleStats(StatsPeriod period, String? gameId) {
     DoubleSource sourceOf(String id) => checkoutGames.contains(id)
         ? DoubleSource.checkout
         : (x01Games.contains(id) ? DoubleSource.none : DoubleSource.training);
@@ -626,7 +655,9 @@ class StatsCalculator {
 
   /// Persönliche Rekorde über alle Daten des Profils. Arten ohne Daten
   /// fehlen in der Liste.
-  List<PersonalRecord> records() {
+  List<PersonalRecord> records() => _records;
+
+  List<PersonalRecord> _computeRecords() {
     final out = <PersonalRecord>[];
     PersonalRecord? bestOf(Iterable<PersonalRecord> candidates) {
       PersonalRecord? best;
@@ -691,7 +722,9 @@ class StatsCalculator {
 
   /// Aufeinanderfolgende Trainingstage. Die aktuelle Serie zählt auch, wenn
   /// heute noch nicht trainiert wurde, aber gestern.
-  Streak streak() {
+  Streak streak() => _streak;
+
+  Streak _computeStreak() {
     final days = {for (final s in _sessions) dayOf(s.startedAt)}.toList()..sort();
     if (days.isEmpty) return const Streak(current: 0, longest: 0, trainedToday: false);
     var longest = 1;

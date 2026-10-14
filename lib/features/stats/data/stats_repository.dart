@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../profiles/presentation/active_player.dart';
+import '../../progress/domain/achievement_tracker.dart';
 import '../domain/goals.dart';
 import '../domain/stats_calculator.dart';
 
@@ -68,8 +69,11 @@ class CalculatorLoader {
   final Map<int, ({SessionRow row, _ThrowsKey key, List<ThrowRow> throws})> _loaded = {};
   StatsCalculator? _last;
 
-  /// Höchstzahl an IDs je `IN (…)`, unter der Grenze für SQL-Parameter.
-  static const int _chunk = 500;
+  /// Sessions je Abfrage. Die Zeilen einer Abfrage werden am Stück in
+  /// Dart-Objekte umgewandelt; kleine Stücke halten die Oberfläche beim
+  /// ersten Laden (alle Würfe) flüssig: Die Antwort jeder Abfrage kommt aus
+  /// dem Datenbank-Isolat, dazwischen kommen Frames dran.
+  static const int _chunk = 25;
 
   /// Rechner für die abgeschlossenen Sessions [sessions]; `null`, wenn sich
   /// seit dem letzten Rechner nichts geändert hat (und der Tag derselbe ist,
@@ -93,11 +97,7 @@ class CalculatorLoader {
     final fresh = <int, List<ThrowRow>>{for (final id in stale) id: []};
     for (var i = 0; i < stale.length; i += _chunk) {
       final ids = stale.sublist(i, i + _chunk > stale.length ? stale.length : i + _chunk);
-      final rows = await (db.select(db.throws)
-            ..where((t) => t.playerId.equals(playerId) & t.sessionId.isIn(ids))
-            ..orderBy([(t) => OrderingTerm.asc(t.id)]))
-          .get();
-      for (final t in rows) {
+      for (final t in await _throwsOf(ids)) {
         fresh[t.sessionId]!.add(t);
       }
     }
@@ -115,6 +115,25 @@ class CalculatorLoader {
       previous: last,
       unchanged: {for (final id in ids) if (!staleIds.contains(id)) id},
     );
+  }
+
+  /// Spalten der Würfe ohne `raw_json`: Die Rohdaten (bei Autodarts je Dart
+  /// ein JSON-Text) braucht keine Auswertung, sie würden das Laden aber etwa
+  /// verdoppeln. [ThrowRow.rawJson] bleibt hier deshalb `null`.
+  late final String _columns = [
+    for (final c in db.throws.$columns)
+      if (c.name != db.throws.rawJson.name) c.name,
+  ].join(', ');
+
+  /// Würfe der Sessions [ids] des Spielers, nach ID sortiert.
+  Future<List<ThrowRow>> _throwsOf(List<int> ids) async {
+    final rows = await db.customSelect(
+      'SELECT $_columns FROM throws WHERE player_id = ? AND session_id IN (${List.filled(ids.length, '?').join(', ')}) '
+      'ORDER BY id',
+      variables: [Variable<int>(playerId), for (final id in ids) Variable<int>(id)],
+      readsFrom: {db.throws},
+    ).get();
+    return [for (final r in rows) db.throws.map(r.data)];
   }
 
   /// Anzahl, kleinste und größte ID der Würfe je Session des Spielers.
@@ -140,7 +159,13 @@ final statsRepositoryProvider = Provider<StatsRepository>((ref) => StatsReposito
 final statsCalculatorProvider = StreamProvider<StatsCalculator>((ref) {
   final playerId = ref.watch(activePlayerProvider)?.id;
   if (playerId == null) return const Stream.empty();
-  return ref.watch(statsRepositoryProvider).watchCalculator(playerId);
+  // Die Erfolge und das Tagesziel lesen jeden neuen Rechner sofort; ihre
+  // Auswertung je Session wird vorher in kleinen Stücken erledigt, damit der
+  // erste Rechner nach dem Start die Oberfläche nicht am Stück anhält.
+  return ref.watch(statsRepositoryProvider).watchCalculator(playerId).asyncMap((calc) async {
+    await AchievementTracker.warmUp(calc);
+    return calc;
+  });
 });
 
 final goalsProvider = StreamProvider<List<GoalRow>>((ref) {

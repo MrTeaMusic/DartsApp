@@ -49,7 +49,7 @@ class VolumeChart extends StatelessWidget {
     final barWidth = (260 / values.length).clamp(3, 22).toDouble();
     // Bei vielen Säulen nur jede n-te Beschriftung, von rechts gezählt.
     final every = (values.length / 8).ceil().clamp(1, 1000);
-    return BarChart(
+    return _BarChart(
       BarChartData(
         maxY: maxY == 0 ? 1 : maxY * 1.15,
         gridData: FlGridData(
@@ -112,7 +112,7 @@ class NumberHitsChart extends StatelessWidget {
     final color = context.dartColors.chartPrimary;
     final numbers = [for (var n = 1; n <= 20; n++) n, 25];
     final maxY = numbers.fold(0, (a, n) => math.max(a, hits[n] ?? 0)).toDouble();
-    return BarChart(
+    return _BarChart(
       BarChartData(
         maxY: maxY == 0 ? 1 : maxY * 1.15,
         gridData: const FlGridData(show: false),
@@ -172,7 +172,7 @@ class RatePerNumberChart extends StatelessWidget {
     final base = color ?? context.dartColors.tripleHit;
     final barWidth = (220 / math.max(1, counts.length)).clamp(6, 22).toDouble();
     final numbers = counts.keys.where((n) => counts[n]!.attempts >= minAttempts).toList()..sort();
-    return BarChart(
+    return _BarChart(
       BarChartData(
         maxY: 100,
         minY: 0,
@@ -269,7 +269,7 @@ class TrendLineChart extends StatelessWidget {
       children: [
         SizedBox(
           height: 220,
-          child: LineChart(
+          child: _LineChart(
             LineChartData(
               minY: lo - span * 0.15,
               maxY: hi + span * 0.15,
@@ -501,7 +501,7 @@ class VisitValuesChart extends StatelessWidget {
       final lo = math.min(0.0, finite.reduce(math.min));
       final hi = finite.reduce(math.max);
       final span = hi - lo == 0 ? 1.0 : hi - lo;
-      return LineChart(
+      return _LineChart(
         LineChartData(
           minY: lo == 0 ? 0 : lo - span * 0.1,
           maxY: hi + span * 0.12,
@@ -544,7 +544,7 @@ class VisitValuesChart extends StatelessWidget {
     final double top = maxY ?? finite.fold<double>(0, math.max);
     return LayoutBuilder(builder: (context, c) {
       final barWidth = ((c.maxWidth - 40) / values.length * 0.62).clamp(2, 18).toDouble();
-      return BarChart(
+      return _BarChart(
         BarChartData(
           maxY: top == 0 ? 1 : (maxY ?? top * 1.12),
           gridData: FlGridData(drawVerticalLine: false, getDrawingHorizontalLine: (_) => _gridLine(context)),
@@ -572,4 +572,124 @@ class VisitValuesChart extends StatelessWidget {
       );
     });
   }
+}
+
+/// Animationsdauer von fl_chart zwischen zwei Datenständen (Standard des
+/// Pakets).
+const Duration _chartSwap = Duration(milliseconds: 150);
+
+/// Werte eines Diagramms, die fl_chart beim Wechsel animiert. fl_chart
+/// selbst vergleicht die ganzen Daten samt Callbacks (Beschriftung,
+/// Tooltips), die bei jedem `build` neu entstehen, und startet deshalb bei
+/// jedem Neuaufbau eine Animation, auch wenn sich nichts geändert hat.
+List<Object?> _gridAndTitles(FlGridData g, FlTitlesData t) => [
+      g.show,
+      g.drawHorizontalLine,
+      g.horizontalInterval,
+      g.drawVerticalLine,
+      g.verticalInterval,
+      t.show,
+      for (final a in [t.leftTitles, t.topTitles, t.rightTitles, t.bottomTitles]) ...[
+        a.axisNameSize,
+        a.sideTitles.showTitles,
+        a.sideTitles.reservedSize,
+        a.sideTitles.interval,
+      ],
+    ];
+
+List<Object?> _barValues(BarChartData d) => [
+      d.minY,
+      d.maxY,
+      d.baselineY,
+      d.groupsSpace,
+      d.alignment,
+      d.backgroundColor,
+      d.borderData,
+      d.extraLinesData,
+      d.rangeAnnotations,
+      ..._gridAndTitles(d.gridData, d.titlesData),
+      d.barGroups.length,
+      ...d.barGroups,
+    ];
+
+List<Object?> _lineValues(LineChartData d) => [
+      d.minX,
+      d.maxX,
+      d.baselineX,
+      d.minY,
+      d.maxY,
+      d.baselineY,
+      d.backgroundColor,
+      d.borderData,
+      d.extraLinesData,
+      d.rangeAnnotations,
+      ..._gridAndTitles(d.gridData, d.titlesData),
+      d.lineBarsData.length,
+      ...d.lineBarsData,
+      ...d.betweenBarsData,
+    ];
+
+/// Gleiche Werte; nicht gesetzte Grenzen sind bei fl_chart `NaN`.
+bool _sameValues(List<Object?> a, List<Object?> b) {
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    final x = a[i], y = b[i];
+    if (x != y && !(x is double && y is double && x.isNaN && y.isNaN)) return false;
+  }
+  return true;
+}
+
+/// Animiert wie fl_chart, aber nicht, wenn ein Neuaufbau dieselben Werte
+/// zeigt (Dauer null statt einer Animation ohne sichtbare Änderung). Läuft
+/// gerade eine Animation, bleibt alles wie bei fl_chart.
+abstract class _ChartState<W extends StatefulWidget> extends State<W> {
+  Duration duration = _chartSwap;
+  final Stopwatch _sinceChange = Stopwatch();
+
+  List<Object?> valuesOf(W widget);
+
+  @override
+  void didUpdateWidget(covariant W oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final same = _sameValues(valuesOf(oldWidget), valuesOf(widget));
+    if (!same) {
+      _sinceChange
+        ..reset()
+        ..start();
+    }
+    final animating = _sinceChange.isRunning && _sinceChange.elapsed < _chartSwap;
+    duration = same && !animating ? Duration.zero : _chartSwap;
+  }
+}
+
+class _BarChart extends StatefulWidget {
+  const _BarChart(this.data);
+  final BarChartData data;
+
+  @override
+  State<_BarChart> createState() => _BarChartState();
+}
+
+class _BarChartState extends _ChartState<_BarChart> {
+  @override
+  List<Object?> valuesOf(_BarChart widget) => _barValues(widget.data);
+
+  @override
+  Widget build(BuildContext context) => BarChart(widget.data, duration: duration);
+}
+
+class _LineChart extends StatefulWidget {
+  const _LineChart(this.data);
+  final LineChartData data;
+
+  @override
+  State<_LineChart> createState() => _LineChartState();
+}
+
+class _LineChartState extends _ChartState<_LineChart> {
+  @override
+  List<Object?> valuesOf(_LineChart widget) => _lineValues(widget.data);
+
+  @override
+  Widget build(BuildContext context) => LineChart(widget.data, duration: duration);
 }
