@@ -11,6 +11,7 @@ import '../../../core/router/app_router.dart';
 import '../data/game_repository.dart';
 import '../domain/engine/game_display.dart';
 import '../domain/game_catalog.dart';
+import '../../autodarts_live/presentation/autodarts_live_routes.dart';
 import '../../challenges/presentation/challenge_routes.dart';
 import '../../matches/presentation/match_routes.dart';
 import '../../plans/presentation/plan_routes.dart';
@@ -49,7 +50,7 @@ class GamesScreen extends ConsumerWidget {
           );
           return CustomScrollView(
             slivers: [
-              // Pläne, Challenges und Matches nebeneinander statt je eine
+              // Pläne, Challenges, Matches und Autodarts Live nebeneinander statt je eine
               // eigene Rubrik mit nur einer Karte.
               SliverPadding(
                 padding: EdgeInsets.fromLTRB(page, AppSpacing.s, page, 0),
@@ -78,6 +79,13 @@ class GamesScreen extends ConsumerWidget {
                     title: l10n.matchesTitle,
                     description: l10n.matchesEntryText,
                     onTap: () => context.go(MatchRoutes.hub),
+                  ),
+                  _GameCard(
+                    key: const Key('open-autodarts-live'),
+                    icon: Icons.hearing_rounded,
+                    title: l10n.liveTitle,
+                    description: l10n.liveEntryText,
+                    onTap: () => context.go(AutodartsLiveRoutes.live),
                   ),
                 ]),
               ),

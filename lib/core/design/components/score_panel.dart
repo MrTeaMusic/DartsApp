@@ -104,7 +104,14 @@ class ScorePanel extends StatelessWidget {
                               if (badge != null) Flexible(child: badge!),
                               if (badge != null && trailing != null) const SizedBox(width: AppSpacing.s),
                               if (trailing != null)
-                                Text(trailing!, style: headerStyle.copyWith(color: theme.colorScheme.onSurface)),
+                                Flexible(
+                                  child: Text(
+                                    trailing!,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: headerStyle.copyWith(color: theme.colorScheme.onSurface),
+                                  ),
+                                ),
                             ],
                           ),
                         ),

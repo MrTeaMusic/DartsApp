@@ -1,4 +1,5 @@
 import '../../../core/database/app_database.dart';
+import '../../autodarts_live/domain/live_stats.dart';
 import '../../board/domain/segment.dart';
 import '../../dart_source/domain/dart_event.dart';
 import '../../games/domain/engine/game_definition.dart';
@@ -124,7 +125,8 @@ SessionFacts sessionFacts(StatsCalculator calc, SessionRow s) {
       if (c.value > highest) highest = c.value;
       if (c.last == Segment.bull) bull++;
     }
-  } else if (s.gameId == matchGameId) {
+  } else if (s.gameId == matchGameId || s.gameId == autodartsLiveX01GameId) {
+    // Match und Autodarts Live mit „X01 mitzählen“: aus den Kennzahlen.
     highest = m('highestFinish');
     checkouts = m('legsWon');
     if (m('won') == 1 && counted.isNotEmpty && segmentOf(counted.last) == Segment.bull) bull = 1;

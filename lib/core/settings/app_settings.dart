@@ -30,6 +30,7 @@ class AppSettings {
     this.syncKey = '',
     this.dailyGoalUnit = DailyGoalUnit.darts,
     this.dailyGoalAmount = 200,
+    this.autodartsLiveAutoStart = false,
   });
 
   /// Gewählter Look (Optionen → Darstellung).
@@ -66,6 +67,10 @@ class AppSettings {
   final DailyGoalUnit dailyGoalUnit;
   final int dailyGoalAmount;
 
+  /// Beim Start von DartLab direkt Autodarts Live öffnen (nur mit Quelle
+  /// Autodarts).
+  final bool autodartsLiveAutoStart;
+
   DailyGoal get dailyGoal => DailyGoal(dailyGoalUnit, dailyGoalUnit.clamp(dailyGoalAmount));
 
   AppSettings copyWith({
@@ -86,6 +91,7 @@ class AppSettings {
     String? syncKey,
     DailyGoalUnit? dailyGoalUnit,
     int? dailyGoalAmount,
+    bool? autodartsLiveAutoStart,
   }) =>
       AppSettings(
         look: look ?? this.look,
@@ -105,6 +111,7 @@ class AppSettings {
         syncKey: syncKey ?? this.syncKey,
         dailyGoalUnit: dailyGoalUnit ?? this.dailyGoalUnit,
         dailyGoalAmount: dailyGoalAmount ?? this.dailyGoalAmount,
+        autodartsLiveAutoStart: autodartsLiveAutoStart ?? this.autodartsLiveAutoStart,
       );
 
   static const _kLook = 'settings.look';
@@ -124,6 +131,7 @@ class AppSettings {
   static const _kSyncKey = 'sync.key';
   static const _kGoalUnit = 'goals.dailyUnit';
   static const _kGoalAmount = 'goals.dailyAmount';
+  static const _kLiveAutoStart = 'settings.autodartsLiveAutoStart';
 
   static AppSettings load(SharedPreferences prefs) {
     const d = AppSettings();
@@ -147,6 +155,7 @@ class AppSettings {
       syncKey: prefs.getString(_kSyncKey) ?? d.syncKey,
       dailyGoalUnit: DailyGoalUnit.byName(prefs.getString(_kGoalUnit)),
       dailyGoalAmount: prefs.getInt(_kGoalAmount) ?? d.dailyGoalAmount,
+      autodartsLiveAutoStart: prefs.getBool(_kLiveAutoStart) ?? d.autodartsLiveAutoStart,
     );
   }
 
@@ -168,6 +177,7 @@ class AppSettings {
     await prefs.setString(_kSyncKey, syncKey);
     await prefs.setString(_kGoalUnit, dailyGoalUnit.name);
     await prefs.setInt(_kGoalAmount, dailyGoalAmount);
+    await prefs.setBool(_kLiveAutoStart, autodartsLiveAutoStart);
   }
 }
 
