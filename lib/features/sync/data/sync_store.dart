@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -273,12 +275,19 @@ SELECT
     final deleted = [for (final s in sessions) if (s.deletedAt != null) s];
     sessions.removeWhere((s) => s.deletedAt != null);
     final sessionUid = {for (final s in sessions) s.id: s.uid};
-    final throws = sessionUid.isEmpty
-        ? const <ThrowRow>[]
-        : await (db.select(db.throws)
-              ..where((t) => t.sessionId.isIn(sessionUid.keys))
-              ..orderBy([(t) => OrderingTerm.asc(t.sessionId), (t) => OrderingTerm.asc(t.seq)]))
-            .get();
+    // Würfe stückweise nach Session lesen und umwandeln (aufsteigende IDs,
+    // also dieselbe Reihenfolge wie eine Abfrage über alle): Bei einem
+    // großen Bestand hält so kein einzelner Schritt die Oberfläche lange an.
+    final sessionIds = sessionUid.keys.toList()..sort();
+    final throws = <Map<String, Object?>>[];
+    for (var i = 0; i < sessionIds.length; i += _throwChunk) {
+      final ids = sessionIds.sublist(i, math.min(i + _throwChunk, sessionIds.length));
+      final rows = await (db.select(db.throws)
+            ..where((t) => t.sessionId.isIn(ids))
+            ..orderBy([(t) => OrderingTerm.asc(t.sessionId), (t) => OrderingTerm.asc(t.seq)]))
+          .get();
+      throws.addAll([for (final t in rows) _throw(t, sessionUid[t.sessionId]!, playerUids[t.playerId]!)]);
+    }
     final goals = await (db.select(db.goals)..where((g) => playerId == null ? const Constant(true) : g.playerId.equals(playerId))).get();
     final plans = await (db.select(db.trainingPlans)..orderBy([(p) => OrderingTerm.asc(p.id)])).get();
     final achievements =
@@ -289,7 +298,7 @@ SELECT
     return SyncBundle(
       players: [for (final p in players) _player(p)],
       sessions: [for (final s in sessions) _session(s, playerUids[s.playerId]!)],
-      throws: [for (final t in throws) _throw(t, sessionUid[t.sessionId]!, playerUids[t.playerId]!)],
+      throws: throws,
       goals: [for (final g in goals) if (playerUids[g.playerId] != null) _goal(g, playerUids[g.playerId]!)],
       plans: [for (final p in plans) _plan(p)],
       achievements: [for (final a in achievements) if (playerUids[a.playerId] != null) _achievement(a, playerUids[a.playerId]!)],
@@ -297,6 +306,9 @@ SELECT
       deletedSessions: [for (final s in deleted) _deletedSession(s, playerUids[s.playerId]!)],
     );
   }
+
+  /// Sessions je Abfrage der Würfe in [bundle].
+  static const int _throwChunk = 25;
 
   static String? _time(DateTime? t) => t?.toUtc().toIso8601String();
   /// ISO-Text (Version 2) oder Millisekunden (drift-JSON in Version 1).

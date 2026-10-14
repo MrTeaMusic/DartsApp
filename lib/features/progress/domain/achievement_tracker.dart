@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../../../core/database/app_database.dart';
 import '../../games/domain/game_catalog.dart';
 import '../../stats/domain/stats_calculator.dart';
@@ -39,6 +41,28 @@ class AchievementTracker {
 
   static final Map<String, SessionFacts> _factsCache = {};
   static const int _factsCacheSize = 50000;
+
+  /// Wertet die Sessions von [calc] vorab in kleinen Stücken aus (Erfolge
+  /// und Darts je Tag fürs Tagesziel) und gibt zwischen den Stücken die
+  /// Oberfläche frei. Danach sind [AchievementTracker.fromCalculator] und
+  /// `dailyActivity` schnell, auch beim ersten Rechner nach dem App-Start,
+  /// für den sonst jede Session am Stück noch einmal durchgespielt würde.
+  /// Ändert keine Ergebnisse, nur wann sie berechnet werden.
+  static Future<void> warmUp(StatsCalculator calc, {Duration slice = const Duration(milliseconds: 8)}) async {
+    final watch = Stopwatch()..start();
+    for (final s in calc.sessions) {
+      _factsOf(calc, s);
+      calc.countedPerDayOf(s);
+      if (watch.elapsed >= slice) {
+        await Future<void>.delayed(Duration.zero);
+        watch.reset();
+      }
+    }
+  }
+
+  /// Leert den Zwischenspeicher der Session-Auswertungen (für Tests).
+  @visibleForTesting
+  static void clearCache() => _factsCache.clear();
 
   final Map<AchievementMetric, num> _values = {};
   final Set<String> _games = {};
