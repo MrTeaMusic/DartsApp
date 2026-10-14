@@ -13,28 +13,46 @@ import 'x01_match.dart';
 /// normalverteilter Streuung um den Zielpunkt. Wo der Dart landet, entscheidet
 /// die echte Board-Geometrie.
 class DartBot {
-  DartBot({required this.sigma, math.Random? random}) : random = random ?? math.Random();
+  DartBot({required this.sigma, double? finishSigma, math.Random? random})
+    : finishSigma = finishSigma ?? sigma,
+      random = random ?? math.Random();
 
   /// Bot mit ungefähr diesem 3-Dart-Average (siehe [BotCalibration]).
-  factory DartBot.forAverage(double average, {math.Random? random}) =>
-      DartBot(sigma: BotCalibration.sigmaFor(average), random: random);
+  factory DartBot.forAverage(double average, {math.Random? random}) => DartBot(
+    sigma: BotCalibration.sigmaFor(average),
+    finishSigma: BotCalibration.finishSigmaFor(average),
+    random: random,
+  );
 
   /// Standardabweichung der Streuung je Achse in normierten Board-Einheiten
   /// (1.0 = Außenkante Double-Ring = 170 mm).
   final double sigma;
+
+  /// Streuung beim Dart, der das Leg beenden (oder mit Double-In eröffnen)
+  /// soll. Schwache Bots zielen hier genauer als beim Scoren, sonst stünden
+  /// sie oft zehn Aufnahmen und länger auf dem Finish.
+  final double finishSigma;
   final math.Random random;
+
+  /// Ab diesem Rest wirft der Bot jeden Dart mit [finishSigma], auch das
+  /// Stellen auf ein Doppel. Sonst überwirft er bei kleinen Resten fast jede
+  /// Aufnahme.
+  static const int finishZone = 60;
 
   /// Nächster Dart für den Spieler am Zug in [match].
   DartThrow next(X01Match match, {DateTime? at}) {
     final p = match.currentPlayer;
     final target = aim(p.remaining, match.dartsLeft == 0 ? 3 : match.dartsLeft, match.format.outMode, opened: p.opened);
-    return throwAt(target, at: at);
+    final finishing = !p.opened || p.remaining <= finishZone || target.score == p.remaining;
+    return throwAt(target, at: at, sigma: finishing ? finishSigma : null);
   }
 
-  /// Wirft auf [target] und liefert, wo der Dart landet.
-  DartThrow throwAt(Segment target, {DateTime? at}) {
+  /// Wirft auf [target] und liefert, wo der Dart landet. Ohne [sigma] gilt
+  /// die Scoring-Streuung.
+  DartThrow throwAt(Segment target, {DateTime? at, double? sigma}) {
+    final spread = sigma ?? this.sigma;
     final aimPoint = BoardGeometry.centerOf(target);
-    final p = aimPoint + BoardPoint(_gaussian() * sigma, _gaussian() * sigma);
+    final p = aimPoint + BoardPoint(_gaussian() * spread, _gaussian() * spread);
     return DartThrow(
       segment: BoardGeometry.segmentAt(p),
       position: p,

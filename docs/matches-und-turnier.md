@@ -102,29 +102,38 @@ Der Bot wirft wie ein Mensch, nur auf dem virtuellen Board:
    Landepunkt weicht davon in x und y unabhängig normalverteilt ab (Standardabweichung σ, in
    Board-Einheiten; 1,0 = Außenkante Double-Ring = 170 mm). Welches Feld getroffen wurde,
    entscheidet die echte Board-Geometrie (`BoardGeometry.segmentAt`) – daneben ist auch
-   daneben, Bust ist Bust.
+   daneben, Bust ist Bust. Es gibt zwei σ: eines fürs Scoren und eines für den Weg zum Finish
+   (Checkout-Dart, jeder Dart ab Rest 60 und das Eröffnen mit Double-In).
 3. **Tempo**: Der Bot tritt nach etwa 1,2 s ans Board, wirft alle 0,85 s einen Dart und lässt die
    Darts 1,6 s stecken, bevor wieder der Mensch dran ist.
 
 ### Wie der Average zur Streuung wird
 
-Die Zuordnung Average → σ ist eine Tabelle (`BotCalibration`), gemessen durch Simulation von je
-4000 Legs 501 Double-Out mit genau diesem Bot. Zwischenwerte werden linear interpoliert.
+Das Finish-σ folgt einer Trefferquote aufs Doppel wie bei echten Spielern (22 % bei einem 50er,
+40 % bei einem 100er), nie unter 18 %. Ohne diese Untergrenze standen schwache Bots, etwa im
+Turnier mit 30 % (Average um 28), im Schnitt acht Aufnahmen auf dem Finish, manchmal über 50,
+meist auf D1. Das Scoring-σ ist dann so gewählt, dass der Bot seinen Average trifft; schwache
+Bots verlieren ihre Punkte also beim Scoren statt am Doppel. Damit nicht zu viele Darts neben
+die Scheibe gehen, ist das Scoring-σ auf 0,32 begrenzt: Bots unter einem 30er spielen wie ein
+30er.
 
-| Ziel-Average | σ (Board-Einheiten) | ≈ Streuung je Achse |
-|---|---|---|
-| 25 | 0,206 | 35 mm |
-| 40 | 0,123 | 21 mm |
-| 50 | 0,097 | 16 mm |
-| 60 | 0,079 | 13 mm |
-| 75 | 0,060 | 10 mm |
-| 85 | 0,050 | 8,5 mm |
-| 97 | 0,040 | 6,8 mm |
-| 104 | 0,035 | 6 mm |
+Die Zuordnung steht als Tabelle in `BotCalibration`, gemessen durch Simulation von je 4000 Legs
+501 Double-Out mit genau diesem Bot (`BotCalibration.calibrate`). Zwischenwerte werden linear
+interpoliert.
+
+| Ziel-Average | σ Scoren | σ Finish | Doppelquote |
+|---|---|---|---|
+| 30 und weniger | 0,320 (54 mm) | 0,093 (16 mm) | 18 % |
+| 40 | 0,152 (26 mm) | 0,090 (15 mm) | 19 % |
+| 50 | 0,105 (18 mm) | 0,079 (13 mm) | 22 % |
+| 60 | 0,083 (14 mm) | 0,069 (12 mm) | 26 % |
+| 80 | 0,054 (9 mm) | 0,055 (9 mm) | 33 % |
+| 100 | 0,035 (6 mm) | 0,045 (8 mm) | 40 % |
 
 Der Average zählt wie bei der PDC alle Darts des Legs (inklusive Checkout-Versuche, Bust-Aufnahmen
 mit 0 Punkten). Ein Test simuliert Bots mit 30, 45, 60, 80 und 100 und prüft, dass der
-gemessene Average höchstens 5 % (plus 1 Punkt) vom Ziel abweicht. Einzelne Legs und kurze
+gemessene Average höchstens 5 % (plus 1 Punkt) vom Ziel abweicht, ein weiterer, dass Bots mit
+28er und 50er Average im Schnitt höchstens drei bzw. zwei Aufnahmen auf dem Finish stehen. Einzelne Legs und kurze
 Matches streuen natürlich stärker – auch ein 50er-Bot wirft mal eine 140.
 
 ## Statistik und Speicherung
