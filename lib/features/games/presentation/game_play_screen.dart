@@ -134,6 +134,7 @@ class GamePlayScreen extends ConsumerWidget {
         ),
         body: SafeArea(
           child: CelebrationOverlay(
+            sideWidth: 440,
             child: LayoutBuilder(builder: (context, c) {
             final wide = c.maxWidth >= 900;
             final panel = _GamePanel(active: active, large: wide, zoom: zoom());

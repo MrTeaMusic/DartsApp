@@ -120,9 +120,32 @@ class StatsReport {
 
 /// Berechnet [StatsReport], Verläufe und Rekorde.
 class StatsCalculator {
-  StatsCalculator({required List<SessionRow> sessions, required this.throws, DateTime? now})
-      : _sessions = sessions.where((s) => s.endedAt != null).toList()..sort((a, b) => a.startedAt.compareTo(b.startedAt)),
-        now = now ?? DateTime.now();
+  /// Mit [previous] übernimmt der Rechner dessen Zwischenergebnisse (Würfe je
+  /// Session, dekodierte Ergebnisse, Ziele je Dart …) für die Sessions in
+  /// [unchanged]: Sie und ihre Würfe müssen in beiden Rechnern gleich sein.
+  StatsCalculator({
+    required List<SessionRow> sessions,
+    required this.throws,
+    DateTime? now,
+    StatsCalculator? previous,
+    Set<int> unchanged = const {},
+  })  : _sessions = sessions.where((s) => s.endedAt != null).toList()..sort((a, b) => a.startedAt.compareTo(b.startedAt)),
+        now = now ?? DateTime.now() {
+    if (previous == null || unchanged.isEmpty) return;
+    void take<V>(Map<int, V> from, Map<int, V> to) {
+      for (final id in unchanged) {
+        if (from[id] case final v?) to[id] = v;
+      }
+    }
+
+    take(previous._bySession, _reused);
+    take(previous._countedCache, _countedCache);
+    take(previous._aimedCache, _aimedCache);
+    take(previous._metricsCache, _metricsCache);
+    take(previous._resultCache, _resultCache);
+    take(previous._perDayCache, _perDayCache);
+    _days.addAll(previous._days);
+  }
 
   final List<SessionRow> _sessions;
   final List<ThrowRow> throws;
@@ -143,8 +166,6 @@ class StatsCalculator {
   /// teuer, und es gibt viele Würfe, aber wenige Tage.
   DateTime _dayOf(DateTime t) => _days.putIfAbsent(t.year * 10000 + t.month * 100 + t.day, () => dayOf(t));
 
-  /// [dayOf] mit Zwischenspeicher, für viele Würfe am Stück.
-  DateTime cachedDayOf(DateTime t) => _dayOf(t);
   final Map<int, DateTime> _days = {};
   static DateTime weekOf(DateTime t) {
     final d = dayOf(t);
@@ -154,13 +175,17 @@ class StatsCalculator {
   late final Map<int, List<ThrowRow>> _bySession = () {
     final m = <int, List<ThrowRow>>{};
     for (final t in throws) {
+      if (_reused.containsKey(t.sessionId)) continue;
       m.putIfAbsent(t.sessionId, () => []).add(t);
     }
     for (final l in m.values) {
       l.sort((a, b) => a.seq.compareTo(b.seq));
     }
-    return m;
+    return m..addAll(_reused);
   }();
+
+  /// Bereits sortierte Würfe unveränderter Sessions aus dem vorigen Rechner.
+  final Map<int, List<ThrowRow>> _reused = {};
 
   final Map<int, List<ThrowRow>> _countedCache = {};
   final Map<int, List<AimedDart>> _aimedCache = {};
@@ -178,6 +203,18 @@ class StatsCalculator {
   /// Gezählte Würfe einer Session in Wurfreihenfolge.
   List<ThrowRow> countedOf(SessionRow s) =>
       _countedCache.putIfAbsent(s.id, () => [for (final t in _bySession[s.id] ?? const <ThrowRow>[]) if (t.counted) t]);
+
+  /// Gezählte Würfe einer Session je Kalendertag (in der Reihenfolge der
+  /// Würfe), z. B. fürs Tagesziel.
+  Map<DateTime, int> countedPerDayOf(SessionRow s) => _perDayCache.putIfAbsent(s.id, () {
+        final m = <DateTime, int>{};
+        for (final t in countedOf(s)) {
+          final d = _dayOf(t.timestamp);
+          m[d] = (m[d] ?? 0) + 1;
+        }
+        return m;
+      });
+  final Map<int, Map<DateTime, int>> _perDayCache = {};
 
   /// Gezählte Würfe mit dem Ziel, das das Spiel vorgab (siehe [replayTargets]).
   List<AimedDart> aimedOf(SessionRow s) =>

@@ -79,7 +79,7 @@ void main() {
     await tester.tap(find.byKey(const Key('challenge-c1-1')));
     await tester.pumpAndSettle();
     expect(find.text('Rund um die Uhr'), findsOneWidget);
-    expect(find.text('höchstens 35 Darts'), findsOneWidget);
+    expect(find.text('höchstens 25 Darts'), findsOneWidget);
     await tester.tap(find.byKey(const Key('challenge-start')));
     await frames(tester);
 
