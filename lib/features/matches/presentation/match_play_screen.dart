@@ -150,6 +150,7 @@ class MatchPlayScreen extends ConsumerWidget {
         ),
         body: SafeArea(
           child: CelebrationOverlay(
+            sideWidth: 460,
             child: LayoutBuilder(
             builder: (context, c) {
               final wide = c.maxWidth >= 900;
