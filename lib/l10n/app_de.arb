@@ -2296,5 +2296,6 @@
   "histDeleted": "Session gelöscht",
   "histNotFound": "Diese Session gibt es nicht mehr.",
   "histPlayAgain": "Nochmal spielen",
-  "histNoThrows": "Zu dieser Session sind keine Würfe gespeichert."
+  "histNoThrows": "Zu dieser Session sind keine Würfe gespeichert.",
+  "histChartMarks": "Marks je Aufnahme"
 }

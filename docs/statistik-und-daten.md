@@ -140,7 +140,8 @@ Für Verlauf und Bestwert:
 Unter **Statistik › Verlauf**, über „Verlauf“ bei „Zuletzt gespielt“ (Start und Training) oder durch
 Antippen einer Session dort. Die Liste zeigt alle abgeschlossenen Sessions des aktiven Profils nach Tag,
 neueste oben, filterbar nach Alle, Training und Matches. Jede Zeile: Spiel, Uhrzeit, Darts, Dauer,
-„abgebrochen“ und die Hauptkennzahl (siehe unten); bei Matches Gegner, Sieg oder Niederlage und die
+„abgebrochen“ und die Hauptkennzahl (siehe unten); fehlt sie (abgebrochen bei Kennzahlen, die nur vollständige
+Spiele haben), stehen die geworfenen Darts. Bei Matches Gegner, Sieg oder Niederlage und die
 Legs (eigene : verlorene).
 
 Die **Detailansicht** einer Session zeigt:
@@ -149,10 +150,12 @@ Die **Detailansicht** einer Session zeigt:
 * Kennzahlen wie im Ergebnis des Spiels. Dafür wird die Session aus Config, Startwert und Würfen noch
   einmal durchgespielt (wie bei „Ziel je Dart“); unbekannte Spiele zeigen die gespeicherten Kennzahlen.
 * Diagramm je Aufnahme: Punkte (Scoring-Spiele, X01, Matches, mit Schnitt als gestrichelter Linie),
-  Punktestand (z. B. Bob's 27) oder Treffer aufs Ziel (z. B. Around the Clock, Cricket). Checkout-
-  Aufnahmen sind grün.
+  Punktestand (z. B. Bob's 27), Marks (Cricket) oder Treffer aufs Ziel (z. B. Around the Clock).
+  Checkout-Aufnahmen sind grün.
 * Heatmap, wenn Würfe mit Position gespeichert sind (Simulator, Autodarts).
-* Jede Aufnahme mit ihren Darts, Punkten und – bei Spielen mit Rest oder Punktestand – dem Stand danach.
+* Jede Aufnahme mit ihren Darts, dem Wert der Aufnahme und – bei Spielen mit Rest oder Punktestand – dem
+  Stand danach. Der Wert sind Punkte bei Scoring-Spielen, X01 und Matches, Marks bei Cricket und Treffer
+  aufs Ziel bei den übrigen Zielspielen (Around the Clock, Bob's 27 …).
   Bust steht rot, ein geschafftes Finish als Haken. **Darts aufs Finish** haben einen Rahmen: grün
   getroffen, rot verfehlt. Gemeint sind Darts, bei denen das Spiel genau ein Double (oder Bull) als Ziel
   vorgab, im Match Darts bei einem mit einem Dart checkbaren Rest (wie die Checkout-Quote). Darts, die

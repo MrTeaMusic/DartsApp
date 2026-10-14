@@ -193,7 +193,9 @@ class HistoryTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Text(
-            m == null ? '–' : formatMetricKey(e.gameId, m.key, m.value),
+            // Ohne Kennzahl (z. B. abgebrochen, wo nur vollständige Spiele
+            // zählen) stehen die geworfenen Darts.
+            m == null ? '${e.darts} ${l10n.statDarts}' : formatMetricKey(e.gameId, m.key, m.value),
             style: look.chipNumber.copyWith(color: theme.colorScheme.onSurface),
           ),
           if (m != null) ...[

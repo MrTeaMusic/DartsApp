@@ -69,6 +69,23 @@ void main() {
     expect(dt.summary.map((s) => s.key), contains('average'), reason: 'Zusammenfassung des Spiels');
   });
 
+  test('Zielspiele: Marks (Cricket) bzw. Treffer statt Punkten je Aufnahme', () async {
+    final me = await a.me();
+    final cricket = await detail(a, await seedTraining(a.games, me, 'cricket', const {}, DateTime(2026, 10, 1, 18), seed: 6));
+    expect(cricket.value, VisitValue.marks);
+    expect(cricket.chart, VisitChart.marks);
+    expect(cricket.visits.fold<int>(0, (s, v) => s + v.marks), cricket.entry.metrics['marks']);
+
+    final atc = await detail(a,
+        await seedTraining(a.games, me, 'around_the_clock', const {}, DateTime(2026, 10, 1, 19), seed: 7, stopAfter: 14));
+    expect(atc.value, VisitValue.hits);
+    expect(atc.chart, VisitChart.hits);
+    expect(atc.entry.keyMetric, isNull, reason: 'abgebrochen: die Liste zeigt die Darts');
+
+    final x01 = await detail(a, await seedTraining(a.games, me, 'x01', const {'startScore': 501}, DateTime(2026, 10, 1, 20)));
+    expect(x01.value, VisitValue.points);
+  });
+
   test('Match: Legs mit Sieger, Rest und Ergebnis des Gegners', () async {
     final id = await seedMatch(a.games, await a.me(), DateTime(2026, 10, 1, 19));
     final dt = await detail(a, id);

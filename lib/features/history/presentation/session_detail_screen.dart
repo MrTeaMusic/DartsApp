@@ -385,6 +385,7 @@ class _ChartAndHeat extends StatelessWidget {
         VisitChart.score => l10n.histChartScore,
         VisitChart.total => l10n.histChartTotal,
         VisitChart.hits => l10n.histChartHits,
+        VisitChart.marks => l10n.histChartMarks,
       },
       trailing: average == null || scores.isEmpty ? null : Text(l10n.histChartAverage(formatDecimal(average))),
       child: SizedBox(
@@ -475,8 +476,8 @@ class _Visits extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
             child: Column(
               children: [
-                _VisitRow.header(afterKey: detail.afterKey),
-                for (final v in leg.visits) _VisitRow(visit: v, afterKey: detail.afterKey),
+                _VisitRow.header(afterKey: detail.afterKey, value: detail.value),
+                for (final v in leg.visits) _VisitRow(visit: v, afterKey: detail.afterKey, value: detail.value),
                 if (leg.visits.isEmpty)
                   Padding(
                     padding: const EdgeInsets.all(AppSpacing.m),
@@ -565,17 +566,21 @@ class _LegHeader extends StatelessWidget {
 
 /// Eine Aufnahme: Nummer, drei Darts, Punkte und Stand danach.
 class _VisitRow extends StatelessWidget {
-  const _VisitRow({required this.visit, this.afterKey}) : isHeader = false;
-  const _VisitRow.header({this.afterKey})
+  const _VisitRow({required this.visit, this.afterKey, this.value = VisitValue.points}) : isHeader = false;
+  const _VisitRow.header({this.afterKey, this.value = VisitValue.points})
       : visit = null,
         isHeader = true;
 
   final HistoryVisit? visit;
   final String? afterKey;
+  final VisitValue value;
   final bool isHeader;
 
   static const double _numberWidth = 30;
   static const double _valueWidth = 54;
+
+  /// Breiter, damit „Treffer“ als Überschrift passt.
+  static const double _scoreWidth = 66;
 
   @override
   Widget build(BuildContext context) {
@@ -592,7 +597,17 @@ class _VisitRow extends StatelessWidget {
           children: [
             const SizedBox(width: _numberWidth),
             Expanded(child: Kicker(l10n.statDarts)),
-            SizedBox(width: _valueWidth, child: Align(alignment: Alignment.centerRight, child: Kicker(l10n.statPoints))),
+            SizedBox(
+              width: _scoreWidth,
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Kicker(switch (value) {
+                  VisitValue.points => l10n.statPoints,
+                  VisitValue.hits => l10n.statHitsOnTarget,
+                  VisitValue.marks => l10n.statsMetricMarks,
+                }),
+              ),
+            ),
             if (afterKey != null)
               SizedBox(width: _valueWidth, child: Align(alignment: Alignment.centerRight, child: Kicker(l10n.statLabel(afterKey!)))),
           ],
@@ -616,13 +631,13 @@ class _VisitRow extends StatelessWidget {
             ),
           ),
           SizedBox(
-            width: _valueWidth,
+            width: _scoreWidth,
             child: Text(
-              v.bust ? l10n.histBust : '${v.score}',
+              v.bust ? l10n.histBust : '${v.valueOf(value)}',
               textAlign: TextAlign.right,
               style: v.bust
                   ? number.copyWith(color: colors.danger)
-                  : v.score >= 100
+                  : value == VisitValue.points && v.score >= 100
                       ? number.copyWith(color: colors.record)
                       : number,
             ),

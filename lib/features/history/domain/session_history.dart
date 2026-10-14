@@ -5,6 +5,7 @@ import '../../dart_source/domain/dart_event.dart';
 import '../../games/domain/engine/game_display.dart';
 import '../../games/domain/game_catalog.dart';
 import '../../games/domain/games/checkout/checkout_rules.dart';
+import '../../games/domain/games/cricket.dart';
 import '../../matches/domain/match_format.dart';
 import '../../matches/domain/match_result.dart';
 import '../../stats/domain/game_metrics.dart';
@@ -98,6 +99,7 @@ class HistoryVisit {
     this.failed = false,
     this.after,
     this.hits = 0,
+    this.marks = 0,
   });
 
   /// Nummer ab 1 (im Leg, sonst in der Session).
@@ -120,6 +122,28 @@ class HistoryVisit {
 
   /// Treffer auf das vorgegebene Ziel.
   final int hits;
+
+  /// Gezählte Marks (Cricket).
+  final int marks;
+
+  /// Wert der Spalte bzw. Säule für [kind].
+  int valueOf(VisitValue kind) => switch (kind) {
+        VisitValue.points => score,
+        VisitValue.hits => hits,
+        VisitValue.marks => marks,
+      };
+}
+
+/// Was je Aufnahme als Wert steht.
+enum VisitValue {
+  /// Punkte der Darts (Scoring-Spiele, X01, Matches, Spiele ohne Ziel).
+  points,
+
+  /// Treffer aufs vorgegebene Ziel (Around the Clock, Bob's 27 …).
+  hits,
+
+  /// Marks (Cricket).
+  marks,
 }
 
 /// Ein Abschnitt der Aufnahmen: ein Leg (X01, Match) oder die ganze Session.
@@ -159,8 +183,11 @@ enum VisitChart {
   /// Punktestand nach jeder Aufnahme (z. B. Bob's 27).
   total,
 
-  /// Treffer aufs Ziel je Aufnahme (Around the Clock, Cricket …).
+  /// Treffer aufs Ziel je Aufnahme (Around the Clock …).
   hits,
+
+  /// Marks je Aufnahme (Cricket).
+  marks,
 }
 
 /// Alles, was die Detailansicht einer Session zeigt.
@@ -172,6 +199,7 @@ class SessionDetail {
     required this.positions,
     required this.chart,
     this.afterKey,
+    this.value = VisitValue.points,
     this.players = const [],
     this.me = 0,
     this.legsKnown = true,
@@ -194,6 +222,9 @@ class SessionDetail {
   /// `null` ohne Stand.
   final String? afterKey;
 
+  /// Was je Aufnahme als Wert steht.
+  final VisitValue value;
+
   /// Teilnehmer eines Matches, man selbst ist [me].
   final List<MatchPlayerResult> players;
   final int me;
@@ -214,6 +245,7 @@ class SessionDetail {
           switch (chart) {
             VisitChart.score => v.score.toDouble(),
             VisitChart.hits => v.hits.toDouble(),
+            VisitChart.marks => v.marks.toDouble(),
             VisitChart.total => double.tryParse(v.after ?? '') ?? double.nan,
           },
       ];
@@ -293,8 +325,11 @@ SessionDetail? _trainingDetail(HistoryEntry entry, List<ThrowRow> sorted, List<B
     var darts = <HistoryDart>[];
     var events = <GameEventType>{};
     var hits = 0;
+    var marks = 0;
+    var anyTargets = false;
     String? afterKey;
     var multiLeg = false;
+    int countedMarks() => game is CricketTraining ? game.countedMarks : 0;
 
     void flush() {
       if (darts.isEmpty) return;
@@ -314,6 +349,7 @@ SessionDetail? _trainingDetail(HistoryEntry entry, List<ThrowRow> sorted, List<B
         failed: failed && !checkout,
         after: stand && key == afterKey && !checkout && !failed ? display.headline : null,
         hits: hits,
+        marks: marks,
       ));
       if (events.contains(GameEventType.legComplete)) {
         multiLeg = true;
@@ -323,6 +359,7 @@ SessionDetail? _trainingDetail(HistoryEntry entry, List<ThrowRow> sorted, List<B
       darts = [];
       events = {};
       hits = 0;
+      marks = 0;
     }
 
     int? visitIndex;
@@ -340,9 +377,12 @@ SessionDetail? _trainingDetail(HistoryEntry entry, List<ThrowRow> sorted, List<B
       }
       visitIndex = t.visitIndex;
       final targets = game.targets;
+      if (targets.isNotEmpty) anyTargets = true;
       final before = game.dartsThrown;
+      final marksBefore = countedMarks();
       game.throwDart(DartThrow(segment: seg, timestamp: t.timestamp, source: DartSourceKind.manual));
       final counted = game.dartsThrown > before;
+      marks += countedMarks() - marksBefore;
       events.addAll(game.events.map((e) => e.type));
       final aimed = targets.length == 1 && targets.first.isDouble ? targets.first : null;
       if (counted && targets.contains(seg)) hits++;
@@ -363,13 +403,20 @@ SessionDetail? _trainingDetail(HistoryEntry entry, List<ThrowRow> sorted, List<B
       final only = legs.removeLast();
       legs.add(HistoryLeg(number: 0, visits: only.visits, winner: only.winner));
     }
-    final chart = isVisitScoringGame(entry.gameId)
-        ? VisitChart.score
-        : afterKey == 'points'
-            ? VisitChart.total
-            : legs.any((l) => l.visits.any((v) => v.hits > 0))
-                ? VisitChart.hits
-                : VisitChart.score;
+    // Punkte nur, wo auf Punkte geworfen wird; sonst zählt, was das Spiel
+    // misst: Marks (Cricket) oder Treffer aufs Ziel.
+    final value = isVisitScoringGame(entry.gameId)
+        ? VisitValue.points
+        : game is CricketTraining
+            ? VisitValue.marks
+            : anyTargets
+                ? VisitValue.hits
+                : VisitValue.points;
+    final chart = switch (value) {
+      VisitValue.points => afterKey == 'points' ? VisitChart.total : VisitChart.score,
+      VisitValue.hits => afterKey == 'points' ? VisitChart.total : VisitChart.hits,
+      VisitValue.marks => VisitChart.marks,
+    };
     return SessionDetail(
       entry: entry,
       legs: legs,
@@ -377,6 +424,7 @@ SessionDetail? _trainingDetail(HistoryEntry entry, List<ThrowRow> sorted, List<B
       positions: positions,
       chart: chart,
       afterKey: afterKey,
+      value: value,
     );
   } on Object {
     return null;
