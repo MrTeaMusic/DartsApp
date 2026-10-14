@@ -45,7 +45,11 @@ class HomeScreen extends ConsumerWidget {
       children: [
         SectionHeader(
           l10n.gameRecent,
-          trailing: TextButton(onPressed: () => context.go(Routes.stats), child: Text(l10n.homeAllStats)),
+          trailing: TextButton(
+            key: const Key('home-open-history'),
+            onPressed: () => context.go(Routes.history),
+            child: Text(l10n.histTitle),
+          ),
         ),
         if (recent.isEmpty)
           AppCard(child: Text(l10n.gameRecentEmpty, style: theme.textTheme.bodySmall))
@@ -65,7 +69,7 @@ class HomeScreen extends ConsumerWidget {
                       '${s.dartCount} ${l10n.statDarts}',
                       style: look.kicker.copyWith(color: context.dartColors.textMuted),
                     ),
-                    onTap: () => context.go(Routes.gameSetup(s.gameId)),
+                    onTap: () => context.go(Routes.session(s.id)),
                   ),
                 ],
               ],

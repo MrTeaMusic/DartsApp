@@ -7,6 +7,8 @@ import '../../features/dart_source/presentation/debug_screen.dart';
 import '../../features/games/presentation/game_play_screen.dart';
 import '../../features/games/presentation/game_setup_screen.dart';
 import '../../features/games/presentation/games_screen.dart';
+import '../../features/history/presentation/history_screen.dart';
+import '../../features/history/presentation/session_detail_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/matches/presentation/match_routes.dart';
 import '../../features/plans/presentation/plan_routes.dart';
@@ -20,6 +22,8 @@ abstract final class Routes {
   static const games = '/training';
   static const board = '/board';
   static const stats = '/statistik';
+  static const history = '/statistik/verlauf';
+  static String session(int id) => '$history/$id';
   static const settings = '/einstellungen';
   static const debug = '/einstellungen/debug';
   static const play = '/spiel';
@@ -59,7 +63,23 @@ final routerProvider = Provider<GoRouter>((ref) {
             GoRoute(path: Routes.board, builder: (_, _) => const BoardScreen()),
           ]),
           StatefulShellBranch(routes: [
-            GoRoute(path: Routes.stats, builder: (_, _) => const StatsScreen()),
+            GoRoute(
+              path: Routes.stats,
+              builder: (_, _) => const StatsScreen(),
+              routes: [
+                GoRoute(
+                  path: 'verlauf',
+                  builder: (_, _) => const HistoryScreen(),
+                  routes: [
+                    GoRoute(
+                      path: ':sessionId',
+                      builder: (_, state) =>
+                          SessionDetailScreen(sessionId: int.tryParse(state.pathParameters['sessionId']!) ?? -1),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ]),
           StatefulShellBranch(routes: [
             GoRoute(
