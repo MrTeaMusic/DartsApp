@@ -192,6 +192,13 @@ class CelebrationController extends Notifier<CelebrationBatch?> {
   DailyGoal? _baseGoal;
   AchievementTracker? _baseFull;
 
+  /// Serie des Tagesziels samt laufendem Spiel. Sie hängt nur von den Tagen
+  /// ab (dieselben Tageswerte, dasselbe Ziel, derselbe Tag) und davon, ob das
+  /// Ziel heute erreicht ist; pro Dart ändert sich das selten, deshalb wird
+  /// nicht nach jedem Dart die ganze Geschichte Tag für Tag durchgegangen.
+  (Map<DateTime, DayActivity>, DailyGoal, DateTime, bool)? _streakKey;
+  GoalStreak? _streak;
+
   void _check(SessionRow session, List<ThrowRow> throws, {required bool ended}) {
     final base = ref.read(sessionTrackerProvider);
     final activity = ref.read(dailyActivityProvider);
@@ -224,11 +231,19 @@ class CelebrationController extends Notifier<CelebrationBatch?> {
     }
     final tracker = base.copy()
       ..add(sessionFacts(calc, session))
-      ..applyGoals(dailyGoalStatus(activity, goal, now, extraToday: liveToday).streak)
+      ..applyGoals(_liveStreak(activity, goal, now, liveToday, reached: after >= goal.amount))
       ..applyStars(stars);
     final known = _baseFull!.reached;
     final fresh = tracker.reached.where((k) => !known.contains(k) && !stored.containsKey(k));
     items.addAll(_achievementItems(fresh));
     _emit(items);
+  }
+
+  GoalStreak _liveStreak(Map<DateTime, DayActivity> activity, DailyGoal goal, DateTime now, DayActivity liveToday,
+      {required bool reached}) {
+    final key = (activity, goal, StatsCalculator.dayOf(now), reached);
+    if (key == _streakKey) return _streak!;
+    _streakKey = key;
+    return _streak = dailyGoalStatus(activity, goal, now, extraToday: liveToday).streak;
   }
 }

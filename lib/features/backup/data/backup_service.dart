@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'dart:isolate';
 
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/background_json.dart';
 import '../../../core/database/app_database.dart';
 import '../../sync/data/sync_store.dart';
 
@@ -56,13 +58,33 @@ class BackupService {
   Expression<bool> _player(GeneratedColumn<int> column, int? playerId) =>
       playerId == null ? const Constant(true) : column.equals(playerId);
 
-  Future<String> exportJson({int? playerId}) async =>
-      const JsonEncoder.withIndent('  ').convert(await exportData(playerId: playerId));
+  static const JsonEncoder _encoder = JsonEncoder.withIndent('  ');
+
+  /// Große Sicherungen werden im Hintergrund-Isolat umgewandelt (gleicher
+  /// Text), damit die Oberfläche dabei nicht stehen bleibt.
+  Future<String> exportJson({int? playerId}) async {
+    final data = await exportData(playerId: playerId);
+    return BackgroundJson.isLargeBundle(data) ? BackgroundJson.encode(data, encoder: _encoder) : _encoder.convert(data);
+  }
 
   /// Importiert ein JSON-Backup und führt es mit den vorhandenen Daten
   /// zusammen (wie beim Abgleich, siehe [SyncStore]). Bereits vorhandene
   /// Sessions werden übersprungen.
   Future<ImportResult> importJson(String text) async {
+    // Lesen und Prüfen großer Sicherungen im Hintergrund-Isolat.
+    final bundle = text.length < BackgroundJson.threshold ? _parse(text) : await _parseInBackground(text);
+    try {
+      return await SyncStore(db).merge(bundle);
+    } on TypeError catch (e) {
+      throw BackupFormatException('Beschädigte Daten: $e');
+    }
+  }
+
+  // Statisch, damit der Isolat-Aufruf nur den Text mitnimmt (nicht `this`
+  // samt Datenbank).
+  static Future<SyncBundle> _parseInBackground(String text) => Isolate.run(() => _parse(text));
+
+  static SyncBundle _parse(String text) {
     final Object? decoded;
     try {
       decoded = jsonDecode(text);
@@ -76,11 +98,7 @@ class BackupService {
     if (v is! int || v > version) {
       throw BackupFormatException('Unbekannte Version: $v');
     }
-    try {
-      return await SyncStore(db).merge(SyncBundle.fromJson(decoded));
-    } on TypeError catch (e) {
-      throw BackupFormatException('Beschädigte Daten: $e');
-    }
+    return SyncBundle.fromJson(decoded);
   }
 
   // ----------------------------------------------------------------- CSV
@@ -92,6 +110,14 @@ class BackupService {
           ..where((t) => _player(t.playerId, playerId))
           ..orderBy([(t) => OrderingTerm.asc(t.timestamp), (t) => OrderingTerm.asc(t.seq)]))
         .get();
+    // Viele Würfe: Zeilen und Text im Hintergrund-Isolat bauen (gleicher Text).
+    return throws.length > 1000 ? _throwsCsvInBackground(throws, players) : _throwsCsv(throws, players);
+  }
+
+  static Future<String> _throwsCsvInBackground(List<ThrowRow> throws, Map<int, String> players) =>
+      Isolate.run(() => _throwsCsv(throws, players));
+
+  static String _throwsCsv(List<ThrowRow> throws, Map<int, String> players) {
     return csv(
       ['timestamp', 'player', 'game', 'session', 'visit', 'dart', 'segment', 'number', 'multiplier', 'score', 'counted', 'x', 'y', 'source'],
       [

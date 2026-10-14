@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dartlab/features/games/domain/engine/game_display.dart';
 import 'package:dartlab/features/sync/data/sync_client.dart';
 import 'package:dartlab/features/sync/data/sync_server.dart';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../helpers/darts.dart' as darts;
 import '../../helpers/sync_device.dart';
 
 void main() {
@@ -54,6 +56,27 @@ void main() {
     final again = await client(phone).sync();
     expect(again.sent + again.received, 0);
     expect(again.local.changedAnything || again.remote.changedAnything, isFalse);
+  });
+
+  test('große Pakete (im Hintergrund umgewandelt) kommen vollständig an', () async {
+    Future<void> big(Device d, int minute) async {
+      final me = await d.me();
+      final sid = await d.games.startSession(
+          playerId: me, gameId: 'highscore_hunt', config: const {'visits': 1}, seed: minute, startedAt: DateTime(2026, 10, 1, 12, minute));
+      await d.games.replaceThrows(sessionId: sid, playerId: me, gameId: 'highscore_hunt', darts: [
+        for (var i = 0; i < 1200; i++) (dart: darts.d(['T20', 'S5', 'MISS', 'D16'][i % 4]), visitIndex: i ~/ 3, counted: true),
+      ]);
+      await d.games.endSession(sid, result: const GameResult(metrics: {'points': 65}, summary: []), finished: true);
+    }
+
+    await big(hub, 1);
+    await big(phone, 2);
+    final r = await SyncClient(phone.store, host: '127.0.0.1', port: server.port!, key: '123456').sync();
+    expect(r.sent, 1);
+    expect(r.received, 1);
+    for (final dev in [hub, phone]) {
+      expect(await dev.db.select(dev.db.throws).get(), hasLength(2400));
+    }
   });
 
   test('zwei Clients sehen über den Hub die Daten des anderen', () async {

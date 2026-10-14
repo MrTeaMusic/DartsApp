@@ -129,4 +129,46 @@ void main() {
     expect(calcs.last.sessions.map((x) => x.id), isNot(contains(s.id)));
     expect(fingerprint(calcs.last), fingerprint(await full()));
   });
+
+  test('Erstes Laden in Stücken ohne Rohdaten, Vorauswertung in Scheiben: Ergebnis wie am Stück', () async {
+    // Mehr Sessions als ein Stück (25), Würfe mit Rohdaten wie bei Autodarts.
+    final names = ['T20', 'S20', 'D16', 'S5', 'T19', 'MISS', 'D8', 'BULL', 'S1', 'D20'];
+    for (var i = 0; i < 53; i++) {
+      final id = ['x01', 'cricket', 'checkout', 'bobs_27', 'highscore_hunt', 'around_the_clock'][i % 6];
+      final (s, t) = played(id, const {}, [for (var k = 0; k < 24; k++) names[(k * 3 + i) % names.length]],
+          start: DateTime.now().subtract(Duration(days: 60 - i, hours: 1)));
+      await db.into(db.sessions).insert(s.copyWith(playerId: me).toCompanion(false));
+      await db.batch((b) => b.insertAll(db.throws, [
+            for (final r in t)
+              r
+                  .copyWith(
+                    playerId: me,
+                    source: 'autodartsLocal',
+                    x: const Value(0.1),
+                    y: const Value(-0.2),
+                    rawJson: Value('{"segment":"${r.segment}","seq":${r.seq}}'),
+                  )
+                  .toCompanion(false),
+          ]));
+    }
+
+    // Vorher: alle Würfe auf einmal, Erfolge am Stück ausgewertet.
+    AchievementTracker.clearCache();
+    final reference = await full();
+    final expected = fingerprint(reference);
+
+    // Jetzt: Würfe in Stücken ohne `raw_json`, Erfolge vorab in Scheiben.
+    AchievementTracker.clearCache();
+    final sessions =
+        await (db.select(db.sessions)..where((s) => s.playerId.equals(me) & s.endedAt.isNotNull() & s.deletedAt.isNull())).get();
+    expect(sessions.length, greaterThan(50));
+    final calc = (await CalculatorLoader(db, me).next(sessions))!;
+    await AchievementTracker.warmUp(calc, slice: Duration.zero);
+    expect(fingerprint(calc), expected);
+
+    int byId(ThrowRow a, ThrowRow b) => a.id.compareTo(b.id);
+    expect(reference.throws.where((t) => t.rawJson != null), isNotEmpty);
+    expect({for (final t in calc.throws) t.rawJson}, {null});
+    expect([...calc.throws]..sort(byId), [for (final t in reference.throws) t.copyWith(rawJson: const Value(null))]..sort(byId));
+  });
 }

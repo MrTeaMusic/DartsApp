@@ -8,7 +8,11 @@ import 'package:dartlab/features/board/domain/segment.dart';
 import 'package:dartlab/features/dart_source/data/simulator_source.dart';
 import 'package:dartlab/features/dart_source/presentation/dart_source_providers.dart';
 import 'package:dartlab/features/matches/data/match_store.dart';
+import 'package:dartlab/features/matches/domain/match_format.dart';
 import 'package:dartlab/features/matches/domain/match_result.dart';
+import 'package:dartlab/features/matches/domain/match_session.dart';
+import 'package:dartlab/features/matches/presentation/match_routes.dart';
+import 'package:dartlab/core/router/app_router.dart';
 import 'package:dartlab/features/matches/presentation/match_controller.dart';
 import 'package:dartlab/features/matches/presentation/tournament_controller.dart';
 import 'package:flutter/material.dart';
@@ -40,6 +44,28 @@ Future<void> openMatches(WidgetTester tester) async {
 }
 
 void main() {
+  testWidgets('Geht die App in den Hintergrund, wird die laufende Aufnahme gesichert', (tester) async {
+    final container = await pumpApp(tester, overrides: [botTimingProvider.overrideWithValue(fastBot)]);
+    await container.read(matchControllerProvider.notifier).start(const MatchSetup(
+      format: MatchFormat(startScore: 301, legsToWin: 1),
+      players: [MatchPlayer.human('Ben', profileId: 1), MatchPlayer.human('Gast')],
+    ));
+    container.read(routerProvider).go(MatchRoutes.play);
+    await pumpFrames(tester);
+    (container.read(dartSourceProvider) as SimulatorSource).throwAt(BoardGeometry.centerOf(Segment.triple(20)));
+    await pumpFrames(tester);
+    final store = container.read(matchStoreProvider);
+    expect(store.currentMatch()!.inputs, isEmpty);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    expect(store.currentMatch()!.inputs, hasLength(1));
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await pumpFrames(tester);
+  });
+
   testWidgets('Match gegen die CPU: Bot wirft sichtbar, Checkout gewinnt, nur eigene Darts zählen', (tester) async {
     final speech = FakeSpeechEngine();
     final container = await pumpApp(
