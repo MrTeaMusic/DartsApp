@@ -155,6 +155,6 @@ void main() {
     final indexes = await again.customSelect("SELECT name FROM sqlite_master WHERE type = 'index' AND name LIKE '%_uid'").get();
     expect(indexes.map((r) => r.read<String>('name')), containsAll(['training_plans_uid', 'plan_runs_uid']));
     final version = await again.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 5);
+    expect(version.data.values.single, 6);
   });
 }

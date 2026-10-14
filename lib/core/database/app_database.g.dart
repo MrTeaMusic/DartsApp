@@ -584,6 +584,17 @@ class $SessionsTable extends Sessions
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -597,6 +608,7 @@ class $SessionsTable extends Sessions
     finished,
     resultJson,
     dartCount,
+    deletedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -683,6 +695,12 @@ class $SessionsTable extends Sessions
         dartCount.isAcceptableOrUnknown(data['dart_count']!, _dartCountMeta),
       );
     }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
     return context;
   }
 
@@ -736,6 +754,10 @@ class $SessionsTable extends Sessions
         DriftSqlType.int,
         data['${effectivePrefix}dart_count'],
       )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
     );
   }
 
@@ -759,6 +781,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
   final bool finished;
   final String? resultJson;
   final int dartCount;
+  final DateTime? deletedAt;
   const SessionRow({
     required this.id,
     required this.uid,
@@ -771,6 +794,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     required this.finished,
     this.resultJson,
     required this.dartCount,
+    this.deletedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -790,6 +814,9 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
       map['result_json'] = Variable<String>(resultJson);
     }
     map['dart_count'] = Variable<int>(dartCount);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
     return map;
   }
 
@@ -810,6 +837,9 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
           ? const Value.absent()
           : Value(resultJson),
       dartCount: Value(dartCount),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
     );
   }
 
@@ -830,6 +860,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
       finished: serializer.fromJson<bool>(json['finished']),
       resultJson: serializer.fromJson<String?>(json['resultJson']),
       dartCount: serializer.fromJson<int>(json['dartCount']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
     );
   }
   @override
@@ -847,6 +878,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
       'finished': serializer.toJson<bool>(finished),
       'resultJson': serializer.toJson<String?>(resultJson),
       'dartCount': serializer.toJson<int>(dartCount),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
     };
   }
 
@@ -862,6 +894,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     bool? finished,
     Value<String?> resultJson = const Value.absent(),
     int? dartCount,
+    Value<DateTime?> deletedAt = const Value.absent(),
   }) => SessionRow(
     id: id ?? this.id,
     uid: uid ?? this.uid,
@@ -874,6 +907,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     finished: finished ?? this.finished,
     resultJson: resultJson.present ? resultJson.value : this.resultJson,
     dartCount: dartCount ?? this.dartCount,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
   );
   SessionRow copyWithCompanion(SessionsCompanion data) {
     return SessionRow(
@@ -892,6 +926,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
           ? data.resultJson.value
           : this.resultJson,
       dartCount: data.dartCount.present ? data.dartCount.value : this.dartCount,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
     );
   }
 
@@ -908,7 +943,8 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
           ..write('endedAt: $endedAt, ')
           ..write('finished: $finished, ')
           ..write('resultJson: $resultJson, ')
-          ..write('dartCount: $dartCount')
+          ..write('dartCount: $dartCount, ')
+          ..write('deletedAt: $deletedAt')
           ..write(')'))
         .toString();
   }
@@ -926,6 +962,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     finished,
     resultJson,
     dartCount,
+    deletedAt,
   );
   @override
   bool operator ==(Object other) =>
@@ -941,7 +978,8 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
           other.endedAt == this.endedAt &&
           other.finished == this.finished &&
           other.resultJson == this.resultJson &&
-          other.dartCount == this.dartCount);
+          other.dartCount == this.dartCount &&
+          other.deletedAt == this.deletedAt);
 }
 
 class SessionsCompanion extends UpdateCompanion<SessionRow> {
@@ -956,6 +994,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
   final Value<bool> finished;
   final Value<String?> resultJson;
   final Value<int> dartCount;
+  final Value<DateTime?> deletedAt;
   const SessionsCompanion({
     this.id = const Value.absent(),
     this.uid = const Value.absent(),
@@ -968,6 +1007,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     this.finished = const Value.absent(),
     this.resultJson = const Value.absent(),
     this.dartCount = const Value.absent(),
+    this.deletedAt = const Value.absent(),
   });
   SessionsCompanion.insert({
     this.id = const Value.absent(),
@@ -981,6 +1021,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     this.finished = const Value.absent(),
     this.resultJson = const Value.absent(),
     this.dartCount = const Value.absent(),
+    this.deletedAt = const Value.absent(),
   }) : playerId = Value(playerId),
        gameId = Value(gameId),
        configJson = Value(configJson),
@@ -998,6 +1039,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     Expression<bool>? finished,
     Expression<String>? resultJson,
     Expression<int>? dartCount,
+    Expression<DateTime>? deletedAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1011,6 +1053,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
       if (finished != null) 'finished': finished,
       if (resultJson != null) 'result_json': resultJson,
       if (dartCount != null) 'dart_count': dartCount,
+      if (deletedAt != null) 'deleted_at': deletedAt,
     });
   }
 
@@ -1026,6 +1069,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     Value<bool>? finished,
     Value<String?>? resultJson,
     Value<int>? dartCount,
+    Value<DateTime?>? deletedAt,
   }) {
     return SessionsCompanion(
       id: id ?? this.id,
@@ -1039,6 +1083,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
       finished: finished ?? this.finished,
       resultJson: resultJson ?? this.resultJson,
       dartCount: dartCount ?? this.dartCount,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
@@ -1078,6 +1123,9 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     if (dartCount.present) {
       map['dart_count'] = Variable<int>(dartCount.value);
     }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
     return map;
   }
 
@@ -1094,7 +1142,8 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
           ..write('endedAt: $endedAt, ')
           ..write('finished: $finished, ')
           ..write('resultJson: $resultJson, ')
-          ..write('dartCount: $dartCount')
+          ..write('dartCount: $dartCount, ')
+          ..write('deletedAt: $deletedAt')
           ..write(')'))
         .toString();
   }
@@ -5454,6 +5503,7 @@ typedef $$SessionsTableCreateCompanionBuilder = SessionsCompanion Function({
   Value<bool> finished,
   Value<String?> resultJson,
   Value<int> dartCount,
+  Value<DateTime?> deletedAt,
 });
 typedef $$SessionsTableUpdateCompanionBuilder = SessionsCompanion Function({
   Value<int> id,
@@ -5467,6 +5517,7 @@ typedef $$SessionsTableUpdateCompanionBuilder = SessionsCompanion Function({
   Value<bool> finished,
   Value<String?> resultJson,
   Value<int> dartCount,
+  Value<DateTime?> deletedAt,
 });
 
 final class $$SessionsTableReferences
@@ -5566,6 +5617,11 @@ class $$SessionsTableFilterComposer
 
   ColumnFilters<int> get dartCount => $composableBuilder(
     column: $table.dartCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5677,6 +5733,11 @@ class $$SessionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$PlayersTableOrderingComposer get playerId {
     final $$PlayersTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -5743,6 +5804,9 @@ class $$SessionsTableAnnotationComposer
 
   GeneratedColumn<int> get dartCount =>
       $composableBuilder(column: $table.dartCount, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
 
   $$PlayersTableAnnotationComposer get playerId {
     final $$PlayersTableAnnotationComposer composer = $composerBuilder(
@@ -5832,6 +5896,7 @@ class $$SessionsTableTableManager
                 Value<bool> finished = const Value.absent(),
                 Value<String?> resultJson = const Value.absent(),
                 Value<int> dartCount = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
               }) => SessionsCompanion(
                 id: id,
                 uid: uid,
@@ -5844,6 +5909,7 @@ class $$SessionsTableTableManager
                 finished: finished,
                 resultJson: resultJson,
                 dartCount: dartCount,
+                deletedAt: deletedAt,
               ),
           createCompanionCallback:
               ({
@@ -5858,6 +5924,7 @@ class $$SessionsTableTableManager
                 Value<bool> finished = const Value.absent(),
                 Value<String?> resultJson = const Value.absent(),
                 Value<int> dartCount = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
               }) => SessionsCompanion.insert(
                 id: id,
                 uid: uid,
@@ -5870,6 +5937,7 @@ class $$SessionsTableTableManager
                 finished: finished,
                 resultJson: resultJson,
                 dartCount: dartCount,
+                deletedAt: deletedAt,
               ),
           withReferenceMapper: (p0) => p0
               .map(

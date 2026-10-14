@@ -2177,5 +2177,125 @@
   "callerSoundsNone": "Keine Sounddateien gefunden (mp3, wav, m4a, aac, ogg)",
   "callerSoundsFailed": "Import fehlgeschlagen",
   "callerSoundsNames": "Welche Dateinamen?",
-  "callerSoundsNamesList": "0 bis 180: Punkte einer Aufnahme (0 oder no_score für „No score“)\nbust: Überworfen\ngame_on: Spielbeginn\ngame_shot: Checkout, optional game_shot_leg, game_shot_set, game_shot_match\nyou_require: Rest, danach die Zahl als eigene Datei (oder require_32 usw.)\n\nGroß-/Kleinschreibung ist egal, Unterordner werden mitgelesen."
+  "callerSoundsNamesList": "0 bis 180: Punkte einer Aufnahme (0 oder no_score für „No score“)\nbust: Überworfen\ngame_on: Spielbeginn\ngame_shot: Checkout, optional game_shot_leg, game_shot_set, game_shot_match\nyou_require: Rest, danach die Zahl als eigene Datei (oder require_32 usw.)\n\nGroß-/Kleinschreibung ist egal, Unterordner werden mitgelesen.",
+  "histTitle": "Verlauf",
+  "histFilterAll": "Alle",
+  "histFilterTraining": "Training",
+  "histFilterMatches": "Matches",
+  "histEmpty": "Noch nichts gespielt",
+  "histEmptyText": "Abgeschlossene Spiele und Matches erscheinen hier, die neuesten oben.",
+  "histEmptyFilter": "Keine Sessions in dieser Auswahl.",
+  "histToday": "Heute",
+  "histYesterday": "Gestern",
+  "histWon": "Sieg",
+  "histLost": "Niederlage",
+  "histAborted": "Abgebrochen",
+  "histFinished": "Beendet",
+  "histTournament": "Turnier",
+  "histVs": "gegen {names}",
+  "@histVs": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "histLegsScore": "{won}:{lost} Legs",
+  "@histLegsScore": {
+    "placeholders": {
+      "won": {
+        "type": "int"
+      },
+      "lost": {
+        "type": "int"
+      }
+    }
+  },
+  "histSetsScore": "{won}:{lost} Sätze",
+  "@histSetsScore": {
+    "placeholders": {
+      "won": {
+        "type": "int"
+      },
+      "lost": {
+        "type": "int"
+      }
+    }
+  },
+  "histKeyMetrics": "Kennzahlen",
+  "histChartScore": "Punkte je Aufnahme",
+  "histChartTotal": "Punktestand nach jeder Aufnahme",
+  "histChartHits": "Treffer aufs Ziel je Aufnahme",
+  "histChartAverage": "Ø {value}",
+  "@histChartAverage": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "histVisits": "Aufnahmen",
+  "histVisitsCount": "{count} Aufnahmen",
+  "@histVisitsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "histFinishAttempts": "Darts aufs Finish: {hits} von {attempts} getroffen",
+  "@histFinishAttempts": {
+    "placeholders": {
+      "hits": {
+        "type": "int"
+      },
+      "attempts": {
+        "type": "int"
+      }
+    }
+  },
+  "histLegendFinishHit": "Finish getroffen",
+  "histLegendFinishMiss": "Finish verfehlt",
+  "histLegendIgnored": "zählte nicht",
+  "histBust": "Bust",
+  "histLegWon": "{name} · Checkout {checkout} nach {darts} Darts",
+  "@histLegWon": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "checkout": {
+        "type": "int"
+      },
+      "darts": {
+        "type": "int"
+      }
+    }
+  },
+  "histLegOpen": "nicht beendet",
+  "histLegsUnknown": "Bei diesem Match ist nicht gespeichert, wann welches Leg endete. Die Aufnahmen stehen deshalb ohne Rest und Bust.",
+  "histOpponentsUnknown": "Von den Gegnern sind bei diesem Match nur die Namen gespeichert.",
+  "histOwnThrowsOnly": "Gespeichert sind nur deine eigenen Würfe.",
+  "histDelete": "Session löschen",
+  "histDeleteTitle": "Session löschen?",
+  "histDeleteText": "{game} vom {date} mit {darts} Darts wird gelöscht, auch auf abgeglichenen Geräten. Statistik, Tagesziel und Ziele rechnen ohne sie neu. Bereits freigeschaltete Erfolge bleiben.",
+  "@histDeleteText": {
+    "placeholders": {
+      "game": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      },
+      "darts": {
+        "type": "int"
+      }
+    }
+  },
+  "histDeleteConfirm": "Löschen",
+  "histDeleted": "Session gelöscht",
+  "histNotFound": "Diese Session gibt es nicht mehr.",
+  "histPlayAgain": "Nochmal spielen",
+  "histNoThrows": "Zu dieser Session sind keine Würfe gespeichert.",
+  "histChartMarks": "Marks je Aufnahme"
 }

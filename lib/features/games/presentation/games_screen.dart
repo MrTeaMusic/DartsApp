@@ -100,7 +100,16 @@ class GamesScreen extends ConsumerWidget {
               ),
               SliverPadding(
                 padding: EdgeInsets.fromLTRB(page, look.sectionGap, page, 0),
-                sliver: SliverToBoxAdapter(child: SectionHeader(l10n.gameRecent)),
+                sliver: SliverToBoxAdapter(
+                  child: SectionHeader(
+                    l10n.gameRecent,
+                    trailing: TextButton(
+                      key: const Key('games-open-history'),
+                      onPressed: () => context.go(Routes.history),
+                      child: Text(l10n.histTitle),
+                    ),
+                  ),
+                ),
               ),
               SliverPadding(
                 padding: EdgeInsets.fromLTRB(page, 0, page, page),
@@ -209,6 +218,8 @@ class _RecentTile extends StatelessWidget {
     };
     final look = context.look;
     return ListTile(
+      key: Key('games-recent-${summary.id}'),
+      onTap: () => context.go(Routes.session(summary.id)),
       leading: IconBadge(icon: gameIcon(summary.gameId), size: 38),
       title: Text(l10n.gameTitle(summary.gameId), overflow: TextOverflow.ellipsis),
       subtitle: Text(

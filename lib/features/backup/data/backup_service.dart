@@ -36,8 +36,9 @@ class BackupService {
   /// 3: zusätzlich eigene Trainingspläne (`plans`).
   /// 4: zusätzlich Erfolge (`achievements`) und Challenge-Ergebnisse
   /// (`challenges`).
+  /// 5: zusätzlich gelöschte Sessions als Markierung (`deletedSessions`).
   /// Ältere Versionen werden weiter gelesen.
-  static const int version = 4;
+  static const int version = 5;
 
   // ---------------------------------------------------------------- JSON
 
@@ -119,7 +120,7 @@ class BackupService {
   Future<String> exportSessionsCsv({int? playerId}) async {
     final players = {for (final p in await db.select(db.players).get()) p.id: p.name};
     final sessions = await (db.select(db.sessions)
-          ..where((s) => _player(s.playerId, playerId) & s.endedAt.isNotNull())
+          ..where((s) => _player(s.playerId, playerId) & s.endedAt.isNotNull() & s.deletedAt.isNull())
           ..orderBy([(s) => OrderingTerm.asc(s.startedAt)]))
         .get();
     final rows = <List<Object?>>[];

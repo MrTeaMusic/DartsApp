@@ -135,6 +135,45 @@ Für Verlauf und Bestwert:
 | Around the World mit Überspringen | Punkte |
 | Spiele ohne Eintrag (z. B. X01) | `average`, falls das Spiel ihn meldet; sonst gibt es keinen Bestwert |
 
+## Spielverlauf
+
+Unter **Statistik › Verlauf**, über „Verlauf“ bei „Zuletzt gespielt“ (Start und Training) oder durch
+Antippen einer Session dort. Die Liste zeigt alle abgeschlossenen Sessions des aktiven Profils nach Tag,
+neueste oben, filterbar nach Alle, Training und Matches. Jede Zeile: Spiel, Uhrzeit, Darts, Dauer,
+„abgebrochen“ und die Hauptkennzahl (siehe unten); fehlt sie (abgebrochen bei Kennzahlen, die nur vollständige
+Spiele haben), stehen die geworfenen Darts. Bei Matches Gegner, Sieg oder Niederlage und die
+Legs (eigene : verlorene).
+
+Die **Detailansicht** einer Session zeigt:
+
+* Kopf mit Spiel, Datum, Status, Dauer, Profil und Darts; bei Matches Format und Turnier.
+* Kennzahlen wie im Ergebnis des Spiels. Dafür wird die Session aus Config, Startwert und Würfen noch
+  einmal durchgespielt (wie bei „Ziel je Dart“); unbekannte Spiele zeigen die gespeicherten Kennzahlen.
+* Diagramm je Aufnahme: Punkte (Scoring-Spiele, X01, Matches, mit Schnitt als gestrichelter Linie),
+  Punktestand (z. B. Bob's 27), Marks (Cricket) oder Treffer aufs Ziel (z. B. Around the Clock).
+  Checkout-Aufnahmen sind grün.
+* Heatmap, wenn Würfe mit Position gespeichert sind (Simulator, Autodarts).
+* Jede Aufnahme mit ihren Darts, dem Wert der Aufnahme und – bei Spielen mit Rest oder Punktestand – dem
+  Stand danach. Der Wert sind Punkte bei Scoring-Spielen, X01 und Matches, Marks bei Cricket und Treffer
+  aufs Ziel bei den übrigen Zielspielen (Around the Clock, Bob's 27 …).
+  Bust steht rot, ein geschafftes Finish als Haken. **Darts aufs Finish** haben einen Rahmen: grün
+  getroffen, rot verfehlt. Gemeint sind Darts, bei denen das Spiel genau ein Double (oder Bull) als Ziel
+  vorgab, im Match Darts bei einem mit einem Dart checkbaren Rest (wie die Checkout-Quote). Darts, die
+  nach Bust oder Checkout nicht mehr zählten, sind durchgestrichen.
+
+**Matches:** Gespeichert sind nur die eigenen Würfe. Seit dem Spielverlauf enthält das Ergebnis eines
+Matches zusätzlich die Kennzahlen aller Teilnehmer und je Leg Sieger, Checkout, Darts und die Aufnahme,
+mit der es endete. Daraus zeigt die Detailansicht den Endstand, die Tabelle aller Teilnehmer und die
+Aufnahmen je Leg mit Rest. Ältere Matches haben das nicht: Von den Gegnern stehen dann nur die Namen da;
+wurden alle Legs selbst gewonnen, lassen sich die Legs trotzdem trennen, sonst stehen die Aufnahmen ohne
+Rest und Bust in einer Liste.
+
+**Löschen:** In der Detailansicht (Papierkorb oben oder „Session löschen“ unten), mit Rückfrage. Die
+Würfe werden entfernt, die Session bleibt als Löschmarkierung (`deletedAt`) stehen, damit der
+[Sync](sync.md) das Löschen an alle Geräte weitergibt. Statistik, Ziele, Tagesziel und Rekorde rechnen
+sofort ohne sie. Bereits freigeschaltete Erfolge und Challenge-Bestwerte bleiben (sie werden beim
+Freischalten gespeichert).
+
 ## Ziele
 
 Pro Art gibt es ein Ziel je Profil. Antippen ändert oder löscht es.
@@ -155,8 +194,9 @@ Unter Optionen › Daten. Auf Windows und macOS öffnet sich ein Speichern-Dialo
 Dateien im Dokumente-Ordner der App (Dateien-App › Auf meinem iPhone › DartLab).
 
 * **Backup (JSON):** alle Profile, Sessions, Würfe (mit Rohdaten), Ziele und eigenen
-  [Trainingspläne](trainingsplaene.md). Format `{"format": "dartlab-backup", "version": 3, …}`,
-  dasselbe Datenformat wie beim [Sync im Heimnetz](sync.md).
+  [Trainingspläne](trainingsplaene.md), dazu gelöschte Sessions als Markierung (`deletedSessions`).
+  Format `{"format": "dartlab-backup", "version": 5, …}`, dasselbe Datenformat wie beim
+  [Sync im Heimnetz](sync.md).
 * **Import:** führt ein Backup mit den vorhandenen Daten zusammen, nach denselben Regeln wie der
   Sync. Sessions mit bekannter ID werden übersprungen, ein zweiter Import derselben Datei ändert
   also nichts. Backups der Version 2 (ohne Trainingspläne) und 1 (ohne IDs) lassen sich weiter
