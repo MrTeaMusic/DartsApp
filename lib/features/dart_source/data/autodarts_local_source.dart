@@ -136,8 +136,31 @@ class AutodartsLocalSource implements DartSource {
     await _raw.close();
   }
 
-  /// Schickt einen Befehl an den Board Manager.
+  int _listenOnlyHolds = 0;
+
+  /// Nur mithören: Solange ein Halter aktiv ist, verweigert [send] jeden
+  /// Befehl. Autodarts Live nutzt das, weil ein Start/Stop/Reset ein
+  /// laufendes Online-Match auf play.autodarts.io stören würde.
+  bool get listenOnly => _listenOnlyHolds > 0;
+
+  /// Schaltet [listenOnly] ein. Die zurückgegebene Funktion gibt den Halter
+  /// wieder frei (mehrfacher Aufruf schadet nicht).
+  void Function() holdListenOnly() {
+    _listenOnlyHolds++;
+    var released = false;
+    return () {
+      if (released) return;
+      released = true;
+      _listenOnlyHolds--;
+    };
+  }
+
+  /// Schickt einen Befehl an den Board Manager (nicht im Modus [listenOnly]).
   Future<bool> send(AutodartsCommand command) async {
+    if (listenOnly) {
+      _info('Befehl ${command.name} nicht gesendet: Autodarts Live hört nur mit');
+      return false;
+    }
     final uri = Uri(scheme: 'http', host: host, port: port, path: command.path);
     _log('http ${command.method} ${command.path}', '', incoming: false);
     try {

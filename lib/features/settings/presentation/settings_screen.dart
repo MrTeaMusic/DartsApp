@@ -10,6 +10,7 @@ import '../../../core/l10n.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/app_version.dart';
 import '../../../core/settings/app_settings.dart';
+import '../../autodarts_live/presentation/autodarts_live_routes.dart';
 import '../../backup/presentation/backup_card.dart';
 import '../../board/presentation/board_style.dart';
 import '../../board/presentation/dartboard_view.dart';
@@ -430,6 +431,27 @@ class _AutodartsConnectionCardState extends ConsumerState<_AutodartsConnectionCa
                     child: Text(l10n.calibReset),
                   ),
               ],
+            ),
+            const Divider(height: AppSpacing.xl),
+            // Autodarts Live: beim Start direkt mitschreiben.
+            SwitchListTile(
+              key: const Key('live-autostart'),
+              contentPadding: EdgeInsets.zero,
+              value: widget.settings.autodartsLiveAutoStart,
+              onChanged: (v) => ref.read(settingsProvider.notifier).update((x) => x.copyWith(autodartsLiveAutoStart: v)),
+              title: Text(l10n.liveAutoStart),
+              subtitle: Text(l10n.liveAutoStartHint),
+              secondary: const Icon(Icons.hearing_rounded),
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                key: const Key('open-autodarts-live-settings'),
+                onPressed: () => context.go(AutodartsLiveRoutes.live),
+                iconAlignment: IconAlignment.end,
+                icon: const Icon(Icons.chevron_right_rounded),
+                label: Text(l10n.liveOpen),
+              ),
             ),
           ],
         ),

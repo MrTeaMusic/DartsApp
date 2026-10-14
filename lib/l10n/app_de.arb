@@ -2297,5 +2297,112 @@
   "histNotFound": "Diese Session gibt es nicht mehr.",
   "histPlayAgain": "Nochmal spielen",
   "histNoThrows": "Zu dieser Session sind keine Würfe gespeichert.",
-  "histChartMarks": "Marks je Aufnahme"
+  "histChartMarks": "Marks je Aufnahme",
+  "liveTitle": "Autodarts Live",
+  "liveEntryText": "Online-Match auf play.autodarts.io spielen, DartLab schreibt deine Darts mit.",
+  "liveHint": "Spiel dein Match wie gewohnt auf play.autodarts.io – DartLab schreibt mit.",
+  "liveHintDetail": "DartLab hört nur zu und sendet nichts an den Board Manager. Jeder Dart auf deinem Board zählt für dich: Wirf also nur selbst.",
+  "liveLimits": "Kein Restwert, keine Checkouts, keine Legs – DartLab sieht nur die Darts.",
+  "liveVisitCurrent": "Aktuelle Aufnahme",
+  "liveVisitLast": "Letzte Aufnahme",
+  "liveWaiting": "Warte auf den ersten Dart …",
+  "liveSessionSince": "Session seit {time}",
+  "@liveSessionSince": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "livePauseRule": "Nach {minutes} Minuten ohne Dart beginnt eine neue Session.",
+  "@livePauseRule": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "liveStatsTitle": "Diese Session",
+  "liveRawAverageHint": "Rohpunkte aller Darts, auch Bust und Doppel-Versuche. Kein offizieller X01-Average.",
+  "liveScores": "100+ / 140+ / 180",
+  "liveDistribution": "Treffer nach Feld",
+  "liveTriple": "Triple",
+  "liveDouble": "Doppel",
+  "liveSingle": "Single",
+  "liveMiss": "Daneben",
+  "liveHeatmap": "Heatmap",
+  "liveRecent": "Letzte Aufnahmen",
+  "liveEnd": "Beenden",
+  "liveSaved": "Session gespeichert: {count} Darts",
+  "@liveSaved": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "liveNothingSaved": "Keine Darts mitgeschrieben",
+  "liveNeedsAutodarts": "Autodarts Live braucht die Datenquelle „Autodarts (lokal)“.",
+  "liveNeedsAutodartsText": "DartLab verbindet sich dann mit dem Board Manager auf diesem PC und hört nur zu. Adresse und Port stehen unter Optionen › Datenquelle.",
+  "liveSwitchSource": "Auf Autodarts umstellen",
+  "liveNotConnected": "Board Manager unter {address} nicht erreichbar. Läuft er auf diesem PC?",
+  "@liveNotConnected": {
+    "placeholders": {
+      "address": {
+        "type": "String"
+      }
+    }
+  },
+  "liveAutoStart": "Beim Öffnen von DartLab automatisch mitschreiben",
+  "liveAutoStartHint": "DartLab startet direkt in Autodarts Live.",
+  "liveOpen": "Autodarts Live öffnen",
+  "statRawAverage": "Ø 3 Darts (roh)",
+  "statTriplesRate": "Triple-Anteil",
+  "statDoublesRate": "Doppel-Anteil",
+  "statSinglesRate": "Single-Anteil",
+  "statMissRate": "Fehlwurf-Quote",
+  "statCount100": "100+",
+  "statCount140": "140+",
+  "statCount180": "180er",
+  "liveTitleX01": "Autodarts Live · X01",
+  "liveX01": "X01 mitzählen",
+  "liveX01Hint": "DartLab rechnet deinen Rest aus deinen Darts. Die Darts deines Gegners sieht DartLab nicht: Checkt er, tippe auf „Leg verloren“.",
+  "liveX01Off": "Aus: DartLab zählt nur Felder und Punkte, ohne Rest und Checkouts.",
+  "liveX01NewSession": "Umschalten beginnt eine neue Session.",
+  "liveLegLost": "Leg verloren",
+  "liveLegRestart": "Leg neu starten",
+  "liveLegInfo": "Leg {leg} · {won}:{lost}",
+  "@liveLegInfo": {
+    "placeholders": {
+      "leg": {
+        "type": "int"
+      },
+      "won": {
+        "type": "int"
+      },
+      "lost": {
+        "type": "int"
+      }
+    }
+  },
+  "liveLegsValue": "{won}:{lost}",
+  "@liveLegsValue": {
+    "placeholders": {
+      "won": {
+        "type": "int"
+      },
+      "lost": {
+        "type": "int"
+      }
+    }
+  },
+  "liveLegs": "Legs gew. : verl.",
+  "liveLegLostDone": "Leg verloren – neues Leg ab {score}",
+  "@liveLegLostDone": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  }
 }

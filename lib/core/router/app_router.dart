@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/autodarts_live/presentation/autodarts_live_routes.dart';
 import '../../features/challenges/presentation/challenge_routes.dart';
 import '../../features/dart_source/presentation/debug_screen.dart';
 import '../../features/games/presentation/game_play_screen.dart';
@@ -15,6 +16,8 @@ import '../../features/plans/presentation/plan_routes.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/simulator/presentation/board_screen.dart';
 import '../../features/stats/presentation/stats_screen.dart';
+import '../../features/dart_source/domain/dart_event.dart';
+import '../settings/app_settings.dart';
 import '../widgets/adaptive_scaffold.dart';
 
 abstract final class Routes {
@@ -31,8 +34,11 @@ abstract final class Routes {
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
+  // Optionen › Autodarts: beim Start direkt in Autodarts Live.
+  final settings = ref.read(settingsProvider);
+  final liveOnStart = settings.autodartsLiveAutoStart && settings.sourceKind == DartSourceKind.autodartsLocal;
   final router = GoRouter(
-    initialLocation: Routes.home,
+    initialLocation: liveOnStart ? AutodartsLiveRoutes.live : Routes.home,
     routes: [
       // Spielansicht ohne Navigation, damit das Board möglichst groß ist.
       GoRoute(path: Routes.play, builder: (_, _) => const GamePlayScreen()),
@@ -52,6 +58,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                 ...planRoutes,
                 ...matchRoutes,
                 ...challengeRoutes,
+                ...autodartsLiveRoutes,
                 GoRoute(
                   path: ':gameId',
                   builder: (_, state) => GameSetupScreen(gameId: state.pathParameters['gameId']!),

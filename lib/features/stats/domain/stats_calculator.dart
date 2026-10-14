@@ -361,7 +361,7 @@ class StatsCalculator {
   /// X01-Spiele: Checkout-Darts und gewonnene Legs kommen aus den
   /// Kennzahlen `checkoutDarts` und `legsWon` (Matches speichern nur die
   /// eigenen Darts, deshalb lässt sich dort kein Ziel je Dart nachbauen).
-  static const Set<String> x01Games = {'x01', 'x01_match'};
+  static const Set<String> x01Games = {'x01', 'x01_match', 'x01_live'};
 
   /// Doppel-Auswertung des Zeitraums: je Doppel Quote, Daneben-Richtung und
   /// Streubild, dazu der Verlauf (letzte 30 Tage gegen die 30 davor) und

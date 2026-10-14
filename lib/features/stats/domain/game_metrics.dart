@@ -41,6 +41,10 @@ class PrimaryMetric {
     'exact_score': PrimaryMetric('successRate', format: MetricFormat.percent),
     'three_in_a_bed': PrimaryMetric('visits', higherIsBetter: false, format: MetricFormat.integer, onlyCompleted: true),
     'setup_shot': PrimaryMetric('successRate', format: MetricFormat.percent),
+    // Autodarts Live: Rohpunkte aller Darts bzw. mit „X01 mitzählen“ der
+    // Average wie im Match (Bust-Aufnahmen zählen 0).
+    'autodarts_live': PrimaryMetric('rawAverage'),
+    'x01_live': PrimaryMetric('average'),
   };
 
   /// Hauptkennzahl eines Spiels. Spiele ohne Eintrag (z. B. neu
@@ -52,7 +56,10 @@ class PrimaryMetric {
 
 /// Spiele, deren Würfe in den 3-Dart-Average eingehen (dort wird auf Punkte
 /// geworfen, nicht auf bestimmte Felder).
-const Set<String> scoringGames = {'target_practice', 'score_target', 'highscore_hunt'};
+///
+/// Autodarts Live ohne X01: DartLab kennt dort nur die Felder, gezählt
+/// werden die Rohpunkte aller Darts.
+const Set<String> scoringGames = {'target_practice', 'score_target', 'highscore_hunt', 'autodarts_live'};
 
 /// Spiele, deren volle Aufnahmen in die Punkteverteilung und Konstanz
 /// eingehen: die Scoring-Spiele und X01-Varianten.

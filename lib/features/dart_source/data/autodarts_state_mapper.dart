@@ -150,6 +150,8 @@ class AutodartsStateMapper {
     final number = _asInt(raw['number']);
     final multiplier = _asInt(raw['multiplier']);
     if (bed == 'Outside' || multiplier == 0) return Segment.miss;
+    // Nicht am echten Board gesehen, aber denkbar: Bull als Zahl 50.
+    if (number == 50) return Segment.bull;
     if (number != null && multiplier != null) {
       try {
         final s = Segment.fromNumber(number, multiplier);

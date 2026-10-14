@@ -72,6 +72,11 @@ Mitschnitt: `test/fixtures/autodarts/board-manager-2.0.2-windows.jsonl` (läuft 
 
 Noch nicht gesehen: Bull/25, Doubles, eine Korrektur am Board, ein Dart mit `bouncer: true`.
 
+## Autodarts Live (Online-Matches mitschreiben)
+
+Siehe `docs/autodarts-live.md`. Der Modus hört nur zu: Solange er läuft, verweigert die Quelle jeden Befehl
+(`listenOnly`), damit kein Start/Stop/Reset ein laufendes Online-Match stört.
+
 ## Wie DartLab das umsetzt (`AutodartsLocalSource`)
 
 1. WebSocket `/api/events` öffnen, `state`-Nachrichten auswerten.

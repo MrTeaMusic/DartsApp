@@ -24,6 +24,7 @@ import '../domain/games/switch_drill.dart';
 import '../domain/games/three_in_a_bed.dart';
 import '../domain/games/x01_solo.dart';
 import '../../matches/domain/match_result.dart';
+import '../../autodarts_live/domain/live_stats.dart';
 
 /// Übersetzt die stabilen Schlüssel der Spiel-Domäne in Text und Icons.
 /// Unbekannte Schlüssel erscheinen unverändert, damit nichts verschwindet.
@@ -54,6 +55,8 @@ extension GameTexts on AppLocalizations {
         ThreeInABed.id => gameThreeInABed,
         SetupShot.id => gameSetupShot,
         matchGameId => gameMatchX01,
+        autodartsLiveGameId => liveTitle,
+        autodartsLiveX01GameId => liveTitleX01,
         _ => id,
       };
 
@@ -267,6 +270,14 @@ extension GameTexts on AppLocalizations {
         'averageGap' => statAverageGap,
         'ideal' => statIdeal,
         'idealRate' => statIdealRate,
+        'rawAverage' => statRawAverage,
+        'triplesRate' => statTriplesRate,
+        'doublesRate' => statDoublesRate,
+        'singlesRate' => statSinglesRate,
+        'missRate' => statMissRate,
+        'count100' => statCount100,
+        'count140' => statCount140,
+        'count180' => statCount180,
         _ => key,
       };
 
@@ -316,6 +327,7 @@ IconData gameIcon(String id) => switch (id) {
       ThreeInABed.id => Icons.bed_rounded,
       SetupShot.id => Icons.tune_rounded,
       matchGameId => Icons.people_alt_rounded,
+      autodartsLiveGameId || autodartsLiveX01GameId => Icons.hearing_rounded,
       _ => Icons.sports_esports_rounded,
     };
 
