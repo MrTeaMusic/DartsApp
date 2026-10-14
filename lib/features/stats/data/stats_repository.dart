@@ -17,7 +17,8 @@ class StatsRepository {
   /// [CalculatorLoader]); ändert sich nichts (z. B. beim Start eines Spiels,
   /// dessen Session noch offen ist), kommt kein neuer Rechner.
   Stream<StatsCalculator> watchCalculator(int playerId) {
-    final q = db.select(db.sessions)..where((s) => s.playerId.equals(playerId) & s.endedAt.isNotNull());
+    final q = db.select(db.sessions)
+      ..where((s) => s.playerId.equals(playerId) & s.endedAt.isNotNull() & s.deletedAt.isNull());
     final loader = CalculatorLoader(db, playerId);
     return q.watch().asyncMap(loader.next).where((c) => c != null).cast<StatsCalculator>();
   }

@@ -440,3 +440,136 @@ class DoublesGrid extends StatelessWidget {
     });
   }
 }
+
+/// Ein Wert je Aufnahme einer Session (Spielverlauf): Säulen, z. B. Punkte
+/// oder Treffer, oder eine Linie für einen Punktestand. `NaN` = kein Wert.
+class VisitValuesChart extends StatelessWidget {
+  const VisitValuesChart({
+    super.key,
+    required this.values,
+    this.line = false,
+    this.average,
+    this.maxY,
+    this.highlight = const {},
+  });
+
+  final List<double> values;
+  final bool line;
+
+  /// Gestrichelte Linie, z. B. der Schnitt je Aufnahme.
+  final double? average;
+
+  /// Feste Obergrenze (z. B. 3 Treffer), sonst aus den Werten.
+  final double? maxY;
+
+  /// Aufnahmen (Index), deren Säule grün ist, z. B. ein Checkout.
+  final Set<int> highlight;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.dartColors;
+    final base = colors.chartPrimary;
+    final finite = [for (final v in values) if (v.isFinite) v];
+    if (finite.isEmpty) return const NoDataHint(height: 180);
+    final every = (values.length / 10).ceil().clamp(1, 1000);
+    final bottom = AxisTitles(
+      sideTitles: SideTitles(
+        showTitles: true,
+        interval: 1,
+        getTitlesWidget: (v, meta) {
+          final i = v.round();
+          if (v != i || i < 0 || i >= values.length || i % every != 0) return const SizedBox.shrink();
+          return Padding(padding: const EdgeInsets.only(top: 4), child: Text('${i + 1}', style: _axis(context)));
+        },
+      ),
+    );
+    final left = AxisTitles(
+      sideTitles: SideTitles(
+        showTitles: true,
+        reservedSize: 36,
+        getTitlesWidget: (v, meta) => v == meta.max || v != v.roundToDouble()
+            ? const SizedBox.shrink()
+            : Text(v.round().toString(), style: _axis(context)),
+      ),
+    );
+    final extra = average == null
+        ? null
+        : ExtraLinesData(horizontalLines: [
+            HorizontalLine(y: average!, color: colors.chartSecondary, strokeWidth: 2, dashArray: const [6, 4]),
+          ]);
+    if (line) {
+      final lo = math.min(0.0, finite.reduce(math.min));
+      final hi = finite.reduce(math.max);
+      final span = hi - lo == 0 ? 1.0 : hi - lo;
+      return LineChart(
+        LineChartData(
+          minY: lo == 0 ? 0 : lo - span * 0.1,
+          maxY: hi + span * 0.12,
+          minX: 0,
+          maxX: math.max(1, values.length - 1).toDouble(),
+          gridData: FlGridData(drawVerticalLine: false, getDrawingHorizontalLine: (_) => _gridLine(context)),
+          borderData: FlBorderData(show: false),
+          extraLinesData: extra,
+          lineTouchData: LineTouchData(
+            touchTooltipData: LineTouchTooltipData(
+              getTooltipColor: (_) => _tooltipColor(context),
+              getTooltipItems: (spots) => [
+                for (final s in spots) LineTooltipItem('${s.x.round() + 1}: ${s.y.round()}', _tooltip(context)),
+              ],
+            ),
+          ),
+          titlesData: FlTitlesData(topTitles: const AxisTitles(), rightTitles: const AxisTitles(), bottomTitles: bottom, leftTitles: left),
+          lineBarsData: [
+            LineChartBarData(
+              spots: [
+                for (final (i, v) in values.indexed)
+                  if (v.isFinite) FlSpot(i.toDouble(), v),
+              ],
+              color: base,
+              barWidth: 3,
+              dotData: FlDotData(show: values.length <= 30),
+              belowBarData: BarAreaData(
+                show: true,
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [base.withValues(alpha: 0.18), base.withValues(alpha: 0.0)],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    final double top = maxY ?? finite.fold<double>(0, math.max);
+    return LayoutBuilder(builder: (context, c) {
+      final barWidth = ((c.maxWidth - 40) / values.length * 0.62).clamp(2, 18).toDouble();
+      return BarChart(
+        BarChartData(
+          maxY: top == 0 ? 1 : (maxY ?? top * 1.12),
+          gridData: FlGridData(drawVerticalLine: false, getDrawingHorizontalLine: (_) => _gridLine(context)),
+          borderData: FlBorderData(show: false),
+          extraLinesData: extra,
+          barTouchData: BarTouchData(
+            touchTooltipData: BarTouchTooltipData(
+              getTooltipColor: (_) => _tooltipColor(context),
+              getTooltipItem: (group, _, rod, _) => BarTooltipItem('${group.x + 1}: ${rod.toY.round()}', _tooltip(context)),
+            ),
+          ),
+          titlesData: FlTitlesData(topTitles: const AxisTitles(), rightTitles: const AxisTitles(), bottomTitles: bottom, leftTitles: left),
+          barGroups: [
+            for (final (i, v) in values.indexed)
+              BarChartGroupData(x: i, barRods: [
+                BarChartRodData(
+                  toY: v.isFinite ? v : 0,
+                  color: highlight.contains(i) ? colors.success : base,
+                  width: barWidth,
+                  borderRadius: _barRadius(context, barWidth),
+                ),
+              ]),
+          ],
+        ),
+      );
+    });
+  }
+}

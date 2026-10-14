@@ -31,6 +31,10 @@ beide einmal abgeglichen haben.
 
 * **Sessions** werden nach dem Abschluss nicht mehr verändert. Jede hat eine eindeutige ID; fehlende
   werden übernommen, vorhandene übersprungen. Laufende Sessions werden nicht abgeglichen.
+* **Gelöschte Sessions** (Spielverlauf) bleiben ohne Würfe als Markierung stehen. Das Manifest führt sie
+  in `sessions` (damit kein Gerät sie für fehlend hält) und als `deletedSessions`; wer sie noch hat,
+  löscht sie, wer sie nie hatte, merkt sich nur die Markierung. Löschen gewinnt immer. Geräte mit einer
+  älteren Version behalten die Session, schicken sie aber auch nicht zurück.
 * **Eigene Trainingspläne** werden wie Ziele behandelt: die neuere Änderung gewinnt, bei gleicher
   Zeit das Löschen bzw. der größere Inhalt. Zwei gleich benannte Pläne bleiben zwei Pläne.
   Plan-Durchläufe (wo man in einem Plan gerade steht) bleiben auf dem Gerät.

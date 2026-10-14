@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/design/components/components.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
+import '../../../core/router/app_router.dart';
 import '../../games/domain/game_catalog.dart';
 import '../../games/presentation/game_texts.dart';
 import '../../profiles/presentation/active_player.dart';
@@ -99,6 +101,13 @@ class StatsScreen extends ConsumerWidget {
           appBar: AppPageBar(
             title: Text(l10n.statsTitle),
             actions: [
+              TextButton.icon(
+                key: const Key('stats-history'),
+                onPressed: () => context.go(Routes.history),
+                icon: const Icon(Icons.history_rounded),
+                label: Text(l10n.histTitle),
+              ),
+              const SizedBox(width: AppSpacing.xs),
               if (player != null)
                 Chip(avatar: const Icon(Icons.person_rounded, size: 18), label: Text(player.name)),
             ],

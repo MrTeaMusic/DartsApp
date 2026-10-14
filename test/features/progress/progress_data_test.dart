@@ -160,6 +160,6 @@ void main() {
     final indexes = await again.customSelect("SELECT name FROM sqlite_master WHERE type = 'index'").get();
     expect(indexes.map((r) => r.read<String>('name')), containsAll(['achievements_key', 'challenge_results_key']));
     final version = await again.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 5);
+    expect(version.data.values.single, 6);
   });
 }

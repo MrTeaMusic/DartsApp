@@ -182,8 +182,10 @@ void main() {
     await controller().start(saved.setup, resume: saved);
     expect(state().match.players[0].remaining, 241);
     await controller().pendingWrites;
-    final sessions = await db.select(db.sessions).get();
+    final sessions = await (db.select(db.sessions)..where((s) => s.deletedAt.isNull())).get();
     expect(sessions, hasLength(1), reason: 'alte Teil-Session ersetzt');
+    expect(await (db.select(db.sessions)..where((s) => s.deletedAt.isNotNull())).get(), hasLength(1),
+        reason: 'als gelöscht markiert, damit der Abgleich sie nicht zurückbringt');
     expect((await db.select(db.throws).get()).single.sessionId, sessions.single.id);
   });
 }
