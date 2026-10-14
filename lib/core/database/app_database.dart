@@ -26,6 +26,9 @@ class Players extends Table {
 }
 
 /// Eine gespielte Trainingseinheit (ein Spiel).
+///
+/// Gelöschte Sessions bleiben mit [deletedAt] als Markierung stehen (ohne
+/// Würfe), damit das Löschen beim Abgleich auch auf anderen Geräten ankommt.
 @DataClassName('SessionRow')
 @TableIndex(name: 'sessions_uid', columns: {#uid}, unique: true)
 class Sessions extends Table {
@@ -42,6 +45,7 @@ class Sessions extends Table {
   BoolColumn get finished => boolean().withDefault(const Constant(false))();
   TextColumn get resultJson => text().nullable()();
   IntColumn get dartCount => integer().withDefault(const Constant(0))();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
 }
 
 /// Jeder einzelne Dart mit Zeitstempel und Rohdaten, damit Statistiken
@@ -181,7 +185,7 @@ class AppDatabase extends _$AppDatabase {
 
   /// Bei Schemaänderungen erhöhen und in [migration] einen Schritt ergänzen.
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -236,6 +240,10 @@ class AppDatabase extends _$AppDatabase {
             await customStatement(
               'CREATE UNIQUE INDEX IF NOT EXISTS challenge_results_key ON challenge_results (player_id, challenge_id)',
             );
+          }
+          // Version 6: Löschmarkierung für Sessions (Spielverlauf).
+          if (from < 6 && !await _hasColumn('sessions', sessions.deletedAt.name)) {
+            await m.addColumn(sessions, sessions.deletedAt);
           }
         },
         beforeOpen: (details) async {

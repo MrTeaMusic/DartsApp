@@ -4,7 +4,6 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/database/app_database.dart';
 import '../../board/domain/segment.dart';
 import '../../dart_source/data/local_dart_source.dart';
 import '../../dart_source/data/manual_source.dart';
@@ -121,14 +120,14 @@ class MatchController extends Notifier<MatchState?> {
   Future<void> _openSessions(MatchSession session, SavedMatch? resume) async {
     _sessionIds.clear();
     final profiles = {for (final p in await ref.read(profileRepositoryProvider).players()) p.id};
-    final db = ref.read(appDatabaseProvider);
     final setup = session.setup;
     for (var i = 0; i < setup.players.length; i++) {
       final p = setup.players[i];
       // Eine beim Unterbrechen gespeicherte Teil-Session wird ersetzt, damit
-      // keine Darts doppelt zählen.
+      // keine Darts doppelt zählen. Gelöscht wird mit Markierung, sonst käme
+      // sie über den Abgleich zurück.
       final old = resume?.sessionIds[i];
-      if (old != null) await (db.delete(db.sessions)..where((s) => s.id.equals(old))).go();
+      if (old != null) await _repo.deleteSession(old);
       if (p.isBot || p.profileId == null || !profiles.contains(p.profileId)) continue;
       final id = await _repo.startSession(
         playerId: p.profileId!,

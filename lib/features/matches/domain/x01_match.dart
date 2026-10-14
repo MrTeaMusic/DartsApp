@@ -41,7 +41,7 @@ class MatchEvent {
 
 /// Ein beendetes Leg.
 class MatchLeg {
-  const MatchLeg({required this.winner, required this.set, required this.darts, required this.checkout});
+  const MatchLeg({required this.winner, required this.set, required this.darts, required this.checkout, this.visit = 0});
   final int winner;
 
   /// Satz (ab 1), 1 ohne Satzmodus.
@@ -50,6 +50,10 @@ class MatchLeg {
   /// Gezählte Darts des Siegers in diesem Leg.
   final int darts;
   final int checkout;
+
+  /// Aufnahme (wie [MatchDartOutcome.visitSerial]), mit der das Leg endete.
+  /// Daran lassen sich gespeicherte Würfe den Legs zuordnen.
+  final int visit;
 }
 
 /// Stand und Statistik eines Spielers im Match.
@@ -326,7 +330,7 @@ class X01Match {
   void _legWon(MatchPlayerState p) {
     final checkout = _visitStartRemaining;
     final legDarts = p.legDartPoints.length;
-    legs.add(MatchLeg(winner: current, set: setNumber, darts: legDarts, checkout: checkout));
+    legs.add(MatchLeg(winner: current, set: setNumber, darts: legDarts, checkout: checkout, visit: visitSerial));
     p.legs++;
     p.totalLegs++;
     if (checkout > p.highestFinish) p.highestFinish = checkout;

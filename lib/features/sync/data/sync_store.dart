@@ -80,8 +80,12 @@ class MergeResult {
 }
 
 /// Was ein Gerät hat: alle Profile, Ziele, eigenen Trainingspläne, Erfolge
-/// und Challenge-Ergebnisse (klein, inklusive gelöschter) und die IDs der
-/// abgeschlossenen Sessions.
+/// und Challenge-Ergebnisse (klein, inklusive gelöschter), die IDs der
+/// abgeschlossenen Sessions und die Markierungen gelöschter Sessions.
+///
+/// Gelöschte Sessions stehen auch in [sessionUids]. So hält kein Gerät sie
+/// für fehlend und schickt sie zurück, auch eines ohne Löschmarkierungen
+/// (ältere Version, ignoriert [deletedSessions]).
 class SyncManifest {
   const SyncManifest({
     required this.players,
@@ -90,6 +94,7 @@ class SyncManifest {
     this.achievements = const [],
     this.challenges = const [],
     required this.sessionUids,
+    this.deletedSessions = const [],
   });
   final List<Map<String, Object?>> players;
   final List<Map<String, Object?>> goals;
@@ -97,6 +102,7 @@ class SyncManifest {
   final List<Map<String, Object?>> achievements;
   final List<Map<String, Object?>> challenges;
   final Set<String> sessionUids;
+  final List<Map<String, Object?>> deletedSessions;
 
   Map<String, Object?> toJson() => {
         'players': players,
@@ -105,6 +111,7 @@ class SyncManifest {
         'achievements': achievements,
         'challenges': challenges,
         'sessions': sessionUids.toList(),
+        'deletedSessions': deletedSessions,
       };
 
   static SyncManifest fromJson(Map<String, Object?> j) => SyncManifest(
@@ -114,6 +121,7 @@ class SyncManifest {
         achievements: _maps(j['achievements']),
         challenges: _maps(j['challenges']),
         sessionUids: {for (final u in (j['sessions'] as List? ?? const [])) if (u is String) u},
+        deletedSessions: _maps(j['deletedSessions']),
       );
 }
 
@@ -126,7 +134,8 @@ List<Map<String, Object?>> _maps(Object? l) =>
 /// Ältere Backups (Version 1) haben keine `uid`; dann wird wie früher über
 /// Profilnamen und Startzeit zugeordnet, verknüpft über die lokalen `id`s.
 /// Trainingspläne gibt es ab Version 3, Erfolge und Challenge-Ergebnisse
-/// ab Version 4; ältere Pakete haben keine.
+/// ab Version 4, gelöschte Sessions (nur die Markierung, ohne Würfe) ab
+/// Version 5; ältere Pakete haben keine.
 class SyncBundle {
   const SyncBundle({
     this.players = const [],
@@ -136,6 +145,7 @@ class SyncBundle {
     this.plans = const [],
     this.achievements = const [],
     this.challenges = const [],
+    this.deletedSessions = const [],
   });
   final List<Map<String, Object?>> players;
   final List<Map<String, Object?>> sessions;
@@ -144,6 +154,7 @@ class SyncBundle {
   final List<Map<String, Object?>> plans;
   final List<Map<String, Object?>> achievements;
   final List<Map<String, Object?>> challenges;
+  final List<Map<String, Object?>> deletedSessions;
 
   Map<String, Object?> toJson() => {
         'players': players,
@@ -153,6 +164,7 @@ class SyncBundle {
         'plans': plans,
         'achievements': achievements,
         'challenges': challenges,
+        'deletedSessions': deletedSessions,
       };
 
   static SyncBundle fromJson(Map<String, Object?> j) => SyncBundle(
@@ -163,6 +175,7 @@ class SyncBundle {
         plans: _maps(j['plans']),
         achievements: _maps(j['achievements']),
         challenges: _maps(j['challenges']),
+        deletedSessions: _maps(j['deletedSessions']),
       );
 }
 
@@ -170,7 +183,9 @@ class SyncBundle {
 ///
 /// Regeln beim Zusammenführen:
 /// * Sessions ändern sich nach dem Abschluss nicht mehr: fehlende werden
-///   übernommen, vorhandene übersprungen.
+///   übernommen, vorhandene übersprungen. Gelöscht wird über eine Markierung
+///   (`deletedAt`, die Würfe verschwinden); sie gewinnt immer und hält die
+///   Session auch von anderen Geräten fern.
 /// * Profile und Ziele: die neueste Änderung gewinnt (`updatedAt`). Gelöscht
 ///   wird über eine Markierung (`deletedAt`), damit es weitergegeben wird.
 /// * Eigene Trainingspläne: ebenso, zugeordnet nur über die `uid` (zwei
@@ -197,9 +212,10 @@ class SyncStore {
     final challenges = await db.select(db.challengeResults).get();
     final sessions = await (db.selectOnly(db.sessions)
           ..addColumns([db.sessions.uid])
-          ..where(db.sessions.endedAt.isNotNull()))
+          ..where(db.sessions.endedAt.isNotNull() | db.sessions.deletedAt.isNotNull()))
         .map((r) => r.read(db.sessions.uid)!)
         .get();
+    final deleted = await (db.select(db.sessions)..where((s) => s.deletedAt.isNotNull())).get();
     return SyncManifest(
       players: [for (final p in players) _player(p)],
       goals: [for (final g in goals) if (byId[g.playerId] != null) _goal(g, byId[g.playerId]!)],
@@ -207,12 +223,14 @@ class SyncStore {
       achievements: [for (final a in achievements) if (byId[a.playerId] != null) _achievement(a, byId[a.playerId]!)],
       challenges: [for (final c in challenges) if (byId[c.playerId] != null) _challenge(c, byId[c.playerId]!)],
       sessionUids: sessions.toSet(),
+      deletedSessions: [for (final s in deleted) if (byId[s.playerId] != null) _deletedSession(s, byId[s.playerId]!)],
     );
   }
 
   static const _signatureSql = '''
 SELECT
-  (SELECT count(*) FROM sessions WHERE ended_at IS NOT NULL) || ':' ||
+  (SELECT count(*) FROM sessions WHERE ended_at IS NOT NULL) || '-' ||
+  (SELECT count(*) FROM sessions WHERE deleted_at IS NOT NULL) || ':' ||
   (SELECT count(*) || '-' || coalesce(max(coalesce(updated_at, created_at)), 0) FROM players) || ':' ||
   (SELECT count(*) || '-' || coalesce(max(coalesce(updated_at, created_at)), 0) FROM goals) || ':' ||
   (SELECT count(*) || '-' || coalesce(max(coalesce(updated_at, created_at)), 0) FROM training_plans) || ':' ||
@@ -220,8 +238,8 @@ SELECT
   (SELECT count(*) || '-' || coalesce(max(updated_at), 0) FROM challenge_results) AS sig''';
 
   /// Kurzer Fingerabdruck dessen, was abgeglichen wird. Ändert er sich, gibt
-  /// es etwas Neues (abgeschlossene Session, Profil, Ziel, Plan, Erfolg oder
-  /// Challenge-Ergebnis geändert).
+  /// es etwas Neues (abgeschlossene oder gelöschte Session, Profil, Ziel,
+  /// Plan, Erfolg oder Challenge-Ergebnis geändert).
   Future<String> signature() => db.customSelect(_signatureSql).map((r) => r.read<String>('sig')).getSingle();
 
   Stream<String> watchSignature() => db
@@ -233,7 +251,8 @@ SELECT
   /// Paket mit Profilen, Zielen, eigenen Trainingsplänen und den Sessions
   /// (samt Würfen). Pläne gehören keinem Profil und sind immer dabei. Ohne
   /// [sessionUids] alle, mit [playerId] nur ein Profil. [includeOpen] nimmt
-  /// auch laufende Sessions mit (fürs Backup).
+  /// auch laufende Sessions mit (fürs Backup). Gelöschte Sessions kommen nur
+  /// als Markierung mit (`deletedSessions`).
   Future<SyncBundle> bundle({Iterable<String>? sessionUids, int? playerId, bool includeOpen = false}) async {
     final players = await (db.select(db.players)..where((p) => playerId == null ? const Constant(true) : p.id.equals(playerId))).get();
     final playerUids = {for (final p in await db.select(db.players).get()) p.id: p.uid};
@@ -243,7 +262,7 @@ SELECT
       final q = db.select(db.sessions)
         ..where((s) {
           Expression<bool> e = const Constant(true);
-          if (!includeOpen) e = e & s.endedAt.isNotNull();
+          if (!includeOpen) e = e & (s.endedAt.isNotNull() | s.deletedAt.isNotNull());
           if (playerId != null) e = e & s.playerId.equals(playerId);
           if (wanted != null) e = e & s.uid.isIn(wanted);
           return e;
@@ -251,6 +270,8 @@ SELECT
         ..orderBy([(s) => OrderingTerm.asc(s.id)]);
       sessions.addAll(await q.get());
     }
+    final deleted = [for (final s in sessions) if (s.deletedAt != null) s];
+    sessions.removeWhere((s) => s.deletedAt != null);
     final sessionUid = {for (final s in sessions) s.id: s.uid};
     final throws = sessionUid.isEmpty
         ? const <ThrowRow>[]
@@ -273,6 +294,7 @@ SELECT
       plans: [for (final p in plans) _plan(p)],
       achievements: [for (final a in achievements) if (playerUids[a.playerId] != null) _achievement(a, playerUids[a.playerId]!)],
       challenges: [for (final c in challenges) if (playerUids[c.playerId] != null) _challenge(c, playerUids[c.playerId]!)],
+      deletedSessions: [for (final s in deleted) _deletedSession(s, playerUids[s.playerId]!)],
     );
   }
 
@@ -347,6 +369,16 @@ SELECT
         'dartCount': s.dartCount,
       };
 
+  /// Markierung einer gelöschten Session: genug, um sie zuzuordnen und auf
+  /// einem Gerät, das sie nie hatte, als gelöscht vorzumerken.
+  Map<String, Object?> _deletedSession(SessionRow s, String playerUid) => {
+        'uid': s.uid,
+        'playerUid': playerUid,
+        'gameId': s.gameId,
+        'startedAt': _time(s.startedAt),
+        'deletedAt': _time(s.deletedAt),
+      };
+
   Map<String, Object?> _throw(ThrowRow t, String sessionUid, String playerUid) => {
         'sessionId': t.sessionId,
         'sessionUid': sessionUid,
@@ -375,21 +407,23 @@ SELECT
         final players = await _mergePlayers(bundle.players);
         final goals = await _mergeGoals(bundle.goals, players);
         final plans = await _mergePlans(bundle.plans);
+        final deleted = await _mergeDeletedSessions(bundle.deletedSessions, players);
         final sessions = await _mergeSessions(bundle.sessions, bundle.throws, players);
         final achievements = await _mergeAchievements(bundle.achievements, players);
         final challenges = await _mergeChallenges(bundle.challenges, players);
-        return players.result + goals + plans + sessions + achievements + challenges;
+        return players.result + goals + plans + deleted + sessions + achievements + challenges;
       });
 
-  /// Nur Profile, Ziele, Trainingspläne, Erfolge und Challenge-Ergebnisse
-  /// (aus einem Manifest).
+  /// Nur Profile, Ziele, Trainingspläne, Erfolge, Challenge-Ergebnisse und
+  /// gelöschte Sessions (aus einem Manifest).
   Future<MergeResult> mergeMeta(SyncManifest m) => db.transaction(() async {
         final players = await _mergePlayers(m.players);
         final goals = await _mergeGoals(m.goals, players);
         final plans = await _mergePlans(m.plans);
         final achievements = await _mergeAchievements(m.achievements, players);
         final challenges = await _mergeChallenges(m.challenges, players);
-        return players.result + goals + plans + achievements + challenges;
+        final deleted = await _mergeDeletedSessions(m.deletedSessions, players);
+        return players.result + goals + plans + achievements + challenges + deleted;
       });
 
   static DateTime _stamp(DateTime created, DateTime? updated) => updated ?? created;
@@ -671,6 +705,41 @@ SELECT
       changed++;
     }
     return MergeResult(challenges: changed);
+  }
+
+  /// Gelöschte Sessions: eine vorhandene verliert ihre Würfe und bekommt die
+  /// Markierung; eine unbekannte wird nur als Markierung angelegt, damit sie
+  /// später von keinem Gerät mehr übernommen wird.
+  Future<MergeResult> _mergeDeletedSessions(List<Map<String, Object?>> incoming, _PlayerMap players) async {
+    var updated = 0;
+    for (final j in incoming) {
+      final uid = j['uid'];
+      final deletedAt = _parse(j['deletedAt']);
+      if (uid is! String || uid.isEmpty || deletedAt == null) continue;
+      final local = await (db.select(db.sessions)..where((s) => s.uid.equals(uid))).getSingleOrNull();
+      if (local != null) {
+        if (local.deletedAt != null) continue;
+        await (db.delete(db.throws)..where((t) => t.sessionId.equals(local.id))).go();
+        await (db.update(db.sessions)..where((s) => s.id.equals(local.id)))
+            .write(SessionsCompanion(deletedAt: Value(deletedAt), dartCount: const Value(0)));
+        updated++;
+        continue;
+      }
+      final player = await players.resolve(this, j);
+      if (player == null || player.deleted) continue;
+      final startedAt = _parse(j['startedAt']) ?? deletedAt;
+      await db.into(db.sessions).insert(SessionsCompanion.insert(
+            uid: Value(uid),
+            playerId: player.id,
+            gameId: j['gameId'] as String? ?? '',
+            configJson: '{}',
+            seed: 0,
+            startedAt: startedAt,
+            endedAt: Value(startedAt),
+            deletedAt: Value(deletedAt),
+          ));
+    }
+    return MergeResult(updated: updated);
   }
 
   Future<MergeResult> _mergeSessions(

@@ -153,6 +153,15 @@ class GameRepository {
     return row.read(c) ?? 0;
   }
 
+  /// Löscht eine abgeschlossene Session samt Würfen, z. B. eine falsch
+  /// gespeicherte. Die Zeile bleibt als Markierung (`deletedAt`) stehen, damit
+  /// der Abgleich das Löschen an die anderen Geräte weitergibt.
+  Future<void> deleteSession(int sessionId, {DateTime? at}) => db.transaction(() async {
+        await (db.delete(db.throws)..where((t) => t.sessionId.equals(sessionId))).go();
+        await (db.update(db.sessions)..where((s) => s.id.equals(sessionId)))
+            .write(SessionsCompanion(deletedAt: Value(at ?? DateTime.now()), dartCount: const Value(0)));
+      });
+
   Future<List<ThrowRow>> throwsOf(int sessionId) =>
       (db.select(db.throws)
             ..where((t) => t.sessionId.equals(sessionId))
@@ -162,7 +171,10 @@ class GameRepository {
   /// Abgeschlossene Sessions, neueste zuerst.
   Stream<List<SessionSummary>> watchRecent({int limit = 20, int? playerId}) {
     final q = db.select(db.sessions)
-      ..where((s) => s.endedAt.isNotNull() & (playerId == null ? const Constant(true) : s.playerId.equals(playerId)))
+      ..where((s) =>
+          s.endedAt.isNotNull() &
+          s.deletedAt.isNull() &
+          (playerId == null ? const Constant(true) : s.playerId.equals(playerId)))
       ..orderBy([(s) => OrderingTerm.desc(s.startedAt)])
       ..limit(limit);
     return q.watch().map((rows) => [for (final r in rows) _summary(r)]);
@@ -171,7 +183,7 @@ class GameRepository {
   /// Bester bisheriger Wert einer Kennzahl für ein Spiel (für Rekorde).
   Future<num?> bestMetric(String gameId, String metric, {bool higherIsBetter = true}) async {
     final rows = await (db.select(db.sessions)
-          ..where((s) => s.gameId.equals(gameId) & s.finished.equals(true)))
+          ..where((s) => s.gameId.equals(gameId) & s.finished.equals(true) & s.deletedAt.isNull()))
         .get();
     num? best;
     for (final r in rows) {
@@ -189,6 +201,7 @@ class GameRepository {
           ..where((s) =>
               s.gameId.equals(CheckoutTraining.id) &
               s.resultJson.isNotNull() &
+              s.deletedAt.isNull() &
               (playerId == null ? const Constant(true) : s.playerId.equals(playerId))))
         .get();
     final tries = <int, int>{};

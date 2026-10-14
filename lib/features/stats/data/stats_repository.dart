@@ -13,7 +13,8 @@ class StatsRepository {
 
   /// Neu berechnen, sobald sich Sessions des Spielers ändern.
   Stream<StatsCalculator> watchCalculator(int playerId) {
-    final q = db.select(db.sessions)..where((s) => s.playerId.equals(playerId) & s.endedAt.isNotNull());
+    final q = db.select(db.sessions)
+      ..where((s) => s.playerId.equals(playerId) & s.endedAt.isNotNull() & s.deletedAt.isNull());
     return q.watch().asyncMap((sessions) async {
       final throws = await (db.select(db.throws)..where((t) => t.playerId.equals(playerId))).get();
       return StatsCalculator(sessions: sessions, throws: throws);

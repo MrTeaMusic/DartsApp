@@ -54,6 +54,37 @@ GameResult matchResultFor(X01Match m, int player, MatchSetup setup) {
       'format': setup.format.toJson(),
       'won': m.winner == player,
       if (setup.tournamentMatch != null) 'tournamentMatch': setup.tournamentMatch,
+      // Für den Spielverlauf: wer man selbst war, Ergebnis aller Teilnehmer
+      // und jedes Leg (Würfe der Gegner werden nicht gespeichert).
+      'player': player,
+      'players': [
+        for (var i = 0; i < setup.players.length; i++)
+          {
+            'name': setup.players[i].name,
+            'bot': setup.players[i].isBot,
+            'botAverage': ?setup.players[i].botAverage,
+            ...matchPlayerStats(m.players[i]),
+          },
+      ],
+      'legs': [
+        for (final l in m.legs)
+          {'winner': l.winner, 'set': l.set, 'darts': l.darts, 'checkout': l.checkout, 'visit': l.visit},
+      ],
     },
   );
 }
+
+/// Kennzahlen eines Teilnehmers für das gespeicherte Ergebnis.
+Map<String, Object?> matchPlayerStats(MatchPlayerState p) => {
+  'legs': p.totalLegs,
+  'sets': p.sets,
+  'darts': p.darts,
+  'average': ?p.average,
+  'first9': ?p.first9Average,
+  'checkoutRate': ?p.checkoutRate,
+  'highestFinish': p.highestFinish,
+  'bestLegDarts': ?p.bestLegDarts,
+  'count100': p.count100,
+  'count140': p.count140,
+  'count180': p.count180,
+};
