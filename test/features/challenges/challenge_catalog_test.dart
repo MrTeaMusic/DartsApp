@@ -71,7 +71,7 @@ void main() {
     expect(c.starsFor({'won': 0, 'legsLost': 0, 'average': 90}), 0);
     expect(c.starsFor({'won': 1, 'legsLost': 1, 'average': 90}), 1);
     expect(c.starsFor({'won': 1, 'legsLost': 0, 'average': 40}), 2);
-    expect(c.starsFor({'won': 1, 'legsLost': 0, 'average': 50}), 3);
+    expect(c.starsFor({'won': 1, 'legsLost': 0, 'average': 70}), 3);
     final setup = c.matchSetup(playerName: 'Ben', profileId: 1);
     expect(setup.players, hasLength(2));
     expect(setup.players.last.isBot, isTrue);
@@ -79,22 +79,22 @@ void main() {
   });
 
   test('Live-Sterne: Darts steigen (sicher verloren), Punkte steigen (sicher erreicht), Bob\'s vorläufig', () {
-    final atc = ChallengeCatalog.byId('c1-1')!; // ≤ 60/45/35 Darts
+    final atc = ChallengeCatalog.byId('c1-1')!; // ≤ 60/40/25 Darts
     expect(atc.liveStars({'darts': 40}, over: false), [StarState.open, StarState.open, StarState.lost]);
-    final points = ChallengeCatalog.byId('c1-3')!; // ≥ 300/400/500
-    expect(points.liveStars({'points': 420}, over: false), [StarState.reached, StarState.reached, StarState.open]);
-    final bobs = ChallengeCatalog.byId('c2-7')!; // ≥ 1/100/200, kann fallen
+    final points = ChallengeCatalog.byId('c1-3')!; // ≥ 350/500/800
+    expect(points.liveStars({'points': 520}, over: false), [StarState.reached, StarState.reached, StarState.open]);
+    final bobs = ChallengeCatalog.byId('c2-7')!; // ≥ 1/100/300, kann fallen
     expect(bobs.liveStars({'score': 150}, over: false), [StarState.provisional, StarState.provisional, StarState.open]);
-    final countdown = ChallengeCatalog.byId('c3-7')!; // ≤ 250/170/100, fällt
+    final countdown = ChallengeCatalog.byId('c3-7')!; // ≤ 220/110/0, fällt
     expect(countdown.liveStars({'score': 200}, over: false), [StarState.reached, StarState.open, StarState.open]);
     expect(atc.liveStars({'darts': 40, 'completed': 1}, over: true), [StarState.reached, StarState.reached, StarState.lost]);
   });
 
   test('Wertung: nicht beendete Spiele mit Pflicht-Ende zählen nicht', () {
     final bobs = ChallengeCatalog.byId('c2-7')!;
-    expect(bobs.starsFor({'score': 250, 'completed': 0}), 0);
-    expect(bobs.scoreOf({'score': 250, 'completed': 0}), isNull);
-    expect(bobs.starsFor({'score': 250, 'completed': 1}), 3);
+    expect(bobs.starsFor({'score': 350, 'completed': 0}), 0);
+    expect(bobs.scoreOf({'score': 350, 'completed': 0}), isNull);
+    expect(bobs.starsFor({'score': 350, 'completed': 1}), 3);
     expect(bobs.better(20, 10), isTrue);
     final atc = ChallengeCatalog.byId('c1-1')!;
     expect(atc.better(30, 40), isTrue);

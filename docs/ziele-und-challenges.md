@@ -19,7 +19,7 @@ Alles läuft offline und wird für jedes Profil getrennt berechnet.
     Session höchstens drei Stunden.
   - **Sessions**: abgeschlossene Sessions, die an dem Tag begonnen haben.
 - Die Startseite zeigt einen Ring „Heute 120 / 200 Darts“. Füllt sich der
-  Ring während eines Spiels, erscheint oben eine kurze Einblendung. Sie
+  Ring während eines Spiels, erscheint unten eine kurze Einblendung. Sie
   kommt einmal pro Tag.
 - Ändert man das Ziel, wird die Vergangenheit mit dem neuen Ziel
   bewertet. Serie und Erfolge können sich dadurch ändern. Schon
@@ -50,7 +50,7 @@ Alles läuft offline und wird für jedes Profil getrennt berechnet.
   gespeichert. Gespeicherte Stufen bleiben, auch wenn die Daten sie
   später nicht mehr hergeben, zum Beispiel nach dem Löschen von
   Sessions oder einem anderen Tagesziel.
-- Wird im Spiel eine neue Stufe erreicht, erscheint oben eine
+- Wird im Spiel eine neue Stufe erreicht, erscheint unten eine
   Einblendung, je Erfolg nur mit der höchsten neuen Stufe. Was beim
   ersten Start rückwirkend dazukommt, wird still gespeichert.
 - Anzeige: Statistik → Reiter **Erfolge**. Gesperrte Erfolge sind grau
@@ -137,72 +137,156 @@ Hinweise zur Berechnung:
   prüft, dass drei Sterne möglich sind. Nur Fehlwürfe bringen keinen
   Stern.
 
+### Wie die Sterne-Schwellen eingestellt sind
+
+Die Schwellen sind mit Computergegnern (`DartBot.forAverage`) auf
+Average 40, 60 und 80 eingestellt, je Challenge und Stufe 1000 Versuche
+mit festen Zufallsstartwerten. Ziel:
+
+- ★ schafft ein 40er in den meisten Versuchen,
+- ★★ ist für einen 60er der Normalfall,
+- ★★★ braucht etwa 80er-Niveau: ein 80er schafft sie in einem guten Teil
+  der Versuche, ein 60er selten.
+
+Frühe Kapitel sind großzügiger (Einsteiger: ★ für einen 40er in rund
+90 % der Versuche, ★★ auch für ihn ab und zu, damit er mit 12 Sternen
+weiterkommt), Weltklasse strenger (★★★ für einen 80er in rund 30 %).
+Kommt ein Spiel doppelt vor (501, Highscore-Jagd, JDC, Bob's 27), beginnt
+die spätere Challenge etwa dort, wo die frühere ★★ hat.
+
+Wie der Bot spielt: Er zielt wie ein vernünftiger Spieler, also beim
+Scoren auf T20, bei Zahlen-Zielen auf das Triple (dort ist das Segment am
+breitesten), bei Doppel-Zielen aufs Doppel und bei Finishes auf den
+Checkout-Weg. Doppel und Finish-Darts wirft er mit der Finish-Streuung
+(sie folgt echten Doppelquoten), alles andere, auch Bull, mit der
+Scoring-Streuung. Beim Darts-Golf hört er auf, sobald ein weiterer Dart
+im Schnitt nichts mehr bringt. Matches spielt er gegen den CPU-Gegner der
+Challenge und beginnt das erste Leg.
+
+Ausnahmen, bei denen ein 40er ★ bewusst selten schafft: Bob's 27 (★
+heißt überstehen), die Matches ab Kapitel 3, Ton-Plus-Checkouts,
+Ton-Forty-Serie, Große Finishes, Drei in einem Bett, Frustration und die
+späteren der doppelt vorkommenden Spiele. Frustration ist erst ab etwa
+einem 60er sinnvoll.
+
+Gemessene Quoten mit den aktuellen Schwellen (Anteil der Versuche):
+
+| Nr. | 40er ★ | 60er ★★ | 60er ★★★ | 80er ★★★ |
+|---|---|---|---|---|
+| 1.1 | 91 % | 100 % | 15 % | 94 % |
+| 1.2 | 91 % | 75 % | 32 % | 50 % |
+| 1.3 | 89 % | 98 % | 12 % | 90 % |
+| 1.4 | 88 % | 100 % | 11 % | 99 % |
+| 1.5 | 77 % | 95 % | 6 % | 71 % |
+| 1.6 | 91 % | 88 % | 17 % | 64 % |
+| 1.7 | 91 % | 75 % | 43 % | 68 % |
+| 1.8 | 93 % | 100 % | 3 % | 90 % |
+| 2.1 | 75 % | 94 % | 13 % | 84 % |
+| 2.2 | 79 % | 73 % | 19 % | 59 % |
+| 2.3 | 73 % | 77 % | 12 % | 33 % |
+| 2.4 | 87 % | 89 % | 18 % | 90 % |
+| 2.5 | 74 % | 89 % | 4 % | 75 % |
+| 2.6 | 83 % | 77 % | 16 % | 59 % |
+| 2.7 | 26 % | 56 % | 17 % | 53 % |
+| 2.8 | 82 % | 80 % | 11 % | 47 % |
+| 3.1 | 69 % | 58 % | 10 % | 61 % |
+| 3.2 | 73 % | 73 % | 22 % | 56 % |
+| 3.3 | 23 % | 62 % | 3 % | 73 % |
+| 3.4 | 70 % | 61 % | 1 % | 62 % |
+| 3.5 | 72 % | 55 % | 11 % | 50 % |
+| 3.6 | 72 % | 73 % | 7 % | 62 % |
+| 3.7 | 70 % | 60 % | 14 % | 47 % |
+| 3.8 | 83 % | 67 % | 1 % | 55 % |
+| 4.1 | 62 % | 53 % | 12 % | 33 % |
+| 4.2 | 22 % | 22 % | 6 % | 29 % |
+| 4.3 | 3 % | 26 % | 0 % | 47 % |
+| 4.4 | 4 % | 9 % | 1 % | 32 % |
+| 4.5 | 45 % | 43 % | 1 % | 45 % |
+| 4.6 | 15 % | 36 % | 5 % | 28 % |
+| 4.7 | 52 % | 50 % | 3 % | 35 % |
+| 4.8 | 65 % | 45 % | 6 % | 32 % |
+| 5.1 | 26 % | 31 % | 2 % | 27 % |
+| 5.2 | 0 % | 7 % | 0 % | 20 % |
+| 5.3 | 23 % | 23 % | 0 % | 28 % |
+| 5.4 | 49 % | 45 % | 2 % | 32 % |
+| 5.5 | 36 % | 41 % | 0 % | 50 % |
+| 5.6 | 0 % | 0 % | 0 % | 32 % |
+| 5.7 | 11 % | 30 % | 1 % | 28 % |
+| 5.8 | 75 % | 72 % | 32 % | 75 % |
+
+Der Test `challenge_fairness_test.dart` spielt jede Challenge mit 60
+Versuchen je Stufe und prüft grobe Leitplanken (★★★ für einen 80er
+mindestens 15 %, für einen 60er höchstens 50 %, in den Kapiteln 1–3 ★
+für einen 40er mindestens 60 % und ★★ für einen 60er mindestens 40 %).
+Die volle Simulation mit 1000 Versuchen liegt nicht im Repository; sie
+nutzt dieselben Hilfsfunktionen aus `test/helpers/challenge_sim.dart`.
+
 ### Alle Challenges
 
 ### Kapitel 1 · Einsteiger
 
 | Nr. | Name | Spiel | Aufgabe | ★ | ★★ | ★★★ |
 |---|---|---|---|---|---|---|
-| 1 | Rund um die Uhr | Around the Clock | Triff 1 bis 20 und das Bull der Reihe nach, jedes Feld zählt. So wenige Darts wie möglich. | ≤ 60 Darts | ≤ 45 Darts | ≤ 35 Darts |
-| 2 | Erster Checkout | X01-Solo | Spiele 101 mit Double-Out aus. So wenige Darts wie möglich. | ≤ 15 Darts | ≤ 12 Darts | ≤ 9 Darts |
-| 3 | Auf die 20 | T20-Training | 10 Aufnahmen auf die 20. Sammle so viele Punkte wie möglich. | ≥ 300 Punkte | ≥ 400 Punkte | ≥ 500 Punkte |
-| 4 | Bull-Training | Bullseye-Drills | 10 Aufnahmen aufs Bull: Single Bull 25, Bullseye 50 Punkte. | ≥ 75 Punkte | ≥ 150 Punkte | ≥ 250 Punkte |
-| 5 | Sechzig plus | Score-Aufgabe | 10 Aufnahmen: Wie oft schaffst du mindestens 60 Punkte? | ≥ 4 Erfolge | ≥ 6 Erfolge | ≥ 8 Erfolge |
-| 6 | Kleines Shanghai | Shanghai | Shanghai auf 1 bis 7, eine Aufnahme pro Zahl. Sammle so viele Punkte wie möglich. | ≥ 40 Punkte | ≥ 70 Punkte | ≥ 100 Punkte |
-| 7 | Neun Löcher | Darts-Golf | Darts-Golf über 9 Löcher. So wenige Schläge wie möglich. | ≤ 40 Schläge | ≤ 36 Schläge | ≤ 32 Schläge |
-| 8 | Doppelt hält besser | Drei-Treffer-Runde | Triff jede Zahl von 1 bis 20 und das Bull zweimal, Double und Triple zählen mehrfach. So wenige Darts wie möglich. | ≤ 120 Darts | ≤ 95 Darts | ≤ 75 Darts |
+| 1 | Rund um die Uhr | Around the Clock | Triff 1 bis 20 und das Bull der Reihe nach, jedes Feld zählt. So wenige Darts wie möglich. | ≤ 60 Darts | ≤ 40 Darts | ≤ 25 Darts |
+| 2 | Erster Checkout | X01-Solo | Spiele 101 mit Double-Out aus. So wenige Darts wie möglich. | ≤ 18 Darts | ≤ 9 Darts | ≤ 5 Darts |
+| 3 | Auf die 20 | T20-Training | 10 Aufnahmen auf die 20. Sammle so viele Punkte wie möglich. | ≥ 350 Punkte | ≥ 500 Punkte | ≥ 800 Punkte |
+| 4 | Bull-Training | Bullseye-Drills | 10 Aufnahmen aufs Bull: Single Bull 25, Bullseye 50 Punkte. | ≥ 100 Punkte | ≥ 200 Punkte | ≥ 550 Punkte |
+| 5 | Sechzig plus | Score-Aufgabe | 10 Aufnahmen: Wie oft schaffst du mindestens 60 Punkte? | ≥ 2 Erfolge | ≥ 4 Erfolge | ≥ 9 Erfolge |
+| 6 | Kleines Shanghai | Shanghai | Shanghai auf 1 bis 7, eine Aufnahme pro Zahl. Sammle so viele Punkte wie möglich. | ≥ 30 Punkte | ≥ 70 Punkte | ≥ 200 Punkte |
+| 7 | Neun Löcher | Darts-Golf | Darts-Golf über 9 Löcher. So wenige Schläge wie möglich. | ≤ 33 Schläge | ≤ 25 Schläge | ≤ 20 Schläge |
+| 8 | Doppelt hält besser | Drei-Treffer-Runde | Triff jede Zahl von 1 bis 20 und das Bull zweimal, Double und Triple zählen mehrfach. So wenige Darts wie möglich. | ≤ 110 Darts | ≤ 80 Darts | ≤ 42 Darts |
 
 ### Kapitel 2 · Amateur
 
 | Nr. | Name | Spiel | Aufgabe | ★ | ★★ | ★★★ |
 |---|---|---|---|---|---|---|
-| 1 | Erster Gegner | X01-Match | Gewinne ein Best of 3 (501, Double-Out) gegen den Computer mit Average 50. | Sieg | Sieg ohne Leg-Verlust | ohne Leg-Verlust, Average ≥ 50 |
-| 2 | 301 sauber | X01-Solo | Spiele 301 mit Double-Out aus. So wenige Darts wie möglich. | ≤ 24 Darts | ≤ 18 Darts | ≤ 15 Darts |
-| 3 | Kleine Finishes | Checkout-Training | 10 zufällige Checkouts von 2 bis 40, je 3 Darts. Wie viele schaffst du? | ≥ 3 Checkouts | ≥ 5 Checkouts | ≥ 7 Checkouts |
-| 4 | Cricket solo | Cricket | Schließe 20 bis 15 und das Bull. So wenige Darts wie möglich. | ≤ 75 Darts | ≤ 60 Darts | ≤ 48 Darts |
-| 5 | Mit Sprüngen um die Welt | Around the World mit Überspringen | S=1, D=2, T=3 Punkte; ab 4 Punkten in einer Aufnahme springst du eine Zahl weiter. Sammle so viele Punkte wie möglich. | ≥ 30 Punkte | ≥ 40 Punkte | ≥ 50 Punkte |
-| 6 | Bermuda-Dreieck | Halve-It | Halve-It: Verfehlst du ein Ziel, halbiert sich dein Stand. Sammle so viele Punkte wie möglich. | ≥ 120 Punkte | ≥ 200 Punkte | ≥ 300 Punkte |
-| 7 | Bob's 27 | Bob's 27 | Start mit 27 Punkten, Doppel 1 bis 20 und Bull. Überstehe das Spiel, ohne unter 0 zu fallen. | ≥ 1 Punkte | ≥ 100 Punkte | ≥ 200 Punkte |
-| 8 | Leiter ab 121 | 121 | Checke ab 121 mit je 9 Darts, geschafft heißt eins höher. Wie viele Checkouts in 10 Runden? | ≥ 2 Checkouts | ≥ 4 Checkouts | ≥ 6 Checkouts |
+| 1 | Erster Gegner | X01-Match | Gewinne ein Best of 3 (501, Double-Out) gegen den Computer mit Average 35. | Sieg | Sieg ohne Leg-Verlust | ohne Leg-Verlust, Average ≥ 70 |
+| 2 | 301 sauber | X01-Solo | Spiele 301 mit Double-Out aus. So wenige Darts wie möglich. | ≤ 28 Darts | ≤ 18 Darts | ≤ 12 Darts |
+| 3 | Kleine Finishes | Checkout-Training | 10 zufällige Checkouts von 2 bis 40, je 3 Darts. Wie viele schaffst du? | ≥ 3 Checkouts | ≥ 4 Checkouts | ≥ 7 Checkouts |
+| 4 | Cricket solo | Cricket | Schließe 20 bis 15 und das Bull. So wenige Darts wie möglich. | ≤ 60 Darts | ≤ 30 Darts | ≤ 20 Darts |
+| 5 | Mit Sprüngen um die Welt | Around the World mit Überspringen | S=1, D=2, T=3 Punkte; ab 4 Punkten in einer Aufnahme springst du eine Zahl weiter. Sammle so viele Punkte wie möglich. | ≥ 30 Punkte | ≥ 45 Punkte | ≥ 57 Punkte |
+| 6 | Bermuda-Dreieck | Halve-It | Halve-It: Verfehlst du ein Ziel, halbiert sich dein Stand. Sammle so viele Punkte wie möglich. | ≥ 30 Punkte | ≥ 175 Punkte | ≥ 450 Punkte |
+| 7 | Bob's 27 | Bob's 27 | Start mit 27 Punkten, Doppel 1 bis 20 und Bull. Überstehe das Spiel, ohne unter 0 zu fallen. | ≥ 1 Punkte | ≥ 100 Punkte | ≥ 300 Punkte |
+| 8 | Leiter ab 121 | 121 | Checke ab 121 mit je 9 Darts, geschafft heißt eins höher. Wie viele Checkouts in 10 Runden? | ≥ 3 Checkouts | ≥ 6 Checkouts | ≥ 9 Checkouts |
 
 ### Kapitel 3 · Ligaspieler
 
 | Nr. | Name | Spiel | Aufgabe | ★ | ★★ | ★★★ |
 |---|---|---|---|---|---|---|
-| 1 | Liga-Leg | X01-Solo | Spiele 501 mit Double-Out aus. So wenige Darts wie möglich. | ≤ 30 Darts | ≤ 24 Darts | ≤ 21 Darts |
-| 2 | Zwei Aufnahmen | Checkout-Training | 10 zufällige Checkouts von 61 bis 80, je 6 Darts. Wie viele schaffst du? | ≥ 3 Checkouts | ≥ 5 Checkouts | ≥ 7 Checkouts |
-| 3 | Ligaabend | X01-Match | Gewinne ein Best of 5 (501, Double-Out) gegen den Computer mit Average 65. | Sieg | Sieg ohne Leg-Verlust | ohne Leg-Verlust, Average ≥ 65 |
-| 4 | Punktejagd | Highscore-Jagd | 10 Aufnahmen: Sammle so viele Punkte wie möglich. | ≥ 550 Punkte | ≥ 650 Punkte | ≥ 750 Punkte |
-| 5 | Doppelrunde | Around the Clock | Triff die Doppel von 1 bis 20 und das Bull der Reihe nach. So wenige Darts wie möglich. | ≤ 120 Darts | ≤ 90 Darts | ≤ 65 Darts |
-| 6 | JDC-Prüfung | JDC-Challenge | Shanghai 10–15, alle Doppel, Shanghai 15–20: Sammle so viele Punkte wie möglich. | ≥ 300 Punkte | ≥ 450 Punkte | ≥ 600 Punkte |
-| 7 | Countdown 420 | 420 | Start bei 420, jeder Treffer auf das aktuelle Doppel zieht ab. So wenige Restpunkte wie möglich. | ≤ 250 Punkte | ≤ 170 Punkte | ≤ 100 Punkte |
-| 8 | Catch 40 | Catch 40 | Finishes von 61 bis 100 der Reihe nach, je 6 Darts. Schnelle Checkouts bringen mehr Punkte. | ≥ 30 Punkte | ≥ 45 Punkte | ≥ 60 Punkte |
+| 1 | Liga-Leg | X01-Solo | Spiele 501 mit Double-Out aus. So wenige Darts wie möglich. | ≤ 40 Darts | ≤ 25 Darts | ≤ 19 Darts |
+| 2 | Zwei Aufnahmen | Checkout-Training | 10 zufällige Checkouts von 61 bis 80, je 6 Darts. Wie viele schaffst du? | ≥ 4 Checkouts | ≥ 6 Checkouts | ≥ 8 Checkouts |
+| 3 | Ligaabend | X01-Match | Gewinne ein Best of 5 (501, Double-Out) gegen den Computer mit Average 45. | Sieg | Sieg ohne Leg-Verlust | ohne Leg-Verlust, Average ≥ 75 |
+| 4 | Punktejagd | Highscore-Jagd | 10 Aufnahmen: Sammle so viele Punkte wie möglich. | ≥ 400 Punkte | ≥ 650 Punkte | ≥ 900 Punkte |
+| 5 | Doppelrunde | Around the Clock | Triff die Doppel von 1 bis 20 und das Bull der Reihe nach. So wenige Darts wie möglich. | ≤ 130 Darts | ≤ 85 Darts | ≤ 65 Darts |
+| 6 | JDC-Prüfung | JDC-Challenge | Shanghai 10–15, alle Doppel, Shanghai 15–20: Sammle so viele Punkte wie möglich. | ≥ 450 Punkte | ≥ 800 Punkte | ≥ 1200 Punkte |
+| 7 | Countdown 420 | 420 | Start bei 420, jeder Treffer auf das aktuelle Doppel zieht ab. So wenige Restpunkte wie möglich. | ≤ 220 Punkte | ≤ 110 Punkte | ≤ 0 Punkte |
+| 8 | Catch 40 | Catch 40 | Finishes von 61 bis 100 der Reihe nach, je 6 Darts. Schnelle Checkouts bringen mehr Punkte. | ≥ 15 Punkte | ≥ 30 Punkte | ≥ 45 Punkte |
 
 ### Kapitel 4 · Profi
 
 | Nr. | Name | Spiel | Aufgabe | ★ | ★★ | ★★★ |
 |---|---|---|---|---|---|---|
-| 1 | Die 170 | X01-Solo | Spiele 170 mit Double-Out aus. Drei Darts für drei Sterne. | ≤ 9 Darts | ≤ 6 Darts | ≤ 3 Darts |
-| 2 | Ton-Plus-Checkouts | Checkout-Training | 10 zufällige Checkouts von 81 bis 120, je 3 Darts. Wie viele schaffst du? | ≥ 2 Checkouts | ≥ 4 Checkouts | ≥ 6 Checkouts |
-| 3 | Profi-Duell | X01-Match | Gewinne ein Best of 5 (501, Double-Out) gegen den Computer mit Average 80. | Sieg | Sieg ohne Leg-Verlust | ohne Leg-Verlust, Average ≥ 80 |
-| 4 | Ton-Forty-Serie | Score-Aufgabe | 10 Aufnahmen: Wie oft schaffst du mindestens 140 Punkte? | ≥ 1 Erfolge | ≥ 2 Erfolge | ≥ 4 Erfolge |
-| 5 | Wechselspiel | Ziel-Wechsel | Triple 20, Triple 19, Bullseye im Wechsel, 10 Runden. Wie viele Treffer? | ≥ 6 Treffer | ≥ 9 Treffer | ≥ 12 Treffer |
-| 6 | Bob's 27 Profi | Bob's 27 | Bob's 27 überstehen und dabei möglichst viele Punkte sammeln. | ≥ 300 Punkte | ≥ 500 Punkte | ≥ 700 Punkte |
-| 7 | Doppelleiter | Doppel-Leiter | Doppel von D1 aufwärts, genug Treffer heißt eine Stufe höher. Welche Stufe erreichst du in 60 Aufnahmen? | Stufe ≥ 5 | Stufe ≥ 8 | Stufe ≥ 12 |
-| 8 | Stellen | Stellen | Mit einem Dart einen Rest von 41 bis 100 auf ein klassisches Doppel stellen. Wie oft gelingt es in 30 Darts? | ≥ 18 Erfolge | ≥ 22 Erfolge | ≥ 26 Erfolge |
+| 1 | Die 170 | X01-Solo | Spiele 170 mit Double-Out aus. So wenige Darts wie möglich. | ≤ 15 Darts | ≤ 10 Darts | ≤ 6 Darts |
+| 2 | Ton-Plus-Checkouts | Checkout-Training | 10 zufällige Checkouts von 81 bis 120, je 3 Darts. Wie viele schaffst du? | ≥ 1 Checkouts | ≥ 2 Checkouts | ≥ 3 Checkouts |
+| 3 | Profi-Duell | X01-Match | Gewinne ein Best of 5 (501, Double-Out) gegen den Computer mit Average 55. | Sieg | Sieg ohne Leg-Verlust | ohne Leg-Verlust, Average ≥ 80 |
+| 4 | Ton-Forty-Serie | Score-Aufgabe | 10 Aufnahmen: Wie oft schaffst du mindestens 140 Punkte? | ≥ 1 Erfolge | ≥ 2 Erfolge | ≥ 3 Erfolge |
+| 5 | Wechselspiel | Ziel-Wechsel | Triple 20, Triple 19, Bullseye im Wechsel, 10 Runden. Wie viele Treffer? | ≥ 2 Treffer | ≥ 5 Treffer | ≥ 9 Treffer |
+| 6 | Bob's 27 Profi | Bob's 27 | Bob's 27 überstehen und dabei möglichst viele Punkte sammeln. | ≥ 100 Punkte | ≥ 200 Punkte | ≥ 400 Punkte |
+| 7 | Doppelleiter | Doppel-Leiter | Doppel von D1 aufwärts, genug Treffer heißt eine Stufe höher. Welche Stufe erreichst du in 60 Aufnahmen? | Stufe ≥ 3 | Stufe ≥ 4 | Stufe ≥ 7 |
+| 8 | Stellen | Stellen | Mit einem Dart einen Rest von 41 bis 100 auf ein klassisches Doppel stellen. Wie oft gelingt es in 30 Darts? | ≥ 10 Erfolge | ≥ 15 Erfolge | ≥ 19 Erfolge |
 
 ### Kapitel 5 · Weltklasse
 
 | Nr. | Name | Spiel | Aufgabe | ★ | ★★ | ★★★ |
 |---|---|---|---|---|---|---|
-| 1 | Neun-Darter-Jagd | X01-Solo | Spiele 501 mit Double-Out aus. Neun Darts für drei Sterne. | ≤ 15 Darts | ≤ 12 Darts | ≤ 9 Darts |
-| 2 | Weltmeister | X01-Match | Gewinne ein Best of 7 (501, Double-Out) gegen den Computer mit Average 100. | Sieg | Sieg ohne Leg-Verlust | ohne Leg-Verlust, Average ≥ 100 |
-| 3 | Maximum | Highscore-Jagd | 10 Aufnahmen: Sammle so viele Punkte wie möglich. | ≥ 900 Punkte | ≥ 1050 Punkte | ≥ 1200 Punkte |
-| 4 | Große Finishes | Checkout-Training | 10 zufällige Checkouts von 121 bis 170, je 3 Darts. Wie viele schaffst du? | ≥ 2 Checkouts | ≥ 3 Checkouts | ≥ 5 Checkouts |
-| 5 | Drei in einem Bett | Drei im Bett | Alle drei Darts einer Aufnahme ins gleiche Segment, für jede Zahl von 1 bis 20. So wenige Aufnahmen wie möglich. | ≤ 80 Aufnahmen | ≤ 60 Aufnahmen | ≤ 45 Aufnahmen |
-| 6 | Frustration | Frustration | Mit zwei Darts mindestens 80 scoren, dann mit dem dritten das Doppel, D1 bis Bull. So wenige Aufnahmen wie möglich. | ≤ 150 Aufnahmen | ≤ 110 Aufnahmen | ≤ 85 Aufnahmen |
-| 7 | JDC-Meister | JDC-Challenge | Shanghai 10–15, alle Doppel, Shanghai 15–20: ein Ergebnis auf Weltklasse-Niveau. | ≥ 600 Punkte | ≥ 750 Punkte | ≥ 900 Punkte |
-| 8 | Genau 100 | Genau 100 | Genau 100 Punkte mit höchstens 2 Aufnahmen, Überwerfen ist ein Fehlversuch. Wie oft in 5 Versuchen? | ≥ 3 Erfolge | ≥ 4 Erfolge | ≥ 5 Erfolge |
+| 1 | Weltklasse-Leg | X01-Solo | Spiele 501 mit Double-Out aus, schneller als im Liga-Leg. So wenige Darts wie möglich. | ≤ 32 Darts | ≤ 22 Darts | ≤ 16 Darts |
+| 2 | Weltmeister | X01-Match | Gewinne ein Best of 7 (501, Double-Out) gegen den Computer mit Average 60. | Sieg | Sieg ohne Leg-Verlust | ohne Leg-Verlust, Average ≥ 85 |
+| 3 | Maximum | Highscore-Jagd | 10 Aufnahmen: Sammle so viele Punkte wie möglich. | ≥ 500 Punkte | ≥ 750 Punkte | ≥ 1000 Punkte |
+| 4 | Große Finishes | Checkout-Training | 10 zufällige Checkouts von 121 bis 170, je 6 Darts. Wie viele schaffst du? | ≥ 1 Checkouts | ≥ 3 Checkouts | ≥ 6 Checkouts |
+| 5 | Drei in einem Bett | Drei im Bett | Alle drei Darts einer Aufnahme ins gleiche Segment, für jede Zahl von 1 bis 20. So wenige Aufnahmen wie möglich. | ≤ 180 Aufnahmen | ≤ 45 Aufnahmen | ≤ 25 Aufnahmen |
+| 6 | Frustration | Frustration | Mit zwei Darts mindestens 80 scoren, dann mit dem dritten das Doppel, D1 bis Bull. So wenige Aufnahmen wie möglich. | ≤ 400 Aufnahmen | ≤ 200 Aufnahmen | ≤ 125 Aufnahmen |
+| 7 | JDC-Meister | JDC-Challenge | Shanghai 10–15, alle Doppel, Shanghai 15–20: ein Ergebnis auf Weltklasse-Niveau. | ≥ 700 Punkte | ≥ 1000 Punkte | ≥ 1400 Punkte |
+| 8 | Genau 100 | Genau 100 | Genau 100 Punkte mit höchstens 2 Aufnahmen, Überwerfen ist ein Fehlversuch. Wie oft in 5 Versuchen? | ≥ 2 Erfolge | ≥ 4 Erfolge | ≥ 5 Erfolge |
 
 ## Daten, Abgleich und Sicherung
 
