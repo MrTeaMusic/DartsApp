@@ -14,6 +14,7 @@ import '../../features/home/presentation/home_screen.dart';
 import '../../features/matches/presentation/match_routes.dart';
 import '../../features/plans/presentation/plan_routes.dart';
 import '../../features/quiz/presentation/quiz_routes.dart';
+import '../../features/second_screen/presentation/second_screen_page.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/simulator/presentation/board_screen.dart';
 import '../../features/stats/presentation/stats_screen.dart';
@@ -45,6 +46,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.play, builder: (_, _) => const GamePlayScreen()),
       matchPlayRoute,
       quizPlayRoute,
+      // Zweiter Bildschirm: Spielstand vom PC, ebenfalls ohne Navigation.
+      secondScreenGoRoute,
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => AdaptiveScaffold(shell: shell),
         branches: [

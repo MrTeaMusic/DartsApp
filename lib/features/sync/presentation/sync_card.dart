@@ -2,12 +2,14 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/design/components/components.dart';
 import '../../../core/design/dart_colors.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
 import '../../../core/settings/app_settings.dart';
+import '../../second_screen/presentation/second_screen_page.dart';
 import '../data/sync_client.dart';
 import '../domain/sync_role.dart';
 import 'sync_controller.dart';
@@ -139,6 +141,24 @@ class _HubPanel extends ConsumerWidget {
           const SizedBox(height: AppSpacing.xs),
           Text(l10n.syncHubLastReceived(formatSyncTime(sync.hubLastReceived!))),
         ],
+        if (sync.hubRunning) ...[
+          const SizedBox(height: AppSpacing.s),
+          Row(
+            children: [
+              Icon(Icons.tv_rounded, size: 18, color: sync.screenViewers > 0 ? context.dartColors.success : context.dartColors.textMuted),
+              const SizedBox(width: AppSpacing.s),
+              Expanded(child: Text(l10n.syncScreenViewers(sync.screenViewers), key: const Key('sync-screen-viewers'))),
+            ],
+          ),
+          if (addresses.isNotEmpty) ...[
+            const SizedBox(height: AppSpacing.xs),
+            SelectableText(
+              l10n.syncScreenBrowser('http://${addresses.first}:${settings.syncPort}/screen'),
+              key: const Key('sync-screen-url'),
+              style: theme.textTheme.bodySmall,
+            ),
+          ],
+        ],
         const SizedBox(height: AppSpacing.s),
         Text(l10n.syncFirewallHint(settings.syncPort), style: theme.textTheme.bodySmall),
       ],
@@ -259,11 +279,24 @@ class _ClientPanelState extends ConsumerState<_ClientPanel> {
           const SizedBox(height: AppSpacing.m),
           Align(
             alignment: Alignment.centerRight,
-            child: FilledButton.icon(
-              key: const Key('sync-now'),
-              onPressed: sync.syncing ? null : _apply,
-              icon: const Icon(Icons.sync_rounded),
-              label: Text(l10n.syncNow),
+            child: Wrap(
+            alignment: WrapAlignment.end,
+            spacing: AppSpacing.m,
+            runSpacing: AppSpacing.s,
+            children: [
+              OutlinedButton.icon(
+                key: const Key('sync-open-screen'),
+                onPressed: widget.settings.syncHost.trim().isEmpty ? null : () => context.push(secondScreenRoute),
+                icon: const Icon(Icons.tv_rounded),
+                label: Text(l10n.syncScreenOpen),
+              ),
+              FilledButton.icon(
+                key: const Key('sync-now'),
+                onPressed: sync.syncing ? null : _apply,
+                icon: const Icon(Icons.sync_rounded),
+                label: Text(l10n.syncNow),
+              ),
+            ],
             ),
           ),
         ],

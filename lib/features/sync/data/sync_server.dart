@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import '../../../core/background_json.dart';
+import '../../second_screen/data/screen_hub.dart';
 import 'sync_store.dart';
 
 /// Kennung im Antwort-Header und im Gruß, damit der Client weiß, dass er
@@ -21,12 +22,18 @@ const String syncKeyHeader = 'X-DartLab-Key';
 ///
 /// Jede Anfrage braucht den Code aus den Einstellungen im Header
 /// [syncKeyHeader].
+///
+/// Mit [screen] laufen auf demselben Port auch der zweite Bildschirm
+/// (`GET /screen/ws`, WebSocket) und die Browser-Seite (`GET /screen`); dort
+/// geht der Code auch als `?key=`, weil Browser für WebSockets keine eigenen
+/// Header setzen können. Beide sind nur lesend.
 class SyncServer {
-  SyncServer(this.store, {required this.key, this.maxBodyBytes = 64 * 1024 * 1024});
+  SyncServer(this.store, {required this.key, this.maxBodyBytes = 64 * 1024 * 1024, this.screen});
 
   final SyncStore store;
   final String key;
   final int maxBodyBytes;
+  final ScreenHub? screen;
 
   HttpServer? _server;
   final _merged = StreamController<MergeResult>.broadcast();
@@ -47,6 +54,7 @@ class SyncServer {
   Future<void> stop() async {
     final s = _server;
     _server = null;
+    await screen?.close();
     await s?.close(force: true);
   }
 
@@ -58,10 +66,19 @@ class SyncServer {
   Future<void> _handle(HttpRequest req) async {
     final res = req.response;
     res.headers.set('X-DartLab', '$syncProtocol/$syncProtocolVersion');
+    final screen = this.screen;
     try {
       if (req.method == 'GET' && req.uri.path == '/hello') {
         // Ohne Code: nur sagen, dass hier ein DartLab-Hub läuft.
-        return await _json(res, {'app': syncProtocol, 'version': syncProtocolVersion, 'keyOk': _authorized(req)});
+        return await _json(res, {
+          'app': syncProtocol,
+          'version': syncProtocolVersion,
+          'keyOk': _authorized(req),
+          if (screen != null) 'screen': 1,
+        });
+      }
+      if (screen != null && ScreenPaths.matches(req.uri.path)) {
+        return await screen.handle(req, authorized: _authorized(req) || _keyOk(req.uri.queryParameters['key']));
       }
       if (!_authorized(req)) return await _error(res, HttpStatus.unauthorized, 'Falscher Code');
       if (req.method != 'POST') return await _error(res, HttpStatus.methodNotAllowed, 'Nur POST');
@@ -95,8 +112,9 @@ class SyncServer {
     if (r.changedAnything && !_merged.isClosed) _merged.add(r);
   }
 
-  bool _authorized(HttpRequest req) {
-    final given = req.headers.value(syncKeyHeader);
+  bool _authorized(HttpRequest req) => _keyOk(req.headers.value(syncKeyHeader));
+
+  bool _keyOk(String? given) {
     if (key.isEmpty || given == null || given.length != key.length) return false;
     var diff = 0;
     for (var i = 0; i < key.length; i++) {
