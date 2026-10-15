@@ -158,7 +158,7 @@ void main() {
           );
       await visit(MatchRoutes.tournament);
       await visit(Routes.stats);
-      for (final tab in ['scoring', 'doubles', 'games', 'records', 'achievements', 'overview']) {
+      for (final tab in ['online', 'scoring', 'doubles', 'games', 'records', 'achievements', 'overview']) {
         await tester.ensureVisible(find.byKey(Key('stats-tab-$tab')));
         await tester.pumpAndSettle();
         await tester.tap(find.byKey(Key('stats-tab-$tab')));

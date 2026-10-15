@@ -17,6 +17,7 @@ import '../../profiles/presentation/active_player.dart';
 import '../../progress/presentation/daily_goal_card.dart';
 import '../../second_screen/presentation/second_screen_page.dart';
 import '../../sync/domain/sync_role.dart';
+import '../../update/presentation/update_banner.dart';
 
 final _homeRecentProvider = StreamProvider<List<SessionSummary>>(
   (ref) => ref.watch(gameRepositoryProvider).watchRecent(limit: 5, playerId: ref.watch(activePlayerProvider)?.id),
@@ -115,6 +116,7 @@ class HomeScreen extends ConsumerWidget {
                     ],
                   ),
                   SizedBox(height: look.sectionGap * 0.75),
+                  UpdateBanner(bottomGap: look.gridGap),
                   _Hero(last: recent.isEmpty ? null : recent.first, wide: wide),
                   SizedBox(height: look.gridGap),
                   if (viewer) ...[

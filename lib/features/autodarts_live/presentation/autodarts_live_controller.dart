@@ -267,7 +267,7 @@ class AutodartsLiveController extends Notifier<LiveViewState> {
     _session = null;
     _lastCheckpoint = null;
     if (old != null) {
-      _enqueueSave(old, _resultOf(darts, _x01Config, [..._marks]), darts.isEmpty ? null : darts.last.dart.timestamp);
+      _enqueueSave(old, liveSessionResult(darts, _x01Config, [..._marks]), darts.isEmpty ? null : darts.last.dart.timestamp);
     }
     _marks.clear();
   }
@@ -336,7 +336,7 @@ class AutodartsLiveController extends Notifier<LiveViewState> {
     });
   }
 
-  GameResult _result() => _resultOf(_recorder.darts, _x01Config, _marks);
+  GameResult _result() => liveSessionResult(_recorder.darts, _x01Config, _marks);
 
   /// „Beenden“: Session speichern, danach nichts mehr mitschreiben.
   Future<void> end() async {
@@ -404,7 +404,9 @@ LiveX01 replayLive(LiveX01Config config, List<RecordedDart> darts, List<LegMark>
       visitOpen: visitOpen,
     );
 
-GameResult _resultOf(List<RecordedDart> darts, LiveX01Config? x01, List<LegMark> marks) {
+/// Ergebnis einer Live-Session aus ihren Darts (Rohwerte, mit X01 auch
+/// Legs, Checkouts und die Leg-Markierungen).
+GameResult liveSessionResult(List<RecordedDart> darts, LiveX01Config? x01, List<LegMark> marks) {
   final raw = LiveStats.of(_visitsOf([
     for (final d in darts) (dart: (segment: d.dart.segment, position: d.dart.position), visitIndex: d.visitIndex),
   ]));
@@ -461,27 +463,14 @@ Future<int> repairLiveSessions(AppDatabase db) async {
           visitIndex: t.visitIndex,
         ),
     ];
-    final config = GameRepositoryJson.decode(s.configJson)['x01'];
-    final x01 = s.gameId == autodartsLiveX01GameId && config is Map
-        ? LiveX01Config(
-            startScore: (config['startScore'] as num?)?.toInt() ?? 501,
-            outMode: OutMode.values.where((o) => o.name == config['outMode']).firstOrNull ?? OutMode.double,
-          )
+    final x01 = s.gameId == autodartsLiveX01GameId
+        ? LiveX01Config.fromJson(GameRepositoryJson.decode(s.configJson)['x01'])
         : null;
     final details = GameRepositoryJson.decode(s.resultJson)['details'];
-    final rawMarks = details is Map ? details['marks'] : null;
-    final marks = <LegMark>[
-      if (rawMarks is List)
-        for (final m in rawMarks)
-          if (m is Map && m['at'] is num)
-            (
-              at: (m['at'] as num).toInt(),
-              kind: LegMarkKind.values.where((k) => k.name == m['kind']).firstOrNull ?? LegMarkKind.lost,
-            ),
-    ];
+    final marks = legMarksFromJson(details is Map ? details['marks'] : null);
     await repo.endSession(
       s.id,
-      result: _resultOf(darts, x01, marks),
+      result: liveSessionResult(darts, x01, marks),
       finished: true,
       endedAt: rows.isEmpty ? null : rows.map((t) => t.timestamp).reduce((a, b) => a.isAfter(b) ? a : b),
     );

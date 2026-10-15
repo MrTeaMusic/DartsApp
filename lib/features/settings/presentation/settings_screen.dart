@@ -8,7 +8,6 @@ import '../../../core/design/dart_look.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
 import '../../../core/router/app_router.dart';
-import '../../../core/app_version.dart';
 import '../../../core/settings/app_settings.dart';
 import '../../autodarts_live/presentation/autodarts_live_routes.dart';
 import '../../backup/presentation/backup_card.dart';
@@ -24,6 +23,7 @@ import '../../profiles/presentation/profiles_card.dart';
 import '../../progress/presentation/daily_goal_card.dart';
 import '../../progress/presentation/progress_texts.dart';
 import '../../sync/presentation/sync_card.dart';
+import '../../update/presentation/update_settings_card.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -152,6 +152,9 @@ class SettingsScreen extends ConsumerWidget {
               SectionHeader(l10n.backupTitle),
               const BackupCard(),
               const SectionGap(),
+              SectionHeader(l10n.updateTitle),
+              const UpdateSettingsCard(),
+              const SectionGap(),
               SectionHeader(l10n.settingsDeveloper),
               AppCard(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
@@ -175,8 +178,6 @@ class SettingsScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: AppSpacing.xl),
-              Center(child: Text(l10n.settingsVersion(appVersion), style: Theme.of(context).textTheme.bodySmall)),
             ],
       ),
     );
