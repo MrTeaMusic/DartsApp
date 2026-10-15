@@ -8,6 +8,8 @@ import '../../games/domain/games/checkout/checkout_rules.dart';
 import '../../games/domain/games/cricket.dart';
 import '../../matches/domain/match_format.dart';
 import '../../matches/domain/match_result.dart';
+import '../../quiz/domain/quiz_answer.dart';
+import '../../quiz/domain/quiz_config.dart';
 import '../../stats/domain/game_metrics.dart';
 import '../../stats/domain/stats_calculator.dart';
 import '../../stats/domain/target_replay.dart';
@@ -37,6 +39,12 @@ class HistoryEntry {
   int get darts => session.dartCount;
 
   bool get isMatch => session.gameId == matchGameId;
+
+  /// Checkout-Quiz: Session ohne Würfe, die Antworten stehen im Ergebnis.
+  bool get isQuiz => session.gameId == checkoutQuizGameId;
+
+  /// Einstellungen einer Quiz-Session (nur bei [isQuiz] sinnvoll).
+  QuizConfig get quizConfig => QuizConfig.fromJson(config);
   bool matches(HistoryFilter f) => switch (f) {
         HistoryFilter.all => true,
         HistoryFilter.training => !isMatch,
@@ -203,9 +211,13 @@ class SessionDetail {
     this.players = const [],
     this.me = 0,
     this.legsKnown = true,
+    this.quizAnswers = const [],
   });
 
   final HistoryEntry entry;
+
+  /// Antworten einer Quiz-Session (sonst leer).
+  final List<QuizAnswer> quizAnswers;
 
   /// Aufnahmen, je Leg (Matches, X01 mit mehreren Legs) oder in einem
   /// Abschnitt mit [HistoryLeg.number] 0.
@@ -260,6 +272,7 @@ SessionDetail buildSessionDetail(SessionRow session, List<ThrowRow> throws, {Str
       if (t.x != null && t.y != null) BoardPoint(t.x!, t.y!),
   ];
   if (entry.isMatch) return _matchDetail(entry, sorted, positions, playerName);
+  if (entry.isQuiz) return _quizDetail(entry);
   return _trainingDetail(entry, sorted, positions) ?? _plainDetail(entry, sorted, positions);
 }
 
@@ -299,6 +312,19 @@ SessionDetail _plainDetail(HistoryEntry entry, List<ThrowRow> sorted, List<Board
     summary: _metricStats(entry),
     positions: positions,
     chart: VisitChart.score,
+  );
+}
+
+/// Checkout-Quiz: keine Aufnahmen, dafür die Antworten.
+SessionDetail _quizDetail(HistoryEntry entry) {
+  final answers = quizAnswersOf(entry.result);
+  return SessionDetail(
+    entry: entry,
+    legs: const [],
+    summary: quizStats(QuizSummary.of(answers)),
+    positions: const [],
+    chart: VisitChart.score,
+    quizAnswers: answers,
   );
 }
 

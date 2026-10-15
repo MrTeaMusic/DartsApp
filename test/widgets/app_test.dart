@@ -21,6 +21,8 @@ void main() {
     expect(find.byType(NavigationRail), findsNothing);
     await tester.tap(find.text('Training').last);
     await tester.pumpAndSettle();
+    // Unter den Modi-Karten (Pläne … Checkout-Quiz) folgen die Spiele.
+    await tester.scrollUntilVisible(find.text('Checkout-Training'), 200, scrollable: find.byType(Scrollable).last);
     expect(find.text('Checkout-Training'), findsOneWidget);
   });
 

@@ -46,6 +46,46 @@ class CheckoutCalculator {
           if (isCheckout(v, doubleOut: doubleOut)) v,
       ];
 
+  /// Alle Wege mit genau [darts] Darts für [remaining], bester zuerst (nach
+  /// denselben Gewichten wie [suggest]). Wege, die sich nur in der
+  /// Reihenfolge der Aufbau-Darts unterscheiden, stehen nur einmal da.
+  /// Höchstens [limit] Einträge.
+  static List<List<Segment>> routes(int remaining,
+      {required int darts, bool doubleOut = true, bool masterOut = false, int limit = 10}) {
+    if (remaining <= 0 || darts <= 0 || darts > 3) return const [];
+    bool finisher(Segment s) => masterOut ? s.isDouble || s.isTriple : (doubleOut ? s.isDouble : true);
+    final finishers = _all.where(finisher).toList();
+    final found = <(double, List<Segment>)>[];
+    void add(List<Segment> setups, Segment last) {
+      final cost = setups.fold<double>(0, (c, s) => c + _setupCost(s)) + _finishCost(last, doubleOut: doubleOut, masterOut: masterOut);
+      found.add((cost, [...setups, last]));
+    }
+
+    if (darts == 1) {
+      for (final f in finishers) {
+        if (f.score == remaining) add(const [], f);
+      }
+    } else if (darts == 2) {
+      for (final a in _all) {
+        for (final f in finishers) {
+          if (a.score + f.score == remaining) add([a], f);
+        }
+      }
+    } else {
+      for (var i = 0; i < _all.length; i++) {
+        for (var j = i; j < _all.length; j++) {
+          final rest = remaining - _all[i].score - _all[j].score;
+          if (rest <= 0) continue;
+          for (final f in finishers) {
+            if (f.score == rest) add(_ordered(_all[i], _all[j]), f);
+          }
+        }
+      }
+    }
+    found.sort((a, b) => a.$1.compareTo(b.$1));
+    return [for (final f in found.take(limit)) f.$2];
+  }
+
   static List<Segment>? _search(int remaining, int maxDarts, {required bool doubleOut, required bool masterOut}) {
     bool finisher(Segment s) => masterOut ? s.isDouble || s.isTriple : (doubleOut ? s.isDouble : true);
     final finishers = _all.where(finisher).toList();

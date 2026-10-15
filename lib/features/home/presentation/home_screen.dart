@@ -66,7 +66,7 @@ class HomeScreen extends ConsumerWidget {
                     title: Text(l10n.gameTitle(s.gameId), overflow: TextOverflow.ellipsis),
                     subtitle: Text(_when(s.startedAt, l10n)),
                     trailing: Text(
-                      '${s.dartCount} ${l10n.statDarts}',
+                      l10n.sessionAmount(s.gameId, s.dartCount, s.metrics),
                       style: look.kicker.copyWith(color: context.dartColors.textMuted),
                     ),
                     onTap: () => context.go(Routes.session(s.id)),

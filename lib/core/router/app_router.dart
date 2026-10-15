@@ -13,6 +13,7 @@ import '../../features/history/presentation/session_detail_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/matches/presentation/match_routes.dart';
 import '../../features/plans/presentation/plan_routes.dart';
+import '../../features/quiz/presentation/quiz_routes.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/simulator/presentation/board_screen.dart';
 import '../../features/stats/presentation/stats_screen.dart';
@@ -43,6 +44,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Spielansicht ohne Navigation, damit das Board möglichst groß ist.
       GoRoute(path: Routes.play, builder: (_, _) => const GamePlayScreen()),
       matchPlayRoute,
+      quizPlayRoute,
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => AdaptiveScaffold(shell: shell),
         branches: [
@@ -59,6 +61,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                 ...matchRoutes,
                 ...challengeRoutes,
                 ...autodartsLiveRoutes,
+                ...quizRoutes,
                 GoRoute(
                   path: ':gameId',
                   builder: (_, state) => GameSetupScreen(gameId: state.pathParameters['gameId']!),

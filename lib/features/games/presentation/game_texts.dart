@@ -25,6 +25,8 @@ import '../domain/games/three_in_a_bed.dart';
 import '../domain/games/x01_solo.dart';
 import '../../matches/domain/match_result.dart';
 import '../../autodarts_live/domain/live_stats.dart';
+import '../../quiz/domain/quiz_config.dart';
+import '../../stats/domain/game_metrics.dart';
 
 /// Übersetzt die stabilen Schlüssel der Spiel-Domäne in Text und Icons.
 /// Unbekannte Schlüssel erscheinen unverändert, damit nichts verschwindet.
@@ -57,8 +59,15 @@ extension GameTexts on AppLocalizations {
         matchGameId => gameMatchX01,
         autodartsLiveGameId => liveTitle,
         autodartsLiveX01GameId => liveTitleX01,
+        checkoutQuizGameId => quizTitle,
         _ => id,
       };
+
+  /// Umfang einer Session für Listen: die Darts, bei Spielen ohne Würfe
+  /// (Checkout-Quiz) die Zahl der Fragen aus den Kennzahlen.
+  String sessionAmount(String gameId, int darts, Map<String, num> metrics) => throwlessGames.contains(gameId)
+      ? quizQuestions((metrics['answered'] ?? 0).toInt())
+      : '$darts $statDarts';
 
   String gameDescription(String id) => switch (id) {
         CheckoutTraining.id => gameCheckoutDesc,
@@ -85,6 +94,7 @@ extension GameTexts on AppLocalizations {
         ExactScore.id => gameExactScoreDesc,
         ThreeInABed.id => gameThreeInABedDesc,
         SetupShot.id => gameSetupShotDesc,
+        checkoutQuizGameId => quizEntryText,
         _ => '',
       };
 
@@ -278,6 +288,13 @@ extension GameTexts on AppLocalizations {
         'count100' => statCount100,
         'count140' => statCount140,
         'count180' => statCount180,
+        'quizCorrect' => statQuizCorrect,
+        'correct' => statCorrect,
+        'correctRate' => statCorrectRate,
+        'answered' => statAnswered,
+        'bestStreak' => statBestStreak,
+        'avgSeconds' => statAvgSeconds,
+        'quizPace' => statQuizPace,
         _ => key,
       };
 
@@ -328,6 +345,7 @@ IconData gameIcon(String id) => switch (id) {
       SetupShot.id => Icons.tune_rounded,
       matchGameId => Icons.people_alt_rounded,
       autodartsLiveGameId || autodartsLiveX01GameId => Icons.hearing_rounded,
+      checkoutQuizGameId => Icons.quiz_rounded,
       _ => Icons.sports_esports_rounded,
     };
 

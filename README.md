@@ -43,6 +43,7 @@ Regeln und Optionen der Trainingsspiele: [docs/trainingsspiele.md](docs/training
 Die 13 weiteren Spiele (X01-Solo bis Stellen): [docs/trainingsspiele-erweitert.md](docs/trainingsspiele-erweitert.md).
 Regeln der zwei eigenen Spiele: [docs/spielregeln.md](docs/spielregeln.md).
 Feste und eigene Trainingspläne: [docs/trainingsplaene.md](docs/trainingsplaene.md).
+Checkout-Quiz (Wege lernen ohne zu werfen): [docs/checkout-quiz.md](docs/checkout-quiz.md).
 Wie Statistiken berechnet werden, Ziele, Profile, Export-Formate: [docs/statistik-und-daten.md](docs/statistik-und-daten.md).
 
 ## Starten

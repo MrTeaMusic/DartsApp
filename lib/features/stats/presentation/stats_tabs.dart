@@ -678,7 +678,7 @@ class _TrendFacts extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final pm = PrimaryMetric.forGame(game);
-    final lowerBetter = metric == pm.key ? !pm.higherIsBetter : (metric == 'darts' || metric == 'avgDartsPerCheckout');
+    final lowerBetter = metric == pm.key ? !pm.higherIsBetter : (metric == 'darts' || metric == 'avgDartsPerCheckout' || metric == 'avgSeconds');
     final values = [for (final p in points) p.value];
     final best = values.reduce((a, b) => (lowerBetter ? a < b : a > b) ? a : b);
     final lastFive = values.sublist(values.length > 5 ? values.length - 5 : 0);
@@ -716,7 +716,9 @@ class _GameRow extends StatelessWidget {
       leading: IconBadge(icon: gameIcon(summary.gameId), size: 38),
       title: Text(l10n.gameTitle(summary.gameId)),
       subtitle: Text([
-        '${summary.sessions} ${l10n.statsSessions} · ${summary.darts} ${l10n.statDarts}',
+        throwlessGames.contains(summary.gameId)
+            ? '${summary.sessions} ${l10n.statsSessions}'
+            : '${summary.sessions} ${l10n.statsSessions} · ${summary.darts} ${l10n.statDarts}',
         if (acc.attempts > 0) '${l10n.statsAccuracy}: ${formatPercent(acc.rate)}',
       ].join('\n')),
       isThreeLine: acc.attempts > 0,

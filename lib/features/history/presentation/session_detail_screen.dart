@@ -14,6 +14,9 @@ import '../../games/domain/engine/game_display.dart';
 import '../../games/domain/game_catalog.dart';
 import '../../games/presentation/game_texts.dart';
 import '../../matches/domain/match_format.dart';
+import '../../quiz/domain/quiz_config.dart';
+import '../../quiz/presentation/quiz_routes.dart';
+import '../../quiz/presentation/quiz_widgets.dart';
 import '../../stats/presentation/stats_charts.dart';
 import '../../stats/presentation/stats_widgets.dart';
 import '../data/history_repository.dart';
@@ -42,7 +45,9 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
       builder: (context) => AlertDialog(
         key: const Key('session-delete-dialog'),
         title: Text(l10n.histDeleteTitle),
-        content: Text(l10n.histDeleteText(l10n.gameTitle(e.gameId), formatDate(e.startedAt), e.darts)),
+        content: Text(e.isQuiz
+            ? l10n.quizHistDeleteText(l10n.gameTitle(e.gameId), formatDate(e.startedAt), (e.metrics['answered'] ?? 0).toInt())
+            : l10n.histDeleteText(l10n.gameTitle(e.gameId), formatDate(e.startedAt), e.darts)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.gameCancelShort)),
           FilledButton(
@@ -75,7 +80,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
       );
     }
     final e = d.entry;
-    final canReplay = !e.isMatch && GameCatalog.byId(e.gameId) != null;
+    final canReplay = e.isQuiz || (!e.isMatch && GameCatalog.byId(e.gameId) != null);
     return Scaffold(
       appBar: AppPageBar(
         maxWidth: kHistoryMaxWidth,
@@ -108,7 +113,21 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
                 ],
               ),
             ],
-            if (d.visits.isNotEmpty) ...[
+            if (d.quizAnswers.isNotEmpty) ...[
+              const SectionGap(factor: 0.8),
+              SectionHeader(l10n.quizAnswers),
+              AppCard(
+                key: const Key('session-quiz-answers'),
+                child: Column(
+                  children: [
+                    for (final (i, a) in d.quizAnswers.indexed) ...[
+                      if (i > 0) const Divider(height: 1),
+                      QuizAnswerTile(answer: a, out: e.quizConfig.out),
+                    ],
+                  ],
+                ),
+              ),
+            ] else if (d.visits.isNotEmpty) ...[
               const SectionGap(factor: 0.8),
               _ChartAndHeat(detail: d, wide: wide),
               const SectionGap(factor: 0.8),
@@ -125,7 +144,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
                 if (canReplay)
                   FilledButton.icon(
                     key: const Key('session-play-again'),
-                    onPressed: () => context.go(Routes.gameSetup(e.gameId)),
+                    onPressed: () => context.go(e.isQuiz ? QuizRoutes.setup : Routes.gameSetup(e.gameId)),
                     icon: const Icon(Icons.replay_rounded),
                     label: Text(l10n.histPlayAgain),
                   ),
@@ -202,12 +221,21 @@ class _Header extends StatelessWidget {
           children: [
             StatusPill(key: const Key('session-status'), label: status, color: statusColor),
             if (e.tournament) _Info(icon: Icons.account_tree_rounded, text: l10n.histTournament),
+            if (e.isQuiz)
+              _Info(
+                icon: e.quizConfig.timed ? Icons.timer_rounded : Icons.school_rounded,
+                text: [
+                  e.quizConfig.timed ? l10n.quizModeTimed : l10n.quizModeTraining,
+                  e.quizConfig.range == QuizRange.all ? l10n.quizRangeAll : e.quizConfig.range.label,
+                  e.quizConfig.darts == QuizDarts.mixed ? l10n.quizDartsMixed : l10n.quizDartsLeft(e.quizConfig.darts.count),
+                ].join(' · '),
+              ),
             if (format != null)
               _Info(
                 icon: Icons.scoreboard_rounded,
                 text: '${format.startScore} · ${format.usesSets ? l10n.matchFormatSets(format.setsToWin, format.legsToWin) : l10n.matchFormatLegs(format.legsToWin, format.bestOf)}',
               ),
-            _Info(icon: Icons.adjust_rounded, text: '${e.darts} ${l10n.statDarts}'),
+            _Info(icon: e.isQuiz ? Icons.quiz_rounded : Icons.adjust_rounded, text: l10n.sessionAmount(e.gameId, e.darts, e.metrics)),
             if (minutes != null) _Info(icon: Icons.schedule_rounded, text: formatMinutes(minutes < 1 ? 1 : minutes)),
             if (me != null && me.isNotEmpty) _Info(icon: Icons.person_rounded, text: me),
           ],

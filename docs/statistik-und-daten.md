@@ -32,6 +32,7 @@ Die Statistik hat fünf Reiter:
 | Triple-Quote | Treffer / Darts mit genau einem Triple als Ziel (T20-Training, Highscore-Jagd, Score-Ziel, Checkout-Wege über ein Triple). Ohne solche Darts die Quote aus dem T20-Training. |
 | Trefferquote aufs Ziel | alle Darts, für die das Spiel ein Ziel vorgab, und wie viele davon im Ziel landeten |
 | Trainingstage | Kalendertage mit mindestens einer Session |
+| Sessions ohne Würfe | Das [Checkout-Quiz](checkout-quiz.md) speichert Sessions ohne Würfe. Sie zählen bei Sessions, Trainingstagen, Trainingszeit und Serie, aber nicht bei Darts, Average, Quoten und Heatmap. |
 | Trainingszeit | Summe von Start bis Ende jeder Session, höchstens drei Stunden je Session |
 | Serie | Tage am Stück mit Training. Sie läuft weiter, wenn gestern trainiert wurde und heute noch nicht. |
 | Heatmap | Position jedes gezählten Darts. Ohne Koordinaten (manuelle Eingabe) liegt der Dart in der Mitte seines Feldes. |
