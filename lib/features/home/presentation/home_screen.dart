@@ -8,12 +8,15 @@ import '../../../core/design/dart_look.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/settings/app_settings.dart';
 import '../../board/presentation/live_visit_controller.dart';
 import '../../dart_source/presentation/source_status_badge.dart';
 import '../../games/data/game_repository.dart';
 import '../../games/presentation/game_texts.dart';
 import '../../profiles/presentation/active_player.dart';
 import '../../progress/presentation/daily_goal_card.dart';
+import '../../second_screen/presentation/second_screen_page.dart';
+import '../../sync/domain/sync_role.dart';
 
 final _homeRecentProvider = StreamProvider<List<SessionSummary>>(
   (ref) => ref.watch(gameRepositoryProvider).watchRecent(limit: 5, playerId: ref.watch(activePlayerProvider)?.id),
@@ -29,6 +32,9 @@ class HomeScreen extends ConsumerWidget {
     final live = ref.watch(liveVisitProvider);
     final player = ref.watch(activePlayerProvider);
     final recent = ref.watch(_homeRecentProvider).value ?? const [];
+    // Tablet, iPhone oder zweiter Rechner mit Verbindung zum PC: Einstieg in
+    // den zweiten Bildschirm.
+    final viewer = ref.watch(settingsProvider.select((s) => s.syncRole == SyncRole.client && s.syncHost.trim().isNotEmpty));
     final darts = live.history.length;
     final total = live.history.fold<int>(0, (s, d) => s + d.score);
     final average = darts == 0 ? '–' : (total / darts * 3).toStringAsFixed(1).replaceAll('.', ',');
@@ -111,6 +117,20 @@ class HomeScreen extends ConsumerWidget {
                   SizedBox(height: look.sectionGap * 0.75),
                   _Hero(last: recent.isEmpty ? null : recent.first, wide: wide),
                   SizedBox(height: look.gridGap),
+                  if (viewer) ...[
+                    AppCard(
+                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                      child: ListTile(
+                        key: const Key('home-open-screen'),
+                        leading: const IconBadge(icon: Icons.tv_rounded, size: 38),
+                        title: Text(l10n.screenOpen),
+                        subtitle: Text(l10n.screenTeaser),
+                        trailing: const Icon(Icons.chevron_right_rounded),
+                        onTap: () => context.push(secondScreenRoute),
+                      ),
+                    ),
+                    SizedBox(height: look.gridGap),
+                  ],
                   DailyGoalCard(wide: wide),
                   const SectionGap(),
                   if (twoColumns)

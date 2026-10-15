@@ -52,6 +52,7 @@ dependencies:
   flutter_tts: ^4.2.5
   audioplayers: ^6.8.1
   archive: ^4.5.2
+  wakelock_plus: ^1.8.1
 
 dev_dependencies:
   flutter_test:

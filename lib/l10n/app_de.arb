@@ -2404,5 +2404,62 @@
         "type": "int"
       }
     }
-  }
+  },
+  "screenTitle": "Zweiter Bildschirm",
+  "screenTeaser": "Spielstand vom PC groß anzeigen, z. B. per AirPlay oder HDMI auf dem Fernseher",
+  "screenOpen": "Zweiter Bildschirm",
+  "screenIdleTitle": "Warte auf Spiel am PC",
+  "screenIdleText": "Sobald am PC ein Training, ein Match oder das Mitschreiben vom Board läuft, erscheint hier der Spielstand.",
+  "screenConnecting": "Verbinde mit dem PC …",
+  "screenLostTitle": "Verbindung verloren",
+  "screenLostText": "Neuer Versuch läuft. Prüfe, ob beide Geräte im selben WLAN sind und DartLab am PC geöffnet ist und als Hub läuft.",
+  "screenRetry": "Jetzt verbinden",
+  "screenPillConnected": "Verbunden · {host}",
+  "@screenPillConnected": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "screenPillConnecting": "Verbinde …",
+  "screenPillLost": "Getrennt",
+  "screenNotConfiguredTitle": "Noch kein PC eingerichtet",
+  "screenNotConfiguredText": "Trag unter Optionen › Sync im Heimnetz die Adresse und den Code des PCs ein. Am PC muss dort „Dieses Gerät ist der Hub“ gewählt sein.",
+  "screenToSettings": "Zu den Optionen",
+  "screenWrongKeyTitle": "Code passt nicht",
+  "screenWrongKeyText": "Der Code steht am PC unter Optionen › Sync im Heimnetz. Trag ihn auf diesem Gerät unter Optionen neu ein.",
+  "screenNotDartLabTitle": "Kein DartLab unter dieser Adresse",
+  "screenNotDartLabText": "Unter {host} antwortet etwas anderes als DartLab. Prüfe die Adresse in den Optionen.",
+  "@screenNotDartLabText": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "screenHubTooOldTitle": "DartLab am PC ist zu alt",
+  "screenHubTooOldText": "Aktualisiere DartLab am PC, dann zeigt dieses Gerät den Spielstand.",
+  "screenCheckout": "Checkout",
+  "screenStats": "Kennzahlen",
+  "screenClose": "Schließen",
+  "screenFinished": "Endstand",
+  "syncScreenViewers": "{count, plural, =0{Zweiter Bildschirm: keiner verbunden} =1{Zweiter Bildschirm: 1 Gerät verbunden} other{Zweiter Bildschirm: {count} Geräte verbunden}}",
+  "@syncScreenViewers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncScreenBrowser": "Im Browser (z. B. am Fernseher): {url}",
+  "@syncScreenBrowser": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "syncScreenOpen": "Zweiter Bildschirm öffnen",
+  "screenPillConnectedShort": "Verbunden"
 }
