@@ -1,4 +1,5 @@
 import '../../../core/database/app_database.dart';
+import '../../autodarts_live/domain/live_stats.dart';
 import '../../board/domain/board_geometry.dart';
 import '../../board/domain/segment.dart';
 import '../../dart_source/domain/dart_event.dart';
@@ -36,11 +37,20 @@ class HistoryEntry {
   bool get finished => session.finished;
   int get darts => session.dartCount;
 
+  /// Match in DartLab (gegen Bot oder Menschen am selben Board). Nur
+  /// dafür gibt es die Match-Detailansicht mit Gegnern.
   bool get isMatch => session.gameId == matchGameId;
+
+  /// Online-Match, mitgeschrieben mit Autodarts Live.
+  bool get isOnline => isOnlineGame(session.gameId);
+
+  /// Live-Session mit „X01 mitzählen“ und mindestens einem gewerteten Leg.
+  bool get hasLiveLegs => session.gameId == autodartsLiveX01GameId && legsWon + legsLost > 0;
+
   bool matches(HistoryFilter f) => switch (f) {
         HistoryFilter.all => true,
-        HistoryFilter.training => !isMatch,
-        HistoryFilter.matches => isMatch,
+        HistoryFilter.training => !isMatch && !isOnline,
+        HistoryFilter.matches => isMatch || isOnline,
       };
 
   /// Dauer von Start bis Ende.

@@ -302,7 +302,7 @@ class LegendItem extends StatelessWidget {
           ),
         ),
         const SizedBox(width: AppSpacing.xs),
-        Text(label, style: Theme.of(context).textTheme.bodySmall),
+        Flexible(child: Text(label, style: Theme.of(context).textTheme.bodySmall, overflow: TextOverflow.ellipsis)),
       ],
     );
   }

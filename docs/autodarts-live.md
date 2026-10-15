@@ -66,6 +66,9 @@ First 9, Legs, Checkout-Darts und -Quote, höchstes Finish, 100+/140+/180). Die 
 X01 aus. Umschalten (an/aus, Startwert, Ausstieg) beginnt eine neue Session. DartLab weiß nicht, wann
 das Match wirklich beginnt oder endet; stimmt der Rest nicht, hilft „Leg neu starten“.
 
+Auswertung der Live-Sessions als Matches (Reiter „Online“ in der Statistik, Vergleich mit dem
+Training, Plan-Vorschlag): `docs/online-matches.md`.
+
 ## Sessions
 
 * Jedes Öffnen des Live-Bildschirms ist eine eigene Session. Sie entsteht mit dem ersten Dart; ohne Darts

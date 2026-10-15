@@ -13,6 +13,7 @@ import '../../progress/presentation/achievements_tab.dart';
 import '../data/stats_repository.dart';
 import '../domain/game_metrics.dart';
 import '../domain/stats_calculator.dart';
+import 'online_tab.dart';
 import 'stats_tabs.dart';
 import 'stats_widgets.dart';
 
@@ -96,7 +97,7 @@ class StatsScreen extends ConsumerWidget {
       // Reiter bündig mit dem Seitenrand (Label-Abstand 16 abziehen).
       final inset = AppPageBar.contentInset(context, outer.maxWidth, double.infinity);
       return DefaultTabController(
-        length: 6,
+        length: 7,
         child: Scaffold(
           appBar: AppPageBar(
             title: Text(l10n.statsTitle),
@@ -118,6 +119,7 @@ class StatsScreen extends ConsumerWidget {
               padding: EdgeInsets.symmetric(horizontal: (inset - AppSpacing.l).clamp(0, double.infinity)),
               tabs: [
                 Tab(key: const Key('stats-tab-overview'), text: l10n.statsTabOverview),
+                Tab(key: const Key('stats-tab-online'), text: l10n.statsTabOnline),
                 Tab(key: const Key('stats-tab-scoring'), text: l10n.statsTabScoring),
                 Tab(key: const Key('stats-tab-doubles'), text: l10n.statsTabDoubles),
                 Tab(key: const Key('stats-tab-games'), text: l10n.statsTabGames),
@@ -146,6 +148,7 @@ class StatsScreen extends ConsumerWidget {
                       : TabBarView(
                           children: [
                             OverviewTab(view: view, wide: wide, pad: pad),
+                            OnlineTab(view: view, wide: wide, pad: pad),
                             ScoringTab(view: view, wide: wide, pad: pad),
                             DoublesTab(view: view, wide: wide, pad: pad),
                             GamesTab(view: view, wide: wide, pad: pad),
@@ -163,14 +166,20 @@ class StatsScreen extends ConsumerWidget {
   }
 }
 
+/// Index des Reiters „Online“ (gilt für alle Live-Sessions, ohne Spielfilter).
+const int _onlineTab = 1;
+
 /// Index des Reiters „Erfolge“.
-const int _achievementsTab = 5;
+const int _achievementsTab = 6;
 
 /// Blendet [child] aus, solange der Reiter [index] gewählt ist.
 class _HideOnTab extends StatelessWidget {
-  const _HideOnTab({required this.index, required this.child});
+  const _HideOnTab({required this.index, required this.child, this.inline = false});
   final int index;
   final Widget child;
+
+  /// In einer Zeile (ohne volle Breite, wenn ausgeblendet).
+  final bool inline;
 
   @override
   Widget build(BuildContext context) {
@@ -180,7 +189,7 @@ class _HideOnTab extends StatelessWidget {
       builder: (context, child) => AnimatedSize(
         duration: const Duration(milliseconds: 200),
         alignment: Alignment.topCenter,
-        child: controller.index == index ? const SizedBox(width: double.infinity) : child,
+        child: controller.index == index ? (inline ? const SizedBox.shrink() : const SizedBox(width: double.infinity)) : child,
       ),
       child: child,
     );
@@ -227,6 +236,13 @@ class _Filters extends ConsumerWidget {
             ),
             const SizedBox(width: AppSpacing.s),
           ],
+          // Der Reiter „Online“ zeigt immer alle Live-Sessions.
+          _HideOnTab(
+            index: _onlineTab,
+            inline: true,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
           const SizedBox(width: AppSpacing.s),
           PopupMenuButton<String>(
             key: const Key('stats-game'),
@@ -262,6 +278,9 @@ class _Filters extends ConsumerWidget {
                 ),
                 onSelected: (_) {},
               ),
+            ),
+          ),
+              ],
             ),
           ),
         ],

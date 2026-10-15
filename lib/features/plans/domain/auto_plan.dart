@@ -32,6 +32,7 @@ class Weakness {
     required this.reason,
     this.number,
     this.range,
+    this.online = false,
   });
 
   final WeaknessKind kind;
@@ -54,6 +55,10 @@ class Weakness {
   /// Double (1–20, 25 = Bull), Triple-Zahl oder Score-Ziel (Konstanz).
   final int? number;
   final CheckoutRange? range;
+
+  /// Aus dem Vergleich Training gegen Online-Match: online deutlich
+  /// schwächer als im Training.
+  final bool online;
 }
 
 /// Ein Schritt des automatischen Plans mit Rolle und geschätzter Dauer.
@@ -121,9 +126,10 @@ class AutoPlanInput {
     this.scoringVisits = 0,
     this.scoringMean,
     this.scoringStdDev,
+    this.online,
   });
 
-  factory AutoPlanInput.fromReport(StatsReport r, {int? days}) => AutoPlanInput(
+  factory AutoPlanInput.fromReport(StatsReport r, {int? days, OnlineComparison? online}) => AutoPlanInput(
         days: days,
         sessions: r.sessions,
         darts: r.darts,
@@ -140,6 +146,7 @@ class AutoPlanInput {
         scoringVisits: r.scoring?.visits ?? 0,
         scoringMean: r.scoring?.mean,
         scoringStdDev: r.scoring?.stdDev,
+        online: online,
       );
 
   /// Länge des Zeitraums in Tagen, `null` = alle Daten.
@@ -159,6 +166,10 @@ class AutoPlanInput {
   final int scoringVisits;
   final double? scoringMean;
   final double? scoringStdDev;
+
+  /// Training gegen Online-Match im selben Zeitraum: Doppel, Doppelquote
+  /// und First 9, die online deutlich schlechter sind, werden Schwerpunkte.
+  final OnlineComparison? online;
 }
 
 /// Ein Spiel-Vorschlag, dessen Umfang sich an die verfügbare Zeit anpasst.
@@ -238,14 +249,22 @@ abstract final class AutoPlanGenerator {
   /// Alle Schwächen, stärkste zuerst. Bei gleicher Stärke entscheidet die
   /// Art, dann die Zahl, damit das Ergebnis stabil bleibt.
   static List<Weakness> weaknesses(AutoPlanInput input) {
+    // Online-Schwächen ersetzen die gleiche Schwäche aus dem Training (gleiche
+    // Art und Zahl), weil sie mehr sagen: Im Match zählt es.
+    final online = onlineWeaknesses(input);
+    bool replaced(Weakness w) => online.any((o) => o.kind == w.kind && o.number == w.number);
     final list = <Weakness>[
-      ..._doubleWeaknesses(input),
-      ?_doublesWeakness(input),
-      ?_trebleWeakness(input),
-      ?_checkoutWeakness(input),
-      ?_scoringWeakness(input),
-      ?_first9Weakness(input),
-      ?_consistencyWeakness(input),
+      ...online,
+      for (final w in <Weakness?>[
+        ..._doubleWeaknesses(input),
+        _doublesWeakness(input),
+        _trebleWeakness(input),
+        _checkoutWeakness(input),
+        _scoringWeakness(input),
+        _first9Weakness(input),
+        _consistencyWeakness(input),
+      ])
+        if (w != null && !replaced(w)) w,
     ];
     list.sort((a, b) {
       final s = b.severity.compareTo(a.severity);
@@ -255,6 +274,60 @@ abstract final class AutoPlanGenerator {
       return (a.number ?? a.range?.index ?? 0).compareTo(b.number ?? b.range?.index ?? 0);
     });
     return list;
+  }
+
+  /// Online deutlich schwächer als im Training (siehe [OnlineComparison]):
+  /// bis zu zwei Doppel, die Doppelquote insgesamt und die First 9. Die
+  /// Stärke wächst mit dem Abstand (10 Prozentpunkte bzw. 5 Punkte → 0,5),
+  /// damit diese Schwächen meist vor denen aus dem Training landen.
+  static List<Weakness> onlineWeaknesses(AutoPlanInput input) {
+    final c = input.online;
+    if (c == null) return const [];
+    final out = <Weakness>[];
+    for (final d in c.notableDrops.take(2)) {
+      final on = d.online.rate!;
+      final tr = d.training.rate!;
+      final goal = _ceilTo(tr, 5);
+      final name = doubleName(d.number);
+      out.add(Weakness(
+        kind: WeaknessKind.double,
+        severity: (0.3 + d.drop! * 2).clamp(0.0, 1.0),
+        label: '$name online',
+        value: percent(on),
+        goal: '$goal %',
+        number: d.number,
+        online: true,
+        reason: '$name triffst du online nur zu ${percent(on)} (Training: ${percent(tr)}), Ziel: $goal %',
+      ));
+    }
+    if (c.doublesNotable) {
+      final on = c.doubles.online.value!;
+      final tr = c.doubles.training.value!;
+      final goal = _ceilTo(tr, 5);
+      out.add(Weakness(
+        kind: WeaknessKind.doubles,
+        severity: (0.3 + (tr - on) * 2).clamp(0.0, 1.0),
+        label: 'Doppel online',
+        value: percent(on),
+        goal: '$goal %',
+        online: true,
+        reason: 'Online triffst du Doppel zu ${percent(on)}, im Training zu ${percent(tr)}, Ziel: $goal %',
+      ));
+    }
+    if (c.first9Notable) {
+      final on = c.first9.online.value!;
+      final tr = c.first9.training.value!;
+      out.add(Weakness(
+        kind: WeaknessKind.first9,
+        severity: (0.3 + (tr - on) / 25).clamp(0.0, 1.0),
+        label: 'First 9 online',
+        value: decimal(on),
+        goal: decimal(tr),
+        online: true,
+        reason: 'Deine First 9 online (${decimal(on)}) liegen unter denen im Training (${decimal(tr)}): stärker starten',
+      ));
+    }
+    return out;
   }
 
   static double? _reference(double? overall, int overallAttempts, Map<int, HitCount> perTarget) {
@@ -524,7 +597,7 @@ abstract final class AutoPlanGenerator {
   /// Abschluss unter Druck, passend zum stärksten Schwerpunkt.
   static List<_Drill> _finishers(WeaknessKind? main) {
     final x01 = _Drill((m) => PlanStep(
-          gameId: 'x01_solo',
+          gameId: 'x01',
           config: {'startScore': 501, 'legs': (m / 6).round().clamp(1, 20)},
           note: 'Zum Schluss 501 unter Spielbedingungen: alles zusammen.',
         ));
@@ -586,7 +659,7 @@ abstract final class AutoPlanGenerator {
       'target_practice' || 'score_target' || 'highscore_hunt' || 'bull_drill' => i('visits', 10) * v,
       'checkout' => i('attempts', 10) * (i('dartsPerAttempt', 3) / 3).ceil() * v,
       'one_twenty_one' => i('rounds', 10) * (i('dartsPerAttempt', 9) / 3).ceil() * v * 0.8,
-      'x01_solo' => i('legs', 1) * i('startScore', 501) / 501 * 6,
+      'x01' => i('legs', 1) * i('startScore', 501) / 501 * 6,
       'around_the_clock' => switch (c['ring']) {
           'double' => 12.0,
           'triple' => 12.0,
@@ -684,7 +757,8 @@ abstract final class AutoPlanGenerator {
       description = 'Keine klare Schwäche in der Statistik $period, daher ausgewogen. Etwa $target Minuten.';
     } else {
       final labels = chosen.map((w) => w.label).join(', ');
-      notice = 'Aus ${input.darts} Darts $period. Schwerpunkte: $labels.';
+      final online = chosen.any((w) => w.online) ? ' „online“: im Online-Match deutlich schwächer als im Training.' : '';
+      notice = 'Aus ${input.darts} Darts $period. Schwerpunkte: $labels.$online';
       name = TrainingPlan.cleanName('Für mich: $labels');
       description = 'Automatisch aus der Statistik $period: $labels. Etwa $target Minuten.';
     }
