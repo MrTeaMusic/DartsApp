@@ -1,0 +1,169 @@
+name: Release
+
+# Baut bei jedem Push auf main (also nach jedem gemergten Pull Request) die
+# Windows- und die macOS-App und veröffentlicht beide als GitHub-Release.
+# DartLab fragt beim Start nach dem neuesten Release und bietet den Download
+# an (siehe docs/build-anleitung.md, Abschnitt „Updates“).
+#
+# Version: x.y.z aus pubspec.yaml, Build-Nummer = Laufnummer dieses
+# Workflows. Tag: v<x.y.z>-b<Laufnummer>, z. B. v0.10.0-b12.
+on:
+  push:
+    branches: [main]
+    # Reine Doku-Änderungen ergeben keine neue App.
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Releases nacheinander, nie abbrechen (sonst fehlt eine Version).
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  meta:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      build: ${{ steps.v.outputs.build }}
+      tag: ${{ steps.v.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Version bestimmen
+        id: v
+        run: |
+          version=$(sed -nE 's/^version:[[:space:]]*([0-9]+\.[0-9]+\.[0-9]+).*/\1/p' pubspec.yaml | head -n1)
+          if [ -z "$version" ]; then
+            echo "::error::Keine Version in pubspec.yaml gefunden"
+            exit 1
+          fi
+          build="${{ github.run_number }}"
+          {
+            echo "version=$version"
+            echo "build=$build"
+            echo "tag=v$version-b$build"
+          } >> "$GITHUB_OUTPUT"
+          echo "DartLab $version, Build $build"
+
+  windows:
+    needs: meta
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.7
+          cache: true
+      - run: flutter pub get
+      - name: Bauen
+        run: >-
+          flutter build windows --release
+          --build-name=${{ needs.meta.outputs.version }}
+          --build-number=${{ needs.meta.outputs.build }}
+          --dart-define=DARTLAB_VERSION=${{ needs.meta.outputs.version }}
+          --dart-define=DARTLAB_BUILD=${{ needs.meta.outputs.build }}
+      - name: Zip packen
+        shell: pwsh
+        run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath DartLab-windows.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-windows
+          path: DartLab-windows.zip
+          if-no-files-found: error
+
+  macos:
+    needs: meta
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.7
+          cache: true
+      - run: flutter pub get
+      - name: Bauen
+        run: >-
+          flutter build macos --release
+          --build-name=${{ needs.meta.outputs.version }}
+          --build-number=${{ needs.meta.outputs.build }}
+          --dart-define=DARTLAB_VERSION=${{ needs.meta.outputs.version }}
+          --dart-define=DARTLAB_BUILD=${{ needs.meta.outputs.build }}
+      - name: App packen
+        run: ditto -c -k --keepParent build/macos/Build/Products/Release/DartLab.app DartLab-macos.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-macos
+          path: DartLab-macos.zip
+          if-no-files-found: error
+
+  release:
+    needs: [meta, windows, macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ needs.meta.outputs.version }}
+      BUILD: ${{ needs.meta.outputs.build }}
+      TAG: ${{ needs.meta.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Ganze Historie und alle Tags für die Änderungsliste.
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          path: dist
+          merge-multiple: true
+      - name: Änderungen seit dem letzten Release
+        run: |
+          # Letztes Release-Tag nach Build-Nummer (v0.10.0-b12 → 12).
+          prev=$(git tag --list 'v*-b*' | sed -nE 's/^(.*-b([0-9]+))$/\2 \1/p' | sort -n | tail -n1 | cut -d' ' -f2)
+          if [ -n "$prev" ]; then
+            range="$prev..$GITHUB_SHA"
+            limit=40
+          else
+            range="$GITHUB_SHA"
+            limit=10
+          fi
+          echo "Vorheriges Release: ${prev:-keins}"
+          : > notes.md
+          git log --first-parent --format='%H%x09%s' -n "$limit" "$range" | while IFS=$'\t' read -r sha subject; do
+            if [[ "$subject" =~ ^Merge\ pull\ request\ \#([0-9]+) ]]; then
+              # Gemergter PR: der PR-Titel steht in der ersten Zeile der Nachricht.
+              title=$(git log -1 --format=%b "$sha" | sed -n '/[^[:space:]]/{p;q;}')
+              echo "- ${title:-$subject} (#${BASH_REMATCH[1]})" >> notes.md
+            elif [[ "$subject" =~ ^Merge[[:space:]] ]]; then
+              continue
+            else
+              echo "- $subject" >> notes.md
+            fi
+          done
+          if [ ! -s notes.md ]; then
+            echo "- Kleinere Verbesserungen" >> notes.md
+          fi
+          {
+            echo
+            echo "> Windows: DartLab-windows.zip entpacken und den Inhalt in den DartLab-Ordner kopieren."
+            echo "> macOS: DartLab-macos.zip öffnen und DartLab.app in den Programme-Ordner ziehen."
+            echo "> iPhone/iPad: auf dem Mac git pull und neu bauen (docs/build-anleitung.md)."
+          } >> notes.md
+          cat notes.md
+      - name: Release veröffentlichen
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          gh release create "$TAG"
+          dist/DartLab-windows.zip dist/DartLab-macos.zip
+          --repo "$GITHUB_REPOSITORY"
+          --target "$GITHUB_SHA"
+          --title "DartLab $VERSION (Build $BUILD)"
+          --notes-file notes.md
+          --latest
