@@ -16,7 +16,8 @@ weitere Rechner sind **Clients** und gleichen mit dem Hub ab, sobald sie im selb
    **private Netzwerke** erlauben. Ohne die Frage hilft eine eingehende Firewall-Regel für TCP-Port
    3190.
 
-Der Hub nimmt Abgleiche nur an, solange DartLab dort geöffnet ist.
+Der Hub nimmt Abgleiche nur an, solange DartLab dort geöffnet ist. Derselbe Hub versorgt auch den
+[zweiten Bildschirm](zweiter-bildschirm.md) mit dem Spielstand.
 
 ## Wann abgeglichen wird
 
@@ -52,10 +53,11 @@ HTTP auf Port 3190 (änderbar), JSON, jede Anfrage mit dem Code im Header `X-Dar
 
 | Anfrage | Inhalt | Antwort |
 |---|---|---|
-| `GET /hello` | – | `{"app": "dartlab-sync", "version": 1, "keyOk": …}` |
+| `GET /hello` | – | `{"app": "dartlab-sync", "version": 1, "keyOk": …, "screen": 1}` |
 | `POST /manifest` | Manifest des Clients: Profile, Ziele, Trainingspläne, IDs der abgeschlossenen Sessions | Manifest des Hubs; der Hub hat Profile, Ziele und Pläne schon übernommen |
 | `POST /push` | Paket mit den Sessions, die dem Hub fehlen | Ergebnis der Übernahme |
 | `POST /pull` | `{"sessions": [IDs]}` | Paket mit diesen Sessions |
+| `GET /screen`, `GET /screen/ws` | – | Zweiter Bildschirm, nur lesen (siehe [zweiter-bildschirm.md](zweiter-bildschirm.md)); hier ist der Code auch als `?key=` erlaubt |
 
 Sessions gehen in Teilen zu je 200. Das Paketformat ist dasselbe wie im JSON-Backup (Version 3). Ältere Geräte ohne Trainingspläne
 ignorieren das Feld `plans` und gleichen den Rest weiter ab.

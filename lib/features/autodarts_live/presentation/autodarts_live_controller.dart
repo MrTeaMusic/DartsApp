@@ -73,6 +73,16 @@ class LiveViewState {
   final LiveX01? x01;
 }
 
+/// Letzter Stand des Live-Bildschirms für andere Anzeigen (zweiter
+/// Bildschirm), `null`, solange er nicht offen ist. Ein einfacher
+/// [ValueNotifier], damit Mitlesen den Live-Modus weder startet noch am
+/// Leben hält.
+final liveViewMirrorProvider = Provider<ValueNotifier<LiveViewState?>>((ref) {
+  final mirror = ValueNotifier<LiveViewState?>(null);
+  ref.onDispose(mirror.dispose);
+  return mirror;
+});
+
 /// Pause, nach der eine neue Session beginnt. In Tests überschreibbar.
 final livePauseLimitProvider = Provider<Duration>((ref) => LiveRecorder.defaultPauseLimit);
 
@@ -127,7 +137,10 @@ class AutodartsLiveController extends Notifier<LiveViewState> {
     _x01Config = decodeX01(ref.read(sharedPreferencesProvider).getString(x01PrefsKey));
     _replayX01();
     ref.listen<DartSource>(dartSourceProvider, (_, source) => _attach(source), fireImmediately: true);
+    final mirror = ref.read(liveViewMirrorProvider);
+    listenSelf((_, next) => mirror.value = next);
     ref.onDispose(() {
+      mirror.value = null;
       unawaited(_sub?.cancel());
       _sub = null;
       _release?.call();

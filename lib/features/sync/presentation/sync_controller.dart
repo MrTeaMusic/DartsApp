@@ -5,6 +5,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/settings/app_settings.dart';
+import '../../second_screen/data/screen_hub.dart';
+import '../../second_screen/presentation/screen_feed.dart';
 import '../data/sync_client.dart';
 import '../data/sync_server.dart';
 import '../data/sync_store.dart';
@@ -22,6 +24,7 @@ class SyncState {
     this.hubRunning = false,
     this.hubError,
     this.hubLastReceived,
+    this.screenViewers = 0,
   });
 
   final SyncRole role;
@@ -38,6 +41,9 @@ class SyncState {
   final String? hubError;
   final DateTime? hubLastReceived;
 
+  /// Verbundene zweite Bildschirme.
+  final int screenViewers;
+
   SyncState copyWith({
     bool? syncing,
     DateTime? lastSync,
@@ -48,6 +54,7 @@ class SyncState {
     bool? hubRunning,
     String? hubError,
     DateTime? hubLastReceived,
+    int? screenViewers,
   }) =>
       SyncState(
         role: role,
@@ -59,6 +66,7 @@ class SyncState {
         hubRunning: hubRunning ?? this.hubRunning,
         hubError: hubError ?? this.hubError,
         hubLastReceived: hubLastReceived ?? this.hubLastReceived,
+        screenViewers: screenViewers ?? this.screenViewers,
       );
 }
 
@@ -78,6 +86,8 @@ class SyncController extends Notifier<SyncState> {
   Timer? _debounce;
   StreamSubscription<String>? _changes;
   StreamSubscription<MergeResult>? _received;
+  StreamSubscription<int>? _viewers;
+  ScreenFeed? _feed;
   AppLifecycleListener? _lifecycle;
   String? _lastSignature;
   bool _again = false;
@@ -113,6 +123,9 @@ class SyncController extends Notifier<SyncState> {
     _debounce?.cancel();
     _changes?.cancel();
     _received?.cancel();
+    _viewers?.cancel();
+    _feed?.detach();
+    _feed = null;
     _lifecycle?.dispose();
     _lifecycle = null;
     final server = _server;
@@ -129,7 +142,11 @@ class SyncController extends Notifier<SyncState> {
       await ref.read(settingsProvider.notifier).update((s) => s.copyWith(syncKey: newSyncKey()));
       return;
     }
-    final server = SyncServer(ref.read(syncStoreProvider), key: c.key);
+    // Zweiter Bildschirm auf demselben Port. Der Feed hört erst auf die
+    // Spiele, wenn ein Bildschirm verbunden ist.
+    final feed = ref.read(screenFeedProvider);
+    final screen = ScreenHub(snapshot: feed.snapshot);
+    final server = SyncServer(ref.read(syncStoreProvider), key: c.key, screen: screen);
     try {
       await server.start(port: c.port);
     } on SocketException catch (e) {
@@ -144,6 +161,13 @@ class SyncController extends Notifier<SyncState> {
     _server = server;
     _received = server.merged.listen((_) {
       if (!_disposed) state = state.copyWith(hubLastReceived: DateTime.now());
+    });
+    _feed = feed;
+    _viewers = screen.viewerCount.listen((n) {
+      if (_disposed) return;
+      if (n > 0 && !feed.attached) feed.attach(screen.markDirty);
+      if (n == 0) feed.detach();
+      state = state.copyWith(screenViewers: n);
     });
     state = state.copyWith(hubRunning: true);
   }
