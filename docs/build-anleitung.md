@@ -86,6 +86,53 @@ Mit einem bezahlten Developer-Account (99 €/Jahr) gilt das Profil ein Jahr, un
 Exportierte Dateien (Backup, CSV) liegen auf iOS in der Dateien-App unter
 „Auf meinem iPhone › DartLab“.
 
+## Updates (so kommt eine neue Version auf die Geräte)
+
+Nach jedem gemergten Pull Request baut GitHub die App für Windows und macOS und veröffentlicht
+sie als **Release**: <https://github.com/MrTeaMusic/DartsApp/releases/latest>. Dort liegen
+`DartLab-windows.zip` und `DartLab-macos.zip`. Selbst bauen ist für Windows und macOS damit nicht
+mehr nötig.
+
+**Versionsnummer:** `x.y.z` kommt aus `version` in `pubspec.yaml` (und muss zu `appVersion` in
+`lib/core/app_version.dart` passen, ein Test prüft das). Die Build-Nummer ist die Laufnummer des
+Release-Workflows. Das Tag heißt z. B. `v0.10.0-b12`. Die Release-Notizen bestehen aus den Titeln
+der Pull Requests seit dem vorigen Release. Eine neue Version ergibt sich also automatisch; `x.y.z`
+erhöht man nur bei größeren Schritten von Hand.
+
+**Update-Hinweis in der App:** DartLab fragt beim Start höchstens einmal in 24 Stunden die
+GitHub-API nach dem neuesten Release (öffentlich, ohne Token; GitHub erlaubt 60 Anfragen pro Stunde).
+Ist es neuer als die laufende App, erscheint auf der Startseite eine Karte mit Version, den ersten
+Änderungen und den Knöpfen **„Herunterladen“** und **„Später“** („Später“ blendet die Karte aus, bis
+es eine noch neuere Version gibt). Unter **Optionen › Updates** stehen die laufende Version und
+**„Nach Updates suchen“**. Ohne Internet bleibt die automatische Suche still; bei der Suche per Knopf
+erscheint ein Hinweis (offline, GitHub bremst, noch kein Release).
+
+* **Windows:** „Herunterladen“ speichert die Zip im Download-Ordner
+  (`DartLab-windows-0.10.0-b12.zip`), danach öffnet „Ordner öffnen“ den Explorer. Installieren:
+  DartLab schließen, Zip entpacken, den Inhalt in den DartLab-Ordner kopieren und vorhandene Dateien
+  ersetzen. Die Daten (Datenbank, Einstellungen) liegen nicht im Programmordner und bleiben erhalten.
+* **macOS:** genauso mit `DartLab-macos.zip`: entpacken, `DartLab.app` in `/Programme` ziehen und
+  die alte ersetzen. Die App ist nicht notarisiert, also beim ersten Start Rechtsklick › „Öffnen“
+  (siehe Gatekeeper oben). Für den Download braucht die Sandbox das Entitlement
+  `com.apple.security.files.downloads.read-write`.
+* **iPhone/iPad:** kein Download (ohne bezahlten Account gibt es keinen Weg an Xcode vorbei). Auf dem
+  Mac `git pull` und wie oben unter iOS neu bauen. Die Karte sagt das auch so.
+
+**Selbst gebaute Apps** (`flutter run`, `flutter build` ohne die Angaben unten) haben keine
+Build-Nummer und melden nie von sich aus ein Update. „Nach Updates suchen“ zeigt dort nur, welche
+Version auf GitHub liegt. Das betrifft vor allem den Mac, der aus dem Quellcode baut, und die
+iPhone/iPad-Builds. Wer lokal einen Build wie aus dem Workflow will:
+
+```bash
+flutter build windows --release --build-name=0.10.0 --build-number=12 \
+  --dart-define=DARTLAB_VERSION=0.10.0 --dart-define=DARTLAB_BUILD=12
+```
+
+**Bewusst nicht enthalten:** ein Updater, der die laufende App selbst ersetzt. Unter Windows kann
+sich eine laufende `.exe` nicht selbst überschreiben, dafür bräuchte es ein Hilfsprogramm oder einen
+Installer (MSIX/Inno Setup) und unter macOS eine signierte App. Das Entpacken und Kopieren bleibt
+deshalb ein Handgriff.
+
 ## Automatische Builds (GitHub Actions)
 
 * `.github/workflows/flutter.yml`: `flutter analyze` und alle Tests, bei jedem Pull Request und auf `main`.
@@ -94,6 +141,9 @@ Exportierte Dateien (Backup, CSV) liegen auf iOS in der Dateien-App unter
   Die Windows- und macOS-App hängen als Artefakte am Lauf und lassen sich dort herunterladen
   (für macOS gilt der Gatekeeper-Hinweis oben). Für iOS prüft der Lauf nur, dass der Build
   durchgeht; auf ein Gerät kommt die App über Xcode wie oben beschrieben.
+* `.github/workflows/release.yml`: bei jedem Push auf `main` (außer reinen Doku-Änderungen) Windows
+  und macOS bauen und als Release veröffentlichen (siehe „Updates“). Braucht nur das eingebaute
+  `GITHUB_TOKEN` mit Schreibrecht auf Inhalte; manuell startbar unter „Actions › Release“.
 
 ## Häufige Probleme
 
@@ -104,4 +154,5 @@ Exportierte Dateien (Backup, CSV) liegen auf iOS in der Dateien-App unter
 | `CocoaPods not installed` | `brew install cocoapods`, dann `flutter clean && flutter pub get`. |
 | iOS: „No profiles for … were found“ | In Xcode bei Signing ein Team wählen und eine eigene Bundle-ID eintragen. |
 | iOS: App startet nach einer Woche nicht mehr | Kostenloses Profil abgelaufen, neu mit `flutter run` installieren. |
+| Update-Karte erscheint nie | Selbst gebaute App (siehe „Updates“): die Release-Zip installieren. Oder in Optionen › Updates „Nach Updates suchen“ tippen und die Meldung lesen. |
 | Autodarts verbindet nicht | In DartLab unter Optionen › Autodarts „Verbindung testen“. Die Hinweise dort nennen die wahrscheinliche Ursache. Mehr in [autodarts-protokoll.md](autodarts-protokoll.md). |

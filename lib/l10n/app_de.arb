@@ -249,6 +249,104 @@
       }
     }
   },
+  "updateTitle": "Updates",
+  "updateBuildLabel": "{version} · Build {build}",
+  "@updateBuildLabel": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "build": {
+        "type": "int"
+      }
+    }
+  },
+  "updateDevBuildLabel": "{version} · selbst gebaut",
+  "@updateDevBuildLabel": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateCheckButton": "Nach Updates suchen",
+  "updateChecking": "Suche nach Updates …",
+  "updateUpToDate": "Du hast die neueste Version.",
+  "updateAvailableStatus": "Neue Version {version} verfügbar.",
+  "@updateAvailableStatus": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateDevStatus": "Selbst gebaute Version, sucht nie von allein. Neueste auf GitHub: {version}.",
+  "@updateDevStatus": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateDevHint": "Selbst gebaut: sucht nur, wenn du hier tippst.",
+  "updateAutoHint": "Sucht beim Start höchstens einmal am Tag von allein.",
+  "updateLastChecked": "Zuletzt gesucht: {when}",
+  "@updateLastChecked": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "updateErrorOffline": "Keine Verbindung zu GitHub. Prüf das Internet und versuch es später nochmal.",
+  "updateErrorRateLimit": "GitHub bremst gerade, zu viele Anfragen von diesem Netz. In einer Stunde nochmal versuchen.",
+  "updateErrorNoRelease": "Auf GitHub gibt es noch keine veröffentlichte Version.",
+  "updateErrorOther": "Die Suche hat nicht geklappt. Versuch es später nochmal.",
+  "updateBannerKicker": "Update verfügbar",
+  "updateBannerTitle": "DartLab {version}",
+  "@updateBannerTitle": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateMoreNotes": "{count, plural, =1{… und eine weitere Änderung} other{… und {count} weitere Änderungen}}",
+  "@updateMoreNotes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "updateDownload": "Herunterladen",
+  "updateLater": "Später",
+  "updateDownloading": "Lädt herunter … {percent} %",
+  "@updateDownloading": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "updateDownloadingUnknown": "Lädt herunter …",
+  "updateDownloaded": "Gespeichert in Downloads: {file}",
+  "@updateDownloaded": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
+  },
+  "updateInstallWindows": "DartLab schließen, die Zip entpacken und den Inhalt in deinen DartLab-Ordner kopieren (vorhandene Dateien ersetzen). Deine Daten bleiben erhalten.",
+  "updateInstallMacos": "Zip öffnen und DartLab.app in den Programme-Ordner ziehen (alte ersetzen). Beim ersten Start Rechtsklick › Öffnen. Deine Daten bleiben erhalten.",
+  "updateOpenFolder": "Ordner öffnen",
+  "updateDone": "Fertig",
+  "updateDownloadFailed": "Der Download hat nicht geklappt. Versuch es nochmal oder lade die Datei im Browser.",
+  "updateRetry": "Nochmal",
+  "updateOpenInBrowser": "Im Browser öffnen",
+  "updateReleasePage": "Auf GitHub ansehen",
+  "updateIosHint": "Auf iPhone und iPad kommt das Update über den Mac: dort git pull und neu bauen (siehe Build-Anleitung).",
   "debugTitle": "Debug: Rohdaten",
   "debugShort": "Debug",
   "debugPause": "Pausieren",

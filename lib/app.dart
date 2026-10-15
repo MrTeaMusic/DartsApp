@@ -17,6 +17,7 @@ import 'features/dart_source/presentation/dart_source_providers.dart';
 import 'features/progress/presentation/celebrations.dart';
 import 'features/progress/presentation/progress_providers.dart';
 import 'features/sync/presentation/sync_controller.dart';
+import 'features/update/presentation/update_controller.dart';
 
 class DartLabApp extends ConsumerWidget {
   const DartLabApp({super.key});
@@ -38,7 +39,9 @@ class DartLabApp extends ConsumerWidget {
       ..watch(syncControllerProvider.select((_) => null))
       ..watch(achievementRecorderProvider.select((_) => null))
       ..watch(celebrationsProvider.select((_) => null))
-      ..watch(challengeRunProvider.select((_) => null));
+      ..watch(challengeRunProvider.select((_) => null))
+      // Sucht beim Start nach Updates (höchstens einmal am Tag).
+      ..watch(updateControllerProvider.select((_) => null));
 
     return MaterialApp.router(
       onGenerateTitle: (context) => context.l10n.appTitle,
