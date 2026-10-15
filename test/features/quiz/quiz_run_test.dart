@@ -62,7 +62,7 @@ void main() {
       final run = runOf(const [QuizKey(121, 3)], clock: clock);
       expect(run.phase, QuizPhase.route);
       expect(run.question!.score, 121);
-      enter(run, 'T20 T19 D2');
+      enter(run, 'T20 T11 D14');
       clock.advance(const Duration(milliseconds: 4200));
       run.submitRoute();
       expect(run.phase, QuizPhase.feedback);
@@ -77,7 +77,7 @@ void main() {
 
     test('anderer gültiger Weg ist richtig, aber nicht empfohlen', () {
       final run = runOf(const [QuizKey(121, 3)]);
-      enter(run, 'T20 T11 D14');
+      enter(run, 'T20 T19 D2');
       run.submitRoute();
       expect(run.last!.correct, isTrue);
       expect(run.last!.answer.recommended, isFalse);

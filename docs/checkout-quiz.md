@@ -32,9 +32,11 @@ links daneben) stehen die Slots der Darts und die Summe.
 
 ### Auflösung
 
-Die Auflösung zeigt immer: deine Antwort, den empfohlenen Weg der App (`CheckoutCalculator`, derselbe
-wie im Checkout-Training und im Match), bei „Nicht möglich“ den Vorschlag zum Stellen und bis zu drei
-weitere mögliche Wege. Im Modus Training gibt es dazu eine kurze Erklärung, warum ein Weg nicht geht
+Die Auflösung zeigt immer: deine Antwort, den empfohlenen Weg der App, bei „Nicht möglich“ den
+Vorschlag zum Stellen und bis zu drei weitere mögliche Wege (ohne die eigene Antwort). Der empfohlene
+Weg kommt bei Double-Out aus der üblichen Checkout-Tabelle (`CheckoutTable` in
+`lib/features/games/domain/games/checkout/`), wie auf Checkout-Charts, und ist derselbe wie im
+Checkout-Training und im Match. Die weiteren Wege sortiert die Kostensuche des `CheckoutCalculator`. Im Modus Training gibt es dazu eine kurze Erklärung, warum ein Weg nicht geht
 (Bust, Summe stimmt nicht, kein Double am Ende, zu viele Darts, Bogey-Zahl, Höchstwert je Dartzahl).
 
 ## Modi

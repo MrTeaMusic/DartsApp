@@ -337,6 +337,12 @@ class QuizFeedbackView extends StatelessWidget {
     } else if (a.impossible) {
       lines.add(q.possible ? l10n.quizWasPossible(q.score, dartsText) : l10n.quizNotPossible(q.score, dartsText));
     }
+    // Die eigene (gültige) Antwort steht schon oben, nicht noch einmal unter
+    // „Auch möglich“.
+    final alternatives = [
+      for (final r in q.alternatives)
+        if (!(a.correct && !a.impossible && CheckoutRoutes.sameRoute(r, a.route))) r,
+    ];
     final max = _maxFor(q.darts, out);
     if (!q.possible && out == OutMode.double && q.darts == 3 && q.score > 158) lines.add(l10n.quizBogeys);
     if (!q.possible && q.score > max) lines.add(l10n.quizMaxFor(dartsText, max));
@@ -381,13 +387,13 @@ class QuizFeedbackView extends StatelessWidget {
           section(l10n.quizRecommended, RouteTags(rec)),
         if (q.setup case final plan? when !(f.setupCheck?.recommended ?? false))
           section(l10n.quizSetupAdvice, RouteTags(plan.darts, trailing: l10n.quizLeave(plan.leave))),
-        if (q.alternatives.isNotEmpty)
+        if (alternatives.isNotEmpty)
           section(
             l10n.quizAlternatives,
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                for (final (i, r) in q.alternatives.indexed) ...[
+                for (final (i, r) in alternatives.indexed) ...[
                   if (i > 0) const SizedBox(height: AppSpacing.xs + 2),
                   RouteTags(r),
                 ],

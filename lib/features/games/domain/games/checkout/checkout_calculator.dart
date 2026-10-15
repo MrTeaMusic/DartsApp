@@ -1,11 +1,15 @@
 import '../../../../board/domain/segment.dart';
+import 'checkout_table.dart';
 
 /// Berechnet Wurfvorschläge für Finishes.
 ///
-/// Bevorzugt werden: so wenige Darts wie möglich, Aufbau über T20/T19,
-/// beliebte Doppel (D20, D16, D8, D10 …). Das Ergebnis ist ein Vorschlag,
-/// keine absolute Wahrheit; die Gewichte stehen in [_setupCost] und
-/// [_finishCost] und lassen sich leicht anpassen.
+/// Bei Double-Out kommt der Vorschlag aus der üblichen Checkout-Tabelle
+/// ([CheckoutTable]). Ohne Tabelleneintrag (Master-Out, Straight-Out, Wege
+/// mit genau n Darts in [routes]) sucht eine Kostenfunktion den Weg.
+/// Bevorzugt werden dort: so wenige Darts wie möglich, Aufbau über T20/T19,
+/// beliebte Doppel (D20, D16, D8, D10 …), kleine ungerade Doppel nur, wenn
+/// es nicht anders geht. Das Ergebnis ist ein Vorschlag, keine absolute
+/// Wahrheit; die Gewichte stehen in [_setupCost] und [_finishCost].
 class CheckoutCalculator {
   CheckoutCalculator._();
 
@@ -32,7 +36,9 @@ class CheckoutCalculator {
     final d = darts > 3 ? 3 : darts;
     return _cache.putIfAbsent(
       (remaining, d, doubleOut, masterOut),
-      () => _search(remaining, d, doubleOut: doubleOut, masterOut: masterOut),
+      () =>
+          (doubleOut && !masterOut ? CheckoutTable.route(remaining, darts: d) : null) ??
+          _search(remaining, d, doubleOut: doubleOut, masterOut: masterOut),
     );
   }
 
@@ -46,10 +52,11 @@ class CheckoutCalculator {
           if (isCheckout(v, doubleOut: doubleOut)) v,
       ];
 
-  /// Alle Wege mit genau [darts] Darts für [remaining], bester zuerst (nach
-  /// denselben Gewichten wie [suggest]). Wege, die sich nur in der
-  /// Reihenfolge der Aufbau-Darts unterscheiden, stehen nur einmal da.
-  /// Höchstens [limit] Einträge.
+  /// Alle Wege mit genau [darts] Darts für [remaining], bester zuerst: bei
+  /// Double-Out der Weg aus der [CheckoutTable] (wenn er genau [darts] Darts
+  /// hat), danach die übrigen nach den Gewichten der Kostensuche. Wege, die
+  /// sich nur in der Reihenfolge der Aufbau-Darts unterscheiden, stehen nur
+  /// einmal da. Höchstens [limit] Einträge.
   static List<List<Segment>> routes(int remaining,
       {required int darts, bool doubleOut = true, bool masterOut = false, int limit = 10}) {
     if (remaining <= 0 || darts <= 0 || darts > 3) return const [];
@@ -83,7 +90,13 @@ class CheckoutCalculator {
       }
     }
     found.sort((a, b) => a.$1.compareTo(b.$1));
-    return [for (final f in found.take(limit)) f.$2];
+    final table = doubleOut && !masterOut ? CheckoutTable.route(remaining, darts: darts) : null;
+    if (table == null || table.length != darts) return [for (final f in found.take(limit)) f.$2];
+    return [
+      table,
+      for (final f in found)
+        if (!_sameRoute(f.$2, table)) f.$2,
+    ].take(limit).toList();
   }
 
   static List<Segment>? _search(int remaining, int maxDarts, {required bool doubleOut, required bool masterOut}) {
@@ -131,6 +144,18 @@ class CheckoutCalculator {
     return null;
   }
 
+  /// Gleicher Weg, Aufbau-Darts in beliebiger Reihenfolge.
+  static bool _sameRoute(List<Segment> a, List<Segment> b) {
+    if (a.length != b.length || a.isEmpty || !a.last.sameField(b.last)) return false;
+    final rest = [...b.sublist(0, b.length - 1)];
+    for (final s in a.sublist(0, a.length - 1)) {
+      final i = rest.indexWhere(s.sameField);
+      if (i < 0) return false;
+      rest.removeAt(i);
+    }
+    return true;
+  }
+
   /// Höherer Aufbau-Dart zuerst.
   static List<Segment> _ordered(Segment a, Segment b) =>
       _setupCost(a) <= _setupCost(b) ? [a, b] : [b, a];
@@ -163,6 +188,9 @@ class CheckoutCalculator {
     if (masterOut && s.isTriple) return 1.5 + (20 - s.number) * 0.05;
     if (!doubleOut && !masterOut) return s.isTriple ? 1 : 0;
     if (s.bed == Bed.innerBull) return 2.5;
+    // Kleine ungerade Doppel (und D2) lassen nach einem Fehlwurf kaum einen
+    // zweiten Versuch; sie sind so teuer, dass ein Weg mit schwererem
+    // Aufbau-Dart auf ein gängiges Doppel meist gewinnt.
     return switch (s.number) {
       20 => 0,
       16 => 0.2,
@@ -170,12 +198,12 @@ class CheckoutCalculator {
       10 => 0.7,
       12 => 0.8,
       18 => 1.0,
-      4 => 1.1,
-      6 => 1.3,
       14 => 1.4,
-      2 => 1.6,
-      1 => 3,
-      _ => 2,
+      4 => 1.8,
+      6 => 2.0,
+      2 => 6,
+      1 || 3 || 5 || 7 || 9 => 7,
+      _ => 2.5,
     };
   }
 }
