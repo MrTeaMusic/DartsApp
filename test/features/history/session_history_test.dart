@@ -16,6 +16,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers/darts.dart';
 import '../../helpers/history_seed.dart';
+import '../../helpers/online_seed.dart';
 import '../../helpers/sync_device.dart';
 
 void main() {
@@ -41,6 +42,10 @@ void main() {
     await dev.games.endSession(sid, result: const GameResult(metrics: {'average': 50}, summary: []), finished: true);
     return sid;
   }
+
+  Future<int> x01Session(Device dev) => x01(dev, [
+        ['T20', 'T20', 'S1'],
+      ]);
 
   test('X01-Training: Rest je Aufnahme, Bust und Darts aufs Finish', () async {
     final id = await x01(a, [
@@ -106,6 +111,25 @@ void main() {
     // Die Darts pro Leg passen zur gespeicherten Kennzahl.
     final countedDarts = dt.visits.expand((v) => v.darts).where((d) => d.counted).length;
     expect(countedDarts, dt.entry.metrics['darts']);
+  });
+
+  test('Online-Matches (Autodarts Live) stehen unter „Matches“, ohne Match-Detail', () async {
+    final me = await a.me();
+    final live = await seedOnlineMatch(a.games, me, DateTime(2026, 10, 2, 20), legs: 3, opponentMin: 9, opponentMax: 14);
+    final raw = await seedOnlineMatch(a.games, me, DateTime(2026, 10, 2, 21), x01: false, legs: 1);
+    final bot = await seedMatch(a.games, me, DateTime(2026, 10, 1, 19));
+    final x01 = await x01Session(a);
+    final entries = {for (final id in [live, raw, bot, x01]) id: (await detail(a, id)).entry};
+
+    expect(entries[live]!.isOnline, isTrue);
+    expect(entries[live]!.isMatch, isFalse);
+    expect(entries[live]!.hasLiveLegs, isTrue);
+    expect(entries[raw]!.hasLiveLegs, isFalse);
+    expect([for (final e in entries.entries) if (e.value.matches(HistoryFilter.matches)) e.key], [live, raw, bot]);
+    expect([for (final e in entries.entries) if (e.value.matches(HistoryFilter.training)) e.key], [x01]);
+    // Bot-Match behält die Match-Detailansicht, Live-Sessions nicht.
+    expect((await detail(a, bot)).players, hasLength(2));
+    expect((await detail(a, live)).players, isEmpty);
   });
 
   test('ältere Matches ohne Leg-Angaben', () async {
