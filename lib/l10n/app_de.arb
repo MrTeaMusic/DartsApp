@@ -2913,5 +2913,236 @@
   "statAvgSeconds": "Ø Antwortzeit (s)",
   "quizStatRate": "Quote",
   "quizImpossibleRight": "„Nicht möglich“ stimmt.",
-  "statQuizPace": "Ø Antwortzeit"
+  "statQuizPace": "Ø Antwortzeit",
+  "statsTabScatter": "Streuung",
+  "scatterScopeAll": "Alle Darts",
+  "scatterScopeTraining": "Training",
+  "scatterScopeMatch": "Matches",
+  "scatterScopeHint": "Training: Ziel meist vom Spiel angezeigt (exakt). Matches und online: Ziel geschätzt.",
+  "scatterEmptyTitle": "Noch zu wenig Positionen",
+  "scatterEmptyText": "Die Streuungs-Analyse braucht Darts mit Position, also von Autodarts oder aus dem Simulator (manuell eingegebene Darts haben keine). Ein Feld erscheint ab {min} Darts darauf.",
+  "@scatterEmptyText": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "scatterEmptyCount": "Im Zeitraum: {count} Darts mit Position.",
+  "@scatterEmptyCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "scatterPending": "Noch zu wenig Darts: {list}",
+  "@scatterPending": {
+    "placeholders": {
+      "list": {
+        "type": "String"
+      }
+    }
+  },
+  "scatterOverall": "Tendenz insgesamt",
+  "scatterOverallCaption": "Ø {mm} mm vom Feldmittelpunkt",
+  "@scatterOverallCaption": {
+    "placeholders": {
+      "mm": {
+        "type": "String"
+      }
+    }
+  },
+  "scatterSpread": "Streuung Ø",
+  "scatterSpreadValue": "± {mm} mm",
+  "@scatterSpreadValue": {
+    "placeholders": {
+      "mm": {
+        "type": "String"
+      }
+    }
+  },
+  "scatterSpreadCaption": "je Achse, 1 Sigma",
+  "scatterFields": "Felder ausgewertet",
+  "scatterFieldsCaption": "ab {min} Darts je Feld",
+  "@scatterFieldsCaption": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "scatterPositioned": "Darts mit Position",
+  "scatterPositionedCaption": "davon {count} mit Zielfeld",
+  "@scatterPositionedCaption": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "scatterDirCenter": "mittig",
+  "scatterDirUp": "oben",
+  "scatterDirUpRight": "rechts oben",
+  "scatterDirRight": "rechts",
+  "scatterDirDownRight": "rechts unten",
+  "scatterDirDown": "unten",
+  "scatterDirDownLeft": "links unten",
+  "scatterDirLeft": "links",
+  "scatterDirUpLeft": "links oben",
+  "scatterTendency": "eher {direction}",
+  "@scatterTendency": {
+    "placeholders": {
+      "direction": {
+        "type": "String"
+      }
+    }
+  },
+  "scatterRowTitle": "{direction} · {mm} mm",
+  "@scatterRowTitle": {
+    "placeholders": {
+      "direction": {
+        "type": "String"
+      },
+      "mm": {
+        "type": "String"
+      }
+    }
+  },
+  "scatterSideToward": "{mm} mm {side} (Richtung {number})",
+  "@scatterSideToward": {
+    "placeholders": {
+      "mm": {
+        "type": "String"
+      },
+      "side": {
+        "type": "String"
+      },
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "scatterSidePlain": "{mm} mm {side}",
+  "@scatterSidePlain": {
+    "placeholders": {
+      "mm": {
+        "type": "String"
+      },
+      "side": {
+        "type": "String"
+      }
+    }
+  },
+  "scatterHeight": "{mm} mm {side}",
+  "@scatterHeight": {
+    "placeholders": {
+      "mm": {
+        "type": "String"
+      },
+      "side": {
+        "type": "String"
+      }
+    }
+  },
+  "scatterSpreadDetail": "Streuung ± {side} mm seitlich, ± {height} mm in der Höhe",
+  "@scatterSpreadDetail": {
+    "placeholders": {
+      "side": {
+        "type": "String"
+      },
+      "height": {
+        "type": "String"
+      }
+    }
+  },
+  "scatterHitRate": "Quote {rate}",
+  "@scatterHitRate": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "scatterBullRate": "Bull-Quote (25/50) {rate}",
+  "@scatterBullRate": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "scatterDarts": "{count} Darts",
+  "@scatterDarts": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "scatterExact": "exakt",
+  "scatterEstimated": "geschätzt",
+  "scatterBoardTitle": "Streubild je Feld",
+  "scatterBoardHint": "Ellipse: 1-Sigma-Streuung (rund 39 % der Darts). Linie: vom Feldmittelpunkt (Kreuz) zur mittleren Position deiner Darts. Gestrichelt: Ziel geschätzt.",
+  "scatterFocusTitle": "Feld im Fokus",
+  "scatterFocusHint": "Ausschnitt mit dem Feld oben, wie in der Doppel-Ansicht. Punkte: bis zu {max} neueste Darts.",
+  "@scatterFocusHint": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "scatterFocusHintBull": "Beim Bull gelten die Richtungen der Scheibe, wie sie hängt. Punkte: bis zu {max} neueste Darts.",
+  "@scatterFocusHintBull": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "scatterLegendHit": "Treffer",
+  "scatterLegendMiss": "daneben",
+  "scatterListTitle": "Alle Felder",
+  "scatterFrameHint": "Richtungen, als stünde das Feld oben (wie in der Doppel-Ansicht): oben = vom Bull weg, unten = Richtung Bull, links/rechts mit Nachbarzahl. Beim Bull gilt die Scheibe, wie sie hängt.",
+  "scatterBadgeHint": "exakt: Ziel vom Trainingsspiel angezeigt. geschätzt: Ziel aus Lage und Spielstand erschlossen (z. B. T20 in X01, Finish-Doppel im Match).",
+  "scatterOverallText": "Über alle Felder landen deine Darts eher {direction} (Ø {mm} mm).",
+  "@scatterOverallText": {
+    "placeholders": {
+      "direction": {
+        "type": "String"
+      },
+      "mm": {
+        "type": "String"
+      }
+    }
+  },
+  "scatterOverallCentered": "Über alle Felder ohne klare Richtung: Die Abweichungen sind klein oder gleichen sich aus.",
+  "scatterTipSteady": "Mittig und eng gruppiert – hier passt der Ablauf. Einfach so weitermachen.",
+  "scatterTipShiftAim": "Die Gruppierung ist gut, liegt aber etwas daneben. Eher Zielpunkt oder Stand leicht verschieben, statt am Wurf zu schrauben.",
+  "scatterTipTighten": "Im Mittel genau auf dem Feld. Mehr Treffer bringt jetzt vor allem eine engere Gruppierung: bei jedem Dart derselbe Ablauf.",
+  "scatterTipTooFlat": "Landet eher zu tief: Der Wurf ist vielleicht etwas zu flach. Probier einen etwas höheren Abwurfpunkt oder etwas mehr Bogen.",
+  "scatterTipTooSteep": "Landet eher zu hoch: Vielleicht etwas zu viel Kraft oder zu spät losgelassen. Ruhiger werfen und etwas früher lösen.",
+  "scatterTipInside": "Landet eher Richtung Bull: Den Zielpunkt bewusst etwas weiter außen ansetzen könnte helfen.",
+  "scatterTipOutside": "Landet eher zu weit außen: Den Zielpunkt etwas weiter Richtung Bull ansetzen könnte helfen.",
+  "scatterTipDrift": "Zieht eher Richtung {number}: Prüfe, ob Auge, Dart und Ellbogen auf einer Linie liegen; eventuell den Stand minimal verschieben.",
+  "@scatterTipDrift": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "scatterTipDriftSide": "Zieht eher nach {side}: Prüfe, ob Auge, Dart und Ellbogen auf einer Linie liegen; eventuell den Stand minimal verschieben.",
+  "@scatterTipDriftSide": {
+    "placeholders": {
+      "side": {
+        "type": "String"
+      }
+    }
+  },
+  "scatterTipWideSideways": "Streut an der Scheibe vor allem waagerecht: Ellbogen und Schulter ruhig halten und gerade zum Ziel durchschwingen.",
+  "scatterTipWideHeight": "Streut an der Scheibe vor allem senkrecht: Abwurfpunkt und Tempo gleichmäßiger halten – ein fester Rhythmus hilft.",
+  "scatterTipWideOverall": "Die Streuung ist insgesamt groß: Erst einen gleichmäßigen Ablauf festigen; Korrekturen am Zielpunkt bringen danach mehr.",
+  "scatterTipsTitle": "Tipps (Hinweise, keine Gewissheit)"
 }

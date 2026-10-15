@@ -103,6 +103,10 @@ class LiveX01 {
   /// (z. B. Rest 32 → D16). Nur bei Double- und Master-Out.
   final List<int?> aimedDoubles = [];
 
+  /// Je Dart der Session der Rest vor dem Dart (Streuungs-Analyse: ab
+  /// welchem Rest ein Dart als Scoring-Dart gilt).
+  final List<int> remainingBefore = [];
+
   late int remaining = config.startScore;
 
   /// Gezählte Darts im laufenden Leg.
@@ -200,6 +204,7 @@ class LiveX01 {
   }
 
   void _dart(Segment s) {
+    remainingBefore.add(remaining);
     if (_visitDone || dartsLeft <= 0) {
       counted.add(false);
       aimedDoubles.add(null);

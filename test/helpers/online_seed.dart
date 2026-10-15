@@ -18,6 +18,7 @@ import 'package:dartlab/features/matches/domain/dart_bot.dart';
 /// Wahrscheinlichkeit (Dart landet im Single daneben).
 ///
 /// [x01] = false speichert eine Session ohne X01 (`autodarts_live`).
+/// [throwAt] ersetzt den Bot-Wurf (z. B. Werfer mit Tendenz).
 Future<int> seedOnlineMatch(
   GameRepository repo,
   int player,
@@ -29,6 +30,7 @@ Future<int> seedOnlineMatch(
   bool x01 = true,
   int opponentMin = 5,
   int opponentMax = 9,
+  DartThrow Function(Segment target, DateTime at, bool finishing)? throwAt,
 }) async {
   final rnd = math.Random(seed);
   final bot = DartBot.forAverage(average, random: math.Random(seed * 13 + 1));
@@ -46,7 +48,7 @@ Future<int> seedOnlineMatch(
         final target = DartBot.aim(remaining, 3 - d, OutMode.double);
         t = t.add(const Duration(seconds: 6));
         final finishing = remaining <= DartBot.finishZone;
-        var dart = bot.throwAt(target, at: t, sigma: finishing ? bot.finishSigma : null);
+        var dart = throwAt != null ? throwAt(target, t, finishing) : bot.throwAt(target, at: t, sigma: finishing ? bot.finishSigma : null);
         final miss = target.isDouble ? nervous[target.number] : null;
         if (miss != null && dart.segment == target && rnd.nextDouble() < miss) {
           final s = target.number == 25 ? Segment.outerBull : Segment.single(target.number);

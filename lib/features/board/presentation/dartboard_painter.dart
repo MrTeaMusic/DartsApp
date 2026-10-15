@@ -26,6 +26,20 @@ class ScatterMarker {
   final bool hit;
 }
 
+/// Ruhende Zusatz-Zeichnung in Board-Koordinaten über der Scheibe, z. B. die
+/// Streuungs-Ellipsen der Statistik. Sie liegt in der Ebene der Treffer und
+/// wird nur neu gezeichnet, wenn sich die Dekoration ändert (`==`); im
+/// Ausschnitt (Doppel-Zoom) wird sie mit der Scheibe gedreht und vergrößert.
+@immutable
+abstract class BoardDecoration {
+  const BoardDecoration();
+
+  /// [toCanvas] rechnet Board-Koordinaten in Pixel um, [ringRadius] ist der
+  /// Radius des Double-Rings in Pixeln, [markerScale] die Größe von Markern
+  /// (im Ausschnitt kleiner).
+  void paint(Canvas canvas, Offset Function(BoardPoint p) toCanvas, double ringRadius, double markerScale);
+}
+
 /// Welche Teile [DartboardPainter] zeichnet.
 enum BoardLayer {
   /// Alles.
@@ -73,6 +87,7 @@ class DartboardPainter extends CustomPainter {
     this.heat = const [],
     this.heatOpacity = 0.0,
     this.scatter = const [],
+    this.decoration,
     this.showNumbers = true,
     this.style = BoardStyle.tournament,
     this.markerScale = 1,
@@ -117,6 +132,9 @@ class DartboardPainter extends CustomPainter {
 
   /// Streubild-Punkte, Fehlwürfe unter den Treffern.
   final List<ScatterMarker> scatter;
+
+  /// Zusatz-Zeichnung über dem Streubild (siehe [BoardDecoration]).
+  final BoardDecoration? decoration;
   final bool showNumbers;
 
   /// Größe der Treffer-Marker; im Zoom kleiner, damit sie nicht mitwachsen.
@@ -192,6 +210,8 @@ class DartboardPainter extends CustomPainter {
     if (heatOpacity > 0 && heat.isNotEmpty) _heat(canvas, size, r);
 
     if (scatter.isNotEmpty) _scatter(canvas, size, r);
+
+    decoration?.paint(canvas, (p) => toCanvas(p, size, style), r, markerScale);
 
     // Hover
     if (hover != null && !hover!.isMiss) {
@@ -558,6 +578,7 @@ class DartboardPainter extends CustomPainter {
       old.heat != heat ||
       old.heatOpacity != heatOpacity ||
       old.scatter != scatter ||
+      old.decoration != decoration ||
       old.showNumbers != showNumbers ||
       old.markerScale != markerScale ||
       old.viewRotation != viewRotation ||

@@ -14,14 +14,15 @@ import '../domain/segment.dart';
 import 'board_style.dart';
 import 'dartboard_painter.dart';
 
-export 'dartboard_painter.dart' show ScatterMarker;
+export 'dartboard_painter.dart' show BoardDecoration, ScatterMarker;
 
 /// Großes, animiertes Dartboard.
 ///
 /// * Tippen meldet Position und Feld an [onTap] (Simulator).
 /// * Der neueste Treffer pulsiert, das getroffene Feld leuchtet kurz auf.
 /// * [highlighted] hebt Zielfelder dauerhaft pulsierend hervor.
-/// * [heat] zeichnet eine Heatmap über das Board, [scatter] ein Streubild.
+/// * [heat] zeichnet eine Heatmap über das Board, [scatter] ein Streubild,
+///   [decoration] eine eigene ruhende Zeichnung (z. B. Streuungs-Ellipsen).
 /// * Mit [focus] zeigt die Fläche nur einen vergrößerten Ausschnitt rund um
 ///   dieses Feld (Doppel-Zoom); Treffer und Antippen funktionieren dort genauso.
 class DartboardView extends ConsumerStatefulWidget {
@@ -33,6 +34,7 @@ class DartboardView extends ConsumerStatefulWidget {
     this.heat = const [],
     this.showHeat = false,
     this.scatter = const [],
+    this.decoration,
     this.hitSerial = 0,
     this.onTap,
     this.style,
@@ -70,6 +72,9 @@ class DartboardView extends ConsumerStatefulWidget {
 
   /// Streubild der Statistik (siehe [ScatterMarker]).
   final List<ScatterMarker> scatter;
+
+  /// Ruhende Zusatz-Zeichnung in Board-Koordinaten (siehe [BoardDecoration]).
+  final BoardDecoration? decoration;
   final void Function(BoardPoint point, Segment segment)? onTap;
 
   @override
@@ -199,6 +204,7 @@ class _DartboardViewState extends ConsumerState<DartboardView> with TickerProvid
             flash: widget.lastSegment,
             hover: _hover,
             scatter: widget.scatter,
+            decoration: widget.decoration,
             markerScale: view.markerScale,
             viewRotation: view.rotation,
           );
