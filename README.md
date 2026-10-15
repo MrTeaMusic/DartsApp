@@ -45,6 +45,7 @@ Regeln der zwei eigenen Spiele: [docs/spielregeln.md](docs/spielregeln.md).
 Feste und eigene Trainingspläne: [docs/trainingsplaene.md](docs/trainingsplaene.md).
 Checkout-Quiz (Wege lernen ohne zu werfen): [docs/checkout-quiz.md](docs/checkout-quiz.md).
 Wie Statistiken berechnet werden, Ziele, Profile, Export-Formate: [docs/statistik-und-daten.md](docs/statistik-und-daten.md).
+Streuungs-Analyse (wohin man je Feld verzieht, mit Tipp): [docs/streuungs-analyse.md](docs/streuungs-analyse.md).
 
 ## Starten
 

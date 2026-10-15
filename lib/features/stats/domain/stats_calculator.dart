@@ -6,14 +6,19 @@ import '../../autodarts_live/domain/live_stats.dart';
 import '../../autodarts_live/domain/live_x01.dart';
 import '../../board/domain/board_geometry.dart';
 import '../../board/domain/segment.dart';
+import '../../games/domain/game_catalog.dart';
+import '../../matches/domain/match_format.dart';
+import '../../matches/domain/match_result.dart';
 import 'double_stats.dart';
 import 'game_metrics.dart';
 import 'online_stats.dart';
+import 'scatter_stats.dart';
 import 'stats_models.dart';
 import 'target_replay.dart';
 
 export 'double_stats.dart';
 export 'online_stats.dart';
+export 'scatter_stats.dart';
 export 'stats_models.dart';
 
 /// Alle Kennzahlen eines Zeitraums. Reine Berechnung aus Sessions und
@@ -150,6 +155,7 @@ class StatsCalculator {
     take(previous._perDayCache, _perDayCache);
     take(previous._liveDoublesCache, _liveDoublesCache);
     take(previous._onlineMatchCache, _onlineMatchCache);
+    take(previous._scatterCache, _scatterCache);
     _days.addAll(previous._days);
   }
 
@@ -767,21 +773,9 @@ class StatsCalculator {
   /// wenn der Checkout-Weg für die restlichen Darts der Aufnahme genau ein
   /// Doppel war (wie bei X01-Solo). Ohne X01 leer.
   Map<int, HitCount> liveDoublesOf(SessionRow s) => _liveDoublesCache.putIfAbsent(s.id, () {
-        if (s.gameId != autodartsLiveX01GameId) return const {};
-        final config = LiveX01Config.fromJson(decode(s.configJson)['x01']);
-        final rows = throwsOf(s);
-        if (config == null || rows.isEmpty) return const {};
-        final visits = <List<Segment>>[];
-        int? current;
-        for (final t in rows) {
-          if (t.visitIndex != current || visits.isEmpty) {
-            visits.add([]);
-            current = t.visitIndex;
-          }
-          visits.last.add(segmentOf(t) ?? Segment.miss);
-        }
-        final details = _result(s)['details'];
-        final x = LiveX01.replay(config, visits, legMarksFromJson(details is Map ? details['marks'] : null), visitOpen: false);
+        final x = _liveX01Of(s);
+        if (x == null) return const {};
+        final visits = _visitsOf(throwsOf(s));
         final out = <int, HitCount>{};
         var i = 0;
         for (final v in visits) {
@@ -794,6 +788,31 @@ class StatsCalculator {
         }
         return out;
       });
+
+  /// Alle Würfe einer Session als Aufnahmen (Segmente).
+  static List<List<Segment>> _visitsOf(List<ThrowRow> rows) {
+    final visits = <List<Segment>>[];
+    int? current;
+    for (final t in rows) {
+      if (t.visitIndex != current || visits.isEmpty) {
+        visits.add([]);
+        current = t.visitIndex;
+      }
+      visits.last.add(segmentOf(t) ?? Segment.miss);
+    }
+    return visits;
+  }
+
+  /// Eine Live-Session mit „X01 mitzählen“, mit ihren gespeicherten Darts
+  /// und Leg-Markierungen nachgespielt; `null` für andere Sessions.
+  LiveX01? _liveX01Of(SessionRow s) {
+    if (s.gameId != autodartsLiveX01GameId) return null;
+    final config = LiveX01Config.fromJson(decode(s.configJson)['x01']);
+    final rows = throwsOf(s);
+    if (config == null || rows.isEmpty) return null;
+    final details = _result(s)['details'];
+    return LiveX01.replay(config, _visitsOf(rows), legMarksFromJson(details is Map ? details['marks'] : null), visitOpen: false);
+  }
 
   /// Eine Live-Session als Match-Eintrag (`null` für andere Spiele).
   OnlineMatch? onlineMatchOf(SessionRow s) {
@@ -979,6 +998,110 @@ class StatsCalculator {
       trainingBands: trainingBands,
     );
   }
+
+  // -------------------------------------------------------------------------
+  // Streuungs-Analyse
+  // -------------------------------------------------------------------------
+
+  final Map<int, ({List<ScatterDart> darts, int positioned})> _scatterCache = {};
+  final Map<(StatsPeriod, String?, ScatterScope), ScatterReport> _scatterReports = {};
+
+  /// Match statt Training: Bot-/Mensch-Matches und Online-Matches.
+  static bool isMatchSession(String gameId) => gameId == matchGameId || isOnlineGame(gameId);
+
+  /// Darts einer Session mit Position und Zielfeld (siehe
+  /// docs/streuungs-analyse.md) und die Zahl ihrer Darts mit Position.
+  ///
+  /// * Trainingsspiele: Ziel aus dem nachgespielten Spiel ([aimedOf]); genau
+  ///   ein Feld ist exakt, sonst werden T20/T19/Bull geschätzt.
+  /// * Online-Matches mit X01 und Matches: Rest nachgerechnet; Finish-Doppel
+  ///   und Scoring-Darts (T20/T19) geschätzt.
+  /// * Sonst (Autodarts Live ohne X01): T20/T19/Bull geschätzt.
+  ({List<ScatterDart> darts, int positioned}) scatterOf(SessionRow s) =>
+      _scatterCache.putIfAbsent(s.id, () => _computeScatter(s));
+
+  ({List<ScatterDart> darts, int positioned}) _computeScatter(SessionRow s) {
+    var positioned = 0;
+    for (final t in throwsOf(s)) {
+      if (t.counted && t.x != null && t.y != null && t.source != 'manual') positioned++;
+    }
+    // Ohne Positionen (manuelle Eingabe) nichts nachspielen.
+    if (positioned == 0) return (darts: const [], positioned: 0);
+    final out = <ScatterDart>[];
+    void add(ThrowRow t, Segment? landed, DartAim? aim) {
+      if (aim == null || landed == null) return;
+      if (scatterDartOf(t, landed, aim) case final d?) out.add(d);
+    }
+
+    final live = _liveX01Of(s);
+    if (GameCatalog.byId(s.gameId) != null) {
+      final aimed = aimedOf(s);
+      if (aimed.isNotEmpty) {
+        for (final a in aimed) {
+          add(a.row, a.segment, TargetsAim(a.targets));
+        }
+      } else {
+        // Nachspielen fehlgeschlagen: wie ohne bekanntes Ziel.
+        for (final t in countedOf(s)) {
+          add(t, segmentOf(t), const UnknownAim());
+        }
+      }
+    } else if (live != null) {
+      final x = live;
+      final rows = throwsOf(s);
+      for (var i = 0; i < rows.length && i < x.counted.length; i++) {
+        if (!x.counted[i]) continue;
+        final n = x.aimedDoubles[i];
+        add(
+          rows[i],
+          segmentOf(rows[i]),
+          n != null
+              ? RuleAim(n == 25 ? Segment.bull : Segment.double(n))
+              : (x.remainingBefore[i] >= ScatterRules.scoringRemaining ? const ScoringAim() : null),
+        );
+      }
+    } else if (s.gameId == matchGameId) {
+      final counted = countedOf(s);
+      final format = MatchFormat.fromJson(decode(s.configJson));
+      final details = _result(s)['details'];
+      final legs = details is Map ? details['legs'] : null;
+      final aims = x01AimsOf(
+        counted,
+        startScore: format.startScore,
+        out: format.outMode,
+        doubleIn: format.doubleIn,
+        legEnds: [
+          if (legs is List)
+            for (final l in legs)
+              if (l is Map && l['visit'] is num) (l['visit'] as num).toInt(),
+        ]..sort(),
+      );
+      for (var i = 0; i < counted.length; i++) {
+        add(counted[i], segmentOf(counted[i]), aims[i]);
+      }
+    } else {
+      for (final t in countedOf(s)) {
+        add(t, segmentOf(t), const UnknownAim());
+      }
+    }
+    return (darts: out, positioned: positioned);
+  }
+
+  /// Streuungs-Analyse des Zeitraums (je Zeitraum, Spiel und Auswahl
+  /// Training/Match zwischengespeichert).
+  ScatterReport scatterReport(StatsPeriod period, {String? gameId, ScatterScope scope = ScatterScope.all}) =>
+      _scatterReports.putIfAbsent((period, gameId, scope), () {
+        var positioned = 0;
+        final darts = <ScatterDart>[];
+        for (final s in sessionsIn(period, gameId: gameId)) {
+          final match = isMatchSession(s.gameId);
+          if ((scope == ScatterScope.training && match) || (scope == ScatterScope.match && !match)) continue;
+          final sc = scatterOf(s);
+          positioned += sc.positioned;
+          darts.addAll(sc.darts);
+        }
+        return ScatterReport.build(darts, positioned: positioned);
+      });
 
   /// Beginn der aktuellen Woche (Montag).
   DateTime get weekStart => weekOf(now);

@@ -14,6 +14,7 @@ import '../data/stats_repository.dart';
 import '../domain/game_metrics.dart';
 import '../domain/stats_calculator.dart';
 import 'online_tab.dart';
+import 'scatter_tab.dart';
 import 'stats_tabs.dart';
 import 'stats_widgets.dart';
 
@@ -97,7 +98,7 @@ class StatsScreen extends ConsumerWidget {
       // Reiter bündig mit dem Seitenrand (Label-Abstand 16 abziehen).
       final inset = AppPageBar.contentInset(context, outer.maxWidth, double.infinity);
       return DefaultTabController(
-        length: 7,
+        length: 8,
         child: Scaffold(
           appBar: AppPageBar(
             title: Text(l10n.statsTitle),
@@ -122,6 +123,7 @@ class StatsScreen extends ConsumerWidget {
                 Tab(key: const Key('stats-tab-online'), text: l10n.statsTabOnline),
                 Tab(key: const Key('stats-tab-scoring'), text: l10n.statsTabScoring),
                 Tab(key: const Key('stats-tab-doubles'), text: l10n.statsTabDoubles),
+                Tab(key: const Key('stats-tab-scatter'), text: l10n.statsTabScatter),
                 Tab(key: const Key('stats-tab-games'), text: l10n.statsTabGames),
                 Tab(key: const Key('stats-tab-records'), text: l10n.statsTabRecords),
                 Tab(key: const Key('stats-tab-achievements'), text: l10n.statsTabAchievements),
@@ -151,6 +153,7 @@ class StatsScreen extends ConsumerWidget {
                             OnlineTab(view: view, wide: wide, pad: pad),
                             ScoringTab(view: view, wide: wide, pad: pad),
                             DoublesTab(view: view, wide: wide, pad: pad),
+                            ScatterTab(view: view, wide: wide, pad: pad),
                             GamesTab(view: view, wide: wide, pad: pad),
                             RecordsTab(view: view, wide: wide, pad: pad),
                             AchievementsTab(wide: wide, pad: pad),
@@ -170,7 +173,7 @@ class StatsScreen extends ConsumerWidget {
 const int _onlineTab = 1;
 
 /// Index des Reiters „Erfolge“.
-const int _achievementsTab = 6;
+const int _achievementsTab = 7;
 
 /// Blendet [child] aus, solange der Reiter [index] gewählt ist.
 class _HideOnTab extends StatelessWidget {
