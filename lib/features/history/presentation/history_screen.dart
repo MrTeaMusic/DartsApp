@@ -161,6 +161,7 @@ class HistoryTile extends StatelessWidget {
     final subtitle = [
       if (e.isMatch && e.opponents.isNotEmpty) l10n.histVs(e.opponents.join(', ')),
       historyTime(e.startedAt),
+      if (e.hasLiveLegs) l10n.onlineLegs(e.legsWon, e.legsLost),
       if (!e.finished) l10n.gameAborted,
       l10n.sessionAmount(e.gameId, e.darts, e.metrics),
       if (minutes != null && minutes > 0) formatMinutes(minutes),
@@ -230,6 +231,10 @@ class HistoryTile extends StatelessWidget {
                       if (e.tournament) ...[
                         const SizedBox(width: AppSpacing.s),
                         Icon(Icons.account_tree_rounded, size: 16, color: colors.textMuted),
+                      ],
+                      if (e.isOnline) ...[
+                        const SizedBox(width: AppSpacing.s),
+                        Icon(Icons.public_rounded, key: Key('history-online-${e.id}'), size: 16, color: colors.textMuted),
                       ],
                     ],
                   ),

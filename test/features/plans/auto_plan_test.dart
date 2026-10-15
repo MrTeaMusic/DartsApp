@@ -189,4 +189,98 @@ void main() {
       }
     });
   });
+
+  test('Alle Schritte sind spielbare Spiele (auch der X01-Abschluss)', () {
+    for (final input in [weakD16(), const AutoPlanInput(days: 30, sessions: 10, darts: 1000), onlineWeak()]) {
+      for (var v = 0; v < 4; v++) {
+        for (final m in AutoPlanGenerator.lengths) {
+          final plan = AutoPlanGenerator.generate(input, minutes: m, variant: v);
+          for (final s in plan.plan.steps) {
+            expect(s.available, isTrue, reason: s.gameId);
+          }
+        }
+      }
+    }
+  });
+
+  group('Online-Matches', () {
+    test('online deutlich schwächere Doppel und First 9 werden Schwerpunkte mit Begründung', () {
+      final w = AutoPlanGenerator.weaknesses(onlineWeak());
+      final online = [for (final x in w) if (x.online) x];
+      expect(online.map((x) => x.label), ['D8 online', 'First 9 online', 'Doppel online']);
+      final d8 = online.first;
+      expect(d8.kind, WeaknessKind.double);
+      expect(d8.number, 8);
+      expect(d8.reason, 'D8 triffst du online nur zu 10 % (Training: 40 %), Ziel: 40 %');
+      expect(w.first.online, isTrue);
+    });
+
+    test('ersetzt dieselbe Schwäche aus dem Training', () {
+      // D16 ist im Training schwach und online noch schwächer: nur einmal.
+      final w = AutoPlanGenerator.weaknesses(onlineWeak(d16Online: true));
+      final d16 = [for (final x in w) if (x.number == 16 && x.kind == WeaknessKind.double) x];
+      expect(d16, hasLength(1));
+      expect(d16.single.online, isTrue);
+      expect(d16.single.reason, contains('online'));
+    });
+
+    test('der Plan nimmt sie auf und nennt den Grund', () {
+      final plan = AutoPlanGenerator.generate(onlineWeak(), minutes: 40);
+      final focus = [for (final s in plan.steps) if (s.weakness?.online ?? false) s];
+      expect(focus, isNotEmpty);
+      final d8 = focus.firstWhere((s) => s.weakness!.number == 8);
+      expect(d8.step.gameId, 'checkout');
+      expect(d8.step.config['min'], 16);
+      expect(d8.reason, startsWith('D8 triffst du online nur zu 10 %'));
+      expect(plan.notice, contains('„online“'));
+      expect(plan.plan.name, contains('D8 online'));
+    });
+
+    test('ohne Vergleich oder ohne deutlichen Einbruch: keine Online-Schwäche', () {
+      expect(AutoPlanGenerator.onlineWeaknesses(weakD16()), isEmpty);
+      expect(AutoPlanGenerator.onlineWeaknesses(onlineWeak(drop: false)), isEmpty);
+    });
+  });
+}
+
+MetricComparison _metric(CompareMetric m, double online, double training, int amount) =>
+    MetricComparison(m, CompareSide(online, amount), CompareSide(training, amount));
+
+/// Wie [weakD16], dazu ein Vergleich Training gegen Online-Match: D8 online
+/// 10 % statt 40 %, First 9 online 52 statt 64, Doppel insgesamt 15 % statt
+/// 28 %. Mit [d16Online] ist auch D16 online schwach (5 % statt 18 %).
+AutoPlanInput onlineWeak({bool d16Online = false, bool drop = true}) {
+  final base = weakD16();
+  return AutoPlanInput(
+    days: base.days,
+    sessions: base.sessions,
+    darts: base.darts,
+    doubles: base.doubles,
+    doubleRate: base.doubleRate,
+    doubleAttempts: base.doubleAttempts,
+    trebles: base.trebles,
+    trebleRate: base.trebleRate,
+    trebleAttempts: base.trebleAttempts,
+    checkoutByRange: base.checkoutByRange,
+    scoringAverage: base.scoringAverage,
+    scoringDarts: base.scoringDarts,
+    first9Average: base.first9Average,
+    scoringVisits: base.scoringVisits,
+    scoringMean: base.scoringMean,
+    scoringStdDev: base.scoringStdDev,
+    online: OnlineComparison(
+      average: _metric(CompareMetric.average, 50, 60, 500),
+      first9: _metric(CompareMetric.first9, drop ? 52 : 63, 64, 20),
+      checkout: _metric(CompareMetric.checkoutRate, 0.2, 0.3, 50),
+      doubles: _metric(CompareMetric.doubleRate, drop ? 0.15 : 0.27, 0.28, 120),
+      scoring: _metric(CompareMetric.scoring, 0.1, 0.2, 100),
+      perDouble: {
+        8: DoubleComparison(8, drop ? const HitCount(20, 2) : const HitCount(20, 7), const HitCount(40, 16)),
+        20: const DoubleComparison(20, HitCount(20, 5), HitCount(40, 11)),
+        if (d16Online) 16: const DoubleComparison(16, HitCount(20, 1), HitCount(60, 11)),
+      },
+      onlineBands: const {},
+      trainingBands: const {},
+    ),
+  );
 }

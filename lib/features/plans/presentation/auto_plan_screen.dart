@@ -18,13 +18,14 @@ import 'plan_run_controller.dart';
 import 'plan_texts.dart';
 
 /// Kennzahlen für den automatischen Plan: die letzten 30 Tage, bei zu
-/// wenig Daten 90 Tage, dann alles.
+/// wenig Daten 90 Tage, dann alles. Dazu der Vergleich Training gegen
+/// Online-Match im selben Zeitraum.
 final autoPlanInputProvider = Provider<AutoPlanInput?>((ref) {
   final calc = ref.watch(statsCalculatorProvider).value;
   if (calc == null) return null;
   late AutoPlanInput input;
   for (final period in const [StatsPeriod.month, StatsPeriod.quarter, StatsPeriod.all]) {
-    input = AutoPlanInput.fromReport(calc.report(period), days: period.days);
+    input = AutoPlanInput.fromReport(calc.report(period), days: period.days, online: calc.onlineComparison(period));
     if (AutoPlanGenerator.hasEnoughData(input)) break;
   }
   return input;

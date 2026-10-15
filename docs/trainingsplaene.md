@@ -67,6 +67,10 @@ Daten, aber ohne klare Schwäche gibt es einen ausgewogenen Plan mit entsprechen
 Die Stärke einer Schwäche ist der relative Abstand zum Vergleichswert (z. B. 1 − D16-Quote /
 Double-Quote). In den Plan kommen die stärksten, je Art eine (Doubles: zwei).
 
+Dazu kommen **Online-Schwächen** aus dem Vergleich Training gegen Online-Match (Doppel, Double-Quote
+und First 9, die online deutlich schwächer sind, z. B. „D8 online“). Sie ersetzen dieselbe Schwäche
+aus dem Training. Regeln und Schwellen: `docs/online-matches.md`.
+
 ### Aufbau
 
 1. **Aufwärmen** (ca. 12 % der Zeit): Around the Clock ohne Bull, ein paar Aufnahmen auf die 20

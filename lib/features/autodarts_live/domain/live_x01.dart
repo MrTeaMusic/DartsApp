@@ -14,6 +14,15 @@ class LiveX01Config {
 
   Map<String, Object?> toJson() => {'startScore': startScore, 'outMode': outMode.name};
 
+  /// Aus der gespeicherten Config einer Session (`config['x01']`); `null`,
+  /// wenn [json] keine Map ist.
+  static LiveX01Config? fromJson(Object? json) => json is Map
+      ? LiveX01Config(
+          startScore: (json['startScore'] as num?)?.toInt() ?? 501,
+          outMode: OutMode.values.where((o) => o.name == json['outMode']).firstOrNull ?? OutMode.double,
+        )
+      : null;
+
   @override
   bool operator ==(Object other) => other is LiveX01Config && other.startScore == startScore && other.outMode == outMode;
 
@@ -34,6 +43,17 @@ enum LegMarkKind {
 /// Markierung vor dem Dart mit der Nummer [at] (Zählung über die ganze
 /// Session; [at] = Zahl der Darts beim Drücken).
 typedef LegMark = ({int at, LegMarkKind kind});
+
+/// Leg-Markierungen aus dem gespeicherten Ergebnis (`details['marks']`).
+List<LegMark> legMarksFromJson(Object? json) => [
+      if (json is List)
+        for (final m in json)
+          if (m is Map && m['at'] is num)
+            (
+              at: (m['at'] as num).toInt(),
+              kind: LegMarkKind.values.where((k) => k.name == m['kind']).firstOrNull ?? LegMarkKind.lost,
+            ),
+    ];
 
 /// Ein abgeschlossenes Leg.
 class LiveX01Leg {
@@ -76,6 +96,12 @@ class LiveX01 {
 
   /// Je Dart der Session: zählt er für X01? (`false` nach Bust/Checkout.)
   final List<bool> counted = [];
+
+  /// Je Dart der Session das Doppel, auf das er zum Finish geworfen wurde
+  /// (1–20, 25 = Bull), sonst `null`. Wie bei X01-Solo: Der Checkout-Weg
+  /// für die restlichen Darts der Aufnahme besteht aus genau einem Doppel
+  /// (z. B. Rest 32 → D16). Nur bei Double- und Master-Out.
+  final List<int?> aimedDoubles = [];
 
   late int remaining = config.startScore;
 
@@ -176,9 +202,11 @@ class LiveX01 {
   void _dart(Segment s) {
     if (_visitDone || dartsLeft <= 0) {
       counted.add(false);
+      aimedDoubles.add(null);
       return;
     }
     counted.add(true);
+    aimedDoubles.add(_aimedDouble());
     _visitDarts++;
     darts++;
     legDarts++;
@@ -206,6 +234,15 @@ class LiveX01 {
       _closeVisit();
       _endLeg(won: true, checkout: visitStartRemaining);
     }
+  }
+
+  /// Ein Doppel geht nur bis Rest 50 (Bull); darüber gibt es keinen
+  /// Weg aus einem einzelnen Doppel.
+  int? _aimedDouble() {
+    if (config.outMode == OutMode.straight || remaining > 50) return null;
+    final path = CheckoutRules.suggest(remaining, darts: dartsLeft, out: config.outMode);
+    if (path == null || path.length != 1 || !path.first.isDouble) return null;
+    return path.first.number;
   }
 
   void _closeVisit() {

@@ -249,6 +249,104 @@
       }
     }
   },
+  "updateTitle": "Updates",
+  "updateBuildLabel": "{version} · Build {build}",
+  "@updateBuildLabel": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "build": {
+        "type": "int"
+      }
+    }
+  },
+  "updateDevBuildLabel": "{version} · selbst gebaut",
+  "@updateDevBuildLabel": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateCheckButton": "Nach Updates suchen",
+  "updateChecking": "Suche nach Updates …",
+  "updateUpToDate": "Du hast die neueste Version.",
+  "updateAvailableStatus": "Neue Version {version} verfügbar.",
+  "@updateAvailableStatus": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateDevStatus": "Selbst gebaute Version, sucht nie von allein. Neueste auf GitHub: {version}.",
+  "@updateDevStatus": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateDevHint": "Selbst gebaut: sucht nur, wenn du hier tippst.",
+  "updateAutoHint": "Sucht beim Start höchstens einmal am Tag von allein.",
+  "updateLastChecked": "Zuletzt gesucht: {when}",
+  "@updateLastChecked": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "updateErrorOffline": "Keine Verbindung zu GitHub. Prüf das Internet und versuch es später nochmal.",
+  "updateErrorRateLimit": "GitHub bremst gerade, zu viele Anfragen von diesem Netz. In einer Stunde nochmal versuchen.",
+  "updateErrorNoRelease": "Auf GitHub gibt es noch keine veröffentlichte Version.",
+  "updateErrorOther": "Die Suche hat nicht geklappt. Versuch es später nochmal.",
+  "updateBannerKicker": "Update verfügbar",
+  "updateBannerTitle": "DartLab {version}",
+  "@updateBannerTitle": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateMoreNotes": "{count, plural, =1{… und eine weitere Änderung} other{… und {count} weitere Änderungen}}",
+  "@updateMoreNotes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "updateDownload": "Herunterladen",
+  "updateLater": "Später",
+  "updateDownloading": "Lädt herunter … {percent} %",
+  "@updateDownloading": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "updateDownloadingUnknown": "Lädt herunter …",
+  "updateDownloaded": "Gespeichert in Downloads: {file}",
+  "@updateDownloaded": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      }
+    }
+  },
+  "updateInstallWindows": "DartLab schließen, die Zip entpacken und den Inhalt in deinen DartLab-Ordner kopieren (vorhandene Dateien ersetzen). Deine Daten bleiben erhalten.",
+  "updateInstallMacos": "Zip öffnen und DartLab.app in den Programme-Ordner ziehen (alte ersetzen). Beim ersten Start Rechtsklick › Öffnen. Deine Daten bleiben erhalten.",
+  "updateOpenFolder": "Ordner öffnen",
+  "updateDone": "Fertig",
+  "updateDownloadFailed": "Der Download hat nicht geklappt. Versuch es nochmal oder lade die Datei im Browser.",
+  "updateRetry": "Nochmal",
+  "updateOpenInBrowser": "Im Browser öffnen",
+  "updateReleasePage": "Auf GitHub ansehen",
+  "updateIosHint": "Auf iPhone und iPad kommt das Update über den Mac: dort git pull und neu bauen (siehe Build-Anleitung).",
   "debugTitle": "Debug: Rohdaten",
   "debugShort": "Debug",
   "debugPause": "Pausieren",
@@ -2402,6 +2500,162 @@
     "placeholders": {
       "score": {
         "type": "int"
+      }
+    }
+  },
+  "statsTabOnline": "Online",
+  "onlineEmptyTitle": "Noch keine Online-Matches",
+  "onlineEmptyText": "Schreib deine Online-Matches mit Autodarts Live mit, dann erscheinen sie hier. Mit „X01 mitzählen“ kommen Legs, First 9 und Checkout-Quote dazu.",
+  "onlineOpenLive": "Autodarts Live öffnen",
+  "onlineMatches": "Matches",
+  "onlineLegs": "Legs {won}:{lost}",
+  "@onlineLegs": {
+    "placeholders": {
+      "won": {
+        "type": "int"
+      },
+      "lost": {
+        "type": "int"
+      }
+    }
+  },
+  "onlineMatchesCaption": "{darts} Darts · {legs}",
+  "@onlineMatchesCaption": {
+    "placeholders": {
+      "darts": {
+        "type": "int"
+      },
+      "legs": {
+        "type": "String"
+      }
+    }
+  },
+  "onlineNoLegs": "ohne Legs",
+  "onlineAverageCaption": "Mit X01: Bust = 0, sonst roh",
+  "onlineFirst9Caption": "Je Leg, nur mit X01",
+  "onlineCheckoutCaption": "{hits} von {attempts} Finish-Darts",
+  "@onlineCheckoutCaption": {
+    "placeholders": {
+      "hits": {
+        "type": "int"
+      },
+      "attempts": {
+        "type": "int"
+      }
+    }
+  },
+  "onlineHighestFinish": "Höchstes Finish",
+  "onlineTons": "100+ / 180",
+  "onlineTonsCaption": "Aufnahmen ab 100 / 180er",
+  "onlineTrendWeekly": "Verlauf je Woche",
+  "onlineTrendPerMatch": "Verlauf je Match",
+  "onlineTrendPerMatchHint": "Ab {weeks} Wochen mit Matches je Woche.",
+  "@onlineTrendPerMatchHint": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
+  "onlineCompareTitle": "Training gegen Match",
+  "onlineCompareTraining": "Training",
+  "onlineCompareOnline": "Online",
+  "onlineCompareHint": "Online: Autodarts Live. Training: Average und Aufnahmen 100+ aus X01-Solo und Scoring-Drills, First 9 und Checkout-Quote aus X01-Solo, Double-Quote aus allen Trainings mit einem Doppel als Ziel. Bot-Matches zählen auf keiner Seite.",
+  "onlineCompareMissing": "Noch zu wenig: online {online}, Training {training} (mind. {need} {unit})",
+  "@onlineCompareMissing": {
+    "placeholders": {
+      "online": {
+        "type": "int"
+      },
+      "training": {
+        "type": "int"
+      },
+      "need": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "onlineUnitDarts": "Darts",
+  "onlineUnitLegs": "Legs",
+  "onlineUnitFinishDarts": "Finish-Darts",
+  "onlineUnitDoubleDarts": "Doppel-Darts",
+  "onlineUnitVisits": "Aufnahmen",
+  "onlineCompareEmptyTitle": "Noch zu wenig für den Vergleich",
+  "onlineCompareEmptyText": "Verglichen wird, sobald beide Seiten im Zeitraum genug Daten haben, z. B. 90 Darts für den Average oder 5 Legs für die First 9. Wähle einen längeren Zeitraum oder trainiere X01-Solo, Scoring- und Doppel-Spiele.",
+  "onlineNotable": "Online deutlich schwächer: {list}. Der Plan-Vorschlag nimmt das als Schwerpunkt auf.",
+  "@onlineNotable": {
+    "placeholders": {
+      "list": {
+        "type": "String"
+      }
+    }
+  },
+  "onlineNotableNone": "Online keine deutliche Schwäche gegenüber dem Training.",
+  "onlineDoublesTitle": "Doppel: Training gegen Online",
+  "onlineDoublesHint": "Doppel mit mindestens {min} Darts auf beiden Seiten, größter Einbruch online zuerst. Online zählen Darts auf ein Finish-Doppel (nur mit „X01 mitzählen“). Rot: online mindestens {pp} Prozentpunkte schwächer.",
+  "@onlineDoublesHint": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "pp": {
+        "type": "int"
+      }
+    }
+  },
+  "onlineDoublesEmpty": "Noch kein Doppel mit genug Darts auf beiden Seiten. Online zählen nur Sessions mit „X01 mitzählen“.",
+  "onlineDistributionTitle": "Punkteverteilung",
+  "onlineDistributionHint": "Anteil voller Aufnahmen je Bereich: online {online}, Training {training}.",
+  "@onlineDistributionHint": {
+    "placeholders": {
+      "online": {
+        "type": "int"
+      },
+      "training": {
+        "type": "int"
+      }
+    }
+  },
+  "onlineMatchList": "Matches im Zeitraum",
+  "onlineRaw": "ohne X01",
+  "onlineLegTitle": "Leg {number}",
+  "@onlineLegTitle": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "onlineLegWon": "gewonnen",
+  "onlineLegLost": "verloren",
+  "onlineLegDarts": "{darts} Darts",
+  "@onlineLegDarts": {
+    "placeholders": {
+      "darts": {
+        "type": "int"
+      }
+    }
+  },
+  "onlineAllVisits": "Alle Aufnahmen",
+  "onlineAverageShort": "Average",
+  "onlineAverageRaw": "Average roh",
+  "onlineCompareAmounts": "online {online}, Training {training} (mind. {need} {unit})",
+  "@onlineCompareAmounts": {
+    "placeholders": {
+      "online": {
+        "type": "int"
+      },
+      "training": {
+        "type": "int"
+      },
+      "need": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
       }
     }
   },

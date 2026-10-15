@@ -7,10 +7,12 @@ optional gefiltert auf ein Spiel. Grundlage sind abgeschlossene Sessions und ihr
 Darts, die nach einem Bust oder Checkout noch fielen, zählen nicht. Die Berechnung steckt komplett im
 `StatsCalculator` (reine Dart-Klasse ohne Datenbank, mit Unit-Tests).
 
-Die Statistik hat fünf Reiter:
+Die Statistik hat sieben Reiter:
 
 * **Überblick:** Serie und Ziele, Kennzahlen mit Vergleich zum Vorzeitraum, Darts pro Tag (bis 30
   Tage) bzw. pro Woche (90 Tage, alles), Trainingsmuster nach Wochentag und Tageszeit.
+* **Online:** Matches aus Autodarts Live mit Legs, Verlauf je Woche und der Vergleich Training gegen
+  Match (Average, First 9, Checkout, Doppel einzeln, Punkteverteilung). Siehe `docs/online-matches.md`.
 * **Scoring:** 3-Dart-Average, First 9, Streuung, Punkteverteilung der Aufnahmen, Average-Verlauf,
   Triple-Quote je Zahl, Heatmap, Treffer je Zahl.
 * **Doppel & Finish:** Checkout- und Double-Quote, stärkstes und schwächstes Double, „Doppel im
@@ -19,6 +21,7 @@ Die Statistik hat fünf Reiter:
 * **Spiele:** Verlauf jeder Kennzahl eines Spiels mit gleitendem Durchschnitt, Bestwert, letzter Wert,
   Durchschnitt der letzten fünf, Liste aller Spiele mit Trefferquote aufs Ziel.
 * **Rekorde:** persönliche Rekorde und Bestwerte je Spiel mit Datum, immer über alle Zeiträume.
+* **Erfolge:** freigeschaltete Erfolge (ohne Zeitraum).
 
 ### Kennzahlen
 
@@ -140,7 +143,8 @@ Für Verlauf und Bestwert:
 
 Unter **Statistik › Verlauf**, über „Verlauf“ bei „Zuletzt gespielt“ (Start und Training) oder durch
 Antippen einer Session dort. Die Liste zeigt alle abgeschlossenen Sessions des aktiven Profils nach Tag,
-neueste oben, filterbar nach Alle, Training und Matches. Jede Zeile: Spiel, Uhrzeit, Darts, Dauer,
+neueste oben, filterbar nach Alle, Training und Matches (Bot-Matches und Online-Matches aus Autodarts
+Live). Jede Zeile: Spiel, Uhrzeit, Darts, Dauer,
 „abgebrochen“ und die Hauptkennzahl (siehe unten); fehlt sie (abgebrochen bei Kennzahlen, die nur vollständige
 Spiele haben), stehen die geworfenen Darts. Bei Matches Gegner, Sieg oder Niederlage und die
 Legs (eigene : verlorene).

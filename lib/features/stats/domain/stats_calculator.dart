@@ -2,14 +2,18 @@ import 'dart:convert';
 import 'dart:math' as math;
 
 import '../../../core/database/app_database.dart';
+import '../../autodarts_live/domain/live_stats.dart';
+import '../../autodarts_live/domain/live_x01.dart';
 import '../../board/domain/board_geometry.dart';
 import '../../board/domain/segment.dart';
 import 'double_stats.dart';
 import 'game_metrics.dart';
+import 'online_stats.dart';
 import 'stats_models.dart';
 import 'target_replay.dart';
 
 export 'double_stats.dart';
+export 'online_stats.dart';
 export 'stats_models.dart';
 
 /// Alle Kennzahlen eines Zeitraums. Reine Berechnung aus Sessions und
@@ -144,6 +148,8 @@ class StatsCalculator {
     take(previous._metricsCache, _metricsCache);
     take(previous._resultCache, _resultCache);
     take(previous._perDayCache, _perDayCache);
+    take(previous._liveDoublesCache, _liveDoublesCache);
+    take(previous._onlineMatchCache, _onlineMatchCache);
     _days.addAll(previous._days);
   }
 
@@ -281,6 +287,8 @@ class StatsCalculator {
   final Map<(String, StatsPeriod), List<TrendPoint>> _trends = {};
   final Map<(String, String, StatsPeriod), List<TrendPoint>> _metricTrends = {};
   final Map<(String, StatsPeriod), List<String>> _metricKeys = {};
+  final Map<StatsPeriod, OnlineReport> _onlineReports = {};
+  final Map<StatsPeriod, OnlineComparison> _comparisons = {};
   late final List<PersonalRecord> _records = _computeRecords();
   late final Streak _streak = _computeStreak();
 
@@ -745,6 +753,232 @@ class StatsCalculator {
   }
 
   static bool _isNextDay(DateTime a, DateTime b) => DateTime(a.year, a.month, a.day + 1) == b;
+
+  // -------------------------------------------------------------------------
+  // Online-Matches (Autodarts Live) und Training gegen Match
+  // -------------------------------------------------------------------------
+
+  final Map<int, Map<int, HitCount>> _liveDoublesCache = {};
+  final Map<int, OnlineMatch> _onlineMatchCache = {};
+
+  /// Darts aufs Finish-Doppel einer Live-Session mit „X01 mitzählen“, je
+  /// Doppel. Die Session wird mit ihren gespeicherten Darts und Leg-
+  /// Markierungen noch einmal abgespielt ([LiveX01.replay]); ein Dart zählt,
+  /// wenn der Checkout-Weg für die restlichen Darts der Aufnahme genau ein
+  /// Doppel war (wie bei X01-Solo). Ohne X01 leer.
+  Map<int, HitCount> liveDoublesOf(SessionRow s) => _liveDoublesCache.putIfAbsent(s.id, () {
+        if (s.gameId != autodartsLiveX01GameId) return const {};
+        final config = LiveX01Config.fromJson(decode(s.configJson)['x01']);
+        final rows = throwsOf(s);
+        if (config == null || rows.isEmpty) return const {};
+        final visits = <List<Segment>>[];
+        int? current;
+        for (final t in rows) {
+          if (t.visitIndex != current || visits.isEmpty) {
+            visits.add([]);
+            current = t.visitIndex;
+          }
+          visits.last.add(segmentOf(t) ?? Segment.miss);
+        }
+        final details = _result(s)['details'];
+        final x = LiveX01.replay(config, visits, legMarksFromJson(details is Map ? details['marks'] : null), visitOpen: false);
+        final out = <int, HitCount>{};
+        var i = 0;
+        for (final v in visits) {
+          for (final seg in v) {
+            final n = i < x.aimedDoubles.length ? x.aimedDoubles[i] : null;
+            i++;
+            if (n == null) continue;
+            out[n] = (out[n] ?? HitCount.zero) + HitCount(1, classifyDoubleMiss(n, seg) == null ? 1 : 0);
+          }
+        }
+        return out;
+      });
+
+  /// Eine Live-Session als Match-Eintrag (`null` für andere Spiele).
+  OnlineMatch? onlineMatchOf(SessionRow s) {
+    if (!isOnlineGame(s.gameId)) return null;
+    return _onlineMatchCache.putIfAbsent(s.id, () {
+      final m = _metrics(s);
+      final x01 = s.gameId == autodartsLiveX01GameId;
+      int n(String k) => (m[k] ?? 0).toInt();
+      final details = _result(s)['details'];
+      final rawLegs = x01 && details is Map ? details['legs'] : null;
+      final legs = <OnlineLeg>[
+        if (rawLegs is List)
+          for (final l in rawLegs)
+            if (l is Map && (l['darts'] as num? ?? 0) > 0)
+              OnlineLeg(
+                darts: (l['darts'] as num).toInt(),
+                points: (l['points'] as num? ?? 0).toInt(),
+                first9: switch (l['first9']) {
+                  final num v when v > 0 => v.toDouble(),
+                  _ => null,
+                },
+                checkout: (l['checkout'] as num? ?? 0).toInt(),
+                won: l['won'] == true,
+              ),
+      ];
+      final sc = scoringOf(s);
+      final dur = (s.endedAt ?? s.startedAt).difference(s.startedAt);
+      final checkoutDarts = x01 ? n('checkoutDarts') : 0;
+      return OnlineMatch(
+        sessionId: s.id,
+        startedAt: s.startedAt,
+        duration: dur.isNegative ? Duration.zero : dur,
+        x01: x01,
+        darts: sc?.darts ?? countedOf(s).length,
+        average: sc == null ? null : sc.points / sc.darts * 3,
+        first9: x01 ? m['first9']?.toDouble() : null,
+        legsWon: x01 ? n('legsWon') : 0,
+        legsLost: x01 ? n('legsLost') : 0,
+        checkout: HitCount(checkoutDarts, math.min(checkoutDarts, x01 ? n('legsWon') : 0)),
+        highestFinish: x01 ? n('highestFinish') : 0,
+        count100: n('count100'),
+        count140: n('count140'),
+        count180: n('count180'),
+        legs: legs,
+      );
+    });
+  }
+
+  /// Online-Matches im Zeitraum: Liste, Summen und Wochen.
+  OnlineReport onlineReport(StatsPeriod period) => _onlineReports.putIfAbsent(period, () {
+        final matches = [
+          for (final s in sessionsIn(period)) ?onlineMatchOf(s),
+        ];
+        var totals = const OnlineTotals();
+        final weeks = <DateTime, OnlineTotals>{};
+        for (final m in matches) {
+          totals = totals.add(m);
+          final w = weekOf(m.startedAt);
+          weeks[w] = (weeks[w] ?? const OnlineTotals()).add(m);
+        }
+        return OnlineReport(
+          matches: matches.reversed.toList(),
+          totals: totals,
+          weeks: [
+            for (final w in weeks.keys.toList()..sort()) (weekStart: w, totals: weeks[w]!),
+          ],
+        );
+      });
+
+  /// Training gegen Match im Zeitraum. Welche Spiele für welche Kennzahl
+  /// als Training zählen, steht in [TrainingSources].
+  OnlineComparison onlineComparison(StatsPeriod period) =>
+      _comparisons.putIfAbsent(period, () => _computeComparison(sessionsIn(period)));
+
+  OnlineComparison _computeComparison(List<SessionRow> sessions) {
+    final online = [for (final s in sessions) if (isOnlineGame(s.gameId)) s];
+    bool training(SessionRow s, Set<String> ids) => ids.contains(s.gameId);
+
+    // Average: Punkte und Darts wie im StatsReport.
+    CompareSide averageOf(Iterable<SessionRow> list) {
+      var points = 0.0;
+      var darts = 0;
+      for (final s in list) {
+        if (scoringOf(s) case final sc?) {
+          points += sc.points;
+          darts += sc.darts;
+        }
+      }
+      return CompareSide(darts == 0 ? null : points / darts * 3, darts);
+    }
+
+    // First 9 je abgeschlossenem Leg (aus den gespeicherten Legs).
+    CompareSide first9Of(Iterable<SessionRow> list) {
+      var sum = 0.0;
+      var legs = 0;
+      for (final s in list) {
+        final raw = _result(s)['details'];
+        final list = raw is Map ? raw['legs'] : null;
+        if (list is! List) continue;
+        for (final l in list) {
+          if (l is! Map || (l['darts'] as num? ?? 0) <= 0) continue;
+          if (l['first9'] case final num v when v > 0) {
+            sum += v;
+            legs++;
+          }
+        }
+      }
+      return CompareSide(legs == 0 ? null : sum / legs, legs);
+    }
+
+    // Checkout-Quote: gewonnene Legs je Dart aufs Finish.
+    CompareSide checkoutOf(Iterable<SessionRow> list) {
+      var h = HitCount.zero;
+      for (final s in list) {
+        final m = _metrics(s);
+        final darts = (m['checkoutDarts'] ?? 0).toInt();
+        if (darts > 0) h += HitCount(darts, math.min(darts, (m['legsWon'] ?? 0).toInt()));
+      }
+      return CompareSide(h.rate, h.attempts);
+    }
+
+    // Volle Aufnahmen (drei gezählte Darts) je Punktebereich.
+    Map<ScoreBand, int> bandsOf(Iterable<SessionRow> list) {
+      final bands = <ScoreBand, int>{};
+      for (final s in list) {
+        for (final v in visitsOf(s)) {
+          if (v.length != 3) continue;
+          final b = ScoreBand.of(v.fold(0, (a, t) => a + t.score));
+          bands[b] = (bands[b] ?? 0) + 1;
+        }
+      }
+      return bands;
+    }
+
+    CompareSide tonsOf(Map<ScoreBand, int> bands) {
+      final total = OnlineComparison.bandTotal(bands);
+      final tons = [for (final b in ScoreBand.values) if (b.min >= 100) bands[b] ?? 0].fold(0, (a, b) => a + b);
+      return CompareSide(total == 0 ? null : tons / total, total);
+    }
+
+    // Doppel: online aus dem nachgespielten X01, im Training die Darts mit
+    // genau einem Doppel als Ziel.
+    final onlineDoubles = <int, HitCount>{};
+    for (final s in online) {
+      for (final e in liveDoublesOf(s).entries) {
+        onlineDoubles[e.key] = (onlineDoubles[e.key] ?? HitCount.zero) + e.value;
+      }
+    }
+    final trainingDoubles = <int, HitCount>{};
+    for (final s in sessions) {
+      if (!TrainingSources.doubles(s.gameId)) continue;
+      for (final a in aimedOf(s)) {
+        final n = a.aimedDouble;
+        if (n == null) continue;
+        trainingDoubles[n] = (trainingDoubles[n] ?? HitCount.zero) + HitCount(1, a.onTarget ? 1 : 0);
+      }
+    }
+    HitCount sum(Map<int, HitCount> m) => m.values.fold(HitCount.zero, (a, b) => a + b);
+    final od = sum(onlineDoubles);
+    final td = sum(trainingDoubles);
+
+    final x01Online = [for (final s in online) if (s.gameId == autodartsLiveX01GameId) s];
+    final scoringTraining = [for (final s in sessions) if (training(s, TrainingSources.scoring)) s];
+    final legTraining = [for (final s in sessions) if (training(s, TrainingSources.legs)) s];
+    final onlineBands = bandsOf(online);
+    final trainingBands = bandsOf(scoringTraining);
+
+    return OnlineComparison(
+      average: MetricComparison(CompareMetric.average, averageOf(online), averageOf(scoringTraining)),
+      first9: MetricComparison(CompareMetric.first9, first9Of(x01Online), first9Of(legTraining)),
+      checkout: MetricComparison(CompareMetric.checkoutRate, checkoutOf(x01Online), checkoutOf(legTraining)),
+      doubles: MetricComparison(
+        CompareMetric.doubleRate,
+        CompareSide(od.rate, od.attempts),
+        CompareSide(td.rate, td.attempts),
+      ),
+      scoring: MetricComparison(CompareMetric.scoring, tonsOf(onlineBands), tonsOf(trainingBands)),
+      perDouble: {
+        for (final n in {...onlineDoubles.keys, ...trainingDoubles.keys})
+          n: DoubleComparison(n, onlineDoubles[n] ?? HitCount.zero, trainingDoubles[n] ?? HitCount.zero),
+      },
+      onlineBands: onlineBands,
+      trainingBands: trainingBands,
+    );
+  }
 
   /// Beginn der aktuellen Woche (Montag).
   DateTime get weekStart => weekOf(now);

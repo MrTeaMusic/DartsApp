@@ -1,0 +1,38 @@
+{
+  "url": "https://api.github.com/repos/MrTeaMusic/DartsApp/releases/180000001",
+  "html_url": "https://github.com/MrTeaMusic/DartsApp/releases/tag/v0.10.0-b12",
+  "id": 180000001,
+  "author": {"login": "github-actions[bot]", "type": "Bot"},
+  "tag_name": "v0.10.0-b12",
+  "target_commitish": "4f2c9e1a7d3b5c6e8f9a0b1c2d3e4f5a6b7c8d9e",
+  "name": "DartLab 0.10.0 (Build 12)",
+  "draft": false,
+  "prerelease": false,
+  "created_at": "2026-10-15T17:02:11Z",
+  "published_at": "2026-10-15T17:09:48Z",
+  "assets": [
+    {
+      "url": "https://api.github.com/repos/MrTeaMusic/DartsApp/releases/assets/200000001",
+      "id": 200000001,
+      "name": "DartLab-macos.zip",
+      "content_type": "application/zip",
+      "state": "uploaded",
+      "size": 41873522,
+      "download_count": 0,
+      "browser_download_url": "https://github.com/MrTeaMusic/DartsApp/releases/download/v0.10.0-b12/DartLab-macos.zip"
+    },
+    {
+      "url": "https://api.github.com/repos/MrTeaMusic/DartsApp/releases/assets/200000002",
+      "id": 200000002,
+      "name": "DartLab-windows.zip",
+      "content_type": "application/zip",
+      "state": "uploaded",
+      "size": 23544107,
+      "download_count": 0,
+      "browser_download_url": "https://github.com/MrTeaMusic/DartsApp/releases/download/v0.10.0-b12/DartLab-windows.zip"
+    }
+  ],
+  "tarball_url": "https://api.github.com/repos/MrTeaMusic/DartsApp/tarball/v0.10.0-b12",
+  "zipball_url": "https://api.github.com/repos/MrTeaMusic/DartsApp/zipball/v0.10.0-b12",
+  "body": "- Online-Matches: eigene Statistik mit Verlauf (#33)\r\n- Zweiter Bildschirm für das Scoreboard (#34)\r\n- Checkout-Quiz als neues Trainingsspiel (#35)\r\n- Update-Hinweis: neue Versionen direkt in der App (#36)\r\n- **Fehler** beim Import alter Sicherungen behoben\r\n\r\n> Windows: DartLab-windows.zip entpacken und den Inhalt in den DartLab-Ordner kopieren.\r\n> macOS: DartLab-macos.zip öffnen und DartLab.app in den Programme-Ordner ziehen.\r\n> iPhone/iPad: auf dem Mac git pull und neu bauen (docs/build-anleitung.md)."
+}
