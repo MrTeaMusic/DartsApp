@@ -45,6 +45,9 @@ class PrimaryMetric {
     // Average wie im Match (Bust-Aufnahmen zählen 0).
     'autodarts_live': PrimaryMetric('rawAverage'),
     'x01_live': PrimaryMetric('average'),
+    // Checkout-Quiz: Anteil richtiger Antworten (vergleichbar über beide
+    // Modi und jede Länge).
+    'checkout_quiz': PrimaryMetric('correctRate', format: MetricFormat.percent),
   };
 
   /// Hauptkennzahl eines Spiels. Spiele ohne Eintrag (z. B. neu
@@ -64,6 +67,12 @@ const Set<String> scoringGames = {'target_practice', 'score_target', 'highscore_
 /// Spiele, deren volle Aufnahmen in die Punkteverteilung und Konstanz
 /// eingehen: die Scoring-Spiele und X01-Varianten.
 bool isVisitScoringGame(String gameId) => scoringGames.contains(gameId) || gameId.startsWith('x01');
+
+/// Spiele ohne Würfe (Checkout-Quiz): Ihre Sessions zählen als Training
+/// (Sessions, Trainingstage, Trainingszeit), haben aber keine Darts und
+/// gehen in keine Wurf-Kennzahl ein. Die Oberfläche zeigt bei ihnen die Zahl
+/// der Fragen statt der Darts.
+const Set<String> throwlessGames = {'checkout_quiz'};
 
 /// Kennzahlen, die keinen sinnvollen Verlauf ergeben.
 const Set<String> nonTrendMetrics = {'completed'};

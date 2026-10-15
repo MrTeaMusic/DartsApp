@@ -15,6 +15,7 @@ import '../../autodarts_live/presentation/autodarts_live_routes.dart';
 import '../../challenges/presentation/challenge_routes.dart';
 import '../../matches/presentation/match_routes.dart';
 import '../../plans/presentation/plan_routes.dart';
+import '../../quiz/presentation/quiz_routes.dart';
 import '../../stats/domain/game_metrics.dart';
 import '../../profiles/presentation/active_player.dart';
 import 'game_texts.dart';
@@ -50,8 +51,8 @@ class GamesScreen extends ConsumerWidget {
           );
           return CustomScrollView(
             slivers: [
-              // Pläne, Challenges, Matches und Autodarts Live nebeneinander statt je eine
-              // eigene Rubrik mit nur einer Karte.
+              // Pläne, Challenges, Matches, Autodarts Live und das Checkout-Quiz
+              // nebeneinander statt je eine eigene Rubrik mit nur einer Karte.
               SliverPadding(
                 padding: EdgeInsets.fromLTRB(page, AppSpacing.s, page, 0),
                 sliver: SliverToBoxAdapter(child: SectionHeader(l10n.gamesModes)),
@@ -86,6 +87,13 @@ class GamesScreen extends ConsumerWidget {
                     title: l10n.liveTitle,
                     description: l10n.liveEntryText,
                     onTap: () => context.go(AutodartsLiveRoutes.live),
+                  ),
+                  _GameCard(
+                    key: const Key('open-checkout-quiz'),
+                    icon: Icons.quiz_rounded,
+                    title: l10n.quizTitle,
+                    description: l10n.quizEntryText,
+                    onTap: () => context.go(QuizRoutes.setup),
                   ),
                 ]),
               ),
@@ -231,7 +239,7 @@ class _RecentTile extends StatelessWidget {
       leading: IconBadge(icon: gameIcon(summary.gameId), size: 38),
       title: Text(l10n.gameTitle(summary.gameId), overflow: TextOverflow.ellipsis),
       subtitle: Text(
-        '$date · ${summary.dartCount} ${l10n.statDarts}${summary.finished ? '' : ' · ${l10n.gameAborted}'}',
+        '$date · ${l10n.sessionAmount(summary.gameId, summary.dartCount, summary.metrics)}${summary.finished ? '' : ' · ${l10n.gameAborted}'}',
       ),
       trailing: Text(headline, style: look.chipNumber.copyWith(color: Theme.of(context).colorScheme.onSurface)),
     );

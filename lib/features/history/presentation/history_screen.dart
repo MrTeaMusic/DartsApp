@@ -163,7 +163,7 @@ class HistoryTile extends StatelessWidget {
       historyTime(e.startedAt),
       if (e.hasLiveLegs) l10n.onlineLegs(e.legsWon, e.legsLost),
       if (!e.finished) l10n.gameAborted,
-      '${e.darts} ${l10n.statDarts}',
+      l10n.sessionAmount(e.gameId, e.darts, e.metrics),
       if (minutes != null && minutes > 0) formatMinutes(minutes),
     ].join(' · ');
     final title = l10n.gameTitle(e.gameId);

@@ -2715,5 +2715,203 @@
     }
   },
   "syncScreenOpen": "Zweiter Bildschirm öffnen",
-  "screenPillConnectedShort": "Verbunden"
+  "screenPillConnectedShort": "Verbunden",
+  "quizTitle": "Checkout-Quiz",
+  "quizEntryText": "Wege auswendig lernen, ganz ohne zu werfen: Rest sehen, Weg antippen.",
+  "quizIntro": "Du siehst einen Rest und wie viele Darts übrig sind. Tippe deinen Weg ein – jeder gültige Checkout zählt. Geht es nicht, wähle „Nicht möglich“ und zeig, wie du dich stellst. Schwache Reste kommen öfter dran.",
+  "quizModeTraining": "Training",
+  "quizModeTrainingText": "Ohne Zeitlimit, nach jeder Antwort die Auflösung mit Alternativen.",
+  "quizModeTimed": "Zeit",
+  "quizModeTimedText": "{seconds} Sekunden, so viele richtige Antworten wie möglich.",
+  "@quizModeTimedText": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "quizMode": "Modus",
+  "quizRange": "Reste",
+  "quizRangeAll": "Alle",
+  "quizDartsOption": "Darts übrig",
+  "quizDartsMixed": "Gemischt",
+  "quizOnlyCheckable": "Nur checkbare Reste",
+  "quizOnlyCheckableHint": "Ohne Bogeys wie 169 und ohne Stell-Fragen.",
+  "quizAskSetup": "Nach „Nicht möglich“ stellen",
+  "quizAskSetupHint": "Bei nicht checkbaren Resten zeigst du zusätzlich, wie du dir einen guten Rest stellst.",
+  "quizOutDouble": "Double-Out",
+  "quizOutMaster": "Master-Out",
+  "quizStart": "Quiz starten",
+  "quizBests": "Bestwerte",
+  "quizBestTimed": "Zeit-Rekord",
+  "quizBestStreak": "Beste Serie",
+  "quizBestPace": "Bestes Tempo",
+  "quizBestsEmpty": "Noch keine Bestwerte – der erste Durchgang setzt sie.",
+  "quizWeak": "Kommt öfter dran",
+  "quizWeakHint": "Diese Reste waren zuletzt oft falsch oder langsam.",
+  "quizNoQuestions": "Mit diesen Einstellungen gibt es keine Fragen.",
+  "quizDartsLeft": "{count, plural, =1{1 Dart} other{{count} Darts}}",
+  "@quizDartsLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "quizQuestions": "{count, plural, =1{1 Frage} other{{count} Fragen}}",
+  "@quizQuestions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "quizRemaining": "Rest",
+  "quizCheck": "Prüfen",
+  "quizImpossible": "Nicht möglich",
+  "quizRouteHint": "Tippe deinen Weg ein",
+  "quizSetupHint": "Richtig, nicht checkbar. Wie stellst du dich?",
+  "quizSetupLabel": "Stellen",
+  "quizSum": "Summe {sum} · Rest {rest}",
+  "@quizSum": {
+    "placeholders": {
+      "sum": {
+        "type": "int"
+      },
+      "rest": {
+        "type": "int"
+      }
+    }
+  },
+  "quizCorrect": "Richtig",
+  "quizWrong": "Falsch",
+  "quizYourAnswer": "Deine Antwort",
+  "quizRecommended": "Empfohlen",
+  "quizAlternatives": "Auch möglich",
+  "quizIsRecommended": "Genau der empfohlene Weg.",
+  "quizValidOther": "Gültiger Checkout, nur ein anderer Weg als empfohlen.",
+  "quizProblemTotal": "Summe {sum} statt {score}.",
+  "@quizProblemTotal": {
+    "placeholders": {
+      "sum": {
+        "type": "int"
+      },
+      "score": {
+        "type": "int"
+      }
+    }
+  },
+  "quizProblemBust": "Überworfen: Unterwegs bleibt Rest 1 oder weniger.",
+  "quizProblemFinish": "Der letzte Dart muss ein Doppel oder das Bull sein.",
+  "quizProblemFinishMaster": "Der letzte Dart muss ein Doppel, ein Triple oder das Bull sein.",
+  "quizProblemTooMany": "Mehr Darts als übrig.",
+  "quizWasPossible": "Doch möglich: {score} geht mit {darts}.",
+  "@quizWasPossible": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      },
+      "darts": {
+        "type": "String"
+      }
+    }
+  },
+  "quizNotPossible": "{score} ist mit {darts} nicht checkbar.",
+  "@quizNotPossible": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      },
+      "darts": {
+        "type": "String"
+      }
+    }
+  },
+  "quizShouldBeImpossible": "„Nicht möglich“ wäre richtig gewesen.",
+  "quizBogeys": "Mit drei Darts gehen 159, 162, 163, 165, 166, 168 und 169 nicht.",
+  "quizMaxFor": "Mit {darts} geht höchstens {max}.",
+  "@quizMaxFor": {
+    "placeholders": {
+      "darts": {
+        "type": "String"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "quizSetupGood": "Rest {leave} – gut gestellt.",
+  "@quizSetupGood": {
+    "placeholders": {
+      "leave": {
+        "type": "int"
+      }
+    }
+  },
+  "quizSetupWeak": "Rest {leave} ist schwerer als nötig.",
+  "@quizSetupWeak": {
+    "placeholders": {
+      "leave": {
+        "type": "int"
+      }
+    }
+  },
+  "quizSetupBust": "Überworfen – es muss mindestens 2 übrig bleiben.",
+  "quizSetupAdvice": "Vorschlag zum Stellen",
+  "quizLeave": "Rest {leave}",
+  "@quizLeave": {
+    "placeholders": {
+      "leave": {
+        "type": "int"
+      }
+    }
+  },
+  "quizNext": "Weiter",
+  "quizFinish": "Beenden",
+  "quizStatCorrect": "Richtig",
+  "quizStatStreak": "Serie",
+  "quizStatPace": "Ø Zeit",
+  "quizTime": "Zeit",
+  "quizResultTitle": "Durchgang beendet",
+  "quizTimeUp": "Zeit um!",
+  "quizNewRecord": "Neuer Bestwert: {what}",
+  "@quizNewRecord": {
+    "placeholders": {
+      "what": {
+        "type": "String"
+      }
+    }
+  },
+  "quizMistakes": "Zum Wiederholen",
+  "quizNoMistakes": "Alles richtig – stark!",
+  "quizAgain": "Nochmal",
+  "quizDone": "Fertig",
+  "quizLeaveTitle": "Quiz beenden?",
+  "quizLeaveText": "Der Durchgang wird gespeichert.",
+  "quizLeaveTimedText": "Der Durchgang wird gespeichert, zählt aber nicht für den Zeit-Rekord.",
+  "quizContinue": "Weiterspielen",
+  "quizAnswers": "Antworten",
+  "quizHistDeleteText": "{game} vom {date} mit {count} Fragen wird gelöscht, auch auf abgeglichenen Geräten. Statistik und Ziele rechnen ohne sie neu.",
+  "@quizHistDeleteText": {
+    "placeholders": {
+      "game": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statQuizCorrect": "Richtig",
+  "statCorrect": "Richtige Antworten",
+  "statCorrectRate": "Quote richtig",
+  "statAnswered": "Fragen",
+  "statBestStreak": "Beste Serie",
+  "statAvgSeconds": "Ø Antwortzeit (s)",
+  "quizStatRate": "Quote",
+  "quizImpossibleRight": "„Nicht möglich“ stimmt.",
+  "statQuizPace": "Ø Antwortzeit"
 }

@@ -18,8 +18,10 @@ zählen nicht und werden in der Datenbank als „nicht gezählt“ markiert.
 * **Double-Out** (an/aus): Bei „an“ muss der letzte Dart ein Double oder das Bullseye sein.
 * **Bust:** Rest unter 0, genau 0 ohne Double (bei Double-Out) oder Rest 1. Der Rest springt
   auf den Stand vor der Aufnahme zurück, die Aufnahme ist vorbei.
-* **Checkout-Vorschlag** (an/aus): zeigt einen Weg mit den verbleibenden Darts, bevorzugt
-  wenige Darts, dann gängige Doubles (D20, D16, D8 …).
+* **Checkout-Vorschlag** (an/aus): zeigt einen Weg mit den verbleibenden Darts. Bei Double-Out
+  ist das der Weg aus der üblichen Checkout-Tabelle (`CheckoutTable`, z. B. 121 T20 T11 D14,
+  61 T15 D8, 170 T20 T20 Bull), sonst sucht eine Kostenfunktion: wenige Darts, dann gängige
+  Doubles (D20, D16, D8 …), kleine ungerade Doubles (D1, D3, D5 …) nur, wenn es nicht anders geht.
 * Wertung: Checkout-Quote, Darts pro Checkout, höchster Checkout.
 
 ## Around the Clock
