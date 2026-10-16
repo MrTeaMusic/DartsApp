@@ -86,8 +86,8 @@ korrigiert allein, die Autodarts-Seite bleibt unberührt (kein Befehl, keine Abf
 * **Markierung:** Von Hand gesetzte oder ergänzte Darts tragen einen kleinen Stift. Gespeichert wird die Quelle
   `manual` (statt `autodartsLocal`); sie bleibt in der Datenbank erhalten.
 * **Koordinaten:** Ein von Hand geänderter oder ergänzter Dart hat **keine Position** (und keine Rohdaten vom
-  Board). Er erscheint nicht in der Streuungs-Analyse; die Heatmap und die Trefferstatistik zählen ihn wie
-  jeden Dart ohne Position mit der Feldmitte. Die anderen Darts behalten ihre Position. Wer nur eine Aufnahme
+  Board). Er erscheint weder in der Streuungs-Analyse noch in der Live-Heatmap; die Trefferstatistik
+  (Triple, Doppel, Single, Daneben) und die Punkte zählen ihn mit. Die anderen Darts behalten ihre Position. Wer nur eine Aufnahme
   löscht, verliert nur diese Darts. Wählt man dasselbe Feld wie bisher, ändert sich nichts (der Dart wird
   nicht festgehalten).
 * **Festhalten (Pin):** Ein von Hand gesetzter Dart ist festgehalten. Meldet das Board später eine Korrektur
