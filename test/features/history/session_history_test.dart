@@ -291,6 +291,6 @@ void main() {
 
     final again = AppDatabase(NativeDatabase(file));
     addTearDown(again.close);
-    expect((await again.customSelect('PRAGMA user_version').getSingle()).data.values.single, 6);
+    expect((await again.customSelect('PRAGMA user_version').getSingle()).data.values.single, 7);
   });
 }

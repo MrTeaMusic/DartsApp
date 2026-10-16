@@ -29,6 +29,11 @@ class Players extends Table {
 ///
 /// Gelöschte Sessions bleiben mit [deletedAt] als Markierung stehen (ohne
 /// Würfe), damit das Löschen beim Abgleich auch auf anderen Geräten ankommt.
+///
+/// [updatedAt] ist der Stand der Session samt Würfen. Er ändert sich bei jedem
+/// Schreiben, nachdem die Session einmal abgeschlossen wurde (der Live-Modus
+/// speichert zwischen und schreibt danach weiter). Der Abgleich überträgt
+/// eine Session erneut, wenn der Stand auf einem Gerät neuer ist.
 @DataClassName('SessionRow')
 @TableIndex(name: 'sessions_uid', columns: {#uid}, unique: true)
 class Sessions extends Table {
@@ -46,6 +51,7 @@ class Sessions extends Table {
   TextColumn get resultJson => text().nullable()();
   IntColumn get dartCount => integer().withDefault(const Constant(0))();
   DateTimeColumn get deletedAt => dateTime().nullable()();
+  DateTimeColumn get updatedAt => dateTime().nullable()();
 }
 
 /// Jeder einzelne Dart mit Zeitstempel und Rohdaten, damit Statistiken
@@ -185,7 +191,7 @@ class AppDatabase extends _$AppDatabase {
 
   /// Bei Schemaänderungen erhöhen und in [migration] einen Schritt ergänzen.
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -244,6 +250,13 @@ class AppDatabase extends _$AppDatabase {
           // Version 6: Löschmarkierung für Sessions (Spielverlauf).
           if (from < 6 && !await _hasColumn('sessions', sessions.deletedAt.name)) {
             await m.addColumn(sessions, sessions.deletedAt);
+          }
+          // Version 7: Stand der Session für den Abgleich. Abgeschlossene
+          // Sessions starten mit ihrem Ende als Stand, damit sie auf allen
+          // Geräten denselben haben und nicht überall als neu gelten.
+          if (from < 7) {
+            if (!await _hasColumn('sessions', sessions.updatedAt.name)) await m.addColumn(sessions, sessions.updatedAt);
+            await customStatement('UPDATE sessions SET updated_at = ended_at WHERE updated_at IS NULL AND ended_at IS NOT NULL');
           }
         },
         beforeOpen: (details) async {

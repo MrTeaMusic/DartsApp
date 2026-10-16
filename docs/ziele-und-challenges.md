@@ -290,7 +290,8 @@ nutzt dieselben Hilfsfunktionen aus `test/helpers/challenge_sim.dart`.
 
 ## Daten, Abgleich und Sicherung
 
-- Datenbank-Schema Version 5. Neu sind die Tabellen `achievements`
+- Datenbank-Schema Version 5 (inzwischen 7: `sessions.updated_at` für den
+  [Abgleich](sync.md)). Neu in Version 5 sind die Tabellen `achievements`
   (Profil, Erfolg, Stufe, Datum; eindeutig je Profil/Erfolg/Stufe) und
   `challenge_results` (Profil, Challenge, Sterne, Bestwert, Versuche,
   Datum, geändert; eindeutig je Profil/Challenge). Die Migration legt
