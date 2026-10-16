@@ -67,16 +67,37 @@ class GameRepository {
     required int visitIndex,
     required bool counted,
     required DartThrow dart,
-  }) =>
-      db.into(db.throws).insert(_companion(
-            sessionId: sessionId,
-            playerId: playerId,
-            gameId: gameId,
-            seq: seq,
-            visitIndex: visitIndex,
-            counted: counted,
-            dart: dart,
-          ));
+  }) async {
+    final id = await db.into(db.throws).insert(_companion(
+          sessionId: sessionId,
+          playerId: playerId,
+          gameId: gameId,
+          seq: seq,
+          visitIndex: visitIndex,
+          counted: counted,
+          dart: dart,
+        ));
+    await _touch(sessionId);
+    return id;
+  }
+
+  /// Setzt den Stand (`updatedAt`) einer schon abgeschlossenen Session auf
+  /// jetzt, damit der Abgleich die Änderung weitergibt. Der Live-Modus
+  /// schreibt nach dem Zwischenspeichern weiter in dieselbe Session.
+  ///
+  /// Der Stand wächst mit jedem Schreiben um mindestens eine Sekunde (die
+  /// Datenbank speichert Zeiten nur sekundengenau): Ein Abgleich zwischen zwei
+  /// Schreibvorgängen derselben Sekunde hätte sonst denselben Stand wie das
+  /// Endergebnis. Offene Sessions bekommen ihren Stand erst beim Abschließen,
+  /// denn sie werden nicht abgeglichen.
+  Future<void> _touch(int sessionId, {DateTime? at}) async {
+    final seconds = (at ?? DateTime.now()).millisecondsSinceEpoch ~/ 1000;
+    await db.customUpdate(
+      'UPDATE sessions SET updated_at = max(?, coalesce(updated_at, 0) + 1) WHERE id = ? AND ended_at IS NOT NULL',
+      variables: [Variable<int>(seconds), Variable<int>(sessionId)],
+      updates: {db.sessions},
+    );
+  }
 
   /// Ersetzt alle Würfe einer Session (nach Rückgängig/Korrektur).
   Future<void> replaceThrows({
@@ -99,6 +120,7 @@ class GameRepository {
                   dart: darts[i].dart,
                 ),
             ]));
+        await _touch(sessionId);
       });
 
   ThrowsCompanion _companion({
@@ -129,19 +151,23 @@ class GameRepository {
         rawJson: Value(dart.raw == null ? null : jsonEncode(dart.raw)),
       );
 
-  /// Schließt eine Session ab. Ohne Würfe wird sie gelöscht.
+  /// Schließt eine Session ab (oder speichert sie zwischen, wie der Live-Modus,
+  /// und kann danach erneut aufgerufen werden). Ohne Würfe wird sie gelöscht.
   Future<void> endSession(int sessionId, {required GameResult result, required bool finished, DateTime? endedAt}) async {
     final count = await _throwCount(sessionId);
     if (count == 0) {
       await (db.delete(db.sessions)..where((s) => s.id.equals(sessionId))).go();
       return;
     }
-    await (db.update(db.sessions)..where((s) => s.id.equals(sessionId))).write(SessionsCompanion(
-      endedAt: Value(endedAt ?? DateTime.now()),
-      finished: Value(finished),
-      resultJson: Value(jsonEncode(result.toJson())),
-      dartCount: Value(count),
-    ));
+    await db.transaction(() async {
+      await (db.update(db.sessions)..where((s) => s.id.equals(sessionId))).write(SessionsCompanion(
+        endedAt: Value(endedAt ?? DateTime.now()),
+        finished: Value(finished),
+        resultJson: Value(jsonEncode(result.toJson())),
+        dartCount: Value(count),
+      ));
+      await _touch(sessionId);
+    });
   }
 
   Future<int> _throwCount(int sessionId) async {
@@ -158,8 +184,9 @@ class GameRepository {
   /// der Abgleich das Löschen an die anderen Geräte weitergibt.
   Future<void> deleteSession(int sessionId, {DateTime? at}) => db.transaction(() async {
         await (db.delete(db.throws)..where((t) => t.sessionId.equals(sessionId))).go();
+        final now = at ?? DateTime.now();
         await (db.update(db.sessions)..where((s) => s.id.equals(sessionId)))
-            .write(SessionsCompanion(deletedAt: Value(at ?? DateTime.now()), dartCount: const Value(0)));
+            .write(SessionsCompanion(deletedAt: Value(now), updatedAt: Value(now), dartCount: const Value(0)));
       });
 
   Future<List<ThrowRow>> throwsOf(int sessionId) =>

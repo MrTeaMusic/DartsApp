@@ -206,8 +206,10 @@ Dateien im Dokumente-Ordner der App (Dateien-App › Auf meinem iPhone › DartL
   Format `{"format": "dartlab-backup", "version": 5, …}`, dasselbe Datenformat wie beim
   [Sync im Heimnetz](sync.md).
 * **Import:** führt ein Backup mit den vorhandenen Daten zusammen, nach denselben Regeln wie der
-  Sync. Sessions mit bekannter ID werden übersprungen, ein zweiter Import derselben Datei ändert
-  also nichts. Backups der Version 2 (ohne Trainingspläne) und 1 (ohne IDs) lassen sich weiter
+  Sync. Sessions mit bekannter ID werden übersprungen, außer die Datei hat einen neueren Stand
+  (`updatedAt`, z. B. eine weitergewachsene Live-Session); ein zweiter Import derselben Datei ändert
+  also nichts. Das Feld `updatedAt` ist optional, Dateien ohne es und ältere App-Versionen
+  funktionieren weiter. Backups der Version 2 (ohne Trainingspläne) und 1 (ohne IDs) lassen sich weiter
   importieren. Bei Version 1 werden Profile über den Namen zugeordnet, Sessions mit gleichem
   Profil, Spiel, Startzeit und Seed gelten als vorhanden.
 * **Würfe als CSV / Sessions als CSV:** Komma-getrennt, UTF-8 mit BOM, Dezimalpunkt, Zeiten im

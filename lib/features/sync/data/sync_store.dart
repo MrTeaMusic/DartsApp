@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../autodarts_live/domain/live_stats.dart';
 import '../../challenges/domain/challenge_catalog.dart';
 
 /// Ergebnis eines Abgleichs oder Imports.
@@ -88,6 +89,12 @@ class MergeResult {
 /// Gelöschte Sessions stehen auch in [sessionUids]. So hält kein Gerät sie
 /// für fehlend und schickt sie zurück, auch eines ohne Löschmarkierungen
 /// (ältere Version, ignoriert [deletedSessions]).
+///
+/// [sessionRevisions] nennt den Stand (`updatedAt`, Millisekunden) der
+/// Sessions, die einen haben, und [liveDarts] die Dartzahl der Live-Sessions.
+/// Damit erkennt der Abgleich Sessions, die sich nach dem Abschluss geändert
+/// haben (siehe [newerThan]). Beides ist `null` bzw. leer bei einem Gerät mit
+/// älterer Version; dann werden nur fehlende Sessions übertragen wie früher.
 class SyncManifest {
   const SyncManifest({
     required this.players,
@@ -97,6 +104,8 @@ class SyncManifest {
     this.challenges = const [],
     required this.sessionUids,
     this.deletedSessions = const [],
+    this.sessionRevisions,
+    this.liveDarts = const {},
   });
   final List<Map<String, Object?>> players;
   final List<Map<String, Object?>> goals;
@@ -105,6 +114,31 @@ class SyncManifest {
   final List<Map<String, Object?>> challenges;
   final Set<String> sessionUids;
   final List<Map<String, Object?>> deletedSessions;
+  final Map<String, int>? sessionRevisions;
+  final Map<String, int> liveDarts;
+
+  /// Sessions, die beide Manifeste kennen und von denen dieses den neueren
+  /// Stand hat (Regel in [SyncStore.supersedes]). Ohne Stände auf einer der
+  /// beiden Seiten leer.
+  Set<String> newerThan(SyncManifest other) {
+    final mine = sessionRevisions;
+    final theirs = other.sessionRevisions;
+    if (mine == null || theirs == null) return const {};
+    return {
+      for (final uid in sessionUids)
+        if (other.sessionUids.contains(uid) &&
+            SyncStore.supersedes(
+              theirs: _fromMillis(mine[uid]),
+              theirDarts: liveDarts[uid] ?? 0,
+              ours: _fromMillis(theirs[uid]),
+              ourDarts: other.liveDarts[uid] ?? 0,
+              live: liveDarts.containsKey(uid) && other.liveDarts.containsKey(uid),
+            ))
+          uid,
+    };
+  }
+
+  static DateTime? _fromMillis(int? ms) => ms == null ? null : DateTime.fromMillisecondsSinceEpoch(ms);
 
   Map<String, Object?> toJson() => {
         'players': players,
@@ -114,6 +148,8 @@ class SyncManifest {
         'challenges': challenges,
         'sessions': sessionUids.toList(),
         'deletedSessions': deletedSessions,
+        if (sessionRevisions != null) 'sessionRevisions': sessionRevisions,
+        if (liveDarts.isNotEmpty) 'sessionDarts': liveDarts,
       };
 
   static SyncManifest fromJson(Map<String, Object?> j) => SyncManifest(
@@ -124,8 +160,13 @@ class SyncManifest {
         challenges: _maps(j['challenges']),
         sessionUids: {for (final u in (j['sessions'] as List? ?? const [])) if (u is String) u},
         deletedSessions: _maps(j['deletedSessions']),
+        sessionRevisions: j['sessionRevisions'] is Map ? _counts(j['sessionRevisions']) : null,
+        liveDarts: _counts(j['sessionDarts']),
       );
 }
+
+Map<String, int> _counts(Object? m) =>
+    m is Map ? {for (final e in m.entries) if (e.key is String && e.value is num) e.key as String: (e.value as num).toInt()} : const {};
 
 List<Map<String, Object?>> _maps(Object? l) =>
     l is List ? [for (final e in l) if (e is Map) Map<String, Object?>.from(e)] : const [];
@@ -184,10 +225,13 @@ class SyncBundle {
 /// Liest und schreibt die Daten geräteübergreifend.
 ///
 /// Regeln beim Zusammenführen:
-/// * Sessions ändern sich nach dem Abschluss nicht mehr: fehlende werden
-///   übernommen, vorhandene übersprungen. Gelöscht wird über eine Markierung
-///   (`deletedAt`, die Würfe verschwinden); sie gewinnt immer und hält die
-///   Session auch von anderen Geräten fern.
+/// * Sessions: fehlende werden übernommen. Eine vorhandene wird ersetzt (alle
+///   Felder und alle Würfe), wenn die fremde einen neueren Stand hat
+///   (`updatedAt`, ohne Stand gilt als ältester; siehe [supersedes]). Das
+///   betrifft Sessions, die nach dem Abschluss weiterwachsen (Live-Modus);
+///   normale ändern sich nicht mehr und werden übersprungen. Gelöscht wird
+///   über eine Markierung (`deletedAt`, die Würfe verschwinden); sie gewinnt
+///   immer und hält die Session auch von anderen Geräten fern.
 /// * Profile und Ziele: die neueste Änderung gewinnt (`updatedAt`). Gelöscht
 ///   wird über eine Markierung (`deletedAt`), damit es weitergegeben wird.
 /// * Eigene Trainingspläne: ebenso, zugeordnet nur über die `uid` (zwei
@@ -212,11 +256,22 @@ class SyncStore {
     final plans = await db.select(db.trainingPlans).get();
     final achievements = await db.select(db.achievements).get();
     final challenges = await db.select(db.challengeResults).get();
-    final sessions = await (db.selectOnly(db.sessions)
-          ..addColumns([db.sessions.uid])
-          ..where(db.sessions.endedAt.isNotNull() | db.sessions.deletedAt.isNotNull()))
-        .map((r) => r.read(db.sessions.uid)!)
+    final s = db.sessions;
+    final sessionRows = await (db.selectOnly(s)
+          ..addColumns([s.uid, s.updatedAt, s.gameId, s.dartCount, s.deletedAt])
+          ..where(s.endedAt.isNotNull() | s.deletedAt.isNotNull()))
         .get();
+    final sessions = <String>{};
+    final revisions = <String, int>{};
+    final liveDarts = <String, int>{};
+    for (final r in sessionRows) {
+      final uid = r.read(s.uid)!;
+      sessions.add(uid);
+      if (r.read(s.deletedAt) != null) continue;
+      final updatedAt = r.read(s.updatedAt);
+      if (updatedAt != null) revisions[uid] = updatedAt.millisecondsSinceEpoch;
+      if (_liveGameIds.contains(r.read(s.gameId))) liveDarts[uid] = r.read(s.dartCount) ?? 0;
+    }
     final deleted = await (db.select(db.sessions)..where((s) => s.deletedAt.isNotNull())).get();
     return SyncManifest(
       players: [for (final p in players) _player(p)],
@@ -224,15 +279,39 @@ class SyncStore {
       plans: [for (final p in plans) _plan(p)],
       achievements: [for (final a in achievements) if (byId[a.playerId] != null) _achievement(a, byId[a.playerId]!)],
       challenges: [for (final c in challenges) if (byId[c.playerId] != null) _challenge(c, byId[c.playerId]!)],
-      sessionUids: sessions.toSet(),
+      sessionUids: sessions,
       deletedSessions: [for (final s in deleted) if (byId[s.playerId] != null) _deletedSession(s, byId[s.playerId]!)],
+      sessionRevisions: revisions,
+      liveDarts: liveDarts,
     );
+  }
+
+  /// Spiele, deren Session nach dem Zwischenspeichern weiterwächst.
+  static const _liveGameIds = {autodartsLiveGameId, autodartsLiveX01GameId};
+
+  /// Soll eine fremde Session die vorhandene ersetzen? Der neuere Stand
+  /// (`updatedAt`) gewinnt; ohne Stand zählt eine Session als älteste, bei
+  /// Gleichstand (auch beide ohne Stand) bleibt die vorhandene. Ausnahme:
+  /// Live-Sessions ([live]) mit gleichem oder unbekanntem Stand, etwa aus der
+  /// Zeit vor dem Stand: Dort gewinnt die mit mehr Darts, weil die Kopie auf
+  /// dem anderen Gerät beim ersten Zwischenspeichern abgeschnitten wurde.
+  static bool supersedes({
+    required DateTime? theirs,
+    required int theirDarts,
+    required DateTime? ours,
+    required int ourDarts,
+    required bool live,
+  }) {
+    if (theirs != null && (ours == null || theirs.isAfter(ours))) return true;
+    if (ours != null && (theirs == null || theirs.isBefore(ours))) return false;
+    return live && theirDarts > ourDarts;
   }
 
   static const _signatureSql = '''
 SELECT
   (SELECT count(*) FROM sessions WHERE ended_at IS NOT NULL) || '-' ||
-  (SELECT count(*) FROM sessions WHERE deleted_at IS NOT NULL) || ':' ||
+  (SELECT count(*) FROM sessions WHERE deleted_at IS NOT NULL) || '-' ||
+  (SELECT coalesce(max(updated_at), 0) FROM sessions) || ':' ||
   (SELECT count(*) || '-' || coalesce(max(coalesce(updated_at, created_at)), 0) FROM players) || ':' ||
   (SELECT count(*) || '-' || coalesce(max(coalesce(updated_at, created_at)), 0) FROM goals) || ':' ||
   (SELECT count(*) || '-' || coalesce(max(coalesce(updated_at, created_at)), 0) FROM training_plans) || ':' ||
@@ -240,8 +319,8 @@ SELECT
   (SELECT count(*) || '-' || coalesce(max(updated_at), 0) FROM challenge_results) AS sig''';
 
   /// Kurzer Fingerabdruck dessen, was abgeglichen wird. Ändert er sich, gibt
-  /// es etwas Neues (abgeschlossene oder gelöschte Session, Profil, Ziel,
-  /// Plan, Erfolg oder Challenge-Ergebnis geändert).
+  /// es etwas Neues (abgeschlossene, geänderte oder gelöschte Session, Profil,
+  /// Ziel, Plan, Erfolg oder Challenge-Ergebnis geändert).
   Future<String> signature() => db.customSelect(_signatureSql).map((r) => r.read<String>('sig')).getSingle();
 
   Stream<String> watchSignature() => db
@@ -379,6 +458,7 @@ SELECT
         'finished': s.finished,
         'resultJson': s.resultJson,
         'dartCount': s.dartCount,
+        'updatedAt': _time(s.updatedAt),
       };
 
   /// Markierung einer gelöschten Session: genug, um sie zuzuordnen und auf
@@ -767,6 +847,7 @@ SELECT
     var created = 0;
     var newThrows = 0;
     var skipped = 0;
+    var updated = 0;
     for (final j in incoming) {
       final player = await players.resolve(this, j);
       if (player == null || player.deleted) continue;
@@ -774,6 +855,9 @@ SELECT
       final gameId = j['gameId'] as String;
       final seed = (j['seed'] as num).toInt();
       final startedAt = _parse(j['startedAt']) ?? DateTime.now();
+      final updatedAt = _parse(j['updatedAt']);
+      final dartCount = (j['dartCount'] as num?)?.toInt() ?? 0;
+      final own = throwsBySession[uid ?? j['id']] ?? const <Map<String, Object?>>[];
 
       final byUid = uid == null ? null : await (db.select(db.sessions)..where((s) => s.uid.equals(uid))).getSingleOrNull();
       final dup = byUid ??
@@ -786,7 +870,32 @@ SELECT
                 ..limit(1))
               .getSingleOrNull();
       if (dup != null) {
-        skipped++;
+        // Ohne Würfe im Paket (aber mit Darts laut Session) nichts ersetzen.
+        final replace = dup.deletedAt == null &&
+            (own.isNotEmpty || dartCount == 0) &&
+            supersedes(
+              theirs: updatedAt,
+              theirDarts: dartCount,
+              ours: dup.updatedAt,
+              ourDarts: dup.dartCount,
+              live: _liveGameIds.contains(gameId) && _liveGameIds.contains(dup.gameId),
+            );
+        if (!replace) {
+          skipped++;
+          continue;
+        }
+        await (db.update(db.sessions)..where((x) => x.id.equals(dup.id))).write(SessionsCompanion(
+          configJson: Value(j['configJson'] as String? ?? dup.configJson),
+          endedAt: Value(_parse(j['endedAt'])),
+          finished: Value(j['finished'] == true),
+          resultJson: Value(j['resultJson'] as String?),
+          dartCount: Value(dartCount),
+          updatedAt: Value(updatedAt ?? dup.updatedAt),
+        ));
+        await (db.delete(db.throws)..where((t) => t.sessionId.equals(dup.id))).go();
+        await _insertThrows(dup.id, dup.playerId, dup.gameId, startedAt, own);
+        updated++;
+        newThrows += own.length;
         continue;
       }
       final sessionId = await db.into(db.sessions).insert(SessionsCompanion.insert(
@@ -798,18 +907,31 @@ SELECT
             endedAt: Value(_parse(j['endedAt'])),
             finished: Value(j['finished'] == true),
             resultJson: Value(j['resultJson'] as String?),
-            dartCount: Value((j['dartCount'] as num?)?.toInt() ?? 0),
+            dartCount: Value(dartCount),
+            updatedAt: Value(updatedAt),
             uid: uid == null ? const Value.absent() : Value(uid),
           ));
       created++;
-      final own = throwsBySession[uid ?? j['id']] ?? const [];
-      await db.batch((b) {
+      await _insertThrows(sessionId, player.id, gameId, startedAt, own);
+      newThrows += own.length;
+    }
+    return MergeResult(sessions: created, throws: newThrows, skipped: skipped, updated: updated);
+  }
+
+  Future<void> _insertThrows(
+    int sessionId,
+    int playerId,
+    String gameId,
+    DateTime startedAt,
+    List<Map<String, Object?>> own,
+  ) =>
+      db.batch((b) {
         for (final t in own) {
           b.insert(
             db.throws,
             ThrowsCompanion.insert(
               sessionId: sessionId,
-              playerId: player.id,
+              playerId: playerId,
               gameId: t['gameId'] as String? ?? gameId,
               seq: (t['seq'] as num).toInt(),
               visitIndex: (t['visitIndex'] as num).toInt(),
@@ -828,10 +950,6 @@ SELECT
           );
         }
       });
-      newThrows += own.length;
-    }
-    return MergeResult(sessions: created, throws: newThrows, skipped: skipped);
-  }
 }
 
 class _LocalPlayer {

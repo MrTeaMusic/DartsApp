@@ -73,6 +73,7 @@ class QuizRepository {
           seed: seed,
           startedAt: startedAt,
           endedAt: Value(endedAt),
+          updatedAt: Value(endedAt),
           finished: Value(finished),
           resultJson: Value(jsonEncode(quizResult(config, answers).toJson())),
           // Keine Würfe: die Dartzahl bleibt 0.
