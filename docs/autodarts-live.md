@@ -40,8 +40,11 @@ Ein Start/Stop/Reset an den Board Manager würde das laufende Online-Match stör
 * Jeder Dart mit Feld, Position (für die Heatmap) und Zeit, sofort beim Eintreffen gespeichert.
 * **Aufnahmen:** Eine Aufnahme endet mit dem Takeout (Darts gezogen), einem Reset am Board oder nach drei
   Darts. Bust oder Checkout im Match beendet eine Aufnahme also erst mit dem Ziehen der Darts.
-* **Korrekturen:** Meldet der Board Manager in der laufenden Aufnahme ein anderes Feld oder weniger Darts,
-  übernimmt DartLab das. Abgeschlossene Aufnahmen bleiben, wie sie sind.
+* **Korrekturen am Board:** Meldet der Board Manager in der laufenden Aufnahme ein anderes Feld oder weniger
+  Darts, übernimmt DartLab das. Abgeschlossene Aufnahmen bleiben davon unberührt. Wie eine Korrektur am Board im
+  Detail aussieht, ist nicht geprüft (siehe unten); Korrekturen im Autodarts-Web (Online-Matches) sieht DartLab
+  womöglich gar nicht. Deshalb gibt es die Korrektur von Hand (nächster Abschnitt).
+* **Korrektur von Hand:** siehe „Darts von Hand korrigieren“.
 * **Kennzahlen ohne X01:** Darts, „Ø 3 Darts (roh)“, Aufnahmen, beste Aufnahme, 100+/140+/180,
   Triple/Doppel/Single/Daneben und die Heatmap. Der Rohschnitt zählt die Punkte aller Darts, auch in
   überworfenen Aufnahmen und Darts aufs Doppel. Er ist **kein offizieller X01-Average**. Gespeichert als
@@ -68,6 +71,46 @@ das Match wirklich beginnt oder endet; stimmt der Rest nicht, hilft „Leg neu s
 
 Auswertung der Live-Sessions als Matches (Reiter „Online“ in der Statistik, Vergleich mit dem
 Training, Plan-Vorschlag): `docs/online-matches.md`.
+
+## Darts von Hand korrigieren
+
+Im Live-Bildschirm lassen sich die Darts der **laufenden Session** korrigieren, auch in abgeschlossenen
+Aufnahmen (ältere, schon gespeicherte Sessions nicht). Dafür gibt es keine Meldung vom Board: DartLab
+korrigiert allein, die Autodarts-Seite bleibt unberührt (kein Befehl, keine Abfrage).
+
+* **Dart korrigieren oder entfernen:** Dart antippen (in der aktuellen bzw. letzten Aufnahme oder in der
+  Liste „Letzte Aufnahmen“, die jetzt bis zu acht Aufnahmen zeigt). Es öffnet sich dieselbe Feldauswahl wie in
+  den Spielen; zusätzlich „Dart entfernen“ und „Aufnahme löschen“ (mit Rückfrage).
+* **Dart ergänzen:** das „+“ hinter den Darts einer Aufnahme mit weniger als drei Darts (in der Liste) bzw. der
+  erste freie Platz der aktuellen Aufnahme. Der Dart kommt ans Ende der Aufnahme, höchstens drei je Aufnahme.
+* **Markierung:** Von Hand gesetzte oder ergänzte Darts tragen einen kleinen Stift. Gespeichert wird die Quelle
+  `manual` (statt `autodartsLocal`); sie bleibt in der Datenbank erhalten.
+* **Koordinaten:** Ein von Hand geänderter oder ergänzter Dart hat **keine Position** (und keine Rohdaten vom
+  Board). Er erscheint nicht in der Streuungs-Analyse; die Heatmap und die Trefferstatistik zählen ihn wie
+  jeden Dart ohne Position mit der Feldmitte. Die anderen Darts behalten ihre Position. Wer nur eine Aufnahme
+  löscht, verliert nur diese Darts. Wählt man dasselbe Feld wie bisher, ändert sich nichts (der Dart wird
+  nicht festgehalten).
+* **Festhalten (Pin):** Ein von Hand gesetzter Dart ist festgehalten. Meldet das Board später eine Korrektur
+  für diese Stelle oder ein „Rückgängig“, das gerade diesen letzten Dart träfe, wird es ignoriert. Wird in der
+  laufenden Aufnahme ein Dart von Hand **gelöscht oder ergänzt**, passen die Stellen des Boards nicht mehr zu
+  denen von DartLab: Diese Aufnahme ignoriert dann Korrekturen, „Rückgängig“ und die Stellenangabe des Boards
+  bis zum Takeout; neue Darts des Boards werden weiter angehängt (drei Darts oder Takeout beenden die
+  Aufnahme). Danach folgt die nächste Aufnahme wieder dem Board. Abgeschlossene Aufnahmen ändert das Board nie.
+* **Nummern:** Aufnahmen und Darts werden nach jeder Korrektur neu durchnummeriert (Stelle `seq` und
+  `visitIndex` in der Datenbank sind lückenlos). Eine gelöschte Aufnahme verschwindet, spätere rücken nach.
+  Wird der letzte Dart der Session gelöscht, verschwindet die Session wie eine gelöschte Session im Verlauf;
+  der nächste Dart beginnt eine neue.
+* **Speichern:** Jede Korrektur schreibt alle Würfe der Session neu (`replaceThrows`) und speichert das
+  Ergebnis mit Dartzahl und Ende (letzter Dart) sofort, auch das „gezählt“ je Dart.
+* **X01 mitzählen:** Rest, Busts, Checkouts, Legs, Average und First 9 werden nach jeder Korrektur aus den
+  Darts neu gerechnet (auch „gezählt“: Darts nach Bust oder Checkout einer Aufnahme zählen nicht).
+  **Leg-Markierungen** („Leg verloren“, „Leg neu starten“) bedeuten „nach Dart N“ und bleiben zwischen denselben
+  Darts: Wird davor ein Dart entfernt, rückt die Marke um eins vor; ein ergänztes Dart am Ende einer
+  abgeschlossenen Aufnahme vor der Marke bleibt vor ihr (gehört noch ins alte Leg); ein Dart in der laufenden
+  Aufnahme nach der Marke gehört ins neue Leg, wie ein Dart vom Board. Löscht man alle Darts eines Legs vor der
+  Marke, ist die Marke wirkungslos.
+* Die Markierung „von Hand“ überlebt einen Absturz (Quelle in der Datenbank), nicht aber das Festhalten:
+  Nach einem Neustart beginnt ohnehin eine neue Session.
 
 ## Sessions
 
@@ -98,6 +141,11 @@ Multiplikator 0. Der echte Mitschnitt läuft als Test durch Autodarts Live.
   Darts am Ende. Entfernt eine Korrektur **alle** Darts der Aufnahme, sieht das aus wie ein Takeout: Die
   Darts bleiben dann gezählt.
 * `bouncer: true` (abgeprallter Dart) wird nicht ausgewertet.
+* Ob und wie sich eine Korrektur **im Autodarts-Web** (z. B. in einem Online-Match) lokal beim Board Manager
+  zeigt, ist unbekannt. Möglich, dass DartLab davon nichts sieht; dann hilft nur die Korrektur von Hand. Wie
+  sich eine Korrektur am Board zu den gemeldeten Stellen verhält, wenn DartLab schon von Hand umgebaut hat
+  (gelöschter/ergänzter Dart), wurde nicht an einem echten Board geprüft: DartLab ignoriert dann die Stellen
+  und Korrekturen des Boards für diese Aufnahme (siehe oben).
 
 ## Grenzen
 

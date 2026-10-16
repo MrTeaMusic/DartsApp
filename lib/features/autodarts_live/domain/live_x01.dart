@@ -55,6 +55,26 @@ List<LegMark> legMarksFromJson(Object? json) => [
             ),
     ];
 
+/// Marken nach dem Entfernen von [count] Darts ab Dart [from] (0-basiert,
+/// Zählung über die Session). Eine Marke bedeutet „nach Dart N“ und bleibt
+/// zwischen denselben Darts: Liegt sie hinter den entfernten Darts, rückt sie
+/// um [count] vor; lag sie mitten in den entfernten Darts, steht sie danach
+/// an der Lücke ([from]).
+List<LegMark> marksAfterRemoval(List<LegMark> marks, {required int from, required int count}) => [
+      for (final m in marks) (at: m.at > from ? (m.at - count < from ? from : m.at - count) : m.at, kind: m.kind),
+    ];
+
+/// Marken nach dem Einfügen eines Darts an Stelle [at] (davor stehen [at]
+/// Darts). Marken dahinter rücken um eins nach hinten. Eine Marke genau an
+/// der Stelle gehört hinter den neuen Dart, wenn er ans Ende einer
+/// abgeschlossenen Aufnahme kommt ([beforeMarkAtPosition] = `true`: der Dart
+/// war noch vor dem Leg-Ende dran), und vor ihn, wenn er wie ein neuer
+/// Dart des Boards an die laufende Aufnahme angehängt wird.
+List<LegMark> marksAfterInsert(List<LegMark> marks, {required int at, required bool beforeMarkAtPosition}) => [
+      for (final m in marks)
+        (at: m.at > at || (beforeMarkAtPosition && m.at == at) ? m.at + 1 : m.at, kind: m.kind),
+    ];
+
 /// Ein abgeschlossenes Leg.
 class LiveX01Leg {
   const LiveX01Leg({

@@ -382,7 +382,17 @@ Color segmentColor(BuildContext context, Segment s) {
 /// Ist noch kein Dart geworfen, kann [planned] den empfohlenen Wurf zeigen
 /// (gelb, z. B. der Checkout-Weg).
 class DartChip extends StatelessWidget {
-  const DartChip({super.key, this.segment, this.planned, this.plannedColor, this.large = false, this.onTap, this.label});
+  const DartChip({
+    super.key,
+    this.segment,
+    this.planned,
+    this.plannedColor,
+    this.large = false,
+    this.onTap,
+    this.label,
+    this.edited = false,
+    this.editedTooltip,
+  });
 
   /// `null` = noch nicht geworfen (Platzhalter).
   final Segment? segment;
@@ -394,11 +404,18 @@ class DartChip extends StatelessWidget {
   final Color? plannedColor;
   final bool large;
 
-  /// Antippen, z. B. zum Korrigieren.
+  /// Antippen, z. B. zum Korrigieren. Zeigt oben rechts einen dezenten Stift
+  /// (gesetzter Dart) bzw. ein Plus (freier Platz, z. B. zum Ergänzen).
   final VoidCallback? onTap;
 
   /// Kleine Beschriftung oben links, z. B. „1“.
   final String? label;
+
+  /// Von Hand gesetzt oder korrigiert: kleiner Stift in der Akzentfarbe.
+  final bool edited;
+
+  /// Text zum Stift bei [edited] (Tooltip und Screenreader).
+  final String? editedTooltip;
 
   @override
   Widget build(BuildContext context) {
@@ -481,11 +498,29 @@ class DartChip extends StatelessWidget {
                     top: large ? 8 : 6,
                     child: Text(label!, style: look.kicker.copyWith(color: colors.textMuted, fontSize: look.kicker.fontSize! - 1)),
                   ),
-                if (onTap != null && s != null)
+                if (edited && s != null)
+                  Positioned(
+                    right: 6,
+                    top: 6,
+                    child: Tooltip(
+                      message: editedTooltip ?? '',
+                      excludeFromSemantics: editedTooltip == null,
+                      child: Container(
+                        padding: EdgeInsets.all(large ? 3 : 2),
+                        decoration: BoxDecoration(color: theme.colorScheme.primary, shape: BoxShape.circle),
+                        child: Icon(Icons.edit_rounded, size: large ? 11 : 9, color: theme.colorScheme.onPrimary),
+                      ),
+                    ),
+                  )
+                else if (onTap != null)
                   Positioned(
                     right: 8,
                     top: 8,
-                    child: Icon(Icons.edit_rounded, size: large ? 14 : 12, color: colors.textMuted.withValues(alpha: 0.7)),
+                    child: Icon(
+                      s != null ? Icons.edit_rounded : Icons.add_rounded,
+                      size: large ? 14 : 12,
+                      color: colors.textMuted.withValues(alpha: 0.7),
+                    ),
                   ),
                 Center(
                   child: AnimatedSwitcher(
