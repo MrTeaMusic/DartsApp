@@ -32,6 +32,7 @@ class LiveViewState {
     this.current = const [],
     this.lastVisit,
     this.recentVisits = const [],
+    this.closedCount = 0,
     this.stats = LiveStats.empty,
     this.sessionStartedAt,
     this.sessionCount = 0,
@@ -52,6 +53,11 @@ class LiveViewState {
 
   /// Abgeschlossene Aufnahmen der Session, neueste zuerst (begrenzt).
   final List<List<DartThrow>> recentVisits;
+
+  /// Zahl der abgeschlossenen Aufnahmen der Session. Die Nummer (ab 0) von
+  /// `recentVisits[i]` ist `closedCount - 1 - i`, die der laufenden Aufnahme
+  /// `closedCount`; so adressieren die Korrekturen eine Aufnahme.
+  final int closedCount;
   final LiveStats stats;
 
   /// Erster Dart der laufenden Session.
@@ -299,6 +305,79 @@ class AutodartsLiveController extends Notifier<LiveViewState> {
     state = _view();
   }
 
+  // --- Korrekturen von Hand ------------------------------------------------
+  //
+  // Alle Korrekturen schreiben die Würfe der Session komplett neu
+  // (`replaceThrows`) und speichern das Ergebnis sofort (`endSession`). Mit
+  // X01 wird der Stand vorher aus den Darts neu gerechnet; Leg-Markierungen
+  // bleiben zwischen denselben Darts (`marksAfterRemoval`/`marksAfterInsert`).
+  // Aufnahmen werden mit ihrer Nummer ab 0 angesprochen (siehe
+  // [LiveViewState.closedCount]). Rückgabe: wurde etwas geändert?
+
+  /// Dart [dart] der Aufnahme [visit] auf [segment] ändern (von Hand gesetzt,
+  /// ohne Position).
+  bool correctDart(int visit, int dart, Segment segment) {
+    if (_ended) return false;
+    return _edit(_recorder.correctDart(visit, dart, segment));
+  }
+
+  /// Dart [dart] der Aufnahme [visit] entfernen.
+  bool removeDart(int visit, int dart) {
+    if (_ended) return false;
+    final from = _recorder.seqOf(visit, dart);
+    final update = _recorder.removeDart(visit, dart);
+    return _edit(update, marks: update.changed ? marksAfterRemoval(_marks, from: from, count: 1) : null);
+  }
+
+  /// Einen vergessenen Dart ans Ende der Aufnahme [visit] ergänzen.
+  bool addDart(int visit, Segment segment) {
+    if (_ended) return false;
+    final v = _recorder.visitAt(visit);
+    if (v == null) return false;
+    final at = _recorder.seqOf(visit, v.length);
+    final isCurrent = visit == _recorder.closedCount;
+    final update = _recorder.addDart(visit, segment, DateTime.now());
+    if (!update.changed) return false;
+    // Ohne bisherigen Dart gibt es noch keine Session in der Datenbank.
+    _session ??= _startSession(_recorder.lastDartAt!, ref.read(activePlayerIdProvider));
+    return _edit(update, marks: marksAfterInsert(_marks, at: at, beforeMarkAtPosition: !isCurrent));
+  }
+
+  /// Die ganze Aufnahme [visit] löschen.
+  bool removeVisit(int visit) {
+    if (_ended) return false;
+    final from = _recorder.seqOf(visit, 0);
+    final count = _recorder.visitAt(visit)?.length ?? 0;
+    final update = _recorder.removeVisit(visit);
+    return _edit(update, marks: update.changed ? marksAfterRemoval(_marks, from: from, count: count) : null);
+  }
+
+  bool _edit(LiveUpdate update, {List<LegMark>? marks}) {
+    if (!update.changed) return false;
+    if (marks != null) {
+      _marks
+        ..clear()
+        ..addAll(marks);
+    }
+    _replayX01();
+    final session = _session;
+    if (session != null) {
+      if (_recorder.dartCount == 0) {
+        // Alles gelöscht: die Session (mit Löschmarke fürs Abgleichen) entfernen.
+        _marks.clear();
+        _session = null;
+        _lastCheckpoint = null;
+        _enqueue(() async => _repo.deleteSession((await session).id));
+      } else {
+        _rewrite();
+        _lastCheckpoint = _recorder.lastDartAt;
+        _enqueueSave(session, _result(), _recorder.lastDartAt);
+      }
+    }
+    state = _view();
+    return true;
+  }
+
   Future<_Session> _startSession(DateTime startedAt, int? preferredPlayer) {
     final done = Completer<_Session>();
     final x01 = _x01Config;
@@ -360,6 +439,7 @@ class AutodartsLiveController extends Notifier<LiveViewState> {
       current: _recorder.currentVisit,
       lastVisit: _recorder.lastClosedVisit,
       recentVisits: [for (final v in closed.reversed.take(recentLimit)) v],
+      closedCount: closed.length,
       stats: _recorder.stats,
       sessionStartedAt: _recorder.darts.firstOrNull?.dart.timestamp,
       sessionCount: _recorder.sessionCount,
@@ -435,7 +515,8 @@ GameResult _combine(LiveStats raw, LiveX01? x01, List<LegMark> marks) {
 /// reparierten Sessions zurück.
 Future<int> repairLiveSessions(AppDatabase db) async {
   const ids = [autodartsLiveGameId, autodartsLiveX01GameId];
-  final sessions = await (db.select(db.sessions)..where((s) => s.gameId.isIn(ids))).get();
+  // Gelöschte Sessions (alle Darts von Hand entfernt) bleiben als Löschmarke stehen.
+  final sessions = await (db.select(db.sessions)..where((s) => s.gameId.isIn(ids) & s.deletedAt.isNull())).get();
   if (sessions.isEmpty) return 0;
   final count = db.throws.id.count();
   final counts = {

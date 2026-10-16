@@ -75,7 +75,8 @@ class LiveStats {
         } else {
           s++;
         }
-        final p = dart.position ?? (seg.isMiss ? null : BoardGeometry.centerOf(seg));
+        // Von Hand gesetzte Darts haben keine Position und bleiben aus der Heatmap.
+        final p = dart.position;
         if (p != null) heat.add(p);
       }
       points += score;
@@ -123,7 +124,7 @@ class LiveStats {
   final int singles;
   final int misses;
 
-  /// Positionen aller Darts für die Heatmap (ohne Koordinaten: Feldmitte).
+  /// Positionen aller Darts mit Koordinaten für die Heatmap.
   final List<BoardPoint> heat;
 
   bool get isEmpty => darts == 0;

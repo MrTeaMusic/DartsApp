@@ -1,6 +1,7 @@
 import 'package:dartlab/features/autodarts_live/domain/live_recorder.dart';
 import 'package:dartlab/features/autodarts_live/domain/live_stats.dart';
 import 'package:dartlab/features/autodarts_live/domain/live_x01.dart';
+import 'package:dartlab/features/board/domain/board_geometry.dart';
 import 'package:dartlab/features/board/domain/segment.dart';
 import 'package:dartlab/features/dart_source/data/autodarts_state_mapper.dart';
 import 'package:dartlab/features/dart_source/domain/dart_event.dart';
@@ -171,8 +172,12 @@ void main() {
       expect((s.count180, s.count140, s.count100), (1, 1, 0));
       expect((s.triples, s.doubles, s.singles, s.misses), (5, 1, 2, 1));
       expect(s.missShare, closeTo(1 / 9, 1e-9));
-      // Fehlwurf ohne Koordinaten: kein Punkt in der Heatmap.
-      expect(s.heat.length, 8);
+      // Ohne Koordinaten (z. B. von Hand gesetzt): kein Punkt in der Heatmap.
+      expect(s.heat, isEmpty);
+      final at = LiveStats.of([
+        [(segment: Segment.tryParse('T20')!, position: BoardGeometry.centerOf(Segment.tryParse('T20')!)), l('S5')],
+      ]);
+      expect(at.heat.length, 1);
       final m = s.toResult().metrics;
       expect(m.containsKey('average'), isFalse, reason: 'kein offizieller X01-Average');
       expect(m.containsKey('first9'), isFalse);

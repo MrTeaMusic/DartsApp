@@ -3144,5 +3144,78 @@
   "scatterTipWideSideways": "Streut an der Scheibe vor allem waagerecht: Ellbogen und Schulter ruhig halten und gerade zum Ziel durchschwingen.",
   "scatterTipWideHeight": "Streut an der Scheibe vor allem senkrecht: Abwurfpunkt und Tempo gleichmäßiger halten – ein fester Rhythmus hilft.",
   "scatterTipWideOverall": "Die Streuung ist insgesamt groß: Erst einen gleichmäßigen Ablauf festigen; Korrekturen am Zielpunkt bringen danach mehr.",
-  "scatterTipsTitle": "Tipps (Hinweise, keine Gewissheit)"
+  "scatterTipsTitle": "Tipps (Hinweise, keine Gewissheit)",
+  "liveFixHint": "Tippe auf einen Dart, um das Feld zu korrigieren oder ihn zu entfernen. Ein „+“ ergänzt einen vergessenen Dart.",
+  "liveFixTitle": "Aufnahme {visit} · Dart {dart}",
+  "@liveFixTitle": {
+    "placeholders": {
+      "visit": {
+        "type": "int"
+      },
+      "dart": {
+        "type": "int"
+      }
+    }
+  },
+  "liveFixAddTitle": "Dart ergänzen · Aufnahme {visit}",
+  "@liveFixAddTitle": {
+    "placeholders": {
+      "visit": {
+        "type": "int"
+      }
+    }
+  },
+  "liveFixDetected": "Vom Board erkannt: {segment}",
+  "@liveFixDetected": {
+    "placeholders": {
+      "segment": {
+        "type": "String"
+      }
+    }
+  },
+  "liveFixManual": "Von Hand gesetzt: {segment}",
+  "@liveFixManual": {
+    "placeholders": {
+      "segment": {
+        "type": "String"
+      }
+    }
+  },
+  "liveFixNote": "Das neue Feld gilt als von Hand korrigiert: ohne Position auf dem Board, und spätere Meldungen des Boards überschreiben es nicht.",
+  "liveFixAddNote": "Der Dart kommt ans Ende der Aufnahme (höchstens {max} Darts) und gilt als von Hand ergänzt, ohne Position auf dem Board.",
+  "@liveFixAddNote": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "liveFixRemoveDart": "Dart entfernen",
+  "liveFixRemoveVisit": "Aufnahme löschen",
+  "liveFixRemoveVisitTitle": "Aufnahme {visit} löschen?",
+  "@liveFixRemoveVisitTitle": {
+    "placeholders": {
+      "visit": {
+        "type": "int"
+      }
+    }
+  },
+  "liveFixRemoveVisitText": "Die {count} Darts dieser Aufnahme werden aus der Session entfernt. Kennzahlen und Statistik rechnen ohne sie neu.",
+  "@liveFixRemoveVisitText": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "liveFixVisitRemoved": "Aufnahme {visit} gelöscht",
+  "@liveFixVisitRemoved": {
+    "placeholders": {
+      "visit": {
+        "type": "int"
+      }
+    }
+  },
+  "liveFixEdited": "Von Hand korrigiert",
+  "liveFixAddDart": "Dart ergänzen"
 }

@@ -22,6 +22,7 @@ import '../domain/live_stats.dart';
 import '../domain/live_x01.dart';
 import '../../games/domain/games/checkout/checkout_rules.dart';
 import 'autodarts_live_controller.dart';
+import 'live_correction_sheet.dart';
 
 /// Autodarts Live: DartLab läuft neben dem Browser (play.autodarts.io) und
 /// schreibt die Darts vom eigenen Board mit.
@@ -180,6 +181,8 @@ class _HintCard extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.xs),
                   Text(l10n.liveLimits, style: theme.textTheme.bodySmall?.copyWith(color: colors.textMuted)),
                 ],
+                const SizedBox(height: AppSpacing.xs),
+                Text(l10n.liveFixHint, key: const Key('live-fix-hint'), style: theme.textTheme.bodySmall?.copyWith(color: colors.textMuted)),
                 if (offline) ...[
                   const SizedBox(height: AppSpacing.s),
                   Text(
@@ -295,6 +298,9 @@ class _VisitPanel extends ConsumerWidget {
     final plan = route ?? setup?.darts;
     final planColor = route != null ? colors.highlight : colors.setupHint;
     final event = x01?.lastEvent;
+    // Nummer (ab 0) der angezeigten Aufnahme für die Korrektur.
+    final shownVisit = showLast ? live.closedCount - 1 : live.closedCount;
+    final fixable = !live.ended;
     final String label;
     final String value;
     if (x01 != null) {
@@ -374,6 +380,22 @@ class _VisitPanel extends ConsumerWidget {
                               plannedColor: planColor,
                               label: '${i + 1}',
                               large: true,
+                              edited: i < darts.length && LiveRecorder.isManual(darts[i]),
+                              editedTooltip: l10n.liveFixEdited,
+                              onTap: !fixable
+                                  ? null
+                                  : i < darts.length
+                                      ? () => fixLiveDart(
+                                            context,
+                                            ref,
+                                            visit: shownVisit,
+                                            dart: i,
+                                            current: darts[i],
+                                            visitLength: darts.length,
+                                          )
+                                      : i == darts.length
+                                          ? () => addLiveDart(context, ref, visit: shownVisit)
+                                          : null,
                             ),
                           ),
                         ),
@@ -595,19 +617,18 @@ class _DistributionCard extends StatelessWidget {
 }
 
 /// Die letzten abgeschlossenen Aufnahmen zum Abgleich mit dem Match.
-class _RecentCard extends StatelessWidget {
+class _RecentCard extends ConsumerWidget {
   const _RecentCard({required this.live});
   final LiveViewState live;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final look = context.look;
     final colors = context.dartColors;
     final style = look.chipNumber.copyWith(fontSize: 16);
-    final visits = live.recentVisits.take(5).toList();
-    final first = live.stats.visits - (live.current.isEmpty ? 0 : 1);
+    final visits = live.recentVisits;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -618,31 +639,122 @@ class _RecentCard extends StatelessWidget {
             Text('–', style: theme.textTheme.bodySmall)
           else
             for (final (i, v) in visits.indexed)
-              Padding(
-                key: Key('live-recent-$i'),
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 40,
-                      child: Text('#${first - i}', style: style.copyWith(color: colors.textMuted, fontSize: 13)),
-                    ),
-                    for (var d = 0; d < LiveRecorder.dartsPerVisit; d++)
+              Builder(builder: (context) {
+                // Nummer der Aufnahme: die neueste abgeschlossene steht oben.
+                final visit = live.closedCount - 1 - i;
+                return Padding(
+                  key: Key('live-recent-$i'),
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Row(
+                    children: [
                       SizedBox(
-                        width: 64,
-                        child: Text(
-                          d < v.length ? v[d].segment.name : '–',
-                          style: style.copyWith(
-                            color: d < v.length ? segmentColor(context, v[d].segment) : colors.textMuted,
-                          ),
-                        ),
+                        width: 40,
+                        child: Text('#${visit + 1}', style: style.copyWith(color: colors.textMuted, fontSize: 13)),
                       ),
-                    const Spacer(),
-                    Text('${v.fold<int>(0, (a, t) => a + t.score)}', style: style.copyWith(color: theme.colorScheme.onSurface)),
-                  ],
-                ),
-              ),
+                      for (var d = 0; d < LiveRecorder.dartsPerVisit; d++)
+                        SizedBox(
+                          width: 64,
+                          child: d < v.length
+                              ? _RecentDart(
+                                  key: Key('live-recent-$i-dart-$d'),
+                                  dart: v[d],
+                                  style: style,
+                                  onTap: live.ended
+                                      ? null
+                                      : () => fixLiveDart(
+                                            context,
+                                            ref,
+                                            visit: visit,
+                                            dart: d,
+                                            current: v[d],
+                                            visitLength: v.length,
+                                          ),
+                                )
+                              : d == v.length && !live.ended
+                                  ? _RecentAdd(
+                                      key: Key('live-recent-$i-add'),
+                                      onTap: () => addLiveDart(context, ref, visit: visit),
+                                    )
+                                  : Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s),
+                                      child: Text('–', style: style.copyWith(color: colors.textMuted)),
+                                    ),
+                        ),
+                      const Spacer(),
+                      Text('${v.fold<int>(0, (a, t) => a + t.score)}', style: style.copyWith(color: theme.colorScheme.onSurface)),
+                    ],
+                  ),
+                );
+              }),
         ],
+      ),
+    );
+  }
+}
+
+/// Ein Dart in der Liste der letzten Aufnahmen; antippen zum Korrigieren.
+/// Von Hand gesetzte Darts tragen einen kleinen Stift.
+class _RecentDart extends StatelessWidget {
+  const _RecentDart({super.key, required this.dart, required this.style, required this.onTap});
+  final DartThrow dart;
+  final TextStyle style;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final primary = Theme.of(context).colorScheme.primary;
+    final edited = LiveRecorder.isManual(dart);
+    return InkWell(
+      borderRadius: BorderRadius.circular(AppRadii.s),
+      onTap: onTap,
+      child: Container(
+        height: 36,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s),
+        alignment: Alignment.centerLeft,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(
+                dart.segment.name,
+                overflow: TextOverflow.ellipsis,
+                style: style.copyWith(color: segmentColor(context, dart.segment)),
+              ),
+            ),
+            if (edited) ...[
+              const SizedBox(width: 3),
+              Tooltip(message: l10n.liveFixEdited, child: Icon(Icons.edit_rounded, size: 12, color: primary)),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// „+“ hinter den Darts einer Aufnahme mit weniger als drei Darts.
+class _RecentAdd extends StatelessWidget {
+  const _RecentAdd({super.key, required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(AppRadii.s),
+      onTap: onTap,
+      child: Tooltip(
+        message: context.l10n.liveFixAddDart,
+        child: SizedBox(
+          height: 36,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s),
+              child: Icon(Icons.add_rounded, size: 18, color: context.dartColors.textMuted),
+            ),
+          ),
+        ),
       ),
     );
   }
