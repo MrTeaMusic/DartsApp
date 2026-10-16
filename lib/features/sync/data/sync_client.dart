@@ -68,16 +68,26 @@ class SyncClient {
       var remote = MergeResult.fromJson(reply['result'] as Map<String, Object?>);
       var local = await store.mergeMeta(theirs);
 
-      // 2. Was dem Hub fehlt, hinschicken.
-      final toSend = mine.sessionUids.difference(theirs.sessionUids).toList()..sort();
+      // 2. Was dem Hub fehlt oder auf dem Hub älter ist, hinschicken. Sessions,
+      // die einer von beiden gelöscht hat, bleiben außen vor (Löschen gewinnt).
+      final deleted = {
+        for (final m in [mine, theirs]) for (final d in m.deletedSessions) d['uid'],
+      };
+      final toSend = {...mine.sessionUids.difference(theirs.sessionUids), ...mine.newerThan(theirs)}
+          .where((u) => !deleted.contains(u))
+          .toList()
+        ..sort();
       for (var i = 0; i < toSend.length; i += chunk) {
         final part = toSend.sublist(i, (i + chunk).clamp(0, toSend.length));
         final r = await _post(http, '/push', (await store.bundle(sessionUids: part)).toJson());
         remote += MergeResult.fromJson(r['result'] as Map<String, Object?>);
       }
 
-      // 3. Was hier fehlt, holen.
-      final toFetch = theirs.sessionUids.difference(mine.sessionUids).toList()..sort();
+      // 3. Was hier fehlt oder älter ist, holen.
+      final toFetch = {...theirs.sessionUids.difference(mine.sessionUids), ...theirs.newerThan(mine)}
+          .where((u) => !deleted.contains(u))
+          .toList()
+        ..sort();
       for (var i = 0; i < toFetch.length; i += chunk) {
         final part = toFetch.sublist(i, (i + chunk).clamp(0, toFetch.length));
         final r = await _post(http, '/pull', {'sessions': part});

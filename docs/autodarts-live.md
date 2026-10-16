@@ -84,6 +84,11 @@ und dann höchstens alle zwei Minuten wird die Session zusätzlich als abgeschlo
 damit sie in der Statistik erscheint. Beim nächsten Öffnen von Autodarts Live werden nicht sauber
 beendete Live-Sessions aus den gespeicherten Darts fertig gerechnet.
 
+Weil die Session nach dem Zwischenspeichern weiterwächst, trägt jeder Schreibvorgang einen neuen Stand
+(`sessions.updated_at`). Der [Sync im Heimnetz](sync.md) überträgt die Session deshalb erneut und
+ersetzt die ältere Kopie auf dem anderen Gerät, so kommen auch spätere Darts und Korrekturen
+(z. B. bei den Tagesdarts auf dem Hub) an.
+
 ## Was am echten Board geprüft ist und was nicht
 
 Geprüft (Board Manager 2.0.2, Windows, siehe `docs/autodarts-protokoll.md`): Würfe kommen lokal an, je
