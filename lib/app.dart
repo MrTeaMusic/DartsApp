@@ -4,6 +4,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/design/app_theme.dart';
+import 'core/design/arena/arena_background.dart';
+import 'core/design/dart_look.dart';
 import 'core/feedback.dart';
 import 'core/fullscreen.dart';
 import 'core/l10n.dart';
@@ -25,7 +27,7 @@ class DartLabApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final look = ref.watch(settingsProvider.select((s) => s.look));
-    // TV und Lab sind immer dunkel; nur Clean folgt der Helligkeit.
+    // TV, Lab und Arena sind immer dunkel; nur Clean folgt der Helligkeit.
     final themeMode = look.supportsLight ? ref.watch(settingsProvider.select((s) => s.themeMode)) : ThemeMode.dark;
     final router = ref.watch(routerProvider);
     // Dauerhaft aktiv halten, damit nichts verloren geht, solange der
@@ -50,7 +52,12 @@ class DartLabApp extends ConsumerWidget {
       darkTheme: AppTheme.build(look, Brightness.dark),
       themeMode: themeMode,
       routerConfig: router,
-      builder: (context, child) => _FullscreenShortcuts(child: child ?? const SizedBox()),
+      builder: (context, child) {
+        final app = _FullscreenShortcuts(child: child ?? const SizedBox());
+        // Arena: Marineblau mit den Dreiecken hinter allen Seiten (die
+        // Scaffolds sind in diesem Look durchsichtig).
+        return look == DartLookId.arena ? ArenaBackground(strip: 8, child: app) : app;
+      },
       locale: const Locale('de'),
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const [

@@ -292,16 +292,17 @@ class _ModeCard extends StatelessWidget {
       ),
       child: AppCard(
         onTap: onTap,
+        highlight: selected,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                IconBadge(icon: icon, size: 36, color: selected ? accent : colors.textMuted),
+                IconBadge(icon: icon, size: 36, color: selected ? (look.isArena ? Colors.white : accent) : colors.textMuted),
                 const Spacer(),
                 Icon(
                   selected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
-                  color: selected ? accent : colors.textMuted,
+                  color: selected ? (look.isArena ? Colors.white : accent) : colors.textMuted,
                   size: 22,
                 ),
               ],
@@ -309,7 +310,10 @@ class _ModeCard extends StatelessWidget {
             const SizedBox(height: AppSpacing.m),
             Text(title, style: theme.textTheme.titleMedium),
             const SizedBox(height: AppSpacing.xs),
-            Text(text, style: theme.textTheme.bodySmall),
+            Text(
+              text,
+              style: theme.textTheme.bodySmall?.copyWith(color: selected && look.isArena ? Colors.white.withValues(alpha: 0.9) : null),
+            ),
           ],
         ),
       ),
@@ -359,7 +363,7 @@ class _WeakChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: AppSpacing.xs + 2),
       decoration: BoxDecoration(
         color: colors.warning.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(look.id == DartLookId.clean ? AppRadii.pill : look.radiusS),
+        borderRadius: BorderRadius.circular(look.pill ? AppRadii.pill : look.radiusS),
         border: look.id == DartLookId.lab ? Border.all(color: colors.warning.withValues(alpha: 0.45)) : null,
       ),
       child: Text.rich(

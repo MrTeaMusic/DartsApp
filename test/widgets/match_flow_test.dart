@@ -158,6 +158,9 @@ void main() {
     expect(metrics['won'], 1);
     expect(container.read(matchStoreProvider).currentMatch(), isNull);
 
+    // Die Erfolgs-Einblendung (5 s) liegt sonst über dem Knopf.
+    await tester.pump(const Duration(seconds: 6));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('match-done')));
     await tester.pumpAndSettle();
     expect(container.read(matchControllerProvider), isNull);

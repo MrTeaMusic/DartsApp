@@ -240,7 +240,7 @@ class _DiffPill extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s - 2, vertical: AppSpacing.xxs),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(look.id == DartLookId.clean ? 99 : look.radiusS),
+        borderRadius: BorderRadius.circular(look.pill ? 99 : look.radiusS),
       ),
       child: Text(
         _diffText(diff, rate: rate),
@@ -744,7 +744,7 @@ class _Fact extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s, vertical: AppSpacing.xxs + 1),
       decoration: BoxDecoration(
         color: colors.surfaceHigh,
-        borderRadius: BorderRadius.circular(look.id == DartLookId.clean ? 99 : look.radiusS),
+        borderRadius: BorderRadius.circular(look.pill ? 99 : look.radiusS),
       ),
       child: Text.rich(
         TextSpan(children: [

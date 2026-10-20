@@ -55,7 +55,7 @@ class VisitTable extends StatelessWidget {
 
   static double rowHeight(DartLook look) => switch (look.id) {
     DartLookId.tv => 22,
-    DartLookId.clean => 25,
+    DartLookId.clean || DartLookId.arena => 25,
     DartLookId.lab => 22,
   };
 
@@ -115,13 +115,13 @@ class VisitTable extends StatelessWidget {
 
   /// Abstand links und rechts in den Zeilen; schmale Tabellen brauchen weniger.
   static EdgeInsets _rowPadding(DartLook look, {bool dense = false}) =>
-      EdgeInsets.symmetric(horizontal: dense ? 4 : (look.id == DartLookId.clean ? 8 : 6));
+      EdgeInsets.symmetric(horizontal: dense ? 4 : (look.pill ? 8 : 6));
 
   Widget _headerText(BuildContext context, String text, TextAlign align) {
     final look = context.look;
     final size = switch (look.id) {
       DartLookId.tv => 13.0,
-      DartLookId.clean => 11.0,
+      DartLookId.clean || DartLookId.arena => 11.0,
       DartLookId.lab => 9.5,
     };
     return FittedBox(
@@ -144,7 +144,7 @@ class VisitTable extends StatelessWidget {
 TextStyle _numberStyle(DartLook look) => look.chipNumber.copyWith(
   fontSize: switch (look.id) {
     DartLookId.tv => 18,
-    DartLookId.clean => 14.5,
+    DartLookId.clean || DartLookId.arena => 14.5,
     DartLookId.lab => 13.5,
   },
 );
@@ -158,7 +158,7 @@ Decoration _lineDecoration(DartLook look, Color tint, Color bar, {required bool 
         color: tint,
         border: Border(left: BorderSide(color: bar, width: 3)),
       );
-    case DartLookId.clean:
+    case DartLookId.clean || DartLookId.arena:
       return BoxDecoration(color: tint, borderRadius: BorderRadius.circular(9));
     case DartLookId.lab:
       return BoxDecoration(
@@ -320,7 +320,7 @@ class _StartLine extends StatelessWidget {
       child: DecoratedBox(
         decoration: switch (look.id) {
           DartLookId.tv => const BoxDecoration(border: Border(left: BorderSide(color: Colors.transparent, width: 3))),
-          DartLookId.clean => const BoxDecoration(),
+          DartLookId.clean || DartLookId.arena => const BoxDecoration(),
           DartLookId.lab => BoxDecoration(
             border: Border(
               left: const BorderSide(color: Colors.transparent, width: 2),

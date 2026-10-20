@@ -136,7 +136,7 @@ class MatchPlayScreen extends ConsumerWidget {
         : l10n.matchLegNumber(match.legNumber);
 
     // Arena: drei Spalten mit großen Tafeln und Wurftabelle (Standard).
-    if (ref.watch(settingsProvider.select((s) => s.playView)) == PlayView.arena) {
+    if (ref.watch(settingsProvider.select((s) => s.arenaPlay))) {
       return _SaveOnBackground(
         child: PopScope(
           canPop: false,

@@ -137,7 +137,7 @@ class _Key extends StatelessWidget {
     final look = context.look;
     final accent = color ?? theme.colorScheme.primary;
     final fg = selected ? accent : (color ?? theme.colorScheme.onSurface);
-    final radius = BorderRadius.circular(look.id == DartLookId.clean ? AppRadii.s + 2 : look.radiusS);
+    final radius = BorderRadius.circular(look.pill ? AppRadii.s + 2 : look.radiusS);
     final style = look.chipNumber.copyWith(fontSize: (look.chipNumber.fontSize ?? 20) * 0.82, color: fg);
     return Opacity(
       opacity: onTap == null ? 0.45 : 1,
@@ -180,7 +180,7 @@ class SegmentTag extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s, vertical: AppSpacing.xxs + 1),
       decoration: BoxDecoration(
         color: (segment.isSingle ? context.dartColors.surfaceHigh : c.withValues(alpha: 0.14)),
-        borderRadius: BorderRadius.circular(look.id == DartLookId.clean ? AppRadii.pill : look.radiusS),
+        borderRadius: BorderRadius.circular(look.pill ? AppRadii.pill : look.radiusS),
         border: look.id == DartLookId.lab ? Border.all(color: c.withValues(alpha: 0.4)) : null,
       ),
       child: Text(

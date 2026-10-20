@@ -87,6 +87,24 @@ abstract final class AppTypography {
           labelMedium: TextStyle(fontFamily: b, fontSize: 13, fontWeight: FontWeight.w500, color: muted),
           labelSmall: TextStyle(fontFamily: b, fontSize: 11.5, fontWeight: FontWeight.w500, color: muted),
         );
+      case DartLookId.arena:
+        return TextTheme(
+          displayLarge: look.scoreLarge.copyWith(color: text, fontSize: 72),
+          displayMedium: look.statValue.copyWith(color: text),
+          displaySmall: TextStyle(fontFamily: d, fontSize: 30, fontWeight: FontWeight.w800, color: text, letterSpacing: -0.8),
+          headlineLarge: TextStyle(fontFamily: d, fontSize: 36, height: 1.15, fontWeight: FontWeight.w800, color: text, letterSpacing: -1),
+          headlineMedium: TextStyle(fontFamily: d, fontSize: 28, height: 1.2, fontWeight: FontWeight.w800, color: text, letterSpacing: -0.8),
+          headlineSmall: TextStyle(fontFamily: d, fontSize: 22, height: 1.25, fontWeight: FontWeight.w800, color: text, letterSpacing: -0.5),
+          titleLarge: TextStyle(fontFamily: d, fontSize: 20, height: 1.3, fontWeight: FontWeight.w700, color: text, letterSpacing: -0.3),
+          titleMedium: TextStyle(fontFamily: b, fontSize: 16, fontWeight: FontWeight.w700, color: text, letterSpacing: -0.2),
+          titleSmall: TextStyle(fontFamily: b, fontSize: 14, fontWeight: FontWeight.w700, color: text, letterSpacing: -0.1),
+          bodyLarge: TextStyle(fontFamily: b, fontSize: 16, height: 1.5, color: text),
+          bodyMedium: TextStyle(fontFamily: b, fontSize: 14.5, height: 1.5, color: text),
+          bodySmall: TextStyle(fontFamily: b, fontSize: 13, height: 1.45, color: muted),
+          labelLarge: TextStyle(fontFamily: b, fontSize: 15, fontWeight: FontWeight.w700, color: text),
+          labelMedium: TextStyle(fontFamily: b, fontSize: 13, fontWeight: FontWeight.w600, color: muted),
+          labelSmall: TextStyle(fontFamily: b, fontSize: 11.5, fontWeight: FontWeight.w600, color: muted),
+        );
       case DartLookId.lab:
         return TextTheme(
           displayLarge: look.scoreLarge.copyWith(color: text, fontSize: 56),
@@ -110,6 +128,9 @@ abstract final class AppTypography {
 }
 
 abstract final class AppTheme {
+  /// Blau der Schalter in der Arena (wie in der Spielansicht).
+  static const Color _arenaButton = Color(0xFF0955DF);
+
   /// Standard-Look „TV“ (dunkel).
   static ThemeData dark() => build(DartLookId.tv, Brightness.dark);
 
@@ -128,6 +149,12 @@ abstract final class AppTheme {
     final colors = p.colors;
     final isTv = look.id == DartLookId.tv;
     final isClean = look.id == DartLookId.clean;
+    final isArena = look.isArena;
+    // Gefüllte Akzentfläche für Gewähltes (TV rot, Arena blau).
+    final solid = isTv || isArena;
+    // Runde Formen: Clean und Arena.
+    final pill = look.pill;
+    final accentFill = isArena ? _arenaButton : p.primary;
     final scheme = ColorScheme(
       brightness: p.brightness,
       primary: p.primary,
@@ -159,42 +186,45 @@ abstract final class AppTheme {
     );
     final textTheme = AppTypography.textTheme(look, p.text, p.muted);
     RoundedRectangleBorder rounded(double r) => RoundedRectangleBorder(borderRadius: BorderRadius.circular(r));
-    final OutlinedBorder buttonShape = isClean ? const StadiumBorder() : rounded(look.radiusM);
+    final OutlinedBorder buttonShape = pill ? const StadiumBorder() : rounded(look.radiusM);
     final buttonHeight = switch (look.id) {
       DartLookId.tv => 52.0,
       DartLookId.clean => 50.0,
       DartLookId.lab => 44.0,
+      DartLookId.arena => 52.0,
     };
     final cardSide = look.card == CardTreatment.outlined ? BorderSide(color: p.outline) : BorderSide.none;
-    final indicatorShape = isClean ? const StadiumBorder() : rounded(look.radiusM);
-    final indicator = isTv ? p.primary : p.primary.withValues(alpha: isClean ? 0.14 : 0.18);
-    final selectedNav = isTv ? p.onPrimary : p.primary;
+    final indicatorShape = pill ? const StadiumBorder() : rounded(look.radiusM);
+    final indicator = isArena ? _arenaButton : (isTv ? p.primary : p.primary.withValues(alpha: isClean ? 0.14 : 0.18));
+    final selectedNav = solid ? p.onPrimary : p.primary;
 
     return ThemeData(
       useMaterial3: true,
       fontFamily: look.bodyFamily,
       brightness: p.brightness,
       colorScheme: scheme,
-      scaffoldBackgroundColor: p.background,
+      // Arena: durchsichtig, der Grund mit den Dreiecken liegt hinter der App.
+      scaffoldBackgroundColor: isArena ? Colors.transparent : p.background,
       canvasColor: p.background,
       textTheme: textTheme,
       extensions: [colors, look],
       visualDensity: look.id == DartLookId.lab ? VisualDensity.compact : VisualDensity.standard,
-      splashFactory: isClean ? InkSparkle.splashFactory : InkRipple.splashFactory,
+      splashFactory: pill ? InkSparkle.splashFactory : InkRipple.splashFactory,
       dividerTheme: DividerThemeData(color: p.outline, thickness: 1, space: 1),
       iconTheme: IconThemeData(color: p.text, size: look.id == DartLookId.lab ? 20 : 24),
       appBarTheme: AppBarTheme(
-        backgroundColor: p.background,
+        backgroundColor: isArena ? Colors.transparent : p.background,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        toolbarHeight: look.id == DartLookId.lab ? 52 : (isClean ? 64 : 60),
+        toolbarHeight: look.id == DartLookId.lab ? 52 : (pill ? 64 : 60),
         titleSpacing: look.page,
         titleTextStyle: switch (look.id) {
           DartLookId.tv => textTheme.headlineMedium?.copyWith(fontSize: 28),
           DartLookId.clean => textTheme.headlineMedium,
           DartLookId.lab => textTheme.titleLarge?.copyWith(fontSize: 17),
+          DartLookId.arena => textTheme.headlineMedium,
         },
         foregroundColor: p.text,
         shape: look.id == DartLookId.lab ? Border(bottom: BorderSide(color: p.outline)) : null,
@@ -209,19 +239,25 @@ abstract final class AppTheme {
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           minimumSize: Size(48, buttonHeight),
-          padding: EdgeInsets.symmetric(horizontal: isClean ? AppSpacing.xl : AppSpacing.l + 4),
+          padding: EdgeInsets.symmetric(horizontal: pill ? AppSpacing.xl : AppSpacing.l + 4),
           shape: buttonShape,
           textStyle: textTheme.labelLarge,
+          backgroundColor: isArena ? _arenaButton : null,
+          foregroundColor: isArena ? Colors.white : null,
           disabledBackgroundColor: p.surfaceHigh,
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           minimumSize: Size(48, buttonHeight),
-          padding: EdgeInsets.symmetric(horizontal: isClean ? AppSpacing.xl : AppSpacing.l + 4),
+          padding: EdgeInsets.symmetric(horizontal: pill ? AppSpacing.xl : AppSpacing.l + 4),
           shape: buttonShape,
-          // Clean: getönte Fläche statt Rahmen.
-          side: isClean ? BorderSide.none : BorderSide(color: isTv ? p.text.withValues(alpha: 0.35) : p.outline, width: isTv ? 1.5 : 1),
+          // Clean: getönte Fläche statt Rahmen; Arena: blauer Rand.
+          side: isClean
+              ? BorderSide.none
+              : isArena
+                  ? const BorderSide(color: _arenaButton, width: 1.5)
+                  : BorderSide(color: isTv ? p.text.withValues(alpha: 0.35) : p.outline, width: isTv ? 1.5 : 1),
           backgroundColor: isClean ? p.surfaceHigh : (look.id == DartLookId.lab ? p.surface : null),
           foregroundColor: p.text,
           textStyle: textTheme.labelLarge,
@@ -231,34 +267,34 @@ abstract final class AppTheme {
         style: TextButton.styleFrom(shape: buttonShape, textStyle: textTheme.labelLarge),
       ),
       iconButtonTheme: IconButtonThemeData(
-        style: IconButton.styleFrom(shape: isClean ? const CircleBorder() : rounded(look.radiusM)),
+        style: IconButton.styleFrom(shape: pill ? const CircleBorder() : rounded(look.radiusM)),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: p.primary,
+        backgroundColor: accentFill,
         foregroundColor: p.onPrimary,
         elevation: isClean ? 2 : 0,
         highlightElevation: isClean ? 4 : 0,
-        shape: isClean ? const StadiumBorder() : rounded(look.radiusM),
+        shape: pill ? const StadiumBorder() : rounded(look.radiusM),
         extendedTextStyle: textTheme.labelLarge,
       ),
       chipTheme: ChipThemeData(
-        shape: isClean ? const StadiumBorder() : rounded(look.radiusS),
+        shape: pill ? const StadiumBorder() : rounded(look.radiusS),
         side: WidgetStateBorderSide.resolveWith((s) {
-          if (s.contains(WidgetState.selected)) return BorderSide(color: isTv ? p.primary : p.primary.withValues(alpha: 0.6));
-          return isClean ? BorderSide.none : BorderSide(color: p.outline);
+          if (s.contains(WidgetState.selected)) return BorderSide(color: isArena ? _arenaButton : (isTv ? p.primary : p.primary.withValues(alpha: 0.6)));
+          return pill ? BorderSide.none : BorderSide(color: p.outline);
         }),
         color: WidgetStateProperty.resolveWith((s) {
-          if (s.contains(WidgetState.selected)) return isTv ? p.primary : p.primary.withValues(alpha: isClean ? 0.14 : 0.16);
-          return isClean ? p.surfaceHigh : p.surface;
+          if (s.contains(WidgetState.selected)) return isArena ? _arenaButton : (isTv ? p.primary : p.primary.withValues(alpha: isClean ? 0.14 : 0.16));
+          return pill ? p.surfaceHigh : p.surface;
         }),
         // Die Chip-Beschriftung löst nur die Farbe nach Zustand auf.
         labelStyle: textTheme.labelLarge?.copyWith(
-          fontSize: isTv ? 16 : (isClean ? 14 : 13),
+          fontSize: isTv ? 16 : (pill ? 14 : 13),
           color: WidgetStateColor.resolveWith(
-            (s) => s.contains(WidgetState.selected) ? (isTv ? p.onPrimary : p.primary) : p.text,
+            (s) => s.contains(WidgetState.selected) ? (solid ? p.onPrimary : p.primary) : p.text,
           ),
         ),
-        checkmarkColor: isTv ? p.onPrimary : p.primary,
+        checkmarkColor: solid ? p.onPrimary : p.primary,
         showCheckmark: isClean,
         padding: EdgeInsets.symmetric(horizontal: look.id == DartLookId.lab ? AppSpacing.xs : AppSpacing.s, vertical: AppSpacing.xs),
         iconTheme: IconThemeData(color: p.muted, size: 18),
@@ -281,31 +317,42 @@ abstract final class AppTheme {
       ),
       segmentedButtonTheme: SegmentedButtonThemeData(
         style: SegmentedButton.styleFrom(
-          shape: isClean ? const StadiumBorder() : rounded(look.radiusM),
-          side: BorderSide(color: p.outline),
-          backgroundColor: isClean ? p.surface : null,
-          selectedBackgroundColor: isTv ? p.primary : p.primary.withValues(alpha: 0.16),
-          selectedForegroundColor: isTv ? p.onPrimary : p.primary,
+          shape: pill ? const StadiumBorder() : rounded(look.radiusM),
+          side: BorderSide(color: isArena ? p.surfaceHigh : p.outline),
+          backgroundColor: pill ? p.surface : null,
+          selectedBackgroundColor: isArena ? _arenaButton : (isTv ? p.primary : p.primary.withValues(alpha: 0.16)),
+          selectedForegroundColor: solid ? p.onPrimary : p.primary,
           // Nicht gewählte Segmente neutral statt in Akzentfarbe.
           foregroundColor: p.muted,
           textStyle: textTheme.labelLarge,
         ),
       ),
       tabBarTheme: TabBarThemeData(
-        labelColor: isTv ? p.text : p.primary,
+        labelColor: isTv ? p.text : (isArena ? Colors.white : p.primary),
         unselectedLabelColor: p.muted,
         labelStyle: isTv ? textTheme.labelLarge?.copyWith(fontSize: 18) : textTheme.labelLarge,
         unselectedLabelStyle: isTv ? textTheme.labelLarge?.copyWith(fontSize: 18) : textTheme.labelLarge,
-        dividerColor: p.outline,
-        indicatorSize: isClean ? TabBarIndicatorSize.label : TabBarIndicatorSize.tab,
-        indicator: UnderlineTabIndicator(
-          borderSide: BorderSide(color: p.primary, width: isTv ? 4 : (isClean ? 3 : 2)),
-          borderRadius: isClean ? const BorderRadius.vertical(top: Radius.circular(3)) : BorderRadius.zero,
-        ),
+        dividerColor: isArena ? Colors.transparent : p.outline,
+        indicatorSize: isArena ? TabBarIndicatorSize.tab : (isClean ? TabBarIndicatorSize.label : TabBarIndicatorSize.tab),
+        // Arena: der Reiter ist eine Pille mit dem Verlauf der Spielansicht.
+        indicator: isArena
+            ? BoxDecoration(
+                borderRadius: BorderRadius.circular(999),
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF802E90), Color(0xFFA6266F), Color(0xFFD63756)],
+                ),
+              )
+            : UnderlineTabIndicator(
+                borderSide: BorderSide(color: p.primary, width: isTv ? 4 : (isClean ? 3 : 2)),
+                borderRadius: isClean ? const BorderRadius.vertical(top: Radius.circular(3)) : BorderRadius.zero,
+              ),
+        splashBorderRadius: isArena ? BorderRadius.circular(999) : null,
         overlayColor: WidgetStatePropertyAll(p.primary.withValues(alpha: 0.06)),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: isTv ? colors.panel : p.surface,
+        backgroundColor: isTv || isArena ? colors.panel : p.surface,
         surfaceTintColor: Colors.transparent,
         indicatorColor: indicator,
         indicatorShape: indicatorShape,
@@ -321,7 +368,7 @@ abstract final class AppTheme {
         ),
       ),
       navigationRailTheme: NavigationRailThemeData(
-        backgroundColor: isTv ? colors.panel : (isClean ? p.background : p.surface),
+        backgroundColor: isTv || isArena ? colors.panel : (isClean ? p.background : p.surface),
         indicatorColor: indicator,
         indicatorShape: indicatorShape,
         selectedIconTheme: IconThemeData(color: selectedNav),
@@ -338,12 +385,10 @@ abstract final class AppTheme {
         contentPadding: EdgeInsets.symmetric(horizontal: look.cardPadding),
       ),
       switchTheme: SwitchThemeData(
-        trackOutlineColor: WidgetStatePropertyAll(isClean ? Colors.transparent : p.outline),
-        thumbColor: isClean
-            ? WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? Colors.white : Colors.white)
-            : null,
+        trackOutlineColor: WidgetStatePropertyAll(pill ? Colors.transparent : p.outline),
+        thumbColor: pill ? const WidgetStatePropertyAll(Colors.white) : null,
         trackColor: WidgetStateProperty.resolveWith(
-          (s) => s.contains(WidgetState.selected) ? (isClean ? colors.success : p.primary) : p.surfaceHigh,
+          (s) => s.contains(WidgetState.selected) ? (isClean ? colors.success : accentFill) : p.surfaceHigh,
         ),
       ),
       radioTheme: RadioThemeData(fillColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? p.primary : p.muted)),

@@ -7,15 +7,20 @@ import 'arena_palette.dart';
 /// Grund der Arena: Marineblau mit großen, kaum sichtbaren Dreiecken und
 /// einem fast schwarzen Streifen am oberen Rand.
 class ArenaBackground extends StatelessWidget {
-  const ArenaBackground({super.key, required this.child});
+  const ArenaBackground({super.key, required this.child, this.strip});
   final Widget child;
+
+  /// Höhe des dunklen Streifens oben; Standard wie im Vorbild (2 % der Höhe,
+  /// höchstens 26 px). Der Look „Arena“ legt den Grund mit schmalem Streifen
+  /// hinter die ganze App.
+  final double? strip;
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       fit: StackFit.expand,
       children: [
-        const RepaintBoundary(child: CustomPaint(painter: _BackgroundPainter())),
+        RepaintBoundary(child: CustomPaint(painter: strip == null ? const _BackgroundPainter() : _BackgroundPainter(strip: strip))),
         child,
       ],
     );
@@ -23,7 +28,8 @@ class ArenaBackground extends StatelessWidget {
 }
 
 class _BackgroundPainter extends CustomPainter {
-  const _BackgroundPainter();
+  const _BackgroundPainter({this.strip});
+  final double? strip;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -56,10 +62,10 @@ class _BackgroundPainter extends CustomPainter {
     shape(const [Offset(1, 0.64), Offset(1, 1), Offset(0.74, 1)], 0.06);
 
     // Schmaler dunkler Streifen ganz oben.
-    final strip = math.min(26.0, h * 0.02);
-    canvas.drawRect(Rect.fromLTWH(0, 0, w, strip), Paint()..color = ArenaPalette.stripe);
+    final stripH = strip ?? math.min(26.0, h * 0.02);
+    canvas.drawRect(Rect.fromLTWH(0, 0, w, stripH), Paint()..color = ArenaPalette.stripe);
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter old) => false;
+  bool shouldRepaint(covariant _BackgroundPainter old) => old.strip != strip;
 }

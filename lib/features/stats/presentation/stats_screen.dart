@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/design/components/components.dart';
+import '../../../core/design/dart_look.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
 import '../../../core/router/app_router.dart';
@@ -117,7 +118,8 @@ class StatsScreen extends ConsumerWidget {
               key: const Key('stats-tabs'),
               isScrollable: true,
               tabAlignment: TabAlignment.start,
-              padding: EdgeInsets.symmetric(horizontal: (inset - AppSpacing.l).clamp(0, double.infinity)),
+              // Arena: der Reiter ist eine Pille, die nicht am Rand abgeschnitten sein soll.
+              padding: EdgeInsets.symmetric(horizontal: (inset - AppSpacing.l).clamp(context.look.isArena ? 12 : 0, double.infinity)),
               tabs: [
                 Tab(key: const Key('stats-tab-overview'), text: l10n.statsTabOverview),
                 Tab(key: const Key('stats-tab-online'), text: l10n.statsTabOnline),

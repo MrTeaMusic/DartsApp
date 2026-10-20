@@ -9,7 +9,11 @@ enum DartLookId {
   clean,
 
   /// Dunkel, datendicht, technisch.
-  lab;
+  lab,
+
+  /// Marineblau mit großen runden Tafeln, blauen Schaltern und einem
+  /// Violett-Rot-Verlauf für das Wichtigste; immer dunkel.
+  arena;
 
   /// Gibt es eine helle Variante? Sonst ist der Look immer dunkel.
   bool get supportsLight => this == clean;
@@ -134,6 +138,11 @@ class DartLook extends ThemeExtension<DartLook> {
 
   double pagePadding(bool wide) => wide ? pageWide : page;
 
+  bool get isArena => id == DartLookId.arena;
+
+  /// Runde Schilder und Pillen statt eckiger Marken (Clean und Arena).
+  bool get pill => id == DartLookId.clean || id == DartLookId.arena;
+
   /// Text für kleine Beschriftungen ([kicker], Abschnitte): außer bei
   /// „Clean“ in Versalien.
   String caps(String text) => header == HeaderTreatment.plain ? text : text.toUpperCase();
@@ -149,7 +158,7 @@ extension DartLookContext on BuildContext {
   DartLook get look => Theme.of(this).extension<DartLook>() ?? DartLooks.tv;
 }
 
-/// Die drei Looks als Daten. Paletten stehen in `looks.dart`.
+/// Die vier Looks als Daten. Paletten stehen in `looks.dart`.
 abstract final class DartLooks {
   static const String inter = 'Inter';
   static const String condensed = 'Barlow Condensed';
@@ -159,6 +168,7 @@ abstract final class DartLooks {
         DartLookId.tv => tv,
         DartLookId.clean => clean,
         DartLookId.lab => lab,
+        DartLookId.arena => arena,
       };
 
   static const DartLook tv = DartLook(
@@ -384,5 +394,82 @@ abstract final class DartLooks {
     ),
     barRadius: 2,
     barHeight: 4,
+  );
+
+  /// Arena: große Tafeln mit 28 px Radius, kräftige Ziffern in Inter,
+  /// runde Schilder. Maße und Farben stammen aus der Spielansicht
+  /// (`core/design/arena`).
+  static const DartLook arena = DartLook(
+    id: DartLookId.arena,
+    displayFamily: inter,
+    bodyFamily: inter,
+    card: CardTreatment.flat,
+    header: HeaderTreatment.plain,
+    radiusS: 10,
+    radiusM: 16,
+    radiusL: 28,
+    radiusXL: 32,
+    page: 16,
+    pageWide: 36,
+    cardPadding: 20,
+    sectionGap: 28,
+    gridGap: 12,
+    shadow: [],
+    scoreHero: TextStyle(
+      fontFamily: inter,
+      fontSize: 150,
+      height: 1.05,
+      fontWeight: FontWeight.w800,
+      letterSpacing: -6,
+      fontFeatures: tabular,
+    ),
+    scoreLarge: TextStyle(
+      fontFamily: inter,
+      fontSize: 100,
+      height: 1.05,
+      fontWeight: FontWeight.w800,
+      letterSpacing: -4,
+      fontFeatures: tabular,
+    ),
+    scoreMedium: TextStyle(
+      fontFamily: inter,
+      fontSize: 34,
+      height: 1.1,
+      fontWeight: FontWeight.w800,
+      letterSpacing: -0.8,
+      fontFeatures: tabular,
+    ),
+    statValue: TextStyle(
+      fontFamily: inter,
+      fontSize: 36,
+      height: 1.1,
+      fontWeight: FontWeight.w800,
+      letterSpacing: -1,
+      fontFeatures: tabular,
+    ),
+    kicker: TextStyle(
+      fontFamily: inter,
+      fontSize: 13,
+      height: 1.2,
+      fontWeight: FontWeight.w500,
+      letterSpacing: 0,
+    ),
+    sectionTitle: TextStyle(
+      fontFamily: inter,
+      fontSize: 20,
+      height: 1.2,
+      fontWeight: FontWeight.w800,
+      letterSpacing: -0.4,
+    ),
+    chipNumber: TextStyle(
+      fontFamily: inter,
+      fontSize: 20,
+      height: 1.1,
+      fontWeight: FontWeight.w800,
+      letterSpacing: -0.4,
+      fontFeatures: tabular,
+    ),
+    barRadius: 999,
+    barHeight: 10,
   );
 }

@@ -48,6 +48,10 @@ class AppSettings {
   /// Gewählter Look (Optionen → Darstellung).
   final DartLookId look;
 
+  /// Zeigt X01 die Arena-Spielansicht? Bei „Arena“ als Look immer, sonst nach
+  /// der Wahl der Spielansicht.
+  bool get arenaPlay => playView == PlayView.arena || look == DartLookId.arena;
+
   /// Optik der Dartscheibe (Optionen → Darstellung → Scheibe).
   final BoardStyle boardStyle;
 

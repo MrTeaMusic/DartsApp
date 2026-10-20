@@ -8,7 +8,9 @@ stellt man in den Optionen unter Darstellung > Spielansicht ein:
 - **Wie das gewählte Design**: die bisherige Ansicht in den Farben und Formen
   des Looks, mit der Aufnahmen-Tabelle unter dem Namen (weiter unten).
 
-Die Einstellung heißt `settings.playView` (`arena` oder `look`). Andere Spiele
+Die Einstellung heißt `settings.playView` (`arena` oder `look`). Ist der Look
+„Arena“ gewählt (siehe [design.md](design.md)), zeigt auch „Wie das gewählte
+Design“ die Arena-Spielansicht (`AppSettings.arenaPlay`). Andere Spiele
 (Checkout, Drills usw.) sind davon nicht betroffen.
 
 ## Arena

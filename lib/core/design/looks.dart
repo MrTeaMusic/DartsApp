@@ -42,6 +42,7 @@ abstract final class LookPalettes {
         DartLookId.tv => tv,
         DartLookId.clean => b == Brightness.light ? cleanLight : cleanDark,
         DartLookId.lab => lab,
+        DartLookId.arena => arena,
       };
 
   /// TV: Studio-Schwarz mit Signalrot, weiße Zahlen.
@@ -161,6 +162,53 @@ abstract final class LookPalettes {
       chartGrid: Color(0xFF1E2530),
       heroStart: Color(0xFF0F2036),
       heroEnd: Color(0xFF131820),
+    ),
+  );
+
+  /// Arena: Marineblau, fast schwarze Flächen, blaue Schalter; die Farben
+  /// stammen aus der Spielansicht (`ArenaPalette`). Das Primärblau ist etwas
+  /// heller als das der Schalter (#0955DF), damit blaue Schrift und Symbole
+  /// auf den dunklen Flächen lesbar bleiben.
+  static const LookPalette arena = LookPalette(
+    brightness: Brightness.dark,
+    background: Color(0xFF001137),
+    surface: Color(0xFF17181C),
+    surfaceHigh: Color(0xFF2C2C37),
+    outline: Color(0xFF505158),
+    text: Color(0xFFFFFFFF),
+    muted: Color(0xFFA3A7B7),
+    primary: Color(0xFF1F6BFF),
+    onPrimary: Colors.white,
+    secondary: Color(0xFFFFFFFF),
+    onSecondary: Color(0xFF17181C),
+    colors: DartColors(
+      boardBlack: AppPalette.boardBlack,
+      boardCream: AppPalette.boardCream,
+      boardRed: AppPalette.boardRed,
+      boardGreen: AppPalette.boardGreen,
+      boardWire: AppPalette.boardWire,
+      boardSurround: Color(0xFF0A0B10),
+      boardNumbers: Color(0xFFFFFFFF),
+      hitGlow: Color(0xFF35D69C),
+      highlight: Color(0xFFFFD54F),
+      success: Color(0xFF35D69C),
+      warning: Color(0xFFFFA62B),
+      danger: Color(0xFFFF5D73),
+      textMuted: Color(0xFFA3A7B7),
+      surfaceHigh: Color(0xFF2C2C37),
+      heatCold: Color(0xFF3D8BEF),
+      heatHot: Color(0xFFFF4D3D),
+      tripleHit: Color(0xFFC39BFF),
+      doubleHit: Color(0xFF35D69C),
+      panel: Color(0xFF17181C),
+      panelHeader: Color(0xFF802E90),
+      onPanelHeader: Colors.white,
+      record: Color(0xFFFFC23D),
+      chartPrimary: Color(0xFF4D8DFF),
+      chartSecondary: Color(0xFFE0457B),
+      chartGrid: Color(0xFF2C2C37),
+      heroStart: Color(0xFF802E90),
+      heroEnd: Color(0xFFD63756),
     ),
   );
 }

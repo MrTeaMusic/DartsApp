@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../arena/arena_palette.dart';
 import '../dart_colors.dart';
 import '../dart_look.dart';
 
@@ -18,7 +19,7 @@ class HeroBackdrop extends StatelessWidget {
     final colors = context.dartColors;
     final theme = Theme.of(context);
     final light = theme.brightness == Brightness.light;
-    final radius = BorderRadius.circular(look.id == DartLookId.clean ? look.radiusXL : look.radiusL);
+    final radius = BorderRadius.circular(look.pill ? look.radiusXL : look.radiusL);
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: radius,
@@ -28,17 +29,19 @@ class HeroBackdrop extends StatelessWidget {
         borderRadius: radius,
         child: DecoratedBox(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [colors.heroStart, colors.heroEnd],
-            ),
+            gradient: look.isArena
+                ? ArenaPalette.gradient
+                : LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [colors.heroStart, colors.heroEnd],
+                  ),
             border: look.card == CardTreatment.outlined ? Border.all(color: theme.colorScheme.outline) : null,
             borderRadius: radius,
           ),
           child: CustomPaint(
             painter: _BackdropPainter(look: look.id, accent: theme.colorScheme.primary, line: theme.colorScheme.onSurface, light: light),
-            child: Padding(padding: padding, child: child),
+            child: Padding(padding: padding, child: look.isArena ? OnGradient(child: child) : child),
           ),
         ),
       ),
@@ -74,6 +77,28 @@ class _BackdropPainter extends CustomPainter {
           );
         }
         _rings(canvas, Offset(size.width - size.height * 0.15, size.height * 0.5), size.height * 0.95, accent.withValues(alpha: 0.22), 2);
+      case DartLookId.arena:
+        // Große helle Dreiecke und Ringe auf dem Verlauf, wie die Formen im
+        // Hintergrund der Spielansicht.
+        final tri = Paint()..color = Colors.white.withValues(alpha: 0.07);
+        canvas.drawPath(
+          Path()
+            ..moveTo(size.width * 0.55, 0)
+            ..lineTo(size.width * 0.78, 0)
+            ..lineTo(size.width * 0.52, size.height)
+            ..lineTo(size.width * 0.38, size.height)
+            ..close(),
+          tri,
+        );
+        canvas.drawPath(
+          Path()
+            ..moveTo(size.width, size.height * 0.25)
+            ..lineTo(size.width, size.height)
+            ..lineTo(size.width * 0.72, size.height)
+            ..close(),
+          Paint()..color = Colors.white.withValues(alpha: 0.06),
+        );
+        _rings(canvas, Offset(size.width - size.height * 0.2, size.height * 0.5), size.height * 0.9, Colors.white.withValues(alpha: 0.16), 2);
       case DartLookId.clean:
         final c = Offset(size.width - size.height * 0.25, size.height * 0.15);
         for (var i = 0; i < 3; i++) {
@@ -124,4 +149,27 @@ class _BackdropPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_BackdropPainter old) => old.look != look || old.accent != accent || old.light != light || old.line != line;
+}
+
+/// Texte und Symbole auf dem Verlauf der Arena: Akzentfarbe und gedämpfter
+/// Text werden weiß, damit sie auf Violett und Rot lesbar bleiben. Die
+/// blauen Schalter behalten ihre Farbe.
+class OnGradient extends StatelessWidget {
+  const OnGradient({super.key, required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = context.dartColors;
+    final soft = Colors.white.withValues(alpha: 0.88);
+    return Theme(
+      data: theme.copyWith(
+        colorScheme: theme.colorScheme.copyWith(primary: Colors.white, onPrimary: ArenaPalette.onLight),
+        textTheme: theme.textTheme.apply(bodyColor: Colors.white, displayColor: Colors.white),
+        extensions: [colors.copyWith(textMuted: soft, highlight: Colors.white, success: Colors.white), context.look],
+      ),
+      child: DefaultTextStyle.merge(style: const TextStyle(color: Colors.white), child: IconTheme.merge(data: const IconThemeData(color: Colors.white), child: child)),
+    );
+  }
 }

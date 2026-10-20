@@ -263,6 +263,7 @@ class AutoPlanCard extends StatelessWidget {
     final colors = context.dartColors;
     return AppCard(
       key: const Key('auto-plan-card'),
+      highlight: true,
       onTap: () => context.go(PlanRoutes.auto),
       child: Row(
         children: [
@@ -271,7 +272,7 @@ class AutoPlanCard extends StatelessWidget {
             height: 52,
             decoration: BoxDecoration(
               color: theme.colorScheme.primary,
-              borderRadius: BorderRadius.circular(context.look.id == DartLookId.clean ? 16 : context.look.radiusM),
+              borderRadius: BorderRadius.circular(context.look.pill ? 16 : context.look.radiusM),
             ),
             child: Icon(Icons.auto_awesome_rounded, color: theme.colorScheme.onPrimary),
           ),
@@ -282,11 +283,14 @@ class AutoPlanCard extends StatelessWidget {
               children: [
                 Text(l10n.autoPlanCardTitle, style: theme.textTheme.titleLarge),
                 const SizedBox(height: AppSpacing.xs),
-                Text(l10n.autoPlanCardText, style: theme.textTheme.bodySmall),
+                Text(
+                  l10n.autoPlanCardText,
+                  style: theme.textTheme.bodySmall?.copyWith(color: context.look.isArena ? Colors.white.withValues(alpha: 0.9) : null),
+                ),
               ],
             ),
           ),
-          Icon(Icons.chevron_right_rounded, color: colors.textMuted),
+          Icon(Icons.chevron_right_rounded, color: context.look.isArena ? Colors.white : colors.textMuted),
         ],
       ),
     );
