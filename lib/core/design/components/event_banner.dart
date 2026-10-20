@@ -9,6 +9,7 @@ import 'components.dart';
 /// * TV: volle Farbfläche wie eine Einblendung im Fernsehen.
 /// * Clean: ruhige getönte Fläche.
 /// * Lab: feiner Rahmen mit Farbkante links.
+/// * Arena: volle Farbfläche mit großem Radius.
 ///
 /// [kicker] steht klein vor dem Text, wenn der Text allein nur eine Zahl
 /// oder ein Feld ist („Treffer · 14“).
@@ -45,6 +46,15 @@ class LookBanner extends StatelessWidget {
           decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(look.radiusM)),
           child: content(
             ThemeData.estimateBrightnessForColor(color) == Brightness.dark ? Colors.white : Colors.black,
+            theme.textTheme.headlineSmall,
+          ),
+        ),
+      DartLookId.arena => Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.m),
+          decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(look.radiusL)),
+          child: content(
+            ThemeData.estimateBrightnessForColor(color) == Brightness.dark ? Colors.white : const Color(0xFF17181C),
             theme.textTheme.headlineSmall,
           ),
         ),

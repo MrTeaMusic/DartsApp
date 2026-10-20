@@ -282,7 +282,8 @@ void main() {
       expect(ArenaPalette.surface, const Color(0xFF17181C));
       expect(ArenaPalette.gradientStart, const Color(0xFF802E90));
       expect(ArenaPalette.gradientEnd, const Color(0xFFD63756));
-      expect(ArenaPalette.theme.colorScheme.primary, ArenaPalette.blue);
+      // Das Schema nutzt ein helleres Blau (Kontrast auf #17181C); Schalter setzen ArenaPalette.blue selbst.
+      expect(ArenaPalette.theme.colorScheme.primary, const Color(0xFF1F6BFF));
       expect(identical(ArenaPalette.theme, ArenaPalette.theme), isTrue);
     });
   });

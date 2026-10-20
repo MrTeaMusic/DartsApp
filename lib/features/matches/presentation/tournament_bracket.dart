@@ -460,6 +460,7 @@ class BracketLineStyle {
       DartLookId.tv => 2.0,
       DartLookId.clean => 1.5,
       DartLookId.lab => 1.0,
+      DartLookId.arena => 1.5,
     };
     return BracketLineStyle(
       open: colors.textMuted.withValues(alpha: light ? 0.35 : 0.3),
@@ -472,6 +473,7 @@ class BracketLineStyle {
         DartLookId.tv => 0,
         DartLookId.clean => 8,
         DartLookId.lab => 2,
+        DartLookId.arena => 12,
       },
     );
   }

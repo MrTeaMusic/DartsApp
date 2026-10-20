@@ -280,7 +280,10 @@ class _Hero extends StatelessWidget {
                       ?.copyWith(fontSize: look.id == DartLookId.tv && wide ? 48 : null),
                 ),
                 const SizedBox(height: AppSpacing.s),
-                Text(l10n.homeSubtitle, style: theme.textTheme.bodyLarge?.copyWith(color: colors.textMuted)),
+                Text(
+                  l10n.homeSubtitle,
+                  style: theme.textTheme.bodyLarge?.copyWith(color: look.isArena ? Colors.white.withValues(alpha: 0.9) : colors.textMuted),
+                ),
               ],
             ),
           ),

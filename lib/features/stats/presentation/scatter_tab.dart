@@ -444,7 +444,7 @@ class _AimBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s, vertical: AppSpacing.xxs),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(look.id == DartLookId.clean ? AppRadii.pill : look.radiusS),
+        borderRadius: BorderRadius.circular(look.pill ? AppRadii.pill : look.radiusS),
         border: look.id == DartLookId.lab ? Border.all(color: color.withValues(alpha: 0.45)) : null,
       ),
       child: Text(

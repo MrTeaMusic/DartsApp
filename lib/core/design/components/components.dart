@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../features/board/domain/segment.dart';
+import '../arena/arena_palette.dart';
 import '../dart_colors.dart';
 import '../dart_look.dart';
 import '../tokens.dart';
+import 'hero_backdrop.dart' show OnGradient;
 
 export 'app_page.dart';
 export 'event_banner.dart';
@@ -21,9 +23,14 @@ class AppCard extends StatelessWidget {
     this.padding,
     this.onTap,
     this.color,
+    this.highlight = false,
   });
 
   final Widget child;
+
+  /// Die wichtigste Karte der Seite: in der Arena mit dem Verlauf der
+  /// Spielansicht, in den anderen Looks wie jede Karte.
+  final bool highlight;
 
   /// Standard: Innenabstand des Looks.
   final EdgeInsetsGeometry? padding;
@@ -40,16 +47,15 @@ class AppCard extends StatelessWidget {
     final light = theme.brightness == Brightness.light;
     final shadow = look.card == CardTreatment.elevated && light ? look.shadow : const <BoxShadow>[];
     final side = look.card == CardTreatment.outlined ? BorderSide(color: theme.colorScheme.outline) : BorderSide.none;
+    final lit = highlight && look.isArena;
+    final content = Padding(padding: padding ?? EdgeInsets.all(look.cardPadding), child: lit ? OnGradient(child: child) : child);
     return DecoratedBox(
-      decoration: BoxDecoration(borderRadius: radius, boxShadow: shadow),
+      decoration: BoxDecoration(borderRadius: radius, boxShadow: shadow, gradient: lit ? ArenaPalette.gradient : null),
       child: Material(
-        color: color ?? theme.colorScheme.surface,
+        color: lit ? Colors.transparent : (color ?? theme.colorScheme.surface),
         shape: RoundedRectangleBorder(borderRadius: radius, side: side),
         clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(padding: padding ?? EdgeInsets.all(look.cardPadding), child: child),
-        ),
+        child: InkWell(onTap: onTap, child: content),
       ),
     );
   }
@@ -193,6 +199,7 @@ class IconBadge extends StatelessWidget {
       DartLookId.tv => (context.dartColors.surfaceHigh, accent, null),
       DartLookId.clean => (accent.withValues(alpha: 0.12), accent, null),
       DartLookId.lab => (accent.withValues(alpha: 0.08), accent, Border.all(color: accent.withValues(alpha: 0.35))),
+      DartLookId.arena => (context.dartColors.surfaceHigh, accent, null),
     };
     return Container(
       width: size,
@@ -200,7 +207,7 @@ class IconBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: bg,
         border: border,
-        borderRadius: BorderRadius.circular(look.id == DartLookId.clean ? size * 0.3 : look.radiusM),
+        borderRadius: BorderRadius.circular(look.pill ? size * 0.3 : look.radiusM),
       ),
       child: Icon(icon, color: fg, size: size * 0.52),
     );
@@ -280,7 +287,7 @@ class StatusPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final look = context.look;
-    final radius = BorderRadius.circular(look.id == DartLookId.clean ? AppRadii.pill : look.radiusS);
+    final radius = BorderRadius.circular(look.pill ? AppRadii.pill : look.radiusS);
     final style = look.id == DartLookId.tv
         ? look.kicker.copyWith(color: color, fontSize: 14, letterSpacing: 0.8)
         : Theme.of(context).textTheme.labelMedium?.copyWith(color: color, letterSpacing: look.id == DartLookId.lab ? 0.4 : 0);
@@ -353,7 +360,7 @@ class _DotState extends State<_Dot> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final square = context.look.id != DartLookId.clean;
+    final square = !context.look.pill;
     return FadeTransition(
       opacity: widget.pulsing ? Tween(begin: 0.35, end: 1.0).animate(_c) : const AlwaysStoppedAnimation(1),
       child: Container(
@@ -432,6 +439,7 @@ class DartChip extends StatelessWidget {
       DartLookId.tv => look.radiusM,
       DartLookId.clean => large ? 20 : 14,
       DartLookId.lab => look.radiusM,
+      DartLookId.arena => large ? 22 : 16,
     });
     final neutral = s != null && !s.isTriple && !s.isDouble && !s.isMiss;
 
@@ -448,7 +456,7 @@ class DartChip extends StatelessWidget {
                 : colors.panel;
         borderColor = p != null ? accent.withValues(alpha: 0.85) : (s == null ? theme.colorScheme.outline : Colors.transparent);
         borderWidth = p != null ? 2 : 1;
-      case DartLookId.clean:
+      case DartLookId.clean || DartLookId.arena:
         fill = s != null
             ? (neutral ? colors.surfaceHigh : accent.withValues(alpha: 0.13))
             : p != null
@@ -575,8 +583,8 @@ class ComingSoon extends StatelessWidget {
                 height: 72,
                 decoration: BoxDecoration(
                   color: accent.withValues(alpha: look.id == DartLookId.tv ? 0.16 : 0.10),
-                  shape: look.id == DartLookId.clean ? BoxShape.circle : BoxShape.rectangle,
-                  borderRadius: look.id == DartLookId.clean ? null : BorderRadius.circular(look.radiusL),
+                  shape: look.pill ? BoxShape.circle : BoxShape.rectangle,
+                  borderRadius: look.pill ? null : BorderRadius.circular(look.radiusL),
                   border: look.id == DartLookId.lab ? Border.all(color: accent.withValues(alpha: 0.35)) : null,
                 ),
                 child: Icon(icon, size: 34, color: accent),

@@ -28,6 +28,13 @@ abstract final class ArenaPalette {
   static const Color gradientMid = Color(0xFFA6266F);
   static const Color gradientEnd = Color(0xFFD63756);
 
+  /// Der Verlauf als Füllung (Tafel am Zug, wichtigste Karte, aktiver Reiter).
+  static const LinearGradient gradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [gradientStart, gradientMid, gradientEnd],
+  );
+
   /// Verlauf der Tafel des Siegers.
   static const Color wonStart = Color(0xFF0E6B4D);
   static const Color wonMid = Color(0xFF13885F);
@@ -59,31 +66,7 @@ abstract final class ArenaPalette {
 
   static ThemeData? _theme;
 
-  /// Dunkles Theme für alle Widgets in der Arena (Pfeile, Pillen, Karten,
-  /// Doppel-Zoom): das des TV-Looks mit blauem Akzent.
-  static ThemeData get theme => _theme ??= _build();
-
-  static ThemeData _build() {
-    final base = AppTheme.build(DartLookId.tv, Brightness.dark);
-    final scheme = base.colorScheme.copyWith(
-      primary: blue,
-      onPrimary: Colors.white,
-      secondary: blue,
-      surface: surface,
-      surfaceContainerHighest: chip,
-      surfaceContainerHigh: chip,
-    );
-    return base.copyWith(
-      colorScheme: scheme,
-      scaffoldBackgroundColor: background,
-      canvasColor: background,
-      appBarTheme: base.appBarTheme.copyWith(backgroundColor: Colors.transparent),
-      filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(backgroundColor: blue, foregroundColor: Colors.white, shape: const StadiumBorder()),
-      ),
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(foregroundColor: Colors.white, side: const BorderSide(color: blue, width: 1.5), shape: const StadiumBorder()),
-      ),
-    );
-  }
+  /// Dunkles Theme der Arena (Look „Arena“), auch für die Spielansicht, wenn
+  /// ein anderer Look gewählt ist: Pfeile, Pillen, Karten, Doppel-Zoom.
+  static ThemeData get theme => _theme ??= AppTheme.build(DartLookId.arena, Brightness.dark);
 }

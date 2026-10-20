@@ -34,7 +34,7 @@ class AdaptiveScaffold extends StatelessWidget {
         body: shell,
         bottomNavigationBar: DecoratedBox(
           decoration: BoxDecoration(
-            border: look.id == DartLookId.tv
+            border: look.id == DartLookId.tv || look.isArena
                 ? null
                 : Border(top: BorderSide(color: Theme.of(context).colorScheme.outline)),
           ),
@@ -76,7 +76,7 @@ class AdaptiveScaffold extends StatelessWidget {
                 NavigationRailDestination(icon: Icon(icon), selectedIcon: Icon(selected), label: Text(label)),
             ],
           ),
-          VerticalDivider(width: 1, color: Theme.of(context).colorScheme.outline),
+          if (!context.look.isArena) VerticalDivider(width: 1, color: Theme.of(context).colorScheme.outline),
           Expanded(child: shell),
         ],
       ),
@@ -114,6 +114,7 @@ class _Logo extends StatelessWidget {
       DartLookId.tv => look.sectionTitle.copyWith(fontSize: 26, fontWeight: FontWeight.w800, letterSpacing: 1.5, color: theme.colorScheme.onSurface),
       DartLookId.clean => theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700, fontSize: 20),
       DartLookId.lab => theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: 0.2),
+      DartLookId.arena => theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, fontSize: 22, letterSpacing: -0.4),
     };
     return SizedBox(
       width: 196,

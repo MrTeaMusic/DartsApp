@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../app_theme.dart';
+import '../arena/arena_palette.dart';
 import '../dart_colors.dart';
 import '../dart_look.dart';
 import '../tokens.dart';
@@ -10,6 +12,7 @@ import 'components.dart';
 /// * TV: Scoreboard-Tafel mit rotem Beschriftungsfeld wie eine Bauchbinde.
 /// * Clean: ruhige Karte, Beschriftung klein darüber.
 /// * Lab: Kopfzeile mit Linie, technische Ziffern.
+/// * Arena: große dunkle Tafel, am Zug mit Verlauf und schwarzem Namensschild.
 class ScorePanel extends StatelessWidget {
   const ScorePanel({
     super.key,
@@ -197,6 +200,50 @@ class ScorePanel extends StatelessWidget {
               if (footer != null) _footerSlot(Padding(padding: const EdgeInsets.only(top: AppSpacing.m), child: footer)),
               if (bar != null) ...[const SizedBox(height: AppSpacing.m), bar],
             ],
+          ),
+        );
+      case DartLookId.arena:
+        // Wie die Tafeln der Spielansicht: dunkle Fläche, der Spieler am Zug
+        // trägt den Verlauf.
+        final lit = active == true;
+        final pad = compact ? AppSpacing.m : AppSpacing.xl;
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(look.radiusL),
+            color: lit ? null : colors.panel,
+            gradient: lit ? ArenaPalette.gradient : null,
+          ),
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(pad, compact ? AppSpacing.m : AppSpacing.l, pad, compact ? AppSpacing.m : AppSpacing.xl),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: 3),
+                        decoration: BoxDecoration(color: ArenaPalette.badge, borderRadius: BorderRadius.circular(AppRadii.pill)),
+                        child: Text(
+                          label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleSmall?.copyWith(color: Colors.white, fontFamily: AppTypography.condensed, fontSize: 16),
+                        ),
+                      ),
+                    ),
+                    const Spacer(),
+                    ?badge,
+                    if (trailing != null)
+                      Text(trailing!, style: theme.textTheme.titleMedium?.copyWith(color: lit ? Colors.white : colors.textMuted)),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                number,
+                if (footer != null) _footerSlot(Padding(padding: const EdgeInsets.only(top: AppSpacing.m), child: footer)),
+                if (bar != null) ...[const SizedBox(height: AppSpacing.m), bar],
+              ],
+            ),
           ),
         );
       case DartLookId.lab:

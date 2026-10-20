@@ -135,7 +135,7 @@ class _Preview extends StatelessWidget {
     return Container(
       width: 320,
       height: 200,
-      color: theme.scaffoldBackgroundColor,
+      color: theme.colorScheme.surfaceContainerLowest,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -163,7 +163,7 @@ class _Preview extends StatelessWidget {
                         height: 10,
                         decoration: BoxDecoration(
                           color: i == 0 ? rail.selectedIconTheme?.color : colors.textMuted.withValues(alpha: 0.6),
-                          borderRadius: BorderRadius.circular(look.id == DartLookId.clean ? 5 : 2),
+                          borderRadius: BorderRadius.circular(look.pill ? 5 : 2),
                         ),
                       ),
                     ),
@@ -180,6 +180,7 @@ class _Preview extends StatelessWidget {
                   Expanded(
                     child: ScorePanel(
                       label: label,
+                      active: look.isArena ? true : null,
                       trailing: '3/10',
                       value: Text('36', style: ScorePanel.valueStyle(context, hero: false).copyWith(fontSize: 46)),
                     ),

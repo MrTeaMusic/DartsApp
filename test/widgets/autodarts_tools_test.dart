@@ -96,6 +96,8 @@ void main() {
     await pumpApp(tester);
     await openSettings(tester);
     await tester.scrollUntilVisible(find.byKey(const Key('open-debug')), 300, scrollable: find.byType(Scrollable).last);
+    await tester.ensureVisible(find.byKey(const Key('open-debug')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('open-debug')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('check-log')));

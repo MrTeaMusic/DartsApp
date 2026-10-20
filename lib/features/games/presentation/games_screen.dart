@@ -46,7 +46,7 @@ class GamesScreen extends ConsumerWidget {
               crossAxisCount: columns,
               mainAxisSpacing: look.gridGap,
               crossAxisSpacing: look.gridGap,
-              mainAxisExtent: look.id == DartLookId.lab ? 104 : (look.id == DartLookId.clean ? 132 : 120),
+              mainAxisExtent: look.id == DartLookId.lab ? 104 : (look.id == DartLookId.clean ? 132 : (look.isArena ? 136 : 120)),
             ),
           );
           return CustomScrollView(

@@ -45,6 +45,8 @@ void main() {
     await tester.tap(find.text('Optionen').first);
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(find.byKey(const Key('settings-daily-goal')), 200, scrollable: find.byType(Scrollable).last);
+    await tester.ensureVisible(find.byKey(const Key('settings-daily-goal')));
+    await tester.pumpAndSettle();
     expect(find.text('200 Darts pro Tag'), findsOneWidget);
     await tester.tap(find.byKey(const Key('settings-daily-goal')));
     await tester.pumpAndSettle();

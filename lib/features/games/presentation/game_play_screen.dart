@@ -119,7 +119,7 @@ class GamePlayScreen extends ConsumerWidget {
         );
 
     // Arena (Standard) für X01-Solo: Tafel mit Wurftabelle und Board in der Mitte.
-    if (game is X01Solo && ref.watch(settingsProvider.select((s) => s.playView)) == PlayView.arena) {
+    if (game is X01Solo && ref.watch(settingsProvider.select((s) => s.arenaPlay))) {
       return PopScope(
         canPop: false,
         onPopInvokedWithResult: (didPop, _) {

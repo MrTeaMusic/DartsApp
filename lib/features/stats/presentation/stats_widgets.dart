@@ -151,7 +151,7 @@ class KpiTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s - 2, vertical: AppSpacing.xxs),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(look.id == DartLookId.clean ? 99 : look.radiusS),
+              borderRadius: BorderRadius.circular(look.pill ? 99 : look.radiusS),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,

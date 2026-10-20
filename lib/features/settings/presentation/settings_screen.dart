@@ -202,7 +202,7 @@ class SettingsScreen extends ConsumerWidget {
   }
 }
 
-/// Drei Vorschau-Kacheln; Antippen wechselt den Look sofort.
+/// Vier Vorschau-Kacheln; Antippen wechselt den Look sofort.
 class _LookPicker extends ConsumerWidget {
   const _LookPicker();
 
@@ -220,6 +220,7 @@ class _LookPicker extends ConsumerWidget {
       (DartLookId.tv, l10n.lookTvName, l10n.lookTvText),
       (DartLookId.clean, l10n.lookCleanName, l10n.lookCleanText),
       (DartLookId.lab, l10n.lookLabName, l10n.lookLabText),
+      (DartLookId.arena, l10n.lookArenaName, l10n.lookArenaText),
     ];
     return LayoutBuilder(builder: (context, c) {
       final row = c.maxWidth >= 560;
@@ -236,12 +237,25 @@ class _LookPicker extends ConsumerWidget {
             onTap: () => ref.read(settingsProvider.notifier).update((x) => x.copyWith(look: id)),
           );
       if (row) {
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        // Breit: alle vier nebeneinander; sonst zwei mal zwei.
+        final perRow = c.maxWidth >= 900 ? looks.length : 2;
+        return Column(
           children: [
-            for (final (i, (id, name, text)) in looks.indexed) ...[
-              if (i > 0) SizedBox(width: gap),
-              Expanded(child: tile(id, name, text)),
+            for (var start = 0; start < looks.length; start += perRow) ...[
+              if (start > 0) SizedBox(height: gap),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (var i = 0; i < perRow; i++) ...[
+                    if (i > 0) SizedBox(width: gap),
+                    Expanded(
+                      child: start + i < looks.length
+                          ? tile(looks[start + i].$1, looks[start + i].$2, looks[start + i].$3)
+                          : const SizedBox.shrink(),
+                    ),
+                  ],
+                ],
+              ),
             ],
           ],
         );

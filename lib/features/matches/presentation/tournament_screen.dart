@@ -174,7 +174,7 @@ class _StatusCard extends ConsumerWidget {
       final info = Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Kicker(l10n.tourNextMatch, color: theme.colorScheme.primary),
+          Kicker(l10n.tourNextMatch, color: look.isArena ? Colors.white.withValues(alpha: 0.9) : theme.colorScheme.primary),
           const SizedBox(height: AppSpacing.s),
           Text(
             '${l10n.tourRoundName(m.round)} · ${l10n.tourBestOf(t.bestOf[m.round])}',
@@ -191,7 +191,7 @@ class _StatusCard extends ConsumerWidget {
           ),
           Text(
             l10n.tourCpuAverage(t.botAverage(opponent).round()),
-            style: theme.textTheme.bodySmall?.copyWith(color: colors.textMuted),
+            style: theme.textTheme.bodySmall?.copyWith(color: look.isArena ? Colors.white.withValues(alpha: 0.88) : colors.textMuted),
           ),
         ],
       );

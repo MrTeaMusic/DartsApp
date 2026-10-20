@@ -1,17 +1,60 @@
 # Design: Looks, Tokens und neue Bildschirme
 
-DartLab hat drei wählbare Looks (Optionen → Darstellung). Die Wahl wird in
+DartLab hat vier wählbare Looks (Optionen → Darstellung). Die Wahl wird in
 den Einstellungen gespeichert (`settings.look`) und gilt sofort in der ganzen
 App. Alle Looks sind reine Daten: Bildschirme kennen keine Farben oder
 Schriftgrößen, sondern nur Theme-Tokens und die gemeinsamen Komponenten.
 
-## Die drei Looks
+## Die vier Looks
 
 | Look | Charakter | Helligkeit |
 | --- | --- | --- |
 | **TV** (Standard) | Wie eine Darts-Übertragung: Studio-Schwarz, Signalrot, Scoreboard-Tafeln mit roter Beschriftungsleiste (Bauchbinde), schmale fette Überschriften und Zahlen (Barlow Condensed), flache Tafeln mit kleinen Radien. | immer dunkel |
 | **Clean** | Ruhig wie eine Fitness-App: viel Weißraum, weiße Karten mit weichem Schatten (hell) bzw. dunkelgraue Karten (dunkel), große Radien, Pillen-Knöpfe, Überschriften in normaler Schreibweise, ruhiges Blau. | folgt dem System, manuell Hell/Dunkel |
 | **Lab** | Technisch und datendicht: Graphit, feine 1-px-Linien, kleine Versalien mit Linie als Abschnittstitel, kompakte Abstände, Ziffern mit festen Breiten und durchgestrichener Null, elektrisches Blau. | immer dunkel |
+| **Arena** | Wie die Match-Ansicht von Autodarts: Marineblau mit großen, kaum sichtbaren Dreiecken, fast schwarze Tafeln mit 28 px Radius, runde Schilder und Pillen, blaue Schalter, kräftige Ziffern in Inter; das Wichtigste (Startseiten-Kopf, nächste Station, gewählter Modus, aktiver Reiter) trägt den Verlauf Violett nach Rot-Rosa (siehe unten). | immer dunkel |
+
+### Look Arena im Einzelnen
+
+Der Look benutzt dieselben Farben und Maße wie die Arena-Spielansicht
+(`lib/core/design/arena/`, [spielansicht.md](spielansicht.md)) und wirkt auf
+jedem Bildschirm: Navigation, Startseite, Spiele und Setups, Match/Turnier,
+Statistik, Pläne, Quiz, Autodarts Live, Optionen, Dialoge, Sheets, Snackbars.
+Bei „Spielansicht: Wie das gewählte Design“ zeigt X01 mit diesem Look die
+Arena-Spielansicht; die anderen Looks bleiben unverändert.
+
+| Rolle | Farbe |
+| --- | --- |
+| Grund (Verlauf, mit Dreiecken `ArenaBackground`) | `#02153E` / `#001137` / `#001743`, Streifen oben `#01040F` |
+| Karten, Tabellen, Sheets, Dialoge | `#17181C` |
+| Chips, Eingabefelder, Zeilensymbole | `#2C2C37` |
+| Trennlinien | `#505158` |
+| Schalter (gefüllte Knöpfe, gewählte Chips, Schalter) | `#0955DF` |
+| Akzent für Schrift und Symbole (`primary`) | `#1F6BFF` (heller, damit blau auf `#17181C` lesbar bleibt) |
+| Verlauf (wichtigste Karte, aktiver Reiter, Tafel am Zug) | `#802E90`, `#A6266F`, `#D63756` (`ArenaPalette.gradient`) |
+| Namensschild | `#04050C` |
+| Hell hervorgehoben (Tabellenzelle) | `#FCFBFC` mit dunkler Schrift |
+| Erfolg / Fehler / Rekord / Hinweis | `#35D69C` / `#FF5D73` / `#FFC23D` / `#FFD54F` |
+
+Was anders ist als in den anderen Looks:
+
+* Die Scaffolds sind **durchsichtig**; `DartLabApp` legt `ArenaBackground`
+  (Streifen 8 px) hinter alle Seiten. Der Hintergrund ist ein `const`-Painter
+  in einer `RepaintBoundary` und wird nicht neu gezeichnet.
+* Immer dunkel (`supportsLight` ist falsch, wie TV und Lab); der
+  Hell/Dunkel-Schalter erscheint nicht.
+* Formen: `look.pill` (Clean und Arena) steuert runde Schilder, Pillen und
+  runde Symbolknöpfe; Karten haben `radiusL = 28`.
+* Reiter (`TabBar`) sind Pillen mit dem Verlauf, die Navigation (Leiste und
+  Seitenleiste) hat einen blauen Pillenmarker.
+* `AppCard(highlight: true)` und `HeroBackdrop` zeichnen in der Arena den
+  Verlauf; `OnGradient` macht dort Akzent und gedämpften Text weiß, die
+  blauen Knöpfe behalten ihre Farbe. In den anderen Looks ändert `highlight`
+  nichts.
+* `ScorePanel` ist eine große dunkle Tafel mit schwarzem Namensschild; mit
+  `active` trägt sie den Verlauf.
+* Zahlen und Überschriften in Inter, fett; Abschnittstitel in normaler
+  Schreibweise (`HeaderTreatment.plain`).
 
 Feste Farbbedeutungen in allen Looks (nur der Ton wird je Look angepasst):
 
@@ -65,6 +108,7 @@ Zugriff im Widget:
 | `LookProgressBar` | Fortschrittsbalken in Höhe und Radius des Looks. |
 | `StatusPill` | Statusschild mit Punkt. |
 | `HeroBackdrop` | Hintergrund großer Kopfflächen (Startseite). |
+| `OnGradient` | Macht Akzent und gedämpften Text auf dem Arena-Verlauf weiß (in `HeroBackdrop` und `AppCard(highlight: true)` schon enthalten). |
 | `ComingSoon` | Leerer Zustand mit Symbol, Titel und Text. |
 | `LookPickerTile` | Auswahlkachel mit echter Miniatur des Looks. |
 
@@ -83,7 +127,7 @@ Zugriff im Widget:
    in schmalen Kacheln stehen, mit `maxLines`/`overflow` oder `FittedBox`
    absichern (Telefonbreite 390 px).
 6. **Prüfen:** Der Test `test/widgets/design_looks_test.dart` öffnet die
-   Hauptbildschirme in allen drei Looks bei 390 px; neue Routen dort ergänzen.
+   Hauptbildschirme in allen vier Looks bei 390 px; neue Routen dort ergänzen.
 
 ## Einen Look ändern oder ergänzen
 
