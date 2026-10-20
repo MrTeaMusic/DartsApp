@@ -4,11 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/design/arena/arena_chrome.dart';
+import '../../../core/design/arena/arena_palette.dart';
+import '../../../core/design/arena/arena_player_panel.dart';
+import '../../../core/design/arena/arena_screen.dart';
 import '../../../core/design/components/components.dart';
 import '../../../core/design/dart_colors.dart';
 import '../../../core/design/dart_look.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
+import '../../../core/settings/app_settings.dart';
 import '../../../core/widgets/fullscreen_button.dart';
 import '../../board/domain/board_geometry.dart';
 import '../../board/domain/segment.dart';
@@ -26,6 +31,7 @@ import '../../games/domain/engine/game_display.dart';
 import '../../simulator/presentation/manual_keypad.dart';
 import '../../simulator/presentation/segment_picker.dart';
 import '../domain/match_session.dart';
+import '../domain/visit_history.dart';
 import '../domain/x01_match.dart';
 import 'match_controller.dart';
 import 'match_routes.dart';
@@ -112,6 +118,8 @@ class MatchPlayScreen extends ConsumerWidget {
       highlighted: route == null || route.isEmpty ? const {} : {route.first},
       onTap: onTap,
     );
+    // Breit stehen die Knöpfe fest unten, außer beim Tastenfeld der manuellen Eingabe.
+    final pinActions = !state.ended && !(state.acceptsHumanDarts && source is ManualSource);
     final zoomTarget = route == null || state.ended ? null : doubleZoomTarget(route: route);
     DoubleZoomCard zoom({bool compact = false}) => DoubleZoomCard(
           target: zoomTarget,
@@ -126,6 +134,32 @@ class MatchPlayScreen extends ConsumerWidget {
     final legLabel = format.usesSets
         ? l10n.matchLegSetNumber(match.setNumber, match.legNumber)
         : l10n.matchLegNumber(match.legNumber);
+
+    // Arena: drei Spalten mit großen Tafeln und Wurftabelle (Standard).
+    if (ref.watch(settingsProvider.select((s) => s.playView)) == PlayView.arena) {
+      return _SaveOnBackground(
+        child: PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, _) {
+            if (!didPop) unawaited(leave(context, ref));
+          },
+          child: Scaffold(
+            backgroundColor: ArenaPalette.background,
+            body: SafeArea(
+              child: CelebrationOverlay(
+                child: _ArenaMatchView(
+                  state: state,
+                  route: route,
+                  board: board,
+                  zoom: zoom(compact: true),
+                  zoomActive: zoomTarget != null,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
 
     return _SaveOnBackground(
       child: PopScope(
@@ -151,7 +185,7 @@ class MatchPlayScreen extends ConsumerWidget {
         ),
         body: SafeArea(
           child: CelebrationOverlay(
-            sideWidth: 460,
+            sideWidth: 500,
             child: LayoutBuilder(
             builder: (context, c) {
               final wide = c.maxWidth >= 900;
@@ -164,10 +198,28 @@ class MatchPlayScreen extends ConsumerWidget {
                       ),
                     ),
                     SizedBox(
-                      width: 460,
-                      child: SingleChildScrollView(
+                      width: 500,
+                      child: Padding(
                         padding: const EdgeInsets.fromLTRB(0, AppSpacing.l, AppSpacing.xl, AppSpacing.xl),
-                        child: _Panel(state: state, route: route, zoom: zoom()),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(
+                              // Mit den Aufnahmen-Tabellen wird das Panel hoch: es scrollt, die Knöpfe
+                              // darunter bleiben fest am unteren Rand.
+                              child: SingleChildScrollView(
+                                child: _Panel(
+                                  state: state,
+                                  route: route,
+                                  zoom: zoom(compact: c.maxHeight < 1000),
+                                  wide: true,
+                                  pinActions: pinActions,
+                                ),
+                              ),
+                            ),
+                            if (pinActions) ...[const SizedBox(height: AppSpacing.m), _MatchActions(state: state)],
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -207,6 +259,187 @@ class MatchPlayScreen extends ConsumerWidget {
   }
 }
 
+/// Arena-Ansicht des Matches: Tafeln mit Wurftabelle links und rechts, in der
+/// Mitte Wurfleiste, Schalter und Board.
+class _ArenaMatchView extends ConsumerWidget {
+  const _ArenaMatchView({
+    required this.state,
+    required this.route,
+    required this.board,
+    required this.zoom,
+    required this.zoomActive,
+  });
+  final MatchState state;
+  final List<Segment>? route;
+  final Widget board;
+  final Widget zoom;
+  final bool zoomActive;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final source = ref.watch(dartSourceProvider);
+    final controller = ref.read(matchControllerProvider.notifier);
+    final match = state.match;
+    final session = state.session;
+    final format = state.setup.format;
+    final setupPlayers = state.setup.players;
+    // Eine Ableitung aus den Aufzeichnungen für alle Tafeln; Rückgängig und
+    // Korrektur ergeben sich von selbst.
+    final history = VisitHistory.ofMatch(session);
+
+    final players = [
+      for (var i = 0; i < setupPlayers.length; i++)
+        ArenaPlayer(
+          name: setupPlayers[i].name,
+          isBot: setupPlayers[i].isBot,
+          remaining: match.players[i].remaining,
+          rows: history.legRowsOf(i),
+          startScore: format.startScore,
+          active: !state.ended && match.current == i,
+          won: match.winner == i,
+          starter: !state.ended && match.legStarter == i,
+          lastVisit: match.players[i].lastVisit ?? 0,
+          legAverage: formatDecimal(match.players[i].legAverage ?? 0),
+          matchAverage: formatDecimal(match.players[i].average ?? 0),
+          legDarts: match.players[i].legDartPoints.length,
+          legs: format.usesSets ? match.players[i].legs : match.players[i].totalLegs,
+          sets: format.usesSets ? match.players[i].sets : null,
+          panelKey: Key('match-active-$i-${!state.ended && match.current == i}'),
+          remainingKey: Key('match-remaining-$i'),
+          dartsKey: Key('match-darts-$i'),
+          legsKey: Key('match-legs-$i'),
+          setsKey: Key('match-sets-$i'),
+          keyPrefix: 'match-visits-$i',
+        ),
+    ];
+
+    // Die Darts der laufenden Aufnahme; offene Plätze zeigen den Weg.
+    final indexes = session.currentVisitIndexes;
+    final thrown = indexes.length;
+    final current = setupPlayers[match.current];
+    final next = setupPlayers[match.nextPlayer];
+    final colors = context.dartColors;
+    final plan = route ?? (route == null && state.humanTurn && !match.visitClosed ? match.setup?.darts : null);
+
+    Future<void> fix(int slot) async {
+      final index = indexes[slot];
+      final picked = await showSegmentPicker(
+        context,
+        title: l10n.fixTitle(slot + 1),
+        subtitle: l10n.fixCurrent(session.records[index].dart.segment.name),
+      );
+      if (picked != null) controller.correct(index, picked);
+    }
+
+    final slots = [
+      for (var i = 0; i < 3; i++)
+        ArenaDartSlot(
+          slotKey: Key('match-dart-$i'),
+          segment: i < thrown ? session.records[indexes[i]].dart.segment : null,
+          planned: plan != null && i >= thrown && i - thrown < plan.length ? plan[i - thrown] : null,
+          plannedColor: route != null ? ArenaPalette.hint : colors.setupHint,
+          onTap: i < thrown && !current.isBot && !state.ended ? () => fix(i) : null,
+        ),
+    ];
+
+    // Meldungen unter dem Board: Weg, Status, Ereignis.
+    final soloHuman = setupPlayers.where((p) => !p.isBot).length == 1;
+    final status = match.visitClosed && match.nextPlayer != match.current
+        ? (soloHuman && !next.isBot ? l10n.matchWaitTakeoutYou : l10n.matchWaitTakeout(next.name))
+        : current.isBot
+        ? l10n.matchBotThrowing(current.name)
+        : soloHuman
+        ? l10n.matchYourTurn
+        : l10n.matchTurnOf(current.name);
+    final setup = route == null && state.humanTurn && !match.visitClosed ? match.setup : null;
+    final event = _bannerEvent(state);
+    final names = [for (final p in setupPlayers) p.name];
+    final messages = ArenaMessages(
+      hint: route != null && route!.isNotEmpty
+          ? '${l10n.visitRoute}: ${route!.map((s) => s.name).join(' · ')}'
+          : setup != null
+          ? l10n.visitSetup(setup.leave)
+          : null,
+      hintKey: route != null && route!.isNotEmpty ? Key('match-route-${match.current}') : Key('match-setup-${match.current}'),
+      hintColor: route != null ? ArenaPalette.hint : colors.setupHint,
+      status: state.ended ? null : status,
+      statusKey: const Key('match-status'),
+      statusMuted: current.isBot,
+      event: event == null ? null : l10n.matchEventText(event, names),
+      eventKey: const Key('match-event'),
+      eventColor: event?.type == MatchEventType.bust ? ArenaPalette.danger : ArenaPalette.success,
+    );
+
+    final keypad = !state.ended && state.acceptsHumanDarts && source is ManualSource ? ManualKeypad(source: source) : null;
+
+    return ArenaScreen(
+      players: players,
+      header: ChallengeTaskBar.shows(ref) ? const ChallengeTaskBar() : null,
+      topBar: (compact, scale) => ArenaTopBar(
+        leaveKey: const Key('leave-match'),
+        onLeave: () => MatchPlayScreen.leave(context, ref),
+        chips: [
+          '${format.startScore}',
+          format.usesSets ? l10n.arenaFormatSets(format.setsToWin, format.legsToWin) : l10n.arenaFormatLegs(format.legsToWin),
+          inOutCode(doubleIn: format.doubleIn, out: format.outMode),
+        ],
+        trailing: [
+          SourceStatusBadge(compact: MediaQuery.sizeOf(context).width < 900),
+          const SizedBox(width: AppSpacing.xs),
+          const CallerMuteButton(),
+          const FullscreenButton(),
+        ],
+        compact: compact,
+        scale: scale,
+      ),
+      dartSlots: slots,
+      visitSum: match.visitScore,
+      visitBust: match.visitBust,
+      sumKey: const Key('match-visit-score'),
+      board: board,
+      zoom: zoom,
+      zoomActive: zoomActive,
+      keypad: keypad,
+      actions: (height) => ArenaActionBar(
+        height: height,
+        undoKey: const Key('match-undo'),
+        onUndo: state.session.canUndo ? controller.undo : null,
+        undoLabel: l10n.boardUndo,
+        nextKey: const Key('match-next'),
+        onNext: state.humanTurn && match.physicalDartsInVisit > 0 ? controller.nextVisit : null,
+        nextLabel: l10n.boardNext,
+        showUndoNext: keypad == null,
+        icons: [
+          ArenaIconButton(
+            key: const Key('match-corrections'),
+            icon: Icons.edit_note_rounded,
+            tooltip: l10n.fixOpen,
+            size: height - 10,
+            onPressed: () => _showCorrections(context),
+          ),
+        ],
+      ),
+      messages: messages,
+      result: state.ended
+          ? SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _EventBanner(state: state),
+                  // Bei einer Challenge ersetzt ihre Wertung die Knöpfe.
+                  if (ChallengeResultPanel.shows(ref)) const ChallengeResultPanel(),
+                  _ResultCard(state: state),
+                  const SizedBox(height: AppSpacing.m),
+                  if (!ChallengeResultPanel.shows(ref)) _ResultActions(state: state),
+                ],
+              ),
+            )
+          : null,
+    );
+  }
+}
+
 /// Sichert das laufende Match zum Fortsetzen, wenn die App in den
 /// Hintergrund geht oder beendet wird (sonst nur am Aufnahme-Ende).
 class _SaveOnBackground extends ConsumerStatefulWidget {
@@ -239,10 +472,25 @@ class _SaveOnBackgroundState extends ConsumerState<_SaveOnBackground> {
 }
 
 class _Panel extends ConsumerWidget {
-  const _Panel({required this.state, required this.route, this.showScoreboard = true, this.showVisit = true, this.zoom});
+  const _Panel({
+    required this.state,
+    required this.route,
+    this.showScoreboard = true,
+    this.showVisit = true,
+    this.zoom,
+    this.wide = false,
+    this.pinActions = false,
+  });
   final MatchState state;
   final List<Segment>? route;
   final bool showScoreboard;
+
+  /// Rückgängig, Weiter und Korrigieren stehen außerhalb (am unteren Rand der
+  /// Seitenleiste), damit sie ohne Scrollen erreichbar bleiben.
+  final bool pinActions;
+
+  /// Breites Layout: Anzeigetafel mit längeren Aufnahmen-Tabellen.
+  final bool wide;
 
   /// Doppel-Zoom unter der Aufnahme (nur mit [showVisit]).
   final Widget? zoom;
@@ -252,16 +500,13 @@ class _Panel extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
     final source = ref.watch(dartSourceProvider);
-    final controller = ref.read(matchControllerProvider.notifier);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (showScoreboard) ...[
           const ChallengeTaskBar(),
-          _Scoreboard(state: state, route: route),
+          _Scoreboard(state: state, route: route, wide: wide),
           const SizedBox(height: AppSpacing.m),
         ],
         if (showVisit || state.ended) _EventBanner(state: state),
@@ -273,55 +518,93 @@ class _Panel extends ConsumerWidget {
           if (!ChallengeResultPanel.shows(ref)) _ResultActions(state: state),
         ] else ...[
           if (showVisit) ...[_VisitCard(state: state, route: route), const SizedBox(height: AppSpacing.m), ?zoom],
-          if (state.acceptsHumanDarts && source is ManualSource)
-            ManualKeypad(source: source)
-          else
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    key: const Key('match-undo'),
-                    onPressed: state.session.canUndo ? controller.undo : null,
-                    icon: const Icon(Icons.undo_rounded),
-                    label: Text(l10n.boardUndo),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.m),
-                Expanded(
-                  child: FilledButton.icon(
-                    key: const Key('match-next'),
-                    onPressed: state.humanTurn && state.match.physicalDartsInVisit > 0 ? controller.nextVisit : null,
-                    icon: const Icon(Icons.skip_next_rounded),
-                    label: Text(l10n.boardNext),
-                  ),
-                ),
-              ],
-            ),
-          const SizedBox(height: AppSpacing.s),
-          Center(
-            child: TextButton.icon(
-              key: const Key('match-corrections'),
-              onPressed: () => _showCorrections(context),
-              icon: const Icon(Icons.edit_note_rounded),
-              label: Text(l10n.fixOpen),
-              style: TextButton.styleFrom(foregroundColor: theme.colorScheme.onSurfaceVariant),
-            ),
-          ),
+          if (state.acceptsHumanDarts && source is ManualSource) ...[
+            ManualKeypad(source: source),
+            const SizedBox(height: AppSpacing.s),
+            _MatchActions(state: state, correctionsOnly: true),
+          ] else if (!pinActions)
+            _MatchActions(state: state),
         ],
       ],
     );
   }
 }
 
-/// Anzeigetafel: eine Karte je Spieler.
+/// Rückgängig, Weiter und Korrigieren unter dem Panel.
+class _MatchActions extends ConsumerWidget {
+  const _MatchActions({required this.state, this.correctionsOnly = false});
+  final MatchState state;
+
+  /// Nur „Korrigieren“ (beim Tastenfeld der manuellen Eingabe).
+  final bool correctionsOnly;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final controller = ref.read(matchControllerProvider.notifier);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (!correctionsOnly) ...[
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  key: const Key('match-undo'),
+                  onPressed: state.session.canUndo ? controller.undo : null,
+                  icon: const Icon(Icons.undo_rounded),
+                  label: Text(l10n.boardUndo),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.m),
+              Expanded(
+                child: FilledButton.icon(
+                  key: const Key('match-next'),
+                  onPressed: state.humanTurn && state.match.physicalDartsInVisit > 0 ? controller.nextVisit : null,
+                  icon: const Icon(Icons.skip_next_rounded),
+                  label: Text(l10n.boardNext),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.s),
+        ],
+        Center(
+          child: TextButton.icon(
+            key: const Key('match-corrections'),
+            onPressed: () => _showCorrections(context),
+            icon: const Icon(Icons.edit_note_rounded),
+            label: Text(l10n.fixOpen),
+            style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.onSurfaceVariant),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Anzeigetafel: eine Karte je Spieler, darin Stand, Kennzahlen und die
+/// Tabelle der letzten Aufnahmen im laufenden Leg.
 class _Scoreboard extends StatelessWidget {
-  const _Scoreboard({required this.state, required this.route});
+  const _Scoreboard({required this.state, required this.route, this.wide = false});
   final MatchState state;
   final List<Segment>? route;
+  final bool wide;
 
   @override
   Widget build(BuildContext context) {
     final players = state.setup.players;
+    // Eine Ableitung aus den Aufzeichnungen für alle Karten (billig: ein
+    // Durchlauf über die Darts; Rückgängig und Korrektur ergeben sich von selbst).
+    final history = VisitHistory.ofMatch(state.session);
+    final many = players.length >= 3;
+    // Breit und niedrig (unter 1000 px) bleibt Platz für Aufnahme und Doppel-Zoom: 5 Zeilen.
+    final short = MediaQuery.sizeOf(context).height < 1000;
+    final maxRows = wide ? (short ? 5 : (many ? 6 : 7)) : (many ? 4 : 5);
+    // Breit steht nach dem Match die Ergebnis-Karte im selben Panel: die Tabellen
+    // entfallen dort, damit die Knöpfe ohne Scrollen sichtbar bleiben.
+    final showTable = !(wide && state.ended);
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -329,7 +612,16 @@ class _Scoreboard extends StatelessWidget {
           for (var i = 0; i < players.length; i++) ...[
             if (i > 0) SizedBox(width: context.look.gridGap),
             Expanded(
-              child: _PlayerCard(state: state, index: i, route: i == state.match.current ? route : null),
+              child: _PlayerCard(
+                state: state,
+                index: i,
+                route: i == state.match.current ? route : null,
+                visits: history.legRowsOf(i),
+                maxRows: maxRows,
+                showTable: showTable,
+                compact: !wide,
+                dense: many && !wide,
+              ),
             ),
           ],
         ],
@@ -339,10 +631,31 @@ class _Scoreboard extends StatelessWidget {
 }
 
 class _PlayerCard extends StatelessWidget {
-  const _PlayerCard({required this.state, required this.index, required this.route});
+  const _PlayerCard({
+    required this.state,
+    required this.index,
+    required this.route,
+    required this.visits,
+    required this.maxRows,
+    required this.showTable,
+    required this.compact,
+    required this.dense,
+  });
   final MatchState state;
   final int index;
   final List<Segment>? route;
+
+  /// Aufnahmen des Spielers im laufenden Leg, die älteste zuerst.
+  final List<VisitRow> visits;
+  final int maxRows;
+  final bool showTable;
+
+  /// Schmale Karte (Telefon): engere Abstände, Kennzahlen in einer Zeile.
+  final bool compact;
+
+  /// Sehr schmale Karte (drei oder mehr Spieler auf dem Telefon): Kennzahlen
+  /// als Zeilen, Tabelle ohne „Bust“-Beschriftung.
+  final bool dense;
 
   @override
   Widget build(BuildContext context) {
@@ -362,18 +675,28 @@ class _PlayerCard extends StatelessWidget {
     final lit = active || won;
     // Geht kein Finish mehr, steht hier, wie man sich stellt.
     final setup = route == null && state.humanTurn && match.current == index && !match.visitClosed ? match.setup : null;
-    Widget stat(String label, String value, {Key? key}) => Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Kicker(label),
-        Text(
-          value,
-          key: key,
-          style: look.chipNumber.copyWith(fontSize: 16, color: theme.colorScheme.onSurface),
-        ),
-      ],
-    );
+    final valueStyle = look.chipNumber.copyWith(fontSize: 16, color: theme.colorScheme.onSurface);
+    Widget stat(String label, String value, {Key? key}) => dense
+        ? Row(
+            children: [
+              Expanded(child: Kicker(label)),
+              Text(value, key: key, style: valueStyle.copyWith(fontSize: 14)),
+            ],
+          )
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Kicker(label),
+              Text(value, key: key, style: valueStyle),
+            ],
+          );
+    final stats = [
+      if (format.usesSets) stat(l10n.matchSets, '${p.sets}', key: Key('match-sets-$index')),
+      stat(l10n.matchLegs, '${format.usesSets ? p.legs : p.totalLegs}', key: Key('match-legs-$index')),
+      stat(l10n.matchAvg, formatDecimal(p.average)),
+      stat(l10n.matchDarts, '${p.darts}', key: Key('match-darts-$index')),
+    ];
 
     return KeyedSubtree(
       // Markierung, wer am Zug ist (bzw. gewonnen hat).
@@ -381,6 +704,8 @@ class _PlayerCard extends StatelessWidget {
       child: ScorePanel(
         label: player.name,
         active: lit,
+        compact: compact,
+        pinFooter: true,
         badge: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -406,11 +731,15 @@ class _PlayerCard extends StatelessWidget {
         value: Text(
           '${p.remaining}',
           key: Key('match-remaining-$index'),
+          // Einzeilig, sonst misst IntrinsicHeight eine umbrochene Zahl und die Karten werden zu hoch.
+          softWrap: false,
+          maxLines: 1,
           style: _matchScore(context)
               .copyWith(color: lit ? theme.colorScheme.onSurface : colors.textMuted),
         ),
         footer: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             SizedBox(
               height: 20,
@@ -431,17 +760,32 @@ class _PlayerCard extends StatelessWidget {
                   : null,
             ),
             const SizedBox(height: AppSpacing.xs),
-            Wrap(
-              spacing: AppSpacing.l,
-              runSpacing: AppSpacing.s,
-              children: [
-                if (format.usesSets) stat(l10n.matchSets, '${p.sets}', key: Key('match-sets-$index')),
-                stat(l10n.matchLegs, '${format.usesSets ? p.legs : p.totalLegs}', key: Key('match-legs-$index')),
-                stat(l10n.matchAvg, formatDecimal(p.average)),
-                stat(l10n.matchDarts, '${p.darts}', key: Key('match-darts-$index')),
-                if (p.lastVisit != null) stat(l10n.matchLastVisit, '${p.lastVisit}'),
-              ],
-            ),
+            if (dense)
+              Column(mainAxisSize: MainAxisSize.min, children: stats)
+            else if (compact)
+              // Eine Zeile; bei vier Kennzahlen (Satzmodus) rücken sie enger.
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (final w in stats)
+                    Expanded(
+                      child: FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.topLeft, child: w),
+                    ),
+                ],
+              )
+            else
+              Wrap(spacing: AppSpacing.l, runSpacing: AppSpacing.s, children: stats),
+            if (showTable) ...[
+              SizedBox(height: compact ? AppSpacing.s : AppSpacing.m),
+              VisitTable(
+                keyPrefix: 'match-visits-$index',
+                rows: visits,
+                startScore: format.startScore,
+                maxRows: maxRows,
+                active: lit,
+                dense: dense,
+              ),
+            ],
           ],
         ),
       ),
@@ -449,26 +793,32 @@ class _PlayerCard extends StatelessWidget {
   }
 }
 
+const _bannerPriority = [
+  MatchEventType.matchWon,
+  MatchEventType.setWon,
+  MatchEventType.legWon,
+  MatchEventType.bust,
+  MatchEventType.max,
+];
+
+/// Das wichtigste Ereignis der laufenden Aufnahme für die Einblendung.
+MatchEvent? _bannerEvent(MatchState state) {
+  MatchEvent? event;
+  for (final t in _bannerPriority) {
+    event ??= state.events.where((e) => e.type == t).firstOrNull;
+  }
+  return event;
+}
+
 class _EventBanner extends StatelessWidget {
   const _EventBanner({required this.state});
   final MatchState state;
-
-  static const _priority = [
-    MatchEventType.matchWon,
-    MatchEventType.setWon,
-    MatchEventType.legWon,
-    MatchEventType.bust,
-    MatchEventType.max,
-  ];
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final colors = context.dartColors;
-    MatchEvent? event;
-    for (final t in _priority) {
-      event ??= state.events.where((e) => e.type == t).firstOrNull;
-    }
+    final event = _bannerEvent(state);
     final color = switch (event?.type) {
       MatchEventType.bust => colors.danger,
       null => Theme.of(context).colorScheme.primary,

@@ -41,7 +41,8 @@ Future<ProviderContainer> x01OnD8(WidgetTester tester, {Map<String, Object> pref
 /// gedreht, das Zielfeld liegt oben in der Mitte.
 Offset zoomPoint(WidgetTester tester, {double offset = 0}) {
   final rect = tester.getRect(find.byKey(const Key('double-zoom-board')));
-  const width = 0.9;
+  // Flacher Streifen (compact, Seitenverhältnis 2,4) zeigt einen etwas breiteren Ausschnitt.
+  final width = rect.width / rect.height > 2 ? 1.0 : 0.9;
   final px = rect.width / width;
   final height = width * rect.height / rect.width;
   final centerR = 1.2 - height / 2;
@@ -92,6 +93,9 @@ void main() {
 
   testWidgets('Zoom ist gedreht: links neben dem Ziel liegt das Nachbarfeld gegen den Uhrzeigersinn', (tester) async {
     final c = await x01OnD8(tester);
+    // Breit und niedrig ragt der Zoom unter die Aufnahmen-Tabelle: erst in den Blick scrollen.
+    await tester.ensureVisible(find.byKey(const Key('double-zoom-board')));
+    await tester.pump();
     await tester.tapAt(zoomPoint(tester, offset: -18));
     await pumpFrames(tester);
     // Neben der 8 liegt gegen den Uhrzeigersinn die 16.

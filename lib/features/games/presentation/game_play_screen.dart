@@ -4,12 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/design/arena/arena_chrome.dart';
+import '../../../core/design/arena/arena_palette.dart';
+import '../../../core/design/arena/arena_player_panel.dart';
+import '../../../core/design/arena/arena_screen.dart';
 import '../../../core/design/components/components.dart';
 import '../../../core/design/dart_colors.dart';
 import '../../../core/design/dart_look.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/settings/app_settings.dart';
 import '../../board/domain/board_geometry.dart';
 import '../../board/domain/segment.dart';
 import '../../board/presentation/dartboard_view.dart';
@@ -22,12 +27,17 @@ import '../../dart_source/data/manual_source.dart';
 import '../../dart_source/data/simulator_source.dart';
 import '../../dart_source/presentation/dart_source_providers.dart';
 import '../../dart_source/presentation/source_status_badge.dart';
+import '../../matches/presentation/match_texts.dart';
+import '../../plans/presentation/plan_run_controller.dart';
 import '../../plans/presentation/plan_run_panel.dart';
+import '../../profiles/presentation/active_player.dart';
 import '../../progress/presentation/celebration_banner.dart';
 import '../../simulator/presentation/manual_keypad.dart';
 import '../../simulator/presentation/segment_picker.dart';
 import '../../../core/widgets/fullscreen_button.dart';
+import '../../matches/domain/visit_history.dart';
 import '../domain/engine/game_display.dart';
+import '../domain/games/x01_solo.dart';
 import 'active_game_controller.dart';
 import 'game_texts.dart';
 
@@ -108,6 +118,31 @@ class GamePlayScreen extends ConsumerWidget {
           compact: compact,
         );
 
+    // Arena (Standard) für X01-Solo: Tafel mit Wurftabelle und Board in der Mitte.
+    if (game is X01Solo && ref.watch(settingsProvider.select((s) => s.playView)) == PlayView.arena) {
+      return PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) unawaited(_leave(context, ref));
+        },
+        child: Scaffold(
+          backgroundColor: ArenaPalette.background,
+          body: SafeArea(
+            child: CelebrationOverlay(
+              child: _ArenaSoloView(
+                active: active,
+                game: game,
+                board: board,
+                zoom: zoom(compact: true),
+                zoomActive: zoomTarget != null,
+                onLeave: () => _leave(context, ref),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
@@ -137,16 +172,26 @@ class GamePlayScreen extends ConsumerWidget {
             sideWidth: 440,
             child: LayoutBuilder(builder: (context, c) {
             final wide = c.maxWidth >= 900;
-            final panel = _GamePanel(active: active, large: wide, zoom: zoom());
+            // Beim X01 wird das Panel mit der Tabelle hoch: die Knöpfe stehen fest unten
+            // (nicht beim Tastenfeld der manuellen Eingabe).
+            final pinActions = wide && game is X01Solo && !active.ended && source is! ManualSource;
+            final panel = _GamePanel(active: active, large: wide, zoom: zoom(compact: wide && c.maxHeight < 1000 && game is X01Solo), pinActions: pinActions);
             if (wide) {
               return Row(
                 children: [
                   Expanded(child: Center(child: Padding(padding: const EdgeInsets.all(AppSpacing.xl), child: board))),
                   SizedBox(
                     width: 440,
-                    child: SingleChildScrollView(
+                    child: Padding(
                       padding: const EdgeInsets.fromLTRB(0, AppSpacing.l, AppSpacing.xl, AppSpacing.xl),
-                      child: panel,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Das Panel scrollt, die Knöpfe bleiben fest am unteren Rand.
+                          Expanded(child: SingleChildScrollView(child: panel)),
+                          if (pinActions) ...[const SizedBox(height: AppSpacing.m), _GameActions(active: active)],
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -182,6 +227,191 @@ class GamePlayScreen extends ConsumerWidget {
   }
 }
 
+/// Arena-Ansicht des X01-Solos: eine Tafel links mit der Wurftabelle, rechts
+/// bleibt der Platz leer, in der Mitte Wurfleiste, Schalter und Board.
+class _ArenaSoloView extends ConsumerWidget {
+  const _ArenaSoloView({
+    required this.active,
+    required this.game,
+    required this.board,
+    required this.zoom,
+    required this.zoomActive,
+    required this.onLeave,
+  });
+  final ActiveGame active;
+  final X01Solo game;
+  final Widget board;
+  final Widget zoom;
+  final bool zoomActive;
+  final VoidCallback onLeave;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final colors = context.dartColors;
+    final source = ref.watch(dartSourceProvider);
+    final live = ref.watch(liveVisitProvider);
+    final controller = ref.read(activeGameProvider.notifier);
+    final name = ref.watch(activePlayerProvider.select((p) => p?.name)) ?? l10n.arenaPlayerYou;
+    final records = active.session.records;
+    final thrown = live.visit.length;
+
+    // Aus den Aufzeichnungen abgeleitet: Rückgängig und Korrektur ergeben sich von selbst.
+    final rows = VisitHistory.ofSolo(active.session, game).legRowsOf(0);
+    final player = ArenaPlayer(
+      name: name,
+      remaining: game.remaining,
+      rows: rows,
+      startScore: game.startScore,
+      active: !active.ended,
+      lastVisit: rows.isEmpty ? 0 : rows.last.points,
+      legAverage: formatDecimal(game.legAverage ?? 0),
+      matchAverage: formatDecimal(game.average ?? 0),
+      legDarts: game.legDarts,
+      legs: game.legs > 1 ? game.legsWon : null,
+      remainingKey: const Key('solo-remaining'),
+      dartsKey: const Key('solo-darts'),
+      legsKey: const Key('solo-legs'),
+      keyPrefix: 'solo-visits',
+    );
+
+    // Nach Bust/Checkout gilt der Weg erst wieder für die nächste Aufnahme.
+    final waiting = active.ended || (game.visitClosed && thrown > 0);
+    final route = waiting ? null : game.display.suggestion;
+    final setup = route == null && !waiting ? game.display.setup : null;
+    final plan = route ?? setup?.darts;
+    final liveStart = records.length - thrown;
+
+    Future<void> fix(int slot) async {
+      final index = liveStart + slot;
+      if (index < 0 || index >= records.length) return;
+      final picked = await showSegmentPicker(
+        context,
+        title: l10n.fixTitle(slot + 1),
+        subtitle: l10n.fixCurrent(records[index].dart.segment.name),
+      );
+      if (picked != null) controller.correct(index, picked);
+    }
+
+    final slots = [
+      for (var i = 0; i < 3; i++)
+        ArenaDartSlot(
+          slotKey: Key('dart-slot-$i'),
+          segment: i < thrown ? live.visit[i].segment : null,
+          planned: plan != null && i >= thrown && i - thrown < plan.length ? plan[i - thrown] : null,
+          plannedColor: route != null ? ArenaPalette.hint : colors.setupHint,
+          onTap: !active.ended && i < thrown ? () => fix(i) : null,
+        ),
+    ];
+
+    final bust = waiting && thrown > 0 && ((game.lastDartInfo as X01DartInfo?)?.bust ?? false);
+    final event = active.events.isEmpty ? null : active.events.last;
+    final tone = event == null ? EventTone.neutral : eventTone(event.type);
+    final messages = ArenaMessages(
+      hint: route != null && route.isNotEmpty
+          ? '${l10n.visitRoute}: ${route.map((s) => s.name).join(' · ')}'
+          : setup != null
+          ? l10n.visitSetup(setup.leave)
+          : null,
+      hintKey: route != null && route.isNotEmpty ? const Key('checkout-route-label') : const Key('setup-route-label'),
+      hintColor: route != null ? ArenaPalette.hint : colors.setupHint,
+      event: event == null ? null : l10n.eventText(event),
+      eventKey: const Key('game-event'),
+      eventColor: switch (tone) {
+        EventTone.positive => ArenaPalette.success,
+        EventTone.negative => ArenaPalette.danger,
+        EventTone.neutral => ArenaPalette.blue,
+      },
+    );
+
+    final keypad = !active.ended && source is ManualSource ? ManualKeypad(source: source) : null;
+    final planRun = ref.watch(planRunProvider);
+    final planShown = planRun != null && planRun.stepIndex != null && planRun.sessionId == active.sessionId;
+    final header = ChallengeTaskBar.shows(ref) || planShown
+        ? Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (ChallengeTaskBar.shows(ref)) const ChallengeTaskBar(),
+              if (planShown) const PlanRunPanel(),
+            ],
+          )
+        : null;
+
+    return ArenaScreen(
+      players: [player],
+      header: header,
+      topBar: (compact, scale) => ArenaTopBar(
+        leaveKey: const Key('leave-game'),
+        onLeave: onLeave,
+        chips: [
+          '${game.startScore}',
+          l10n.arenaFormatLegs(game.legs),
+          inOutCode(doubleIn: game.doubleIn, out: game.outMode),
+        ],
+        trailing: [
+          SourceStatusBadge(compact: MediaQuery.sizeOf(context).width < 900),
+          const SizedBox(width: AppSpacing.xs),
+          const CallerMuteButton(),
+          const FullscreenButton(),
+        ],
+        compact: compact,
+        scale: scale,
+      ),
+      dartSlots: slots,
+      visitSum: live.visitScore,
+      visitBust: bust,
+      sumKey: const Key('visit-score'),
+      board: board,
+      zoom: zoom,
+      zoomActive: zoomActive,
+      keypad: keypad,
+      actions: (height) => ArenaActionBar(
+        height: height,
+        undoKey: const Key('game-undo'),
+        onUndo: controller.undo,
+        undoLabel: l10n.boardUndo,
+        nextKey: const Key('game-next'),
+        onNext: controller.nextVisit,
+        nextLabel: l10n.boardNext,
+        showUndoNext: keypad == null,
+        icons: [
+          if (records.isNotEmpty)
+            ArenaIconButton(
+              key: const Key('open-corrections'),
+              icon: Icons.edit_note_rounded,
+              tooltip: l10n.fixOpen,
+              size: height - 10,
+              onPressed: () => showCorrectionsSheet(context),
+            ),
+          ArenaIconButton(
+            key: const Key('end-game'),
+            icon: Icons.flag_outlined,
+            tooltip: l10n.gameEnd,
+            size: height - 10,
+            onPressed: controller.end,
+          ),
+        ],
+      ),
+      messages: messages,
+      result: active.ended
+          ? SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const ChallengeResultPanel(),
+                  _EventBanner(active: active),
+                  _StatsGrid(stats: active.game.result.summary),
+                  const SizedBox(height: AppSpacing.m),
+                  // Bei einer Challenge stehen die Knöpfe in ihrer Wertung.
+                  if (!ChallengeResultPanel.shows(ref)) _ResultActions(active: active),
+                ],
+              ),
+            )
+          : null,
+    );
+  }
+}
+
 class _Headline extends StatelessWidget {
   const _Headline({required this.active, required this.large, this.compact = false});
   final ActiveGame active;
@@ -196,8 +426,28 @@ class _Headline extends StatelessWidget {
     final summary = active.ended ? active.game.result.summary : const <GameStat>[];
     final label = summary.isNotEmpty ? '${l10n.gameResult} · ${l10n.statLabel(summary.first.key)}' : l10n.statLabel(display.headlineKey);
     final headline = summary.isNotEmpty ? summary.first.value : display.headline;
+    // Beim X01 steht unter dem Stand, was geworfen wurde: Punkte, Darts und
+    // Rest je Aufnahme des laufenden Legs. Die anderen Spiele bleiben wie sie sind.
+    final game = active.game;
+    // Breit und niedrig (unter 1000 px): kleinere Zahl und 5 Zeilen, damit Aufnahme
+    // und Doppel-Zoom möglichst ohne Scrollen auf den Bildschirm passen.
+    final short = large && MediaQuery.sizeOf(context).height < 1000;
+    final Widget? visits = game is X01Solo
+        ? Padding(
+            padding: const EdgeInsets.only(top: AppSpacing.s),
+            child: VisitTable(
+              keyPrefix: 'solo-visits',
+              rows: VisitHistory.ofSolo(active.session, game).legRowsOf(0),
+              startScore: game.startScore,
+              maxRows: large ? (short ? 5 : 8) : 6,
+              active: !active.ended,
+              showDarts: true,
+            ),
+          )
+        : null;
     return ScorePanel(
       label: label,
+      footer: visits,
       trailing: display.progressLabel,
       progress: display.progress,
       value: AnimatedSwitcher(
@@ -209,7 +459,7 @@ class _Headline extends StatelessWidget {
         child: Text(
           headline,
           key: ValueKey(headline),
-          style: ScorePanel.valueStyle(context, hero: large, compact: compact),
+          style: ScorePanel.valueStyle(context, hero: large, compact: compact || (short && game is X01Solo)),
         ),
       ),
     );
@@ -217,9 +467,12 @@ class _Headline extends StatelessWidget {
 }
 
 class _GamePanel extends ConsumerWidget {
-  const _GamePanel({required this.active, required this.large, this.showTop = true, this.zoom});
+  const _GamePanel({required this.active, required this.large, this.showTop = true, this.zoom, this.pinActions = false});
   final ActiveGame active;
   final bool large;
+
+  /// Die Knöpfe stehen außerhalb am unteren Rand der Seitenleiste.
+  final bool pinActions;
 
   /// Doppel-Zoom unter den Darts (nur mit [showTop]).
   final Widget? zoom;
@@ -229,10 +482,6 @@ class _GamePanel extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-    final source = ref.watch(dartSourceProvider);
-    final controller = ref.read(activeGameProvider.notifier);
     final display = active.game.display;
 
     return Column(
@@ -251,6 +500,27 @@ class _GamePanel extends ConsumerWidget {
         _StatsGrid(stats: active.ended ? active.game.result.summary : display.stats),
         const SizedBox(height: AppSpacing.m),
         const PlanRunPanel(),
+        if (!pinActions) _GameActions(active: active),
+      ],
+    );
+  }
+}
+
+/// Rückgängig, Weiter, Korrigieren und Beenden (bzw. die Ergebnis-Knöpfe).
+class _GameActions extends ConsumerWidget {
+  const _GameActions({required this.active});
+  final ActiveGame active;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final source = ref.watch(dartSourceProvider);
+    final controller = ref.read(activeGameProvider.notifier);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
         if (active.ended)
           // Bei einer Challenge stehen die Knöpfe in ihrer Wertung.
           ChallengeResultPanel.shows(ref) ? const SizedBox.shrink() : _ResultActions(active: active)

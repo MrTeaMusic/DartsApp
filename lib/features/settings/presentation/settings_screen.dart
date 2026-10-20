@@ -91,6 +91,24 @@ class SettingsScreen extends ConsumerWidget {
               ] else
                 Text(l10n.settingsBrightnessFixed, key: const Key('theme-fixed'), style: Theme.of(context).textTheme.bodySmall),
               const SizedBox(height: AppSpacing.l),
+              Kicker(l10n.settingsPlayView),
+              const SizedBox(height: AppSpacing.s),
+              SegmentedButton<PlayView>(
+                key: const Key('playview-selector'),
+                segments: [
+                  ButtonSegment(value: PlayView.arena, label: Text(l10n.settingsPlayViewArena)),
+                  ButtonSegment(value: PlayView.look, label: Text(l10n.settingsPlayViewLook)),
+                ],
+                selected: {settings.playView},
+                onSelectionChanged: (s) => notifier.update((x) => x.copyWith(playView: s.first)),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                settings.playView == PlayView.arena ? l10n.settingsPlayViewArenaHint : l10n.settingsPlayViewLookHint,
+                key: const Key('playview-hint'),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: AppSpacing.l),
               Kicker(l10n.settingsBoardStyle),
               const SizedBox(height: AppSpacing.s),
               const _BoardStylePicker(),

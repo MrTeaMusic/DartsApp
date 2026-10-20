@@ -3217,5 +3217,78 @@
     }
   },
   "liveFixEdited": "Von Hand korrigiert",
-  "liveFixAddDart": "Dart ergänzen"
+  "liveFixAddDart": "Dart ergänzen",
+  "visitTablePoints": "Punkte",
+  "visitTableDarts": "Darts",
+  "visitTableRest": "Rest",
+  "visitTableStart": "Start",
+  "visitTableBust": "Bust",
+  "visitTableRowSemantics": "{points} Punkte, Rest {rest}",
+  "@visitTableRowSemantics": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      },
+      "rest": {
+        "type": "int"
+      }
+    }
+  },
+  "visitTableRowBust": "Bust, Rest {rest}",
+  "@visitTableRowBust": {
+    "placeholders": {
+      "rest": {
+        "type": "int"
+      }
+    }
+  },
+  "visitTableRowStart": "Start {score}",
+  "@visitTableRowStart": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsPlayView": "Spielansicht",
+  "settingsPlayViewArena": "Arena",
+  "settingsPlayViewArenaHint": "Zwei große Tafeln mit Wurftabelle links und rechts, das Board in der Mitte",
+  "settingsPlayViewLook": "Wie das gewählte Design",
+  "settingsPlayViewLookHint": "Tafeln und Karten im Stil von TV, Clean oder Lab",
+  "arenaLeave": "Verlassen",
+  "arenaFormatLegs": "Erster bis {n, plural, =1{1 Leg} other{{n} Legs}}",
+  "@arenaFormatLegs": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "arenaFormatSets": "Erster bis {sets, plural, =1{1 Satz} other{{sets} Sätze}}, je {legs, plural, =1{1 Leg} other{{legs} Legs}}",
+  "@arenaFormatSets": {
+    "placeholders": {
+      "sets": {
+        "type": "int"
+      },
+      "legs": {
+        "type": "int"
+      }
+    }
+  },
+  "arenaLegAvg": "Leg",
+  "arenaMatchAvg": "Match",
+  "arenaBust": "Bust",
+  "arenaLegsWon": "Legs",
+  "arenaSetsWon": "Sätze",
+  "arenaDartsThrown": "Darts im Leg",
+  "arenaVisitSum": "Summe der Aufnahme",
+  "arenaDartSlot": "Dart {n}",
+  "@arenaDartSlot": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "arenaPlayerYou": "Ich"
 }

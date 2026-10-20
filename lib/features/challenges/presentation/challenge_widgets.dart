@@ -117,6 +117,12 @@ class LiveStarRow extends StatelessWidget {
 class ChallengeTaskBar extends ConsumerWidget {
   const ChallengeTaskBar({super.key});
 
+  /// Zeigt die Leiste etwas an (laufende Challenge, noch nicht beendet)?
+  static bool shows(WidgetRef ref) {
+    final current = _current(ref);
+    return current != null && !current.over;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final current = _current(ref);
