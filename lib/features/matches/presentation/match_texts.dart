@@ -3,6 +3,10 @@ import '../../games/domain/games/checkout/checkout_rules.dart';
 import '../domain/match_format.dart';
 import '../domain/x01_match.dart';
 
+/// Kürzel für Ein- und Ausstieg in der Kopfzeile: „SI-DO“ (Single-In, Double-Out).
+String inOutCode({required bool doubleIn, required OutMode out}) =>
+    '${doubleIn ? 'DI' : 'SI'}-${switch (out) { OutMode.straight => 'SO', OutMode.double => 'DO', OutMode.master => 'MO' }}';
+
 /// Texte des Match-Bereichs, die aus Domänen-Werten entstehen.
 extension MatchTexts on AppLocalizations {
   String matchEventText(MatchEvent e, List<String> names) {

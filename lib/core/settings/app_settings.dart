@@ -9,6 +9,17 @@ import '../../features/board/presentation/board_style.dart';
 import '../../features/progress/domain/daily_goal.dart';
 import '../design/dart_look.dart';
 
+/// Aufbau der X01-Spielansichten (Match und Solo).
+enum PlayView {
+  /// Drei Spalten mit großen Spielertafeln und Wurftabelle (Arena).
+  arena,
+
+  /// Die Ansicht des gewählten Looks (TV, Clean, Lab).
+  look;
+
+  static PlayView byName(String? name) => values.where((v) => v.name == name).firstOrNull ?? arena;
+}
+
 /// Einstellungen der App. Unveränderlich, Änderungen über [SettingsNotifier].
 @immutable
 class AppSettings {
@@ -16,6 +27,7 @@ class AppSettings {
     this.look = DartLookId.tv,
     this.boardStyle = BoardStyle.tournament,
     this.doubleZoom = true,
+    this.playView = PlayView.arena,
     this.themeMode = ThemeMode.system,
     this.sourceKind = DartSourceKind.simulator,
     this.autodartsHost = '127.0.0.1',
@@ -41,6 +53,9 @@ class AppSettings {
 
   /// Vergrößerter Ausschnitt des Doppels, wenn eins geworfen werden muss.
   final bool doubleZoom;
+
+  /// Aufbau der X01-Spielansichten (Optionen → Darstellung).
+  final PlayView playView;
 
   /// Helligkeit; gilt nur für Looks mit heller Variante (Clean).
   final ThemeMode themeMode;
@@ -77,6 +92,7 @@ class AppSettings {
     DartLookId? look,
     BoardStyle? boardStyle,
     bool? doubleZoom,
+    PlayView? playView,
     ThemeMode? themeMode,
     DartSourceKind? sourceKind,
     String? autodartsHost,
@@ -97,6 +113,7 @@ class AppSettings {
         look: look ?? this.look,
         boardStyle: boardStyle ?? this.boardStyle,
         doubleZoom: doubleZoom ?? this.doubleZoom,
+        playView: playView ?? this.playView,
         themeMode: themeMode ?? this.themeMode,
         sourceKind: sourceKind ?? this.sourceKind,
         autodartsHost: autodartsHost ?? this.autodartsHost,
@@ -117,6 +134,7 @@ class AppSettings {
   static const _kLook = 'settings.look';
   static const _kBoardStyle = 'settings.boardStyle';
   static const _kDoubleZoom = 'settings.doubleZoom';
+  static const _kPlayView = 'settings.playView';
   static const _kTheme = 'settings.themeMode';
   static const _kSource = 'settings.sourceKind';
   static const _kHost = 'settings.autodartsHost';
@@ -141,6 +159,7 @@ class AppSettings {
       look: DartLookId.byName(prefs.getString(_kLook)),
       boardStyle: BoardStyle.byName(prefs.getString(_kBoardStyle)),
       doubleZoom: prefs.getBool(_kDoubleZoom) ?? d.doubleZoom,
+      playView: PlayView.byName(prefs.getString(_kPlayView)),
       themeMode: byName(ThemeMode.values, prefs.getString(_kTheme), d.themeMode),
       sourceKind: byName(DartSourceKind.values, prefs.getString(_kSource), d.sourceKind),
       autodartsHost: prefs.getString(_kHost) ?? d.autodartsHost,
@@ -163,6 +182,7 @@ class AppSettings {
     await prefs.setString(_kLook, look.name);
     await prefs.setString(_kBoardStyle, boardStyle.name);
     await prefs.setBool(_kDoubleZoom, doubleZoom);
+    await prefs.setString(_kPlayView, playView.name);
     await prefs.setString(_kTheme, themeMode.name);
     await prefs.setString(_kSource, sourceKind.name);
     await prefs.setString(_kHost, autodartsHost);

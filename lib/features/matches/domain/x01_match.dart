@@ -95,6 +95,10 @@ class MatchPlayerState {
 
   double? get average => darts == 0 ? null : points / darts * 3;
 
+  /// Schnitt im laufenden Leg (3-Dart-Average), `null` ohne Darts.
+  double? get legAverage =>
+      legDartPoints.isEmpty ? null : legDartPoints.fold<int>(0, (a, b) => a + b) / legDartPoints.length * 3;
+
   /// Schnitt der ersten neun Darts je Leg, inklusive laufendem Leg.
   double? get first9Average {
     final live = legDartPoints.take(9).toList();

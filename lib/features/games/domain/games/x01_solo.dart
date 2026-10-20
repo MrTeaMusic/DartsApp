@@ -135,6 +135,10 @@ class X01Solo extends TrainingGame {
 
   double? get average => dartsThrown == 0 ? null : totalPoints / dartsThrown * 3;
 
+  /// Schnitt im laufenden Leg (3-Dart-Average), `null` ohne Darts.
+  double? get legAverage =>
+      _legDartPoints.isEmpty ? null : _legDartPoints.fold<int>(0, (a, b) => a + b) / _legDartPoints.length * 3;
+
   @override
   void onStart() => _snapshot();
 

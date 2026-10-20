@@ -31,8 +31,9 @@ class FakeFullscreen implements FullscreenPlatform {
   Future<bool> get current async => calls.isNotEmpty && calls.last;
 }
 
-Future<ProviderContainer> startGame(WidgetTester tester, String id, {Map<String, Object?> config = const {}, List<Override> overrides = const []}) async {
-  final c = await pumpApp(tester, overrides: overrides);
+Future<ProviderContainer> startGame(WidgetTester tester, String id,
+    {Map<String, Object?> config = const {}, List<Override> overrides = const [], Map<String, Object> prefs = const {}}) async {
+  final c = await pumpApp(tester, overrides: overrides, prefs: prefs);
   await c.read(activeGameProvider.notifier).start(GameCatalog.all.firstWhere((g) => g.id == id), config, seed: 7);
   c.read(routerProvider).go(Routes.play);
   await pumpFrames(tester);
@@ -67,7 +68,7 @@ void main() {
   });
 
   testWidgets('Geht kein Finish mehr, zeigen die freien Felder blau, wie man sich stellt', (tester) async {
-    final c = await startGame(tester, 'x01', config: {'startScore': 170});
+    final c = await startGame(tester, 'x01', config: {'startScore': 170}, prefs: {'settings.playView': 'look'});
     expect(find.byKey(const Key('checkout-route-label')), findsOneWidget);
     expect(find.byKey(const Key('setup-route-label')), findsNothing);
 

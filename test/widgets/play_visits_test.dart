@@ -34,7 +34,7 @@ void main() {
     int start = 301,
     int legs = 2,
   }) async {
-    final c = await pumpApp(tester, size: size, prefs: {'settings.look': look});
+    final c = await pumpApp(tester, size: size, prefs: {'settings.look': look, 'settings.playView': 'look'});
     await c.read(matchControllerProvider.notifier).start(
       MatchSetup(
         format: MatchFormat(startScore: start, legsToWin: legs),
@@ -217,7 +217,7 @@ void main() {
 
   group('X01-Solo: Aufnahmen im Stand', () {
     Future<ProviderContainer> startSolo(WidgetTester tester, {Size size = const Size(390, 844), String look = 'tv'}) async {
-      final c = await pumpApp(tester, size: size, prefs: {'settings.look': look});
+      final c = await pumpApp(tester, size: size, prefs: {'settings.look': look, 'settings.playView': 'look'});
       await c.read(activeGameProvider.notifier).start(X01Solo.definition, {'startScore': 101, 'legs': 1}, seed: 1);
       c.read(routerProvider).go(Routes.play);
       await frames(tester);

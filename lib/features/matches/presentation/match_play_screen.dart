@@ -4,11 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/design/arena/arena_chrome.dart';
+import '../../../core/design/arena/arena_palette.dart';
+import '../../../core/design/arena/arena_player_panel.dart';
+import '../../../core/design/arena/arena_screen.dart';
 import '../../../core/design/components/components.dart';
 import '../../../core/design/dart_colors.dart';
 import '../../../core/design/dart_look.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
+import '../../../core/settings/app_settings.dart';
 import '../../../core/widgets/fullscreen_button.dart';
 import '../../board/domain/board_geometry.dart';
 import '../../board/domain/segment.dart';
@@ -130,6 +135,32 @@ class MatchPlayScreen extends ConsumerWidget {
         ? l10n.matchLegSetNumber(match.setNumber, match.legNumber)
         : l10n.matchLegNumber(match.legNumber);
 
+    // Arena: drei Spalten mit großen Tafeln und Wurftabelle (Standard).
+    if (ref.watch(settingsProvider.select((s) => s.playView)) == PlayView.arena) {
+      return _SaveOnBackground(
+        child: PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, _) {
+            if (!didPop) unawaited(leave(context, ref));
+          },
+          child: Scaffold(
+            backgroundColor: ArenaPalette.background,
+            body: SafeArea(
+              child: CelebrationOverlay(
+                child: _ArenaMatchView(
+                  state: state,
+                  route: route,
+                  board: board,
+                  zoom: zoom(compact: true),
+                  zoomActive: zoomTarget != null,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return _SaveOnBackground(
       child: PopScope(
       canPop: false,
@@ -224,6 +255,187 @@ class MatchPlayScreen extends ConsumerWidget {
         ),
       ),
       ),
+    );
+  }
+}
+
+/// Arena-Ansicht des Matches: Tafeln mit Wurftabelle links und rechts, in der
+/// Mitte Wurfleiste, Schalter und Board.
+class _ArenaMatchView extends ConsumerWidget {
+  const _ArenaMatchView({
+    required this.state,
+    required this.route,
+    required this.board,
+    required this.zoom,
+    required this.zoomActive,
+  });
+  final MatchState state;
+  final List<Segment>? route;
+  final Widget board;
+  final Widget zoom;
+  final bool zoomActive;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final source = ref.watch(dartSourceProvider);
+    final controller = ref.read(matchControllerProvider.notifier);
+    final match = state.match;
+    final session = state.session;
+    final format = state.setup.format;
+    final setupPlayers = state.setup.players;
+    // Eine Ableitung aus den Aufzeichnungen für alle Tafeln; Rückgängig und
+    // Korrektur ergeben sich von selbst.
+    final history = VisitHistory.ofMatch(session);
+
+    final players = [
+      for (var i = 0; i < setupPlayers.length; i++)
+        ArenaPlayer(
+          name: setupPlayers[i].name,
+          isBot: setupPlayers[i].isBot,
+          remaining: match.players[i].remaining,
+          rows: history.legRowsOf(i),
+          startScore: format.startScore,
+          active: !state.ended && match.current == i,
+          won: match.winner == i,
+          starter: !state.ended && match.legStarter == i,
+          lastVisit: match.players[i].lastVisit ?? 0,
+          legAverage: formatDecimal(match.players[i].legAverage ?? 0),
+          matchAverage: formatDecimal(match.players[i].average ?? 0),
+          legDarts: match.players[i].legDartPoints.length,
+          legs: format.usesSets ? match.players[i].legs : match.players[i].totalLegs,
+          sets: format.usesSets ? match.players[i].sets : null,
+          panelKey: Key('match-active-$i-${!state.ended && match.current == i}'),
+          remainingKey: Key('match-remaining-$i'),
+          dartsKey: Key('match-darts-$i'),
+          legsKey: Key('match-legs-$i'),
+          setsKey: Key('match-sets-$i'),
+          keyPrefix: 'match-visits-$i',
+        ),
+    ];
+
+    // Die Darts der laufenden Aufnahme; offene Plätze zeigen den Weg.
+    final indexes = session.currentVisitIndexes;
+    final thrown = indexes.length;
+    final current = setupPlayers[match.current];
+    final next = setupPlayers[match.nextPlayer];
+    final colors = context.dartColors;
+    final plan = route ?? (route == null && state.humanTurn && !match.visitClosed ? match.setup?.darts : null);
+
+    Future<void> fix(int slot) async {
+      final index = indexes[slot];
+      final picked = await showSegmentPicker(
+        context,
+        title: l10n.fixTitle(slot + 1),
+        subtitle: l10n.fixCurrent(session.records[index].dart.segment.name),
+      );
+      if (picked != null) controller.correct(index, picked);
+    }
+
+    final slots = [
+      for (var i = 0; i < 3; i++)
+        ArenaDartSlot(
+          slotKey: Key('match-dart-$i'),
+          segment: i < thrown ? session.records[indexes[i]].dart.segment : null,
+          planned: plan != null && i >= thrown && i - thrown < plan.length ? plan[i - thrown] : null,
+          plannedColor: route != null ? ArenaPalette.hint : colors.setupHint,
+          onTap: i < thrown && !current.isBot && !state.ended ? () => fix(i) : null,
+        ),
+    ];
+
+    // Meldungen unter dem Board: Weg, Status, Ereignis.
+    final soloHuman = setupPlayers.where((p) => !p.isBot).length == 1;
+    final status = match.visitClosed && match.nextPlayer != match.current
+        ? (soloHuman && !next.isBot ? l10n.matchWaitTakeoutYou : l10n.matchWaitTakeout(next.name))
+        : current.isBot
+        ? l10n.matchBotThrowing(current.name)
+        : soloHuman
+        ? l10n.matchYourTurn
+        : l10n.matchTurnOf(current.name);
+    final setup = route == null && state.humanTurn && !match.visitClosed ? match.setup : null;
+    final event = _bannerEvent(state);
+    final names = [for (final p in setupPlayers) p.name];
+    final messages = ArenaMessages(
+      hint: route != null && route!.isNotEmpty
+          ? '${l10n.visitRoute}: ${route!.map((s) => s.name).join(' · ')}'
+          : setup != null
+          ? l10n.visitSetup(setup.leave)
+          : null,
+      hintKey: route != null && route!.isNotEmpty ? Key('match-route-${match.current}') : Key('match-setup-${match.current}'),
+      hintColor: route != null ? ArenaPalette.hint : colors.setupHint,
+      status: state.ended ? null : status,
+      statusKey: const Key('match-status'),
+      statusMuted: current.isBot,
+      event: event == null ? null : l10n.matchEventText(event, names),
+      eventKey: const Key('match-event'),
+      eventColor: event?.type == MatchEventType.bust ? ArenaPalette.danger : ArenaPalette.success,
+    );
+
+    final keypad = !state.ended && state.acceptsHumanDarts && source is ManualSource ? ManualKeypad(source: source) : null;
+
+    return ArenaScreen(
+      players: players,
+      header: ChallengeTaskBar.shows(ref) ? const ChallengeTaskBar() : null,
+      topBar: (compact, scale) => ArenaTopBar(
+        leaveKey: const Key('leave-match'),
+        onLeave: () => MatchPlayScreen.leave(context, ref),
+        chips: [
+          '${format.startScore}',
+          format.usesSets ? l10n.arenaFormatSets(format.setsToWin, format.legsToWin) : l10n.arenaFormatLegs(format.legsToWin),
+          inOutCode(doubleIn: format.doubleIn, out: format.outMode),
+        ],
+        trailing: [
+          SourceStatusBadge(compact: MediaQuery.sizeOf(context).width < 900),
+          const SizedBox(width: AppSpacing.xs),
+          const CallerMuteButton(),
+          const FullscreenButton(),
+        ],
+        compact: compact,
+        scale: scale,
+      ),
+      dartSlots: slots,
+      visitSum: match.visitScore,
+      visitBust: match.visitBust,
+      sumKey: const Key('match-visit-score'),
+      board: board,
+      zoom: zoom,
+      zoomActive: zoomActive,
+      keypad: keypad,
+      actions: (height) => ArenaActionBar(
+        height: height,
+        undoKey: const Key('match-undo'),
+        onUndo: state.session.canUndo ? controller.undo : null,
+        undoLabel: l10n.boardUndo,
+        nextKey: const Key('match-next'),
+        onNext: state.humanTurn && match.physicalDartsInVisit > 0 ? controller.nextVisit : null,
+        nextLabel: l10n.boardNext,
+        showUndoNext: keypad == null,
+        icons: [
+          ArenaIconButton(
+            key: const Key('match-corrections'),
+            icon: Icons.edit_note_rounded,
+            tooltip: l10n.fixOpen,
+            size: height - 10,
+            onPressed: () => _showCorrections(context),
+          ),
+        ],
+      ),
+      messages: messages,
+      result: state.ended
+          ? SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _EventBanner(state: state),
+                  // Bei einer Challenge ersetzt ihre Wertung die Knöpfe.
+                  if (ChallengeResultPanel.shows(ref)) const ChallengeResultPanel(),
+                  _ResultCard(state: state),
+                  const SizedBox(height: AppSpacing.m),
+                  if (!ChallengeResultPanel.shows(ref)) _ResultActions(state: state),
+                ],
+              ),
+            )
+          : null,
     );
   }
 }
@@ -581,26 +793,32 @@ class _PlayerCard extends StatelessWidget {
   }
 }
 
+const _bannerPriority = [
+  MatchEventType.matchWon,
+  MatchEventType.setWon,
+  MatchEventType.legWon,
+  MatchEventType.bust,
+  MatchEventType.max,
+];
+
+/// Das wichtigste Ereignis der laufenden Aufnahme für die Einblendung.
+MatchEvent? _bannerEvent(MatchState state) {
+  MatchEvent? event;
+  for (final t in _bannerPriority) {
+    event ??= state.events.where((e) => e.type == t).firstOrNull;
+  }
+  return event;
+}
+
 class _EventBanner extends StatelessWidget {
   const _EventBanner({required this.state});
   final MatchState state;
-
-  static const _priority = [
-    MatchEventType.matchWon,
-    MatchEventType.setWon,
-    MatchEventType.legWon,
-    MatchEventType.bust,
-    MatchEventType.max,
-  ];
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final colors = context.dartColors;
-    MatchEvent? event;
-    for (final t in _priority) {
-      event ??= state.events.where((e) => e.type == t).firstOrNull;
-    }
+    final event = _bannerEvent(state);
     final color = switch (event?.type) {
       MatchEventType.bust => colors.danger,
       null => Theme.of(context).colorScheme.primary,

@@ -44,7 +44,7 @@ Die 13 weiteren Spiele (X01-Solo bis Stellen): [docs/trainingsspiele-erweitert.m
 Regeln der zwei eigenen Spiele: [docs/spielregeln.md](docs/spielregeln.md).
 Feste und eigene Trainingspläne: [docs/trainingsplaene.md](docs/trainingsplaene.md).
 Checkout-Quiz (Wege lernen ohne zu werfen): [docs/checkout-quiz.md](docs/checkout-quiz.md).
-Aufnahmen-Tabelle in der Spielansicht (Match und X01-Solo): [docs/spielansicht.md](docs/spielansicht.md).
+Spielansicht (Arena oder Look) und Aufnahmen-Tabelle für Match und X01-Solo: [docs/spielansicht.md](docs/spielansicht.md).
 Wie Statistiken berechnet werden, Ziele, Profile, Export-Formate: [docs/statistik-und-daten.md](docs/statistik-und-daten.md).
 Streuungs-Analyse (wohin man je Feld verzieht, mit Tipp): [docs/streuungs-analyse.md](docs/streuungs-analyse.md).
 
