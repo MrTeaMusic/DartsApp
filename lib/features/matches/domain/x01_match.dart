@@ -116,7 +116,14 @@ class MatchPlayerState {
 
 /// Ergebnis eines Darts im Match.
 class MatchDartOutcome {
-  const MatchDartOutcome({required this.player, required this.counted, required this.visitSerial, required this.leg});
+  const MatchDartOutcome({
+    required this.player,
+    required this.counted,
+    required this.visitSerial,
+    required this.leg,
+    required this.remaining,
+    this.bust = false,
+  });
 
   /// Wer geworfen hat.
   final int player;
@@ -129,6 +136,13 @@ class MatchDartOutcome {
 
   /// Leg-Nummer im Match (ab 1).
   final int leg;
+
+  /// Rest des Spielers nach dem Dart: 0 beim Checkout (vor dem Zurücksetzen
+  /// fürs nächste Leg), nach einem Bust der Rest vor der Aufnahme.
+  final int remaining;
+
+  /// Dieser Dart hat die Aufnahme zum Bust gemacht.
+  final bool bust;
 }
 
 /// X01-Match für zwei (oder mehr) Spieler im Wechsel. Reine Dart-Klasse.
@@ -237,19 +251,38 @@ class X01Match {
   MatchDartOutcome throwDart(DartThrow dart) {
     events.clear();
     if (finished) {
-      return MatchDartOutcome(player: current, counted: false, visitSerial: visitSerial, leg: legNumber);
+      return MatchDartOutcome(
+        player: current,
+        counted: false,
+        visitSerial: visitSerial,
+        leg: legNumber,
+        remaining: currentPlayer.remaining,
+      );
     }
     if (visitClosed && _physical >= dartsPerVisit) _advance();
     final leg = legNumber;
     _physical++;
     if (visitClosed) {
-      return MatchDartOutcome(player: current, counted: false, visitSerial: visitSerial, leg: leg);
+      return MatchDartOutcome(
+        player: current,
+        counted: false,
+        visitSerial: visitSerial,
+        leg: leg,
+        remaining: currentPlayer.remaining,
+      );
     }
     final who = current;
     visit.add(dart);
     _handle(dart);
     if (!visitClosed && visit.length >= dartsPerVisit) _close((current + 1) % playerCount);
-    return MatchDartOutcome(player: who, counted: true, visitSerial: visitSerial, leg: leg);
+    return MatchDartOutcome(
+      player: who,
+      counted: true,
+      visitSerial: visitSerial,
+      leg: leg,
+      remaining: _remainingAfterDart,
+      bust: _dartBust,
+    );
   }
 
   /// Takeout bzw. „Weiter“: Aufnahme beenden, der nächste Spieler ist dran.
@@ -290,14 +323,21 @@ class X01Match {
     }
   }
 
+  /// Rest des Werfers nach dem letzten Dart (vor dem Zurücksetzen fürs
+  /// nächste Leg) und ob dieser Dart ein Bust war; für [MatchDartOutcome].
+  int _remainingAfterDart = 0;
+  bool _dartBust = false;
+
   void _handle(DartThrow dart) {
     final p = currentPlayer;
     final s = dart.segment;
     p.darts++;
+    _dartBust = false;
     if (p.opened && CheckoutRules.isCheckout(p.remaining, darts: 1, out: format.outMode)) p.checkoutDarts++;
     if (!p.opened) {
       if (!s.isDouble) {
         p.legDartPoints.add(0);
+        _remainingAfterDart = p.remaining;
         return;
       }
       p.opened = true;
@@ -305,12 +345,15 @@ class X01Match {
     if (CheckoutRules.isBust(p.remaining, s, format.outMode)) {
       p.legDartPoints.add(0);
       _bust(p);
+      _remainingAfterDart = p.remaining;
+      _dartBust = true;
       return;
     }
     p.remaining -= s.score;
     p.points += s.score;
     _visitPoints += s.score;
     p.legDartPoints.add(s.score);
+    _remainingAfterDart = p.remaining;
     if (p.remaining == 0) _legWon(p);
   }
 

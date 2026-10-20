@@ -20,6 +20,8 @@ class ScorePanel extends StatelessWidget {
     this.badge,
     this.footer,
     this.active,
+    this.compact = false,
+    this.pinFooter = false,
   });
 
   /// Beschriftung („Rest“, „Aufnahme“).
@@ -45,6 +47,16 @@ class ScorePanel extends StatelessWidget {
   /// zurücktreten (TV ohne rote Leiste). `null` = einzelne Tafel.
   final bool? active;
 
+  /// Schmale Tafel (mehrere Spieler auf dem Telefon): engere Innenabstände,
+  /// damit Zahl, Kennzahlen und Tabelle genug Breite haben.
+  final bool compact;
+
+  /// Der Inhalt unter der Zahl sitzt am unteren Rand der Tafel. Nur in einer
+  /// Zeile mit gleich hohen Tafeln (z. B. `IntrinsicHeight`): so stehen
+  /// Kennzahlen und Tabellen nebeneinander auf einer Höhe, auch wenn die
+  /// Zahlen unterschiedlich breit und damit unterschiedlich hoch sind.
+  final bool pinFooter;
+
   /// Stil der großen Zahl im aktuellen Look.
   ///
   /// [compact] für schmale Bildschirme: etwa drei Viertel der großen Zahl,
@@ -55,6 +67,8 @@ class ScorePanel extends StatelessWidget {
     final style = base.copyWith(color: Theme.of(context).colorScheme.onSurface);
     return compact ? style.copyWith(fontSize: (base.fontSize ?? 96) * 0.7) : style;
   }
+
+  Widget _footerSlot(Widget child) => pinFooter ? Expanded(child: Align(alignment: Alignment.bottomCenter, child: child)) : child;
 
   @override
   Widget build(BuildContext context) {
@@ -86,22 +100,26 @@ class ScorePanel extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Flexible(
+                        // Schmale Tafel: der Name bekommt den größeren Teil der Kopfzeile.
+                        flex: compact ? 3 : 1,
                         child: Container(
                           color: active == false ? colors.surfaceHigh : colors.panelHeader,
-                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m + 2),
+                          padding: EdgeInsets.symmetric(horizontal: compact ? AppSpacing.s - 1 : AppSpacing.m + 2),
                           alignment: Alignment.centerLeft,
                           child: Text(look.caps(label), style: headerStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
                         ),
                       ),
                       Expanded(
+                        flex: compact ? 2 : 1,
                         child: Container(
                           color: colors.surfaceHigh,
-                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m + 2),
+                          padding: EdgeInsets.symmetric(horizontal: compact ? AppSpacing.s - 1 : AppSpacing.m + 2),
                           alignment: Alignment.centerRight,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              if (badge != null) Flexible(child: badge!),
+                              if (badge != null)
+                                Flexible(child: compact ? FittedBox(fit: BoxFit.scaleDown, child: badge!) : badge!),
                               if (badge != null && trailing != null) const SizedBox(width: AppSpacing.s),
                               if (trailing != null)
                                 Flexible(
@@ -120,11 +138,20 @@ class ScorePanel extends StatelessWidget {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(AppSpacing.l, AppSpacing.m, AppSpacing.l, AppSpacing.m),
+                  padding: compact
+                      ? const EdgeInsets.fromLTRB(AppSpacing.m, AppSpacing.s, AppSpacing.m, AppSpacing.s)
+                      : const EdgeInsets.fromLTRB(AppSpacing.l, AppSpacing.m, AppSpacing.l, AppSpacing.m),
                   child: number,
                 ),
                 if (footer != null)
-                  Padding(padding: const EdgeInsets.fromLTRB(AppSpacing.m, 0, AppSpacing.m, AppSpacing.m), child: footer),
+                  _footerSlot(
+                    Padding(
+                      padding: compact
+                          ? const EdgeInsets.fromLTRB(AppSpacing.s, 0, AppSpacing.s, AppSpacing.s)
+                          : const EdgeInsets.fromLTRB(AppSpacing.m, 0, AppSpacing.m, AppSpacing.m),
+                      child: footer,
+                    ),
+                  ),
                 if (progress != null)
                   TweenAnimationBuilder<double>(
                     tween: Tween(end: progress!.clamp(0, 1).toDouble()),
@@ -142,7 +169,9 @@ class ScorePanel extends StatelessWidget {
         );
       case DartLookId.clean:
         return AppCard(
-          padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.l + 2, AppSpacing.xl, AppSpacing.xl),
+          padding: compact
+              ? const EdgeInsets.fromLTRB(AppSpacing.m, AppSpacing.m + 2, AppSpacing.m, AppSpacing.l)
+              : const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.l + 2, AppSpacing.xl, AppSpacing.xl),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -165,12 +194,13 @@ class ScorePanel extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.xs),
               number,
-              if (footer != null) ...[const SizedBox(height: AppSpacing.m), footer!],
+              if (footer != null) _footerSlot(Padding(padding: const EdgeInsets.only(top: AppSpacing.m), child: footer)),
               if (bar != null) ...[const SizedBox(height: AppSpacing.m), bar],
             ],
           ),
         );
       case DartLookId.lab:
+        final inset = compact ? AppSpacing.s + 2 : look.cardPadding;
         return AppCard(
           padding: EdgeInsets.zero,
           child: Column(
@@ -193,11 +223,10 @@ class ScorePanel extends StatelessWidget {
               ),
               Container(height: 1, color: theme.colorScheme.outline),
               Padding(
-                padding: EdgeInsets.fromLTRB(look.cardPadding, AppSpacing.s, look.cardPadding, AppSpacing.m),
+                padding: EdgeInsets.fromLTRB(inset, AppSpacing.s, inset, AppSpacing.m),
                 child: number,
               ),
-              if (footer != null)
-                Padding(padding: EdgeInsets.fromLTRB(look.cardPadding, 0, look.cardPadding, look.cardPadding), child: footer),
+              if (footer != null) _footerSlot(Padding(padding: EdgeInsets.fromLTRB(inset, 0, inset, inset), child: footer)),
               if (bar != null)
                 Padding(
                   padding: EdgeInsets.fromLTRB(look.cardPadding, 0, look.cardPadding, look.cardPadding),

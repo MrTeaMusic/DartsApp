@@ -10,6 +10,7 @@ export 'event_banner.dart';
 export 'hero_backdrop.dart';
 export 'look_picker_tile.dart';
 export 'score_panel.dart';
+export 'visit_table.dart';
 
 /// Karte mit einheitlichem Innenabstand. Rahmen, Schatten und Radius kommen
 /// vom Look: TV flach, Clean mit weichem Schatten, Lab mit feiner Linie.

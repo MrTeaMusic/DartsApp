@@ -3217,5 +3217,37 @@
     }
   },
   "liveFixEdited": "Von Hand korrigiert",
-  "liveFixAddDart": "Dart ergänzen"
+  "liveFixAddDart": "Dart ergänzen",
+  "visitTablePoints": "Punkte",
+  "visitTableDarts": "Darts",
+  "visitTableRest": "Rest",
+  "visitTableStart": "Start",
+  "visitTableBust": "Bust",
+  "visitTableRowSemantics": "{points} Punkte, Rest {rest}",
+  "@visitTableRowSemantics": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      },
+      "rest": {
+        "type": "int"
+      }
+    }
+  },
+  "visitTableRowBust": "Bust, Rest {rest}",
+  "@visitTableRowBust": {
+    "placeholders": {
+      "rest": {
+        "type": "int"
+      }
+    }
+  },
+  "visitTableRowStart": "Start {score}",
+  "@visitTableRowStart": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  }
 }

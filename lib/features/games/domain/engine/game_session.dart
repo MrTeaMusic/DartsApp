@@ -18,9 +18,13 @@ class VisitEndInput extends GameInput {
 
 /// Ein gespeicherter Dart mit seinem Platz im Spiel.
 class DartRecord {
-  const DartRecord(this.dart, {required this.visitIndex, required this.counted});
+  const DartRecord(this.dart, {required this.visitIndex, required this.counted, this.info});
   final DartThrow dart;
   final int visitIndex;
+
+  /// Angaben des Spiels zu diesem Dart (siehe `TrainingGame.lastDartInfo`),
+  /// `null` bei ignorierten Darts.
+  final Object? info;
 
   /// `false`, wenn das Spiel den Dart ignoriert hat (nach Bust/Checkout).
   final bool counted;
@@ -60,7 +64,8 @@ class GameSession {
   static DartRecord _apply(TrainingGame game, DartThrow dart) {
     final before = game.dartsThrown;
     game.throwDart(dart);
-    return DartRecord(dart, visitIndex: game.visitIndex, counted: game.dartsThrown > before);
+    final counted = game.dartsThrown > before;
+    return DartRecord(dart, visitIndex: game.visitIndex, counted: counted, info: counted ? game.lastDartInfo : null);
   }
 
   /// Aufnahme beenden. Doppelte Enden werden zusammengefasst.

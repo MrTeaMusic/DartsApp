@@ -133,6 +133,10 @@ abstract class TrainingGame {
   /// Die Aufnahme ist abgeschlossen (3 Darts, vorzeitig oder durch Takeout).
   void handleVisitEnd(List<DartThrow> visitDarts) {}
 
+  /// Spielspezifische Angaben zum letzten gezählten Dart, die `GameSession`
+  /// in den [DartRecord]s festhält (z. B. der Rest im X01). Standard: keine.
+  Object? get lastDartInfo => null;
+
   /// Felder, die auf dem Board hervorgehoben werden.
   Set<Segment> get targets;
 

@@ -29,6 +29,9 @@ der nächste ist ein Bot, dann beendet der Dart nur die Aufnahme.
   3-Dart-Average, geworfene Darts. Ein farbiger Balken zeigt, wer am Zug ist, ein gelber Punkt,
   wer im laufenden Leg Anwurf hatte. Bei möglichem Finish steht der Checkout-Weg in Gelb unter
   dem Rest des Spielers am Zug.
+* **Aufnahmen-Tabelle** unter jedem Namen: die letzten Aufnahmen des laufenden Legs mit Punkten
+  und Rest danach, neueste oben, Bust und Checkout markiert (Details in
+  [spielansicht.md](spielansicht.md)).
 * **Board** mit den Darts der laufenden Aufnahme – auch denen des Bots. Bei Menschen pulsiert
   das erste Feld des Checkout-Wegs.
 * **Aufnahme-Karte** mit den drei Dart-Plätzen; offene Plätze zeigen den Checkout-Weg in Gelb.

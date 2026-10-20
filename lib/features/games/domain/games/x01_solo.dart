@@ -34,6 +34,21 @@ class X01Leg {
       };
 }
 
+/// Was ein gezählter Dart im X01-Solo bewirkt hat (für die Aufnahmen-Tabelle).
+class X01DartInfo {
+  const X01DartInfo({required this.leg, required this.remaining, required this.bust, required this.legEnd});
+
+  /// Leg-Nummer (ab 1).
+  final int leg;
+
+  /// Rest nach dem Dart: 0 beim Checkout, nach Bust der Rest vor der Aufnahme.
+  final int remaining;
+  final bool bust;
+
+  /// Der Dart hat das Leg beendet (Checkout oder Dart-Limit erreicht).
+  final bool legEnd;
+}
+
 /// X01-Solo: 501 & Co. allein gegen die Uhr.
 ///
 /// Regeln:
@@ -133,8 +148,25 @@ class X01Solo extends TrainingGame {
     _visitCounted = false;
   }
 
+  X01DartInfo? _lastInfo;
+  int _afterRemaining = 0;
+  bool _dartBust = false;
+  bool _dartLegEnd = false;
+
+  @override
+  Object? get lastDartInfo => _lastInfo;
+
   @override
   void handleDart(DartThrow dart) {
+    final leg = legResults.length + 1;
+    _afterRemaining = remaining;
+    _dartBust = false;
+    _dartLegEnd = false;
+    _handle(dart);
+    _lastInfo = X01DartInfo(leg: leg, remaining: _afterRemaining, bust: _dartBust, legEnd: _dartLegEnd);
+  }
+
+  void _handle(DartThrow dart) {
     final s = dart.segment;
     if (opened && CheckoutRules.isCheckout(remaining, darts: 1, out: outMode)) checkoutDarts++;
     if (!opened) {
@@ -151,6 +183,7 @@ class X01Solo extends TrainingGame {
       return;
     }
     remaining -= s.score;
+    _afterRemaining = remaining;
     totalPoints += s.score;
     _visitPoints += s.score;
     _legDartPoints.add(s.score);
@@ -172,6 +205,8 @@ class X01Solo extends TrainingGame {
     _visitPoints = 0;
     remaining = _visitStartRemaining;
     opened = _visitStartOpened;
+    _afterRemaining = remaining;
+    _dartBust = true;
     events.add(GameEvent(GameEventType.bust, value: remaining));
     closeVisit();
     _checkLimit();
@@ -184,6 +219,7 @@ class X01Solo extends TrainingGame {
   }
 
   void _endLeg({required bool won, required int checkout}) {
+    _dartLegEnd = true;
     final first = _legDartPoints.take(9).toList();
     legResults.add(X01Leg(
       darts: legDarts,
