@@ -3300,6 +3300,13 @@
     }
   },
   "arenaPlayerYou": "Ich",
+  "arenaLiveChipPlain": "Nur Darts",
+  "arenaLiveColPoints": "Punkte",
+  "arenaLiveColAvg": "Ø",
+  "arenaLiveBest": "Beste",
+  "arenaLiveVisitsShort": "Aufn.",
+  "arenaLiveDartsSession": "Darts in der Session",
+  "arenaLiveEndedTitle": "Session beendet",
   "statsTabTempo": "Tempo",
   "settingsTempoHint": "Wurftempo anzeigen",
   "settingsTempoHintHint": "Zeigt in der Spielansicht leise die Zeit der Aufnahme. Ohne Countdown und ohne Warnfarben.",

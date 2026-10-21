@@ -82,6 +82,59 @@ scrollt die Seite. Manuelle Eingabe zeigt das Tastenfeld statt der Schalterleist
 
 Screenshots der Entwürfe liegen unter `screens/entwurf-spielansicht-arena/`.
 
+### Dialoge und Blätter
+
+`showDialog` und `showModalBottomSheet` übernehmen das Theme des Kontexts, mit
+dem sie aufgerufen werden. Die Arena-Spielansichten (Match, X01-Solo, Autodarts
+Live) legen deshalb `Theme(ArenaPalette.theme)` **über** das `Scaffold` und
+rufen Dialoge und Blätter mit dem Kontext darunter (`Builder`) auf. Sonst waren
+Verlassen-Dialog und Dart-Korrektur in einem hellen Look (Clean hell) weiß auf
+dem dunklen Spielfeld. `test/widgets/arena_test.dart` prüft das im hellen Look.
+Auf dem Telefon fehlt in der alten Kopfzeile der Vollbild-Knopf, und der
+Spieltitel schrumpft, statt abgeschnitten zu werden.
+
+### Autodarts Live in der Arena
+
+Code: `lib/features/autodarts_live/presentation/arena_live_view.dart`. Gilt für
+`autodarts_live` und `x01_live`, sobald `settings.arenaPlay` wahr ist und die
+Session läuft (oder beendet ist). Mit „Wie das gewählte Design“ und einem
+anderen Look bleibt die bisherige Live-Seite (mit Navigation) unverändert.
+
+* Gleiche Maße wie das Match: Kopfzeile, Wurfleiste, Board in der Mitte, links
+  **eine** Tafel. Einen Gegner erfindet die Ansicht nicht: Autodarts meldet
+  nur die eigenen Darts (siehe [autodarts-live.md](autodarts-live.md)).
+* **Wurfleiste:** die drei Darts der laufenden Aufnahme. Antippen öffnet das
+  Korrekturblatt, das „+“ im ersten freien Feld fügt einen Dart hinzu, ein
+  Stift markiert von Hand gesetzte oder geänderte Darts. Nach dem Takeout steht
+  ohne X01 die letzte Aufnahme gedämpft in der Leiste.
+* **Tafel mit „X01 mitzählen“:** große Zahl = Rest, Schild = Punkte der
+  Aufnahme, darunter Leg-Durchschnitt, Darts im Leg und gewonnene Legs. Die
+  Tabelle zeigt Punkte | Rest je Aufnahme des laufenden Legs (Bust rot mit
+  Hinweis, Checkout hell). Nach einem Checkout bleibt das gewonnene Leg
+  stehen, bis die nächste Aufnahme beginnt (`LiveX01.legRows`).
+* **Tafel ohne X01:** große Zahl = Ø der Session (3-Dart-Durchschnitt der
+  rohen Darts), Tabelle Punkte | laufender Ø nach jeder Aufnahme.
+* **Board:** die echten Positionen der Darts der laufenden Aufnahme; die
+  Heatmap der Session lässt sich zuschalten.
+* **Schalterleiste:** „Leg verloren“ (nur X01), „Beenden“, Korrekturen
+  (letzte Aufnahmen), Heatmap, „Leg neu“ (nur X01). Es gibt kein Start, Stopp
+  oder Zurücksetzen zum Board Manager: die Ansicht ist rein passiv.
+* **Session:** breit in der rechten Spalte (X01-Schalter und Einstellungen,
+  Statistik, Treffer nach Feld, letzte Aufnahmen, Hinweise); auf dem Telefon
+  hinter dem Symbol oben rechts in einem Blatt. Die Kennzahlen darin gelten
+  für die ganze Session, nicht nur für das Leg.
+* Während die Arena-Live-Ansicht offen ist, blendet `AdaptiveScaffold` Seiten-
+  und Navigationsleiste aus (wie Match und Solo); „Verlassen“ geht zurück zur
+  Spielauswahl.
+* Nach „Beenden“ steht statt Board und Wurfleiste die Zusammenfassung der
+  gespeicherten Session in der Mitte.
+
+Bausteine: `ArenaDartSlot` (`edited`, `addHint`), `ArenaPlayer` (`heroText`,
+`caption`, `scoreRows`, `scoreHeaders`, `stats`) und `ArenaScreen.sidePanel`
+für die rechte Spalte neben einer einzelnen Tafel.
+
+Screenshots der Entwürfe liegen unter `screens/entwurf-arena-live/`.
+
 # Spielansicht der Looks: Aufnahmen-Tabelle
 
 Im Match und im X01-Solo steht unter dem Rest eine kleine Tabelle der **letzten Aufnahmen**
@@ -156,8 +209,10 @@ Lab mit feinen Linien und Ziffern mit durchgestrichener Null.
 
 ## Live-Ansicht
 
-Die Autodarts-Live-Ansicht (`autodarts_live`) zeigt ihre eigene, bearbeitbare Liste der letzten
-Aufnahmen mit den einzelnen Darts. Sie bleibt, wie sie ist; die Tabelle gibt es dort nicht.
+Die Autodarts-Live-Ansicht (`autodarts_live`) zeigt in den Looks ihre eigene, bearbeitbare Liste der
+letzten Aufnahmen mit den einzelnen Darts. Sie bleibt, wie sie ist; die Tabelle gibt es dort nicht.
+In der Arena-Spielansicht hat sie dagegen eine eigene Ansicht mit Tafel und Wurfleiste (siehe oben,
+„Autodarts Live in der Arena“).
 
 ## Wurftempo
 

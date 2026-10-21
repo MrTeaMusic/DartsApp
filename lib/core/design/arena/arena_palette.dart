@@ -46,6 +46,9 @@ abstract final class ArenaPalette {
 
   /// Blau der Schaltflächen und der Schalterleiste dahinter.
   static const Color blue = Color(0xFF0955DF);
+
+  /// Helleres Blau für kleine Symbole auf dunkler Fläche (Stift, „+“).
+  static const Color blueLight = Color(0xFF6FA2FF);
   static const Color pill = Color(0xFF002E8B);
 
   /// Schwarzes Schild (Name, Punkte der letzten Aufnahme).

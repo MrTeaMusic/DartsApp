@@ -26,7 +26,7 @@ void main() {
       kind == DartSourceKind.autodartsLocal ? live = FakeLiveSource() : testSourceFactory(kind, host, port);
 
   Future<ProviderContainer> open(WidgetTester tester, {required Size size}) async {
-    final c = await pumpApp(tester, size: size, factory: factory, prefs: {'settings.sourceKind': 'autodartsLocal'});
+    final c = await pumpApp(tester, size: size, factory: factory, prefs: {'settings.sourceKind': 'autodartsLocal', 'settings.playView': 'look'});
     c.read(routerProvider).go(Routes.games);
     await settle(tester);
     await tester.tap(find.byKey(const Key('open-autodarts-live')));

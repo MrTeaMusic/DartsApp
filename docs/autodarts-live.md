@@ -112,6 +112,24 @@ korrigiert allein, die Autodarts-Seite bleibt unberührt (kein Befehl, keine Abf
 * Die Markierung „von Hand“ überlebt einen Absturz (Quelle in der Datenbank), nicht aber das Festhalten:
   Nach einem Neustart beginnt ohnehin eine neue Session.
 
+## Ansicht: Arena
+
+Ist die Spielansicht Arena (Standard, siehe [spielansicht.md](spielansicht.md)), zeigt der Live-Bildschirm
+die Arena-Ansicht des Matches, nur mit **einer** Tafel für dich. Einen Gegner gibt es dort nicht, weil
+Autodarts lokal nur deine Darts meldet.
+
+* Oben die Wurfleiste mit den drei Darts der laufenden Aufnahme. Antippen öffnet das Korrekturblatt (Feld
+  ändern, Dart entfernen), das „+“ fügt einen Dart hinzu, ein Stift zeigt Darts, die von Hand geändert oder
+  ergänzt wurden.
+* In der Mitte das Board mit den echten Positionen der Darts; die Heatmap der Session ist zuschaltbar.
+* Tafel mit „X01 mitzählen“: Rest und Punkte der Aufnahme, Leg-Durchschnitt und Tabelle Punkte | Rest
+  (Bust und Checkout sind markiert). Ohne X01: Durchschnitt der Session und je Aufnahme Punkte | laufender Ø.
+* Aufnahmen löschen und Darts ändern geht über die Schalterleiste („Korrekturen“, letzte Aufnahmen) und die
+  rechte Spalte; auf dem Telefon liegen Session-Kennzahlen, Verteilung und letzte Aufnahmen hinter dem
+  Symbol oben rechts. „Leg verloren“, „Leg neu“ und „Beenden“ sind Knöpfe der Schalterleiste.
+* Die Ansicht sendet nichts an den Board Manager: kein Start, Stopp oder Zurücksetzen.
+* Mit „Wie das gewählte Design“ in einem anderen Look gilt weiter die bisherige Seite.
+
 ## Sessions
 
 * Jedes Öffnen des Live-Bildschirms ist eine eigene Session. Sie entsteht mit dem ersten Dart; ohne Darts

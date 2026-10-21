@@ -13,12 +13,34 @@ import 'arena_player_panel.dart';
 /// empfohlene Wurf in Gelb.
 @immutable
 class ArenaDartSlot {
-  const ArenaDartSlot({this.segment, this.planned, this.plannedColor, this.onTap, this.slotKey});
+  const ArenaDartSlot({
+    this.segment,
+    this.planned,
+    this.plannedColor,
+    this.onTap,
+    this.slotKey,
+    this.edited = false,
+    this.dim = false,
+    this.addHint = false,
+    this.editedTooltip,
+    this.addTooltip,
+  });
   final Segment? segment;
   final Segment? planned;
   final Color? plannedColor;
   final VoidCallback? onTap;
   final Key? slotKey;
+
+  /// Von Hand gesetzter Dart: kleiner Stift in der Ecke.
+  final bool edited;
+
+  /// Gedämpft (z. B. die letzte Aufnahme, solange noch kein Dart der neuen kam).
+  final bool dim;
+
+  /// Leerer Platz, der sich antippen lässt, um einen Dart zu ergänzen („+“).
+  final bool addHint;
+  final String? editedTooltip;
+  final String? addTooltip;
 }
 
 /// Leiste über dem Board: drei Plätze für die Darts der Aufnahme und rechts
@@ -61,27 +83,52 @@ class ArenaDartBar extends StatelessWidget {
                         key: slot.slotKey,
                         borderRadius: BorderRadius.circular(height * 0.3),
                         onTap: slot.onTap,
-                        child: Center(
-                          child: slot.segment != null
-                              ? FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  child: Text(
-                                    slot.segment!.name,
-                                    style: _style(fontSize, segmentColor(context, slot.segment!)),
-                                  ),
-                                )
-                              : slot.planned != null
-                              ? FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  child: Text(
-                                    slot.planned!.name,
-                                    style: _style(fontSize, (slot.plannedColor ?? ArenaPalette.hint).withValues(alpha: 0.7)),
-                                  ),
-                                )
-                              : CustomPaint(
-                                  size: Size(height * 0.9, height * 0.3),
-                                  painter: ArenaDartIconPainter(iconColor),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Center(
+                              child: slot.segment != null
+                                  ? FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        slot.segment!.name,
+                                        style: _style(fontSize, segmentColor(context, slot.segment!).withValues(alpha: slot.dim ? 0.6 : 1)),
+                                      ),
+                                    )
+                                  : slot.planned != null
+                                  ? FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        slot.planned!.name,
+                                        style: _style(fontSize, (slot.plannedColor ?? ArenaPalette.hint).withValues(alpha: 0.7)),
+                                      ),
+                                    )
+                                  : CustomPaint(
+                                      size: Size(height * 0.9, height * 0.3),
+                                      painter: ArenaDartIconPainter(iconColor),
+                                    ),
+                            ),
+                            if (slot.edited)
+                              Positioned(
+                                top: height * 0.1,
+                                right: height * 0.12,
+                                child: _Corner(
+                                  tooltip: slot.editedTooltip,
+                                  icon: Icons.edit_rounded,
+                                  size: math.max(11, height * 0.22),
                                 ),
+                              ),
+                            if (slot.addHint && slot.segment == null)
+                              Positioned(
+                                bottom: height * 0.08,
+                                right: height * 0.12,
+                                child: _Corner(
+                                  tooltip: slot.addTooltip,
+                                  icon: Icons.add_circle_outline_rounded,
+                                  size: math.max(11, height * 0.24),
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     ),
@@ -120,6 +167,20 @@ class ArenaDartBar extends StatelessWidget {
     height: 1.0,
     fontFeatures: AppTypography.tabular,
   );
+}
+
+/// Kleines Symbol in der Ecke eines Dart-Platzes (Stift, „+“).
+class _Corner extends StatelessWidget {
+  const _Corner({required this.tooltip, required this.icon, required this.size});
+  final String? tooltip;
+  final IconData icon;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final w = Icon(icon, size: size, color: ArenaPalette.blueLight);
+    return tooltip == null ? w : Tooltip(message: tooltip!, child: w);
+  }
 }
 
 /// Kleines Schild in der Kopfzeile („501“, „Erster bis 1 Leg“, „SI-DO“).
@@ -255,6 +316,9 @@ class ArenaActionBar extends StatelessWidget {
     this.icons = const [],
     this.height = 44,
     this.showUndoNext = true,
+    this.showUndo = true,
+    this.undoIcon = Icons.undo_rounded,
+    this.nextIcon = Icons.skip_next_rounded,
   });
   final Key undoKey;
   final VoidCallback? onUndo;
@@ -270,6 +334,11 @@ class ArenaActionBar extends StatelessWidget {
   /// Beim Tastenfeld der manuellen Eingabe gibt es beides dort.
   final bool showUndoNext;
 
+  /// Nur die rechte Schaltfläche (z. B. „Beenden“ im Live-Modus).
+  final bool showUndo;
+  final IconData undoIcon;
+  final IconData nextIcon;
+
   @override
   Widget build(BuildContext context) {
     final inner = height - 10;
@@ -284,25 +353,30 @@ class ArenaActionBar extends StatelessWidget {
         child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ...icons,
+          for (final (i, icon) in icons.indexed) ...[
+            if (i > 0) const SizedBox(width: 6),
+            icon,
+          ],
           if (showUndoNext) ...[
             if (icons.isNotEmpty) const SizedBox(width: 6),
-            _Pill(
-              key: undoKey,
-              height: inner,
-              onPressed: onUndo,
-              filled: false,
-              icon: Icons.undo_rounded,
-              label: undoLabel,
-              style: label,
-            ),
-            const SizedBox(width: 6),
+            if (showUndo) ...[
+              _Pill(
+                key: undoKey,
+                height: inner,
+                onPressed: onUndo,
+                filled: false,
+                icon: undoIcon,
+                label: undoLabel,
+                style: label,
+              ),
+              const SizedBox(width: 6),
+            ],
             _Pill(
               key: nextKey,
               height: inner,
               onPressed: onNext,
               filled: true,
-              icon: Icons.skip_next_rounded,
+              icon: nextIcon,
               label: nextLabel,
               style: label,
             ),
@@ -388,6 +462,7 @@ class ArenaMessages extends StatelessWidget {
     this.status,
     this.statusKey,
     this.statusMuted = false,
+    this.statusColor,
     this.event,
     this.eventKey,
     this.eventColor = ArenaPalette.blue,
@@ -400,6 +475,9 @@ class ArenaMessages extends StatelessWidget {
   final String? status;
   final Key? statusKey;
   final bool statusMuted;
+
+  /// Abweichende Farbe des Status (z. B. Warnung bei fehlender Verbindung).
+  final Color? statusColor;
   final String? event;
   final Key? eventKey;
   final Color eventColor;
@@ -452,7 +530,7 @@ class ArenaMessages extends StatelessWidget {
               fontFamily: AppTypography.family,
               fontSize: 14 * t,
               fontWeight: FontWeight.w500,
-              color: statusMuted ? ArenaPalette.textMuted : Colors.white.withValues(alpha: 0.9),
+              color: statusColor ?? (statusMuted ? ArenaPalette.textMuted : Colors.white.withValues(alpha: 0.9)),
             ),
           ),
         if (tempo != null)

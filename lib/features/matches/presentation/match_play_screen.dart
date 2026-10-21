@@ -156,22 +156,29 @@ class MatchPlayScreen extends ConsumerWidget {
 
     // Arena: drei Spalten mit großen Tafeln und Wurftabelle (Standard).
     if (ref.watch(settingsProvider.select((s) => s.arenaPlay))) {
+      // Das Arena-Theme gilt für alles darunter, auch für Dialoge und Blätter
+      // (Verlassen, Korrigieren) und die Hinweise am unteren Rand.
       return _SaveOnBackground(
-        child: PopScope(
-          canPop: false,
-          onPopInvokedWithResult: (didPop, _) {
-            if (!didPop) unawaited(leave(context, ref));
-          },
-          child: Scaffold(
-            backgroundColor: ArenaPalette.background,
-            body: SafeArea(
-              child: CelebrationOverlay(
-                child: _ArenaMatchView(
-                  state: state,
-                  route: route,
-                  board: board,
-                  zoom: zoom(compact: true),
-                  zoomActive: zoomTarget != null,
+        child: Theme(
+          data: ArenaPalette.theme,
+          child: Builder(
+            builder: (context) => PopScope(
+              canPop: false,
+              onPopInvokedWithResult: (didPop, _) {
+                if (!didPop) unawaited(leave(context, ref));
+              },
+              child: Scaffold(
+                backgroundColor: ArenaPalette.background,
+                body: SafeArea(
+                  child: CelebrationOverlay(
+                    child: _ArenaMatchView(
+                      state: state,
+                      route: route,
+                      board: board,
+                      zoom: zoom(compact: true),
+                      zoomActive: zoomTarget != null,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -198,7 +205,7 @@ class MatchPlayScreen extends ConsumerWidget {
             SourceStatusBadge(compact: MediaQuery.sizeOf(context).width < 600),
             const SizedBox(width: AppSpacing.xs),
             const CallerMuteButton(),
-            const FullscreenButton(),
+            if (!(context.look.isArena && MediaQuery.sizeOf(context).width < 600)) const FullscreenButton(),
             const SizedBox(width: AppSpacing.s),
           ],
         ),

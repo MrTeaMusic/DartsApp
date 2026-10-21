@@ -224,7 +224,7 @@ class _SimulatorControls extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: source.undoLast,
                   icon: const Icon(Icons.undo_rounded),
-                  label: Text(l10n.boardUndo),
+                  label: FittedBox(fit: BoxFit.scaleDown, child: Text(l10n.boardUndo, maxLines: 1)),
                 ),
               ),
               const SizedBox(width: AppSpacing.m),
@@ -232,7 +232,7 @@ class _SimulatorControls extends StatelessWidget {
                 child: FilledButton.icon(
                   onPressed: source.finishTakeout,
                   icon: const Icon(Icons.skip_next_rounded),
-                  label: Text(l10n.boardNext),
+                  label: FittedBox(fit: BoxFit.scaleDown, child: Text(l10n.boardNext, maxLines: 1)),
                 ),
               ),
             ],
