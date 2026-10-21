@@ -124,6 +124,18 @@ class SettingsScreen extends ConsumerWidget {
                   secondary: const Icon(Icons.zoom_in_rounded),
                 ),
               ),
+              const SizedBox(height: AppSpacing.m),
+              AppCard(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                child: SwitchListTile(
+                  key: const Key('tempo-hint-switch'),
+                  value: settings.tempoHint,
+                  onChanged: (v) => notifier.update((x) => x.copyWith(tempoHint: v)),
+                  title: Text(l10n.settingsTempoHint),
+                  subtitle: Text(l10n.settingsTempoHintHint),
+                  secondary: const Icon(Icons.timer_outlined),
+                ),
+              ),
               const SectionGap(),
               SectionHeader(l10n.settingsDailyGoal),
               AppCard(

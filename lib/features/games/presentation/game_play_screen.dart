@@ -32,6 +32,8 @@ import '../../plans/presentation/plan_run_controller.dart';
 import '../../plans/presentation/plan_run_panel.dart';
 import '../../profiles/presentation/active_player.dart';
 import '../../progress/presentation/celebration_banner.dart';
+import '../../stats/domain/tempo_stats.dart';
+import '../../stats/presentation/tempo_hint.dart';
 import '../../simulator/presentation/manual_keypad.dart';
 import '../../simulator/presentation/segment_picker.dart';
 import '../../../core/widgets/fullscreen_button.dart';
@@ -227,6 +229,10 @@ class GamePlayScreen extends ConsumerWidget {
   }
 }
 
+/// Tempo der letzten Aufnahmen des laufenden Spiels (nur Darts vom Board).
+LiveTempo? _gameTempo(ActiveGame active) =>
+    LiveTempo.ofDarts([for (final r in active.session.records) (visit: r.visitIndex, dart: r.dart)]);
+
 /// Arena-Ansicht des X01-Solos: eine Tafel links mit der Wurftabelle, rechts
 /// bleibt der Platz leer, in der Mitte Wurfleiste, Schalter und Board.
 class _ArenaSoloView extends ConsumerWidget {
@@ -307,6 +313,7 @@ class _ArenaSoloView extends ConsumerWidget {
     final bust = waiting && thrown > 0 && ((game.lastDartInfo as X01DartInfo?)?.bust ?? false);
     final event = active.events.isEmpty ? null : active.events.last;
     final tone = event == null ? EventTone.neutral : eventTone(event.type);
+    final tempo = tempoHintLine(ref, l10n, _gameTempo(active));
     final messages = ArenaMessages(
       hint: route != null && route.isNotEmpty
           ? '${l10n.visitRoute}: ${route.map((s) => s.name).join(' · ')}'
@@ -322,6 +329,7 @@ class _ArenaSoloView extends ConsumerWidget {
         EventTone.negative => ArenaPalette.danger,
         EventTone.neutral => ArenaPalette.blue,
       },
+      tempo: tempo,
     );
 
     final keypad = !active.ended && source is ManualSource ? ManualKeypad(source: source) : null;
@@ -393,6 +401,7 @@ class _ArenaSoloView extends ConsumerWidget {
         ],
       ),
       messages: messages,
+      messagesExtra: tempo == null ? 0 : 18,
       result: active.ended
           ? SingleChildScrollView(
               child: Column(
@@ -797,6 +806,7 @@ class _VisitCard extends ConsumerWidget {
                 ),
             ],
           ),
+          TempoHint(tempo: _gameTempo(active)),
         ],
       ),
     );

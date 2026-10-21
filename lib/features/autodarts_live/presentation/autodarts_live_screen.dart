@@ -17,6 +17,8 @@ import '../../dart_source/domain/dart_source.dart';
 import '../../dart_source/presentation/dart_source_providers.dart';
 import '../../dart_source/presentation/source_status_badge.dart';
 import '../../games/domain/engine/game_display.dart';
+import '../../stats/domain/tempo_stats.dart';
+import '../../stats/presentation/tempo_hint.dart';
 import '../domain/live_recorder.dart';
 import '../domain/live_stats.dart';
 import '../domain/live_x01.dart';
@@ -403,6 +405,7 @@ class _VisitPanel extends ConsumerWidget {
                     ),
                 ],
               ),
+              TempoHint(tempo: LiveTempo.ofVisits([...live.recentVisits.reversed, live.current])),
               if (waiting && x01 == null) ...[
                 const SizedBox(height: AppSpacing.s),
                 Text(l10n.liveWaiting, textAlign: TextAlign.center, style: theme.textTheme.bodySmall),

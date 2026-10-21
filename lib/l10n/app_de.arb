@@ -3292,5 +3292,213 @@
       }
     }
   },
-  "arenaPlayerYou": "Ich"
+  "arenaPlayerYou": "Ich",
+  "statsTabTempo": "Tempo",
+  "settingsTempoHint": "Wurftempo anzeigen",
+  "settingsTempoHintHint": "Zeigt in der Spielansicht leise die Zeit der Aufnahme. Ohne Countdown und ohne Warnfarben.",
+  "tempoLiveVisit": "Aufnahme {time}",
+  "@tempoLiveVisit": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "tempoLivePerDart": "Ø {time} je Dart",
+  "@tempoLivePerDart": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "tempoEmptyTitle": "Noch keine Wurfzeiten",
+  "tempoEmptyText": "Das Tempo braucht Darts vom Autodarts-Board, denn nur dort misst die Zeit das Werfen. Simulator und manuelle Eingabe zählen nicht.",
+  "tempoEmptySkipped": "Im Zeitraum: {count} Sessions ohne verlässliche Zeiten.",
+  "@tempoEmptySkipped": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tempoFigures": "Wurftempo",
+  "tempoPerDart": "Pro Dart",
+  "tempoPerVisit": "Pro Aufnahme",
+  "tempoWithTakeout": "Mit Takeout",
+  "tempoPerDartCaption": "Median aus {count} Abständen",
+  "@tempoPerDartCaption": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tempoPerVisitCaption": "Erster bis dritter Dart · {count} Aufnahmen",
+  "@tempoPerVisitCaption": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tempoWithTakeoutCaption": "Bis zum ersten Dart der nächsten Aufnahme · {count} Aufnahmen",
+  "@tempoWithTakeoutCaption": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tempoTooLittle": "zu wenig Daten",
+  "tempoTooLittleCount": "Zu wenig Daten ({count} von {min})",
+  "@tempoTooLittleCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "tempoTrendTitle": "Tempo über die Wochen",
+  "tempoTrendHint": "Median der Wurfabstände je Woche (Wochenbeginn), letzte {weeks} Wochen. Wochen mit weniger als {min} Abständen fehlen.",
+  "@tempoTrendHint": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      },
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "tempoTrendEmpty": "Zu wenig Daten für einen Verlauf: Er braucht mindestens zwei Wochen mit je {min} Wurfabständen.",
+  "@tempoTrendEmpty": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "tempoTrendValue": "{time} je Dart",
+  "@tempoTrendValue": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "tempoScoringTitle": "Tempo und Punkte",
+  "tempoBandFast": "unter {to} s",
+  "@tempoBandFast": {
+    "placeholders": {
+      "to": {
+        "type": "int"
+      }
+    }
+  },
+  "tempoBandMedium": "{from}–{to} s",
+  "@tempoBandMedium": {
+    "placeholders": {
+      "from": {
+        "type": "int"
+      },
+      "to": {
+        "type": "int"
+      }
+    }
+  },
+  "tempoBandSlow": "über {from} s",
+  "@tempoBandSlow": {
+    "placeholders": {
+      "from": {
+        "type": "int"
+      }
+    }
+  },
+  "tempoBandValue": "Ø {points}",
+  "@tempoBandValue": {
+    "placeholders": {
+      "points": {
+        "type": "String"
+      }
+    }
+  },
+  "tempoBandVisits": "{count} Aufn.",
+  "@tempoBandVisits": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tempoBandTooLittle": "zu wenig Daten",
+  "tempoScoringHint": "Volle Aufnahmen aus Scoring-Spielen und X01, sortiert nach der Zeit vom ersten bis zum dritten Dart (Punkte je Aufnahme). Das zeigt, was zusammen vorkommt, nicht was wovon kommt.",
+  "tempoSlowMore": "Aufnahmen über {slow} s bringen im Schnitt {diff} Punkte mehr als unter {fast} s.",
+  "@tempoSlowMore": {
+    "placeholders": {
+      "slow": {
+        "type": "int"
+      },
+      "fast": {
+        "type": "int"
+      },
+      "diff": {
+        "type": "String"
+      }
+    }
+  },
+  "tempoSlowLess": "Aufnahmen über {slow} s bringen im Schnitt {diff} Punkte weniger als unter {fast} s.",
+  "@tempoSlowLess": {
+    "placeholders": {
+      "slow": {
+        "type": "int"
+      },
+      "fast": {
+        "type": "int"
+      },
+      "diff": {
+        "type": "String"
+      }
+    }
+  },
+  "tempoSlowSame": "Langsame und schnelle Aufnahmen bringen im Schnitt gleich viele Punkte.",
+  "tempoGroupsTitle": "Training, Match, Online",
+  "tempoGroupTraining": "Training",
+  "tempoGroupMatch": "Match",
+  "tempoGroupLive": "Online",
+  "tempoGroupVisits": "{count} Aufnahmen",
+  "@tempoGroupVisits": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tempoGroupsHint": "Mit Takeout gibt es nur im Training. Im Match und online wirft zwischen deinen Aufnahmen jemand anderes.",
+  "tempoUsedTitle": "Was zählt",
+  "tempoUsed": "{used} von {total} Sessions im Zeitraum haben verlässliche Zeiten.",
+  "@tempoUsed": {
+    "placeholders": {
+      "used": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "tempoRules": "Gezählt werden nur Darts vom Autodarts-Board, deren Zeit nicht nachträglich entstanden ist. Ausgelassen werden Simulator, manuelle Eingabe, von Hand korrigierte oder ergänzte Darts, fortgesetzte Aufnahmen, Abstände unter 0,5 s und Pausen über 60 s. Es zählt immer der Median, nicht der Mittelwert.",
+  "tempoTrainingOnly": "Nur im Training gemessen",
+  "tempoMeasured": "Gemessen",
+  "tempoMeasuredCaption": "Aufnahmen aus {count} Sessions",
+  "@tempoMeasuredCaption": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

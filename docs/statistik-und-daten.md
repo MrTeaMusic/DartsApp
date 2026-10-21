@@ -7,7 +7,7 @@ optional gefiltert auf ein Spiel. Grundlage sind abgeschlossene Sessions und ihr
 Darts, die nach einem Bust oder Checkout noch fielen, zählen nicht. Die Berechnung steckt komplett im
 `StatsCalculator` (reine Dart-Klasse ohne Datenbank, mit Unit-Tests).
 
-Die Statistik hat acht Reiter:
+Die Statistik hat neun Reiter:
 
 * **Überblick:** Serie und Ziele, Kennzahlen mit Vergleich zum Vorzeitraum, Darts pro Tag (bis 30
   Tage) bzw. pro Woche (90 Tage, alles), Trainingsmuster nach Wochentag und Tageszeit.
@@ -21,6 +21,8 @@ Die Statistik hat acht Reiter:
 * **Streuung:** aus den Positionen (Autodarts, Simulator) je Zielfeld die mittlere Abweichung,
   Streuung (1-Sigma-Ellipse), Quote und ein Tipp, dazu die Tendenz insgesamt; Auswahl Training/Match.
   Siehe `docs/streuungs-analyse.md`.
+* **Tempo:** Median der Zeit je Dart und je Aufnahme (nur Darts vom Board, mit Mindestmenge), Verlauf
+  über 12 Wochen, Tempo gegen Punkte und Training/Match/Live. Siehe `docs/wurftempo.md`.
 * **Spiele:** Verlauf jeder Kennzahl eines Spiels mit gleitendem Durchschnitt, Bestwert, letzter Wert,
   Durchschnitt der letzten fünf, Liste aller Spiele mit Trefferquote aufs Ziel.
 * **Rekorde:** persönliche Rekorde und Bestwerte je Spiel mit Datum, immer über alle Zeiträume.

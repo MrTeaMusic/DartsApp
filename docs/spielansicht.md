@@ -158,3 +158,9 @@ Lab mit feinen Linien und Ziffern mit durchgestrichener Null.
 
 Die Autodarts-Live-Ansicht (`autodarts_live`) zeigt ihre eigene, bearbeitbare Liste der letzten
 Aufnahmen mit den einzelnen Darts. Sie bleibt, wie sie ist; die Tabelle gibt es dort nicht.
+
+## Wurftempo
+
+Unter den Meldungen am Board (Arena) bzw. in der Karte der aktuellen Aufnahme (TV, Clean, Lab) steht in
+gedämpfter Schrift eine Zeile wie „Aufnahme 9 s · Ø 3,1 s je Dart“. Sie ist in den Optionen abschaltbar und
+hat weder Zähler noch Warnfarbe; Einzelheiten in `docs/wurftempo.md`.

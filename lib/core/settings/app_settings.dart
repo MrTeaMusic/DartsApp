@@ -27,6 +27,7 @@ class AppSettings {
     this.look = DartLookId.tv,
     this.boardStyle = BoardStyle.tournament,
     this.doubleZoom = true,
+    this.tempoHint = true,
     this.playView = PlayView.arena,
     this.themeMode = ThemeMode.system,
     this.sourceKind = DartSourceKind.simulator,
@@ -57,6 +58,10 @@ class AppSettings {
 
   /// Vergrößerter Ausschnitt des Doppels, wenn eins geworfen werden muss.
   final bool doubleZoom;
+
+  /// Leises Wurftempo (Sekunden der Aufnahme) in den Spielansichten. Die
+  /// Statistik „Tempo“ gibt es immer.
+  final bool tempoHint;
 
   /// Aufbau der X01-Spielansichten (Optionen → Darstellung).
   final PlayView playView;
@@ -96,6 +101,7 @@ class AppSettings {
     DartLookId? look,
     BoardStyle? boardStyle,
     bool? doubleZoom,
+    bool? tempoHint,
     PlayView? playView,
     ThemeMode? themeMode,
     DartSourceKind? sourceKind,
@@ -117,6 +123,7 @@ class AppSettings {
         look: look ?? this.look,
         boardStyle: boardStyle ?? this.boardStyle,
         doubleZoom: doubleZoom ?? this.doubleZoom,
+        tempoHint: tempoHint ?? this.tempoHint,
         playView: playView ?? this.playView,
         themeMode: themeMode ?? this.themeMode,
         sourceKind: sourceKind ?? this.sourceKind,
@@ -138,6 +145,7 @@ class AppSettings {
   static const _kLook = 'settings.look';
   static const _kBoardStyle = 'settings.boardStyle';
   static const _kDoubleZoom = 'settings.doubleZoom';
+  static const _kTempoHint = 'settings.tempoHint';
   static const _kPlayView = 'settings.playView';
   static const _kTheme = 'settings.themeMode';
   static const _kSource = 'settings.sourceKind';
@@ -163,6 +171,7 @@ class AppSettings {
       look: DartLookId.byName(prefs.getString(_kLook)),
       boardStyle: BoardStyle.byName(prefs.getString(_kBoardStyle)),
       doubleZoom: prefs.getBool(_kDoubleZoom) ?? d.doubleZoom,
+      tempoHint: prefs.getBool(_kTempoHint) ?? d.tempoHint,
       playView: PlayView.byName(prefs.getString(_kPlayView)),
       themeMode: byName(ThemeMode.values, prefs.getString(_kTheme), d.themeMode),
       sourceKind: byName(DartSourceKind.values, prefs.getString(_kSource), d.sourceKind),
@@ -186,6 +195,7 @@ class AppSettings {
     await prefs.setString(_kLook, look.name);
     await prefs.setString(_kBoardStyle, boardStyle.name);
     await prefs.setBool(_kDoubleZoom, doubleZoom);
+    await prefs.setBool(_kTempoHint, tempoHint);
     await prefs.setString(_kPlayView, playView.name);
     await prefs.setString(_kTheme, themeMode.name);
     await prefs.setString(_kSource, sourceKind.name);
