@@ -27,6 +27,8 @@ import '../../dart_source/data/simulator_source.dart';
 import '../../dart_source/presentation/dart_source_providers.dart';
 import '../../dart_source/presentation/source_status_badge.dart';
 import '../../progress/presentation/celebration_banner.dart';
+import '../../stats/domain/tempo_stats.dart';
+import '../../stats/presentation/tempo_hint.dart';
 import '../../games/domain/engine/game_display.dart';
 import '../../simulator/presentation/manual_keypad.dart';
 import '../../simulator/presentation/segment_picker.dart';
@@ -42,6 +44,23 @@ import 'match_texts.dart';
 TextStyle _matchScore(BuildContext context) {
   final style = ScorePanel.valueStyle(context, hero: false);
   return style.copyWith(fontSize: (style.fontSize ?? 96) * 0.6);
+}
+
+/// Tempo des Menschen, der gerade wirft; im Spiel gegen CPUs auch, solange der
+/// Bot dran ist (dann zeigt es seine letzte Aufnahme). Bots haben keine
+/// Zeiten, die etwas messen.
+LiveTempo? _matchTempo(MatchState state) {
+  final players = state.setup.players;
+  final human = state.humanTurn
+      ? state.match.current
+      : players.where((p) => !p.isBot).length == 1
+      ? players.indexWhere((p) => !p.isBot)
+      : -1;
+  if (human < 0) return null;
+  return LiveTempo.ofDarts([
+    for (final r in state.session.records)
+      if (r.player == human) (visit: r.visitSerial, dart: r.dart),
+  ]);
 }
 
 /// Spielansicht eines Matches: Anzeigetafel je Spieler, Board mit den Darts
@@ -362,6 +381,7 @@ class _ArenaMatchView extends ConsumerWidget {
     final setup = route == null && state.humanTurn && !match.visitClosed ? match.setup : null;
     final event = _bannerEvent(state);
     final names = [for (final p in setupPlayers) p.name];
+    final tempo = tempoHintLine(ref, l10n, _matchTempo(state));
     final messages = ArenaMessages(
       hint: route != null && route!.isNotEmpty
           ? '${l10n.visitRoute}: ${route!.map((s) => s.name).join(' · ')}'
@@ -376,6 +396,7 @@ class _ArenaMatchView extends ConsumerWidget {
       event: event == null ? null : l10n.matchEventText(event, names),
       eventKey: const Key('match-event'),
       eventColor: event?.type == MatchEventType.bust ? ArenaPalette.danger : ArenaPalette.success,
+      tempo: tempo,
     );
 
     final keypad = !state.ended && state.acceptsHumanDarts && source is ManualSource ? ManualKeypad(source: source) : null;
@@ -428,6 +449,7 @@ class _ArenaMatchView extends ConsumerWidget {
         ],
       ),
       messages: messages,
+      messagesExtra: tempo == null ? 0 : 18,
       result: state.ended
           ? SingleChildScrollView(
               child: Column(
@@ -968,6 +990,7 @@ class _VisitCard extends ConsumerWidget {
                 ),
             ],
           ),
+          TempoHint(tempo: _matchTempo(state)),
         ],
       ),
     );

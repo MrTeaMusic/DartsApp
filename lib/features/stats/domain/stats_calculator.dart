@@ -15,11 +15,13 @@ import 'online_stats.dart';
 import 'scatter_stats.dart';
 import 'stats_models.dart';
 import 'target_replay.dart';
+import 'tempo_stats.dart';
 
 export 'double_stats.dart';
 export 'online_stats.dart';
 export 'scatter_stats.dart';
 export 'stats_models.dart';
+export 'tempo_stats.dart';
 
 /// Alle Kennzahlen eines Zeitraums. Reine Berechnung aus Sessions und
 /// Würfen, ohne Datenbankzugriff, damit sie leicht testbar ist.
@@ -156,6 +158,7 @@ class StatsCalculator {
     take(previous._liveDoublesCache, _liveDoublesCache);
     take(previous._onlineMatchCache, _onlineMatchCache);
     take(previous._scatterCache, _scatterCache);
+    take(previous._tempoCache, _tempoCache);
     _days.addAll(previous._days);
   }
 
@@ -1101,6 +1104,35 @@ class StatsCalculator {
           darts.addAll(sc.darts);
         }
         return ScatterReport.build(darts, positioned: positioned);
+      });
+
+  // -------------------------------------------------------------------------
+  // Wurftempo
+  // -------------------------------------------------------------------------
+
+  final Map<int, SessionTempo> _tempoCache = {};
+  final Map<(StatsPeriod, String?), TempoReport> _tempoReports = {};
+
+  /// Zeiten einer Session (einmal berechnet, wie die anderen Zwischenstände
+  /// für unveränderte Sessions aus dem vorigen Rechner übernommen).
+  SessionTempo tempoOf(SessionRow s) => _tempoCache.putIfAbsent(s.id, () => SessionTempo.of(s, throwsOf(s)));
+
+  /// Wurftempo des Zeitraums (siehe docs/wurftempo.md), je Zeitraum und Spiel
+  /// zwischengespeichert. Der Verlauf deckt immer die letzten
+  /// [TempoRules.trendWeeks] Wochen ab, auch bei kurzem Zeitraum.
+  TempoReport tempoReport(StatsPeriod period, {String? gameId}) => _tempoReports.putIfAbsent((period, gameId), () {
+        final trendFrom = weekOf(DateTime(now.year, now.month, now.day - 7 * (TempoRules.trendWeeks - 1)));
+        final perWeek = <DateTime, List<TempoVisit>>{};
+        for (final s in _between(trendFrom, null, gameId)) {
+          for (final v in tempoOf(s).visits) {
+            perWeek.putIfAbsent(weekOf(v.start), () => []).add(v);
+          }
+        }
+        final weeks = perWeek.keys.toList()..sort();
+        return TempoReport.build(
+          sessions: [for (final s in sessionsIn(period, gameId: gameId)) tempoOf(s)],
+          trend: [for (final w in weeks) if (!w.isBefore(trendFrom)) (w, perWeek[w]!)],
+        );
       });
 
   /// Beginn der aktuellen Woche (Montag).

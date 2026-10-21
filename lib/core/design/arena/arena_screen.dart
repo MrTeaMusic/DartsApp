@@ -34,6 +34,7 @@ class ArenaScreen extends StatelessWidget {
     this.header,
     this.zoom,
     this.zoomActive = false,
+    this.messagesExtra = 0,
     this.sidePanel,
   });
 
@@ -66,6 +67,9 @@ class ArenaScreen extends StatelessWidget {
   final Widget? zoom;
   final bool zoomActive;
 
+  /// Zusätzliche Höhe für die Meldungen auf dem Telefon (eine Zeile mehr, z. B.
+  /// das Tempo), damit sie nicht kleiner gezeichnet werden.
+  final double messagesExtra;
   /// Breit mit nur einem Spieler: füllt die freie rechte Spalte (im
   /// Live-Modus die Kennzahlen der Session). Auf dem Telefon nicht gezeigt.
   final Widget? sidePanel;
@@ -215,7 +219,7 @@ class ArenaScreen extends StatelessWidget {
     final barH = (w * 0.135).clamp(44.0, 64.0);
     const actionH = 44.0;
     const topH = 76.0;
-    const messagesH = 62.0;
+    final messagesH = 62.0 + messagesExtra;
     final fixed = strip + 2 + topH + barH + actionH + messagesH + gap * 6;
     // Der Doppel-Zoom reserviert nur dann Platz, wenn er ein Ziel zeigt.
     final zoomH = zoom != null && zoomActive && result == null ? math.min((w - side * 2) / 2.4 + 40, 200.0) : 0.0;

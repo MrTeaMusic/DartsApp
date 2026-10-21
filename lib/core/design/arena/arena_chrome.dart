@@ -466,6 +466,7 @@ class ArenaMessages extends StatelessWidget {
     this.event,
     this.eventKey,
     this.eventColor = ArenaPalette.blue,
+    this.tempo,
     this.scale = 1,
   });
   final String? hint;
@@ -480,6 +481,9 @@ class ArenaMessages extends StatelessWidget {
   final String? event;
   final Key? eventKey;
   final Color eventColor;
+
+  /// Leise Zeile mit dem Wurftempo (gedämpft, ganz unten).
+  final String? tempo;
   final double scale;
 
   @override
@@ -527,6 +531,29 @@ class ArenaMessages extends StatelessWidget {
               fontSize: 14 * t,
               fontWeight: FontWeight.w500,
               color: statusColor ?? (statusMuted ? ArenaPalette.textMuted : Colors.white.withValues(alpha: 0.9)),
+            ),
+          ),
+        if (tempo != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 3),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.timer_outlined, size: 13 * t, color: ArenaPalette.textMuted),
+                SizedBox(width: 4 * t),
+                Text(
+                  tempo!,
+                  key: const Key('tempo-hint'),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: AppTypography.family,
+                    fontSize: 12.5 * t,
+                    fontWeight: FontWeight.w500,
+                    color: ArenaPalette.textMuted,
+                  ),
+                ),
+              ],
             ),
           ),
       ],

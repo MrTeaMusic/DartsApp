@@ -47,6 +47,7 @@ Checkout-Quiz (Wege lernen ohne zu werfen): [docs/checkout-quiz.md](docs/checkou
 Spielansicht (Arena oder Look) und Aufnahmen-Tabelle für Match und X01-Solo: [docs/spielansicht.md](docs/spielansicht.md).
 Wie Statistiken berechnet werden, Ziele, Profile, Export-Formate: [docs/statistik-und-daten.md](docs/statistik-und-daten.md).
 Streuungs-Analyse (wohin man je Feld verzieht, mit Tipp): [docs/streuungs-analyse.md](docs/streuungs-analyse.md).
+Wurftempo (Zeit je Dart und Aufnahme, Verlauf, leise Zeile beim Spielen): [docs/wurftempo.md](docs/wurftempo.md).
 
 ## Starten
 

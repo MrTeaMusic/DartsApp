@@ -213,3 +213,9 @@ Die Autodarts-Live-Ansicht (`autodarts_live`) zeigt in den Looks ihre eigene, be
 letzten Aufnahmen mit den einzelnen Darts. Sie bleibt, wie sie ist; die Tabelle gibt es dort nicht.
 In der Arena-Spielansicht hat sie dagegen eine eigene Ansicht mit Tafel und Wurfleiste (siehe oben,
 „Autodarts Live in der Arena“).
+
+## Wurftempo
+
+Unter den Meldungen am Board (Arena) bzw. in der Karte der aktuellen Aufnahme (TV, Clean, Lab) steht in
+gedämpfter Schrift eine Zeile wie „Aufnahme 9 s · Ø 3,1 s je Dart“. Sie ist in den Optionen abschaltbar und
+hat weder Zähler noch Warnfarbe; Einzelheiten in `docs/wurftempo.md`.

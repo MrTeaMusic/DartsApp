@@ -28,6 +28,7 @@ class AppSettings {
     this.look = DartLookId.tv,
     this.boardStyle = BoardStyle.tournament,
     this.doubleZoom = true,
+    this.tempoHint = true,
     this.playView = PlayView.arena,
     this.botPace = BotPace.defaultPace,
     this.themeMode = ThemeMode.system,
@@ -59,6 +60,10 @@ class AppSettings {
 
   /// Vergrößerter Ausschnitt des Doppels, wenn eins geworfen werden muss.
   final bool doubleZoom;
+
+  /// Leises Wurftempo (Sekunden der Aufnahme) in den Spielansichten. Die
+  /// Statistik „Tempo“ gibt es immer.
+  final bool tempoHint;
 
   /// Aufbau der X01-Spielansichten (Optionen → Darstellung).
   final PlayView playView;
@@ -101,6 +106,7 @@ class AppSettings {
     DartLookId? look,
     BoardStyle? boardStyle,
     bool? doubleZoom,
+    bool? tempoHint,
     PlayView? playView,
     BotPace? botPace,
     ThemeMode? themeMode,
@@ -123,6 +129,7 @@ class AppSettings {
         look: look ?? this.look,
         boardStyle: boardStyle ?? this.boardStyle,
         doubleZoom: doubleZoom ?? this.doubleZoom,
+        tempoHint: tempoHint ?? this.tempoHint,
         playView: playView ?? this.playView,
         botPace: botPace ?? this.botPace,
         themeMode: themeMode ?? this.themeMode,
@@ -145,6 +152,7 @@ class AppSettings {
   static const _kLook = 'settings.look';
   static const _kBoardStyle = 'settings.boardStyle';
   static const _kDoubleZoom = 'settings.doubleZoom';
+  static const _kTempoHint = 'settings.tempoHint';
   static const _kPlayView = 'settings.playView';
   static const _kBotPace = 'settings.botPace';
   static const _kTheme = 'settings.themeMode';
@@ -171,6 +179,7 @@ class AppSettings {
       look: DartLookId.byName(prefs.getString(_kLook)),
       boardStyle: BoardStyle.byName(prefs.getString(_kBoardStyle)),
       doubleZoom: prefs.getBool(_kDoubleZoom) ?? d.doubleZoom,
+      tempoHint: prefs.getBool(_kTempoHint) ?? d.tempoHint,
       playView: PlayView.byName(prefs.getString(_kPlayView)),
       botPace: BotPace.byName(prefs.getString(_kBotPace)),
       themeMode: byName(ThemeMode.values, prefs.getString(_kTheme), d.themeMode),
@@ -195,6 +204,7 @@ class AppSettings {
     await prefs.setString(_kLook, look.name);
     await prefs.setString(_kBoardStyle, boardStyle.name);
     await prefs.setBool(_kDoubleZoom, doubleZoom);
+    await prefs.setBool(_kTempoHint, tempoHint);
     await prefs.setString(_kPlayView, playView.name);
     await prefs.setString(_kBotPace, botPace.name);
     await prefs.setString(_kTheme, themeMode.name);

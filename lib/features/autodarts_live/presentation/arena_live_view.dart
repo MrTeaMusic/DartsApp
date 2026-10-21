@@ -19,6 +19,8 @@ import '../../games/domain/engine/game_display.dart';
 import '../../matches/domain/visit_history.dart';
 import '../../matches/presentation/match_texts.dart';
 import '../../profiles/presentation/active_player.dart';
+import '../../stats/domain/tempo_stats.dart';
+import '../../stats/presentation/tempo_hint.dart';
 import '../domain/live_recorder.dart';
 import '../domain/live_x01.dart';
 import 'autodarts_live_controller.dart';
@@ -136,6 +138,7 @@ class _ArenaLiveViewState extends ConsumerState<ArenaLiveView> {
       event: event == null ? null : (event == GameEventType.bust ? l10n.evBust : l10n.evCheckout('${x01!.legs.lastOrNull?.checkout ?? ''}')),
       eventKey: const Key('live-event'),
       eventColor: event == GameEventType.bust ? ArenaPalette.danger : ArenaPalette.success,
+      tempo: tempoHintLine(ref, l10n, LiveTempo.ofVisits([...live.recentVisits.reversed, live.current])),
     );
 
     final hits = <BoardPoint>[for (final d in live.current) ?d.position];
@@ -181,6 +184,7 @@ class _ArenaLiveViewState extends ConsumerState<ArenaLiveView> {
       sumKey: const Key('live-visit-score'),
       board: board,
       messages: messages,
+      messagesExtra: messages.tempo == null ? 0 : 18,
       sidePanel: const _SessionPanel(),
       actions: (height) => ArenaActionBar(
         height: height,
