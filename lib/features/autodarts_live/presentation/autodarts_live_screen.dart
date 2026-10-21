@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/design/arena/arena_palette.dart';
 import '../../../core/design/components/components.dart';
 import '../../../core/design/dart_colors.dart';
 import '../../../core/design/dart_look.dart';
@@ -21,6 +22,7 @@ import '../domain/live_recorder.dart';
 import '../domain/live_stats.dart';
 import '../domain/live_x01.dart';
 import '../../games/domain/games/checkout/checkout_rules.dart';
+import 'arena_live_view.dart';
 import 'autodarts_live_controller.dart';
 import 'live_correction_sheet.dart';
 
@@ -29,7 +31,8 @@ import 'live_correction_sheet.dart';
 class AutodartsLiveScreen extends ConsumerWidget {
   const AutodartsLiveScreen({super.key});
 
-  Future<void> _end(BuildContext context, WidgetRef ref) async {
+  /// „Beenden“: Session speichern, Hinweis zeigen, zurück zur Spielauswahl.
+  static Future<void> endSession(BuildContext context, WidgetRef ref) async {
     final l10n = context.l10n;
     final darts = ref.read(autodartsLiveProvider).stats.darts;
     await ref.read(autodartsLiveProvider.notifier).end();
@@ -40,11 +43,32 @@ class AutodartsLiveScreen extends ConsumerWidget {
     context.go(Routes.games);
   }
 
+  /// „Verlassen“ in der Arena-Ansicht: wie der Zurück-Pfeil der Kopfzeile.
+  static void leave(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go(Routes.games);
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final live = ref.watch(autodartsLiveProvider);
     final narrow = MediaQuery.sizeOf(context).width < 600;
+
+    // Arena-Spielansicht (Standard, wie bei Match und Solo): Wurfleiste, Board
+    // und eine Tafel wie im Vorbild. Das Spielbrett ohne Datenquelle bleibt.
+    if ((live.listening || live.ended) && ref.watch(settingsProvider.select((s) => s.arenaPlay))) {
+      return Theme(
+        data: ArenaPalette.theme,
+        child: Scaffold(
+          backgroundColor: ArenaPalette.background,
+          body: SafeArea(child: ArenaLiveView(live: live)),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppPageBar(
@@ -78,7 +102,7 @@ class AutodartsLiveScreen extends ConsumerWidget {
                 width: double.infinity,
                 child: FilledButton.icon(
                   key: const Key('live-end'),
-                  onPressed: live.ended ? null : () => _end(context, ref),
+                  onPressed: live.ended ? null : () => endSession(context, ref),
                   icon: const Icon(Icons.stop_rounded),
                   label: Text(l10n.liveEnd),
                 ),
@@ -92,13 +116,13 @@ class AutodartsLiveScreen extends ConsumerWidget {
                         key: const Key('live-left'),
                         padding: EdgeInsets.fromLTRB(page, look.page * 0.5, gap / 2, page),
                         children: [
-                          _HintCard(x01: live.x01 != null),
+                          LiveHintCard(x01: live.x01 != null),
                           SizedBox(height: gap),
                           _VisitPanel(live: live, large: true),
                           SizedBox(height: gap),
-                          _StatsCard(live: live),
+                          LiveStatsCard(live: live),
                           SizedBox(height: gap),
-                          _RecentCard(live: live),
+                          LiveRecentCard(live: live),
                         ],
                       ),
                     ),
@@ -108,11 +132,11 @@ class AutodartsLiveScreen extends ConsumerWidget {
                         key: const Key('live-right'),
                         padding: EdgeInsets.fromLTRB(gap / 2, look.page * 0.5, page, page),
                         children: [
-                          _X01Card(live: live),
+                          LiveX01Card(live: live),
                           SizedBox(height: gap),
                           _HeatCard(live: live, maxHeight: 300),
                           SizedBox(height: gap),
-                          _DistributionCard(stats: live.stats),
+                          LiveDistributionCard(stats: live.stats),
                           SizedBox(height: gap),
                           end,
                         ],
@@ -125,19 +149,19 @@ class AutodartsLiveScreen extends ConsumerWidget {
                 key: const Key('live-list'),
                 padding: EdgeInsets.fromLTRB(page, AppSpacing.s, page, page),
                 children: [
-                  _HintCard(x01: live.x01 != null),
+                  LiveHintCard(x01: live.x01 != null),
                   SizedBox(height: gap),
                   _VisitPanel(live: live, large: false),
                   SizedBox(height: gap),
-                  _StatsCard(live: live),
+                  LiveStatsCard(live: live),
                   SizedBox(height: gap),
-                  _X01Card(live: live),
+                  LiveX01Card(live: live),
                   SizedBox(height: gap),
                   _HeatCard(live: live),
                   SizedBox(height: gap),
-                  _DistributionCard(stats: live.stats),
+                  LiveDistributionCard(stats: live.stats),
                   SizedBox(height: gap),
-                  _RecentCard(live: live),
+                  LiveRecentCard(live: live),
                   SizedBox(height: gap),
                   end,
                 ],
@@ -150,8 +174,8 @@ class AutodartsLiveScreen extends ConsumerWidget {
 String _clock(DateTime t) => '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
 
 /// Hinweis, wie der Modus gedacht ist, und Verbindungsprobleme.
-class _HintCard extends ConsumerWidget {
-  const _HintCard({required this.x01});
+class LiveHintCard extends ConsumerWidget {
+  const LiveHintCard({super.key, required this.x01});
 
   /// Mit „X01 mitzählen“ entfällt der Hinweis „kein Restwert“.
   final bool x01;
@@ -201,8 +225,8 @@ class _HintCard extends ConsumerWidget {
 }
 
 /// „X01 mitzählen“: Schalter, Startwert und Ausstieg.
-class _X01Card extends ConsumerWidget {
-  const _X01Card({required this.live});
+class LiveX01Card extends ConsumerWidget {
+  const LiveX01Card({super.key, required this.live});
   final LiveViewState live;
 
   @override
@@ -447,8 +471,8 @@ class _VisitPanel extends ConsumerWidget {
 }
 
 /// Kennzahlen der laufenden Session.
-class _StatsCard extends StatelessWidget {
-  const _StatsCard({required this.live});
+class LiveStatsCard extends StatelessWidget {
+  const LiveStatsCard({super.key, required this.live});
   final LiveViewState live;
 
   @override
@@ -570,8 +594,8 @@ class _HeatCard extends StatelessWidget {
 }
 
 /// Anteil Triple / Doppel / Single / Daneben.
-class _DistributionCard extends StatelessWidget {
-  const _DistributionCard({required this.stats});
+class LiveDistributionCard extends StatelessWidget {
+  const LiveDistributionCard({super.key, required this.stats});
   final LiveStats stats;
 
   @override
@@ -617,8 +641,8 @@ class _DistributionCard extends StatelessWidget {
 }
 
 /// Die letzten abgeschlossenen Aufnahmen zum Abgleich mit dem Match.
-class _RecentCard extends ConsumerWidget {
-  const _RecentCard({required this.live});
+class LiveRecentCard extends ConsumerWidget {
+  const LiveRecentCard({super.key, required this.live});
   final LiveViewState live;
 
   @override

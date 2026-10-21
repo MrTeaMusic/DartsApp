@@ -99,6 +99,29 @@ class LiveX01Leg {
   final bool won;
 }
 
+/// Eine abgeschlossene Aufnahme des laufenden Legs für die Tabelle der
+/// Arena-Ansicht (Punkte | Rest).
+class LiveX01Row {
+  const LiveX01Row({
+    required this.visit,
+    required this.points,
+    required this.remaining,
+    required this.bust,
+    required this.checkout,
+  });
+
+  /// Nummer der Aufnahme in der Session (ab 0, wie bei den Korrekturen).
+  final int visit;
+
+  /// Abgezogene Punkte, 0 nach Bust.
+  final int points;
+
+  /// Rest nach der Aufnahme (nach Bust der Stand davor, nach Checkout 0).
+  final int remaining;
+  final bool bust;
+  final bool checkout;
+}
+
 /// Stand von „X01 mitzählen“, aus den Aufnahmen der Session berechnet.
 ///
 /// Wird bei jeder Änderung komplett neu abgespielt ([LiveX01.replay]), damit
@@ -151,6 +174,19 @@ class LiveX01 {
   GameEventType? lastEvent;
 
   final List<int> _legPoints = [];
+
+  /// Abgeschlossene Aufnahmen des laufenden Legs, die älteste zuerst. Nach
+  /// einem Checkout bleibt das gewonnene Leg stehen, bis die nächste
+  /// Aufnahme beginnt (so ist das Finish noch zu sehen).
+  final List<LiveX01Row> _rows = [];
+  bool _legClosed = false;
+  int _visitNumber = -1;
+  bool _rowAdded = false;
+
+  List<LiveX01Row> get legRows => List.unmodifiable(_rows);
+
+  /// Schnitt der gezählten Darts des laufenden Legs je drei Darts.
+  double? get legAverage => legDarts == 0 ? null : _legPoints.fold<int>(0, (a, b) => a + b) / legDarts * 3;
 
   int get legsWon => legs.where((l) => l.won).length;
   int get legsLost => legs.length - legsWon;
@@ -213,6 +249,12 @@ class LiveX01 {
   int _visitDarts = 0;
 
   void _startVisit() {
+    if (_legClosed) {
+      _rows.clear();
+      _legClosed = false;
+    }
+    _visitNumber++;
+    _rowAdded = false;
     visitStartRemaining = remaining;
     _visitPoints = 0;
     _visitDarts = 0;
@@ -248,6 +290,7 @@ class LiveX01 {
       busts++;
       lastEvent = GameEventType.bust;
       _closeVisit();
+      _addRow(bust: true);
       return;
     }
     remaining -= s.score;
@@ -257,8 +300,25 @@ class LiveX01 {
     if (remaining == 0) {
       lastEvent = GameEventType.checkout;
       _closeVisit();
+      _addRow(checkout: true);
       _endLeg(won: true, checkout: visitStartRemaining);
+      _legClosed = true;
+    } else if (dartsLeft == 0) {
+      _addRow();
     }
+  }
+
+  /// Trägt die Aufnahme in die Tabelle ein (einmal je Aufnahme).
+  void _addRow({bool bust = false, bool checkout = false}) {
+    if (_rowAdded || _visitDarts == 0) return;
+    _rowAdded = true;
+    _rows.add(LiveX01Row(
+      visit: _visitNumber,
+      points: bust ? 0 : visitStartRemaining - remaining,
+      remaining: remaining,
+      bust: bust,
+      checkout: checkout,
+    ));
   }
 
   /// Ein Doppel geht nur bis Rest 50 (Bull); darüber gibt es keinen
@@ -279,6 +339,7 @@ class LiveX01 {
   void _endVisit() {
     if (!_visitDone) _countVisit();
     _visitDone = true;
+    _addRow();
   }
 
   void _countVisit() {
@@ -303,6 +364,9 @@ class LiveX01 {
       case LegMarkKind.restart:
         _resetLeg();
     }
+    _rows.clear();
+    _legClosed = false;
+    _rowAdded = false;
     // Darts derselben Aufnahme nach der Markierung beginnen das neue Leg.
     visitStartRemaining = remaining;
     _visitPoints = 0;

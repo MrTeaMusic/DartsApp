@@ -34,6 +34,7 @@ class ArenaScreen extends StatelessWidget {
     this.header,
     this.zoom,
     this.zoomActive = false,
+    this.sidePanel,
   });
 
   final List<ArenaPlayer> players;
@@ -64,6 +65,10 @@ class ArenaScreen extends StatelessWidget {
   /// Telefon wird nur dann reserviert).
   final Widget? zoom;
   final bool zoomActive;
+
+  /// Breit mit nur einem Spieler: füllt die freie rechte Spalte (im
+  /// Live-Modus die Kennzahlen der Session). Auf dem Telefon nicht gezeigt.
+  final Widget? sidePanel;
 
   /// Breit = drei Spalten.
   static bool isWide(Size size) => size.width >= 640 && size.width / math.max(1, size.height) >= 1.25;
@@ -146,6 +151,8 @@ class ArenaScreen extends StatelessWidget {
         // Ein Spieler: nur die linke Tafel, die rechte Seite bleibt leer.
         Positioned(left: margin, top: panelTop, child: column(single ? players : left)),
         if (!single) Positioned(right: margin, top: panelTop, child: column(right)),
+        if (single && sidePanel != null)
+          Positioned(right: margin, top: panelTop, width: panelW, bottom: h * 0.03, child: ClipRRect(borderRadius: BorderRadius.circular(24), child: sidePanel!)),
         // Doppel-Zoom in der freien Fläche unter der rechten Tafel; was nicht
         // passt, wird verkleinert.
         if (zoom != null && result == null)

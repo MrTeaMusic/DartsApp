@@ -1,22 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/autodarts_live/presentation/autodarts_live_routes.dart';
+import '../../features/dart_source/domain/dart_event.dart' show DartSourceKind;
 import '../design/dart_colors.dart';
 import '../design/dart_look.dart';
 import '../design/tokens.dart';
 import '../l10n.dart';
+import '../settings/app_settings.dart';
 import 'fullscreen_button.dart';
 
 /// Hülle um alle Hauptbereiche: Seitenleiste auf Desktop/iPad quer,
 /// Bottom-Navigation auf schmalen Geräten.
-class AdaptiveScaffold extends StatelessWidget {
+class AdaptiveScaffold extends ConsumerWidget {
   const AdaptiveScaffold({super.key, required this.shell});
 
   final StatefulNavigationShell shell;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    // Autodarts Live in der Arena-Spielansicht füllt wie Match und Solo den
+    // ganzen Bildschirm, ohne Seitenleiste und Navigationsleiste.
+    final arenaLive = ref.watch(settingsProvider.select((s) => s.arenaPlay && s.sourceKind == DartSourceKind.autodartsLocal)) &&
+        GoRouterState.of(context).uri.path == AutodartsLiveRoutes.live;
+    if (arenaLive) return Scaffold(body: shell);
     final destinations = [
       (Icons.home_outlined, Icons.home_rounded, l10n.navHome),
       (Icons.sports_esports_outlined, Icons.sports_esports_rounded, l10n.navGames),
