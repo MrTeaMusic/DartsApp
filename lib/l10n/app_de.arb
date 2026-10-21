@@ -3257,6 +3257,13 @@
   "settingsPlayViewArenaHint": "Zwei große Tafeln mit Wurftabelle links und rechts, das Board in der Mitte",
   "settingsPlayViewLook": "Wie das gewählte Design",
   "settingsPlayViewLookHint": "Tafeln und Karten im Stil von TV, Clean oder Lab",
+  "settingsBotPace": "Bot-Tempo",
+  "settingsBotPaceQuick": "Zügig",
+  "settingsBotPaceRelaxed": "Gemütlich",
+  "settingsBotPaceVeryRelaxed": "Sehr gemütlich",
+  "settingsBotPaceQuickHint": "Der Bot wirft flott, etwa eine Sekunde pro Dart",
+  "settingsBotPaceRelaxedHint": "Der Bot lässt dir Zeit, etwa zwei Sekunden pro Dart",
+  "settingsBotPaceVeryRelaxedHint": "Der Bot wirft ganz ruhig, knapp drei Sekunden pro Dart",
   "arenaLeave": "Verlassen",
   "arenaFormatLegs": "Erster bis {n, plural, =1{1 Leg} other{{n} Legs}}",
   "@arenaFormatLegs": {

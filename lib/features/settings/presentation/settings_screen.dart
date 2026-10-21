@@ -19,6 +19,7 @@ import '../../dart_source/domain/dart_event.dart';
 import '../../dart_source/presentation/diagnostics_dialog.dart';
 import '../../dart_source/presentation/recording_sheet.dart';
 import '../../dart_source/presentation/source_status_badge.dart';
+import '../../matches/domain/bot_pace.dart';
 import '../../profiles/presentation/profiles_card.dart';
 import '../../progress/presentation/daily_goal_card.dart';
 import '../../progress/presentation/progress_texts.dart';
@@ -123,6 +124,31 @@ class SettingsScreen extends ConsumerWidget {
                   subtitle: Text(l10n.settingsDoubleZoomHint),
                   secondary: const Icon(Icons.zoom_in_rounded),
                 ),
+              ),
+              const SizedBox(height: AppSpacing.l),
+              Kicker(l10n.settingsBotPace),
+              const SizedBox(height: AppSpacing.s),
+              SegmentedButton<BotPace>(
+                key: const Key('bot-pace-selector'),
+                // Ohne Haken bleibt am Telefon Platz für „Gemütlich“ in einer Zeile.
+                showSelectedIcon: false,
+                segments: [
+                  ButtonSegment(value: BotPace.quick, label: Text(l10n.settingsBotPaceQuick)),
+                  ButtonSegment(value: BotPace.relaxed, label: Text(l10n.settingsBotPaceRelaxed)),
+                  ButtonSegment(value: BotPace.veryRelaxed, label: Text(l10n.settingsBotPaceVeryRelaxed)),
+                ],
+                selected: {settings.botPace},
+                onSelectionChanged: (s) => notifier.update((x) => x.copyWith(botPace: s.first)),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                switch (settings.botPace) {
+                  BotPace.quick => l10n.settingsBotPaceQuickHint,
+                  BotPace.relaxed => l10n.settingsBotPaceRelaxedHint,
+                  BotPace.veryRelaxed => l10n.settingsBotPaceVeryRelaxedHint,
+                },
+                key: const Key('bot-pace-hint'),
+                style: Theme.of(context).textTheme.bodySmall,
               ),
               const SectionGap(),
               SectionHeader(l10n.settingsDailyGoal),

@@ -460,17 +460,42 @@ class _SaveOnBackground extends ConsumerStatefulWidget {
 class _SaveOnBackgroundState extends ConsumerState<_SaveOnBackground> {
   late final AppLifecycleListener _lifecycle;
 
-  void _save() => ref.read(matchControllerProvider.notifier).saveProgress();
+  // Im dispose ist ref nicht mehr nutzbar.
+  late final MatchController _controller;
+
+  void _save() => _controller.saveProgress();
+
+  /// Im Hintergrund sichern und den Bot anhalten, zurück im Vordergrund
+  /// macht er weiter.
+  void _background() {
+    _controller.saveProgress();
+    _controller.pauseBot();
+  }
+
+  void _foreground() => _controller.resumeBot();
 
   @override
   void initState() {
     super.initState();
-    _lifecycle = AppLifecycleListener(onHide: _save, onPause: _save, onDetach: _save);
+    _controller = ref.read(matchControllerProvider.notifier);
+    _lifecycle = AppLifecycleListener(
+      onHide: _background,
+      onPause: _background,
+      onShow: _foreground,
+      onResume: _foreground,
+      onDetach: _save,
+    );
   }
 
   @override
   void dispose() {
     _lifecycle.dispose();
+    // Ohne diese Ansicht käme kein „zurück im Vordergrund“ mehr an.
+    try {
+      _foreground();
+    } catch (_) {
+      // Container schon abgebaut (App wird beendet): nichts mehr zu tun.
+    }
     super.dispose();
   }
 
