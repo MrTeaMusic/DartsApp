@@ -21,7 +21,9 @@ Der Look benutzt dieselben Farben und Maße wie die Arena-Spielansicht
 jedem Bildschirm: Navigation, Startseite, Spiele und Setups, Match/Turnier,
 Statistik, Pläne, Quiz, Autodarts Live, Optionen, Dialoge, Sheets, Snackbars.
 Bei „Spielansicht: Wie das gewählte Design“ zeigt X01 mit diesem Look die
-Arena-Spielansicht; die anderen Looks bleiben unverändert.
+Arena-Spielansicht, ebenso Autodarts Live; die anderen Looks bleiben unverändert.
+Dialoge und Blätter der Arena-Spielansichten sind in jedem Look dunkel (Theme über dem Scaffold,
+siehe spielansicht.md).
 
 | Rolle | Farbe |
 | --- | --- |
@@ -99,7 +101,7 @@ Zugriff im Widget:
 | `AppCard` | Jede Karte. Rahmen/Schatten/Radius kommen vom Look. |
 | `ScorePanel` | Große Zahl mit Beschriftung, optional Fortschritt und Inhalt darunter (Restpunkte, Aufnahme, Ergebnis). Mit `active` für mehrere Tafeln nebeneinander (Spieler im Match): `true` hervorgehoben, `false` zurückgenommen; `compact` für schmale Tafeln (engere Abstände), `pinFooter` setzt den Inhalt unter der Zahl an den unteren Rand gleich hoher Tafeln. |
 | `VisitTable` | Tabelle der letzten Aufnahmen (Punkte, Rest danach) unter einem Namen; neueste oben, Bust und Checkout markiert, feste Höhe, in jedem Look anders gezeichnet (siehe [spielansicht.md](spielansicht.md)). |
-| `ArenaScreen` | Eigene Spielansicht für X01 (Match und Solo) nach dem Vorbild der Autodarts-Ansicht, unabhängig vom Look; Standard, in den Optionen abschaltbar (siehe [spielansicht.md](spielansicht.md)). |
+| `ArenaScreen` | Eigene Spielansicht für X01 (Match und Solo) und Autodarts Live nach dem Vorbild der Autodarts-Ansicht, unabhängig vom Look; Standard, in den Optionen abschaltbar (siehe [spielansicht.md](spielansicht.md)). |
 | `LookBanner` | Einblendung eines Ereignisses (Checkout, Bust, 180, Leg gewonnen) im Stil des Looks; optional kleine Beschriftung davor. |
 | `StatTile` | Kennzahl-Kachel (Beschriftung, große Zahl, Zusatz). |
 | `Kicker` | Kleine Beschriftung über einer Zahl. |

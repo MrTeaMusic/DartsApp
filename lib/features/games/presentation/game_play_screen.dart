@@ -119,23 +119,29 @@ class GamePlayScreen extends ConsumerWidget {
         );
 
     // Arena (Standard) für X01-Solo: Tafel mit Wurftabelle und Board in der Mitte.
+    // Das Arena-Theme gilt für alles darunter, auch für Dialoge und Blätter.
     if (game is X01Solo && ref.watch(settingsProvider.select((s) => s.arenaPlay))) {
-      return PopScope(
-        canPop: false,
-        onPopInvokedWithResult: (didPop, _) {
-          if (!didPop) unawaited(_leave(context, ref));
-        },
-        child: Scaffold(
-          backgroundColor: ArenaPalette.background,
-          body: SafeArea(
-            child: CelebrationOverlay(
-              child: _ArenaSoloView(
-                active: active,
-                game: game,
-                board: board,
-                zoom: zoom(compact: true),
-                zoomActive: zoomTarget != null,
-                onLeave: () => _leave(context, ref),
+      return Theme(
+        data: ArenaPalette.theme,
+        child: Builder(
+          builder: (context) => PopScope(
+            canPop: false,
+            onPopInvokedWithResult: (didPop, _) {
+              if (!didPop) unawaited(_leave(context, ref));
+            },
+            child: Scaffold(
+              backgroundColor: ArenaPalette.background,
+              body: SafeArea(
+                child: CelebrationOverlay(
+                  child: _ArenaSoloView(
+                    active: active,
+                    game: game,
+                    board: board,
+                    zoom: zoom(compact: true),
+                    zoomActive: zoomTarget != null,
+                    onLeave: () => _leave(context, ref),
+                  ),
+                ),
               ),
             ),
           ),
@@ -155,15 +161,13 @@ class GamePlayScreen extends ConsumerWidget {
             icon: const Icon(Icons.close_rounded),
             onPressed: () => _leave(context, ref),
           ),
-          title: Text(
-            l10n.gameTitle(active.gameId),
-            style: MediaQuery.sizeOf(context).width < 600 ? Theme.of(context).textTheme.titleLarge : null,
-          ),
+          title: _gameTitle(context, l10n.gameTitle(active.gameId)),
           actions: [
             SourceStatusBadge(compact: MediaQuery.sizeOf(context).width < 600),
             const SizedBox(width: AppSpacing.xs),
             const CallerMuteButton(),
-            const FullscreenButton(),
+            // Die breite Arena-Schrift lässt auf dem Telefon keinen Platz dafür.
+            if (!(context.look.isArena && MediaQuery.sizeOf(context).width < 600)) const FullscreenButton(),
             const SizedBox(width: AppSpacing.s),
           ],
         ),
@@ -896,4 +900,19 @@ class _CorrectionsSheet extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Titel der Spielansicht. In der Arena-Schrift ist der Titel auf dem Telefon
+/// zu breit für die Leiste: er schrumpft dann, statt abgeschnitten zu werden.
+Widget _gameTitle(BuildContext context, String title) {
+  final narrow = MediaQuery.sizeOf(context).width < 600;
+  final text = Text(
+    title,
+    maxLines: 1,
+    style: narrow ? Theme.of(context).textTheme.titleLarge : null,
+  );
+  if (narrow && context.look.isArena) {
+    return FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: text);
+  }
+  return text;
 }

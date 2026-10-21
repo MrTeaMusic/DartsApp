@@ -36,6 +36,20 @@ enum ArenaPanelStyle {
   final double statsSize;
 }
 
+/// Zeile der einfachen Tabelle (Punkte | Wert), z. B. im Live-Modus ohne X01:
+/// Punkte der Aufnahme und laufender Schnitt.
+@immutable
+class ArenaScoreRow {
+  const ArenaScoreRow({required this.visit, required this.points, required this.value});
+
+  /// Nummer der Aufnahme (für den Schlüssel `<prefix>-row-<n>`).
+  final int visit;
+  final int points;
+
+  /// Rechte Spalte, fertig formatiert.
+  final String value;
+}
+
 /// Alles, was eine Spielertafel anzeigt. Die Tafel selbst kennt weder Match
 /// noch Training: Match und Solo-X01 füllen dasselbe Modell.
 @immutable
@@ -61,6 +75,13 @@ class ArenaPlayer {
     this.legsKey,
     this.setsKey,
     this.keyPrefix = 'visits',
+    this.heroText,
+    this.caption,
+    this.scoreRows,
+    this.scoreHeaders,
+    this.stats,
+    this.legsText,
+    this.dartsLabel,
   });
 
   final String name;
@@ -95,6 +116,27 @@ class ArenaPlayer {
 
   /// Präfix der Zeilen-Schlüssel (`<prefix>-row-<n>`, `<prefix>-start`).
   final String keyPrefix;
+
+  /// Statt des Rests die große Zahl selbst bestimmen (z. B. der Schnitt, wenn
+  /// es keinen Rest gibt).
+  final String? heroText;
+
+  /// Kleine Zeile über der großen Zahl (erklärt [heroText]).
+  final String? caption;
+
+  /// Einfache Tabelle (Punkte | Wert) statt der Tabelle mit Rest und
+  /// Startzeile; [scoreHeaders] beschriftet die beiden Spalten.
+  final List<ArenaScoreRow>? scoreRows;
+  final (String, String)? scoreHeaders;
+
+  /// Kennzahlen statt „Leg Ø / Match Ø“: Paare aus Name und Wert.
+  final List<(String, String)>? stats;
+
+  /// Legs als Text (z. B. „2 : 1“) statt der Zahl [legs].
+  final String? legsText;
+
+  /// Beschriftung des Dart-Symbols (Standard: „Darts im Leg“).
+  final String? dartsLabel;
 }
 
 TextStyle _text(double size, {FontWeight weight = FontWeight.w500, Color color = ArenaPalette.text, double? spacing, double height = 1.1}) {
@@ -205,7 +247,22 @@ class _Upper extends StatelessWidget {
 
     final legsRow = <Widget>[
       if (p.sets != null) ...[number(l10n.arenaSetsWon, p.sets!, key: p.setsKey), const SizedBox(width: 22)],
-      if (p.legs != null) number(l10n.arenaLegsWon, p.legs!, key: p.legsKey),
+      if (p.legsText != null)
+        Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(text: '${l10n.arenaLegsWon} ', style: _text(rowSize - 4, weight: FontWeight.w400, color: ArenaPalette.text.withValues(alpha: 0.8))),
+              WidgetSpan(
+                alignment: PlaceholderAlignment.baseline,
+                baseline: TextBaseline.alphabetic,
+                child: Text(p.legsText!, key: p.legsKey, style: _text(rowSize, weight: FontWeight.w800)),
+              ),
+            ],
+          ),
+          maxLines: 1,
+        )
+      else if (p.legs != null)
+        number(l10n.arenaLegsWon, p.legs!, key: p.legsKey),
     ];
 
     // Übersteigt der Inhalt die Vorlagenhöhe, wird er verkleinert statt abgeschnitten.
@@ -220,6 +277,15 @@ class _Upper extends StatelessWidget {
             children: [
           _NameRow(player: p, size: compact ? 28 : 30, maxWidth: style.refWidth - 32),
           SizedBox(height: compact ? 2 : 6),
+          if (p.caption != null)
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                p.caption!,
+                maxLines: 1,
+                style: _text(stats * 0.8, weight: FontWeight.w500, color: ArenaPalette.text.withValues(alpha: 0.8)),
+              ),
+            ),
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Row(
@@ -227,7 +293,7 @@ class _Upper extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  '${p.remaining}',
+                  p.heroText ?? '${p.remaining}',
                   key: p.remainingKey,
                   softWrap: false,
                   maxLines: 1,
@@ -247,12 +313,19 @@ class _Upper extends StatelessWidget {
             fit: BoxFit.scaleDown,
             child: Text.rich(
               TextSpan(
-                children: [
-                  TextSpan(text: '${l10n.arenaLegAvg} ', style: _text(stats, weight: FontWeight.w400)),
-                  TextSpan(text: p.legAverage, style: _text(stats, weight: FontWeight.w800)),
-                  TextSpan(text: ' / ${l10n.arenaMatchAvg} ', style: _text(stats, weight: FontWeight.w400)),
-                  TextSpan(text: p.matchAverage, style: _text(stats, weight: FontWeight.w800)),
-                ],
+                children: p.stats != null
+                    ? [
+                        for (final (i, (label, value)) in p.stats!.indexed) ...[
+                          TextSpan(text: '${i == 0 ? '' : ' / '}$label ', style: _text(stats, weight: FontWeight.w400)),
+                          TextSpan(text: value, style: _text(stats, weight: FontWeight.w800)),
+                        ],
+                      ]
+                    : [
+                        TextSpan(text: '${l10n.arenaLegAvg} ', style: _text(stats, weight: FontWeight.w400)),
+                        TextSpan(text: p.legAverage, style: _text(stats, weight: FontWeight.w800)),
+                        TextSpan(text: ' / ${l10n.arenaMatchAvg} ', style: _text(stats, weight: FontWeight.w400)),
+                        TextSpan(text: p.matchAverage, style: _text(stats, weight: FontWeight.w800)),
+                      ],
               ),
               maxLines: 1,
             ),
@@ -264,7 +337,7 @@ class _Upper extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Tooltip(
-                  message: l10n.arenaDartsThrown,
+                  message: p.dartsLabel ?? l10n.arenaDartsThrown,
                   child: CustomPaint(size: Size(rowSize * 1.1, rowSize * 0.8), painter: ArenaDartIconPainter(ArenaPalette.text.withValues(alpha: 0.9))),
                 ),
                 const SizedBox(width: 8),
@@ -377,6 +450,9 @@ class ArenaVisitTable extends StatelessWidget {
     final rowH = (52 * s).clamp(18.0, 60.0);
     final fontSize = (28 * s).clamp(11.0, 30.0);
     final padTop = 10 * s;
+    final plain = p.scoreRows;
+    final headers = p.scoreHeaders;
+    final headerH = plain != null && headers != null ? rowH * 0.8 : 0.0;
     return Stack(
       children: [
         // Senkrechte Trennlinie in der Mitte.
@@ -385,7 +461,47 @@ class ArenaVisitTable extends StatelessWidget {
         ),
         LayoutBuilder(
           builder: (context, c) {
-            final count = math.max(1, ((c.maxHeight - padTop) / rowH).floor());
+            final count = math.max(1, ((c.maxHeight - padTop - headerH) / rowH).floor());
+            if (plain != null) {
+              final shown = plain.length > count ? plain.sublist(plain.length - count) : plain;
+              return ClipRect(
+                child: Padding(
+                  padding: EdgeInsets.only(top: padTop),
+                  child: Column(
+                    children: [
+                      if (headers != null)
+                        SizedBox(
+                          height: headerH,
+                          child: Row(
+                            children: [
+                              for (final h in [headers.$1, headers.$2])
+                                Expanded(
+                                  child: Center(
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(h, maxLines: 1, style: _text(math.max(9, fontSize * 0.55), weight: FontWeight.w600, color: ArenaPalette.textMuted, spacing: 0.6)),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      for (final (i, row) in shown.indexed)
+                        SizedBox(
+                          height: rowH,
+                          child: _PlainLine(
+                            key: Key('${p.keyPrefix}-row-${row.visit}'),
+                            row: row,
+                            latest: i == shown.length - 1,
+                            fontSize: fontSize,
+                            scale: s,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              );
+            }
             final items = <VisitRow?>[null, ...p.rows];
             final shown = items.length > count ? items.sublist(items.length - count) : items;
             return ClipRect(
@@ -412,6 +528,67 @@ class ArenaVisitTable extends StatelessWidget {
           },
         ),
       ],
+    );
+  }
+}
+
+/// Zeile der einfachen Tabelle: Punkte links, Wert rechts, die neueste mit
+/// hellem Schild.
+class _PlainLine extends StatelessWidget {
+  const _PlainLine({super.key, required this.row, required this.latest, required this.fontSize, required this.scale});
+  final ArenaScoreRow row;
+  final bool latest;
+  final double fontSize;
+  final double scale;
+
+  @override
+  Widget build(BuildContext context) {
+    final r = row;
+    final value = Text(
+      r.value,
+      maxLines: 1,
+      softWrap: false,
+      style: _text(fontSize, weight: FontWeight.w700, color: latest ? ArenaPalette.onLight : ArenaPalette.text.withValues(alpha: 0.8)),
+    );
+    return Semantics(
+      container: true,
+      excludeSemantics: true,
+      label: '${r.points}, ${r.value}',
+      child: Row(
+        children: [
+          Expanded(
+            child: Center(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  '${r.points}',
+                  maxLines: 1,
+                  softWrap: false,
+                  style: _text(
+                    fontSize,
+                    weight: latest || r.points >= 100 ? FontWeight.w700 : FontWeight.w500,
+                    color: r.points >= 100 ? ArenaPalette.record : ArenaPalette.text,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Center(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: latest
+                    ? Container(
+                        padding: EdgeInsets.symmetric(horizontal: 12 * scale.clamp(0.5, 1.0), vertical: 2 * scale),
+                        decoration: BoxDecoration(color: ArenaPalette.light, borderRadius: BorderRadius.circular(math.max(4, 6 * scale))),
+                        child: value,
+                      )
+                    : value,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
