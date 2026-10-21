@@ -46,7 +46,8 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
 
     return Scaffold(
       appBar: AppPageBar(
-        title: Text(l10n.debugTitle),
+        // Mit vier Symbolen daneben wird der Titel auf dem Telefon sonst abgeschnitten.
+        title: FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: Text(l10n.debugTitle)),
         actions: [
           IconButton(
             tooltip: _paused ? l10n.debugResume : l10n.debugPause,

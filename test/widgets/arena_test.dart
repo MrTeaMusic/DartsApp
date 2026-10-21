@@ -215,8 +215,8 @@ void main() {
   });
 
   group('X01-Solo in der Arena', () {
-    Future<ProviderContainer> startSolo(WidgetTester tester, {Size size = desktop}) async {
-      final c = await pumpApp(tester, size: size);
+    Future<ProviderContainer> startSolo(WidgetTester tester, {Size size = desktop, Map<String, Object> prefs = const {}}) async {
+      final c = await pumpApp(tester, size: size, prefs: prefs);
       await c.read(activeGameProvider.notifier).start(X01Solo.definition, {'startScore': 101, 'legs': 1}, seed: 1);
       c.read(routerProvider).go(Routes.play);
       await frames(tester);
@@ -260,10 +260,43 @@ void main() {
       });
     }
 
+    testWidgets('X01 solo: Verlassen-Dialog bleibt dunkel', (tester) async {
+      await startSolo(tester, prefs: const {'settings.look': 'clean', 'settings.themeMode': 'light'});
+      await tester.tap(find.byKey(const Key('leave-game')));
+      await frames(tester);
+      final dialog = find.byType(AlertDialog);
+      expect(dialog, findsOneWidget);
+      expect(Theme.of(tester.element(dialog)).brightness, Brightness.dark);
+    });
+
     testWidgets('Am Telefon füllt die einzelne Tafel die Breite', (tester) async {
       await startSolo(tester, size: phone);
       final r = tester.getRect(find.byKey(const Key('solo-remaining')));
       expect(r.center.dx, closeTo(phone.width / 2, 40));
+    });
+  });
+
+  group('Dialoge und Blätter im hellen Look', () {
+    const light = {'settings.look': 'clean', 'settings.themeMode': 'light'};
+
+    testWidgets('Match: Verlassen-Dialog und Dart-Blatt bleiben dunkel', (tester) async {
+      final c = await startMatch(tester, size: phone, prefs: light);
+      expect(find.byType(ArenaScreen), findsOneWidget);
+      throwDarts(c, ['T20']);
+      await frames(tester);
+      await tester.tap(find.byKey(const Key('match-dart-0')));
+      await frames(tester);
+      expect(find.byKey(const Key('fix-20')), findsOneWidget);
+      expect(Theme.of(tester.element(find.byKey(const Key('fix-20')))).brightness, Brightness.dark);
+      await tester.tapAt(const Offset(5, 5));
+      await frames(tester);
+      await tester.tap(find.byKey(const Key('leave-match')));
+      await frames(tester);
+      final dialog = find.byType(AlertDialog);
+      expect(dialog, findsOneWidget);
+      expect(Theme.of(tester.element(dialog)).brightness, Brightness.dark);
+      expect(Theme.of(tester.element(dialog)).colorScheme.surface, isNot(const Color(0xFFFFFFFF)));
+      expect(tester.takeException(), isNull);
     });
   });
 
