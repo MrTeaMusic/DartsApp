@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/settings/app_settings.dart';
 import '../../board/domain/segment.dart';
 import '../../dart_source/data/local_dart_source.dart';
 import '../../dart_source/data/manual_source.dart';
@@ -14,6 +15,7 @@ import '../../games/data/game_repository.dart';
 import '../../games/presentation/active_game_controller.dart';
 import '../../profiles/data/profile_repository.dart';
 import '../data/match_store.dart';
+import '../domain/bot_pace.dart';
 import '../domain/dart_bot.dart';
 import '../domain/match_result.dart';
 import '../domain/match_session.dart';
@@ -21,12 +23,28 @@ import '../domain/x01_match.dart';
 import 'tournament_controller.dart';
 
 /// Wie schnell der Bot wirft. In Tests überschreibbar.
+///
+/// Die Standardwerte sind die des Tempos „Gemütlich“ ([BotPace.relaxed]);
+/// ohne [jitter] (Standard 0) sind die Zeiten exakt, so bleiben Tests
+/// deterministisch. Die App nutzt [BotTiming.forPace] mit 15 % Streuung.
 class BotTiming {
   const BotTiming({
-    this.firstDart = const Duration(milliseconds: 1200),
-    this.betweenDarts = const Duration(milliseconds: 850),
-    this.takeout = const Duration(milliseconds: 1600),
+    this.firstDart = const Duration(milliseconds: 2400),
+    this.betweenDarts = const Duration(milliseconds: 1700),
+    this.takeout = const Duration(milliseconds: 2800),
+    this.jitter = 0,
   });
+
+  /// Zeiten des gewählten Bot-Tempos, mit [jitter] Streuung.
+  factory BotTiming.forPace(BotPace pace, {double jitter = defaultJitter}) => BotTiming(
+        firstDart: Duration(milliseconds: pace.firstDartMs),
+        betweenDarts: Duration(milliseconds: pace.betweenDartsMs),
+        takeout: Duration(milliseconds: pace.takeoutMs),
+        jitter: jitter,
+      );
+
+  /// Streuung der Wartezeiten im Betrieb: +-15 %.
+  static const defaultJitter = 0.15;
 
   /// Pause vor dem ersten Dart einer Aufnahme (Gegner tritt ans Board).
   final Duration firstDart;
@@ -34,9 +52,25 @@ class BotTiming {
 
   /// Wie lange die Bot-Darts nach der Aufnahme stehen bleiben.
   final Duration takeout;
+
+  /// Anteil, um den jede Wartezeit zufällig abweichen darf (0,15 = +-15 %).
+  final double jitter;
+
+  /// [base] mit zufälliger Streuung von höchstens +-[jitter].
+  Duration jittered(Duration base, math.Random random) {
+    if (jitter <= 0) return base;
+    final factor = 1 + (random.nextDouble() * 2 - 1) * jitter;
+    return Duration(microseconds: (base.inMicroseconds * factor).round());
+  }
 }
 
-final botTimingProvider = Provider<BotTiming>((ref) => const BotTiming());
+final botTimingProvider = Provider<BotTiming>(
+  (ref) => BotTiming.forPace(ref.watch(settingsProvider.select((s) => s.botPace))),
+);
+
+/// Zufall für die Streuung der Bot-Wartezeiten. Getrennt von
+/// [botRandomProvider], damit die Würfe der Bots davon unberührt bleiben.
+final botPaceRandomProvider = Provider<math.Random>((ref) => math.Random());
 
 /// Zufall der Bots. In Tests mit festem Startwert überschreibbar.
 final botRandomProvider = Provider<math.Random>((ref) => math.Random());
@@ -77,6 +111,9 @@ final matchControllerProvider = NotifierProvider<MatchController, MatchState?>(M
 /// speichert die Würfe der Menschen (mit Profil) in der Datenbank.
 class MatchController extends Notifier<MatchState?> {
   Timer? _botTimer;
+
+  /// Die App ist im Hintergrund: der Bot wartet, bis sie wieder da ist.
+  bool _botPaused = false;
   final Map<int, DartBot> _bots = {};
   final Map<int, int> _sessionIds = {};
   Future<void> _writes = Future.value();
@@ -123,6 +160,7 @@ class MatchController extends Notifier<MatchState?> {
     }
     await _openSessions(session, resume);
     _resetLocalSource();
+    _botPaused = false;
     state = MatchState(session: session, revision: 0);
     _saveProgress();
     _scheduleBot();
@@ -276,6 +314,7 @@ class MatchController extends Notifier<MatchState?> {
   /// in der Statistik als abgebrochene Session.
   Future<void> close({bool keepForResume = false}) async {
     _botTimer?.cancel();
+    _botPaused = false;
     final s = state;
     _unsaved = null;
     if (s == null) return;
@@ -349,18 +388,36 @@ class MatchController extends Notifier<MatchState?> {
 
   // --- Bot ---
 
+  /// Hält den Bot an, solange die App im Hintergrund ist (kein Wurf, den
+  /// niemand sieht). Der laufende Zug wird nach [resumeBot] mit voller
+  /// Wartezeit fortgesetzt.
+  void pauseBot() {
+    _botPaused = true;
+    _botTimer?.cancel();
+    _botTimer = null;
+  }
+
+  /// Die App ist wieder da: der Bot macht dort weiter, wo er stand.
+  void resumeBot() {
+    if (!_botPaused) return;
+    _botPaused = false;
+    _scheduleBot();
+  }
+
   void _scheduleBot() {
     _botTimer?.cancel();
     _botTimer = null;
     final s = state;
-    if (s == null || s.ended || s.finished) return;
+    if (_botPaused || s == null || s.ended || s.finished) return;
     final m = s.match;
     if (!s.setup.players[m.current].isBot) return;
     final timing = ref.read(botTimingProvider);
+    final random = ref.read(botPaceRandomProvider);
     if (m.visitClosed) {
-      _botTimer = Timer(timing.takeout, _botTakeout);
+      _botTimer = Timer(timing.jittered(timing.takeout, random), _botTakeout);
     } else {
-      _botTimer = Timer(m.physicalDartsInVisit == 0 ? timing.firstDart : timing.betweenDarts, _botThrow);
+      final base = m.physicalDartsInVisit == 0 ? timing.firstDart : timing.betweenDarts;
+      _botTimer = Timer(timing.jittered(base, random), _botThrow);
     }
   }
 

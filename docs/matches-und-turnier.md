@@ -51,6 +51,35 @@ Aufnahme die Punkte bzw. „Bust“ – bei Menschen wie beim Bot, dort nach des
 „Game shot, and the leg / the set / the match“ beim Leg-, Satz- und Matchgewinn. Rückgängig und
 Korrekturen bleiben still. Der Stumm-Knopf sitzt in der App-Leiste der Spielansicht.
 
+### Bot-Tempo
+
+Damit man als Mensch in Ruhe werfen kann, wirft der Bot nicht mehr hektisch. **Optionen › Darstellung
+› Bot-Tempo** hat drei Stufen (Standard: *Gemütlich*):
+
+| Tempo | vor dem 1. Dart | zwischen den Darts | Darts bleiben stehen (Takeout) | Aufnahme mit 3 Darts |
+|---|---|---|---|---|
+| Zügig (die früheren Werte) | 1,2 s | 0,85 s | 1,6 s | 4,5 s |
+| **Gemütlich** (Standard) | 2,4 s | 1,7 s | 2,8 s | 8,6 s |
+| Sehr gemütlich (1,6-fach) | 3,84 s | 2,72 s | 4,48 s | 13,8 s |
+
+* Jede Wartezeit wird zufällig um bis zu +-15 % gestreut, damit der Bot nicht wie ein Metronom
+  wirft (`BotTiming.jittered`, eigener Zufall `botPaceRandomProvider`, getrennt von den Würfen der
+  Bots – ein festes Seed der Bot-Würfe bleibt also reproduzierbar). `BotTiming` ohne Angabe von
+  `jitter` streut nicht; Tests überschreiben `botTimingProvider` mit festen Zeiten.
+* Das Tempo gilt überall, wo der Bot am Board „wirft“: Match gegen die CPU, gegen Bots im
+  Turnier (dein eigenes Spiel) und Challenges, die ein Match gegen einen Bot nutzen. Es ist eine
+  App-Einstellung (`settings.botPace`) und wirkt ab dem nächsten Bot-Zug, auch mitten im Match.
+* **Nicht** betroffen: die Simulation der übrigen Turnierspiele (**Nächste Runde / Rest
+  simulieren**) – sie rechnet sofort –, der Takeout-Wechsel des Simulators für Menschen, der
+  Caller und die Banner (180, Leg, Match).
+* **Hintergrund**: Geht die App in den Hintergrund (Telefon gesperrt, Fenster minimiert), hält der
+  Bot an und wirft nicht ungesehen weiter; zurück im Vordergrund wartet er die volle Zeit des
+  nächsten Darts neu ab (`pauseBot` / `resumeBot` des `MatchController`, ausgelöst von der
+  Spielansicht). Verlassen oder Neustart eines Matches setzt die Pause zurück.
+* **Rückgängig / Korrigieren** betreffen nur Darts von Menschen. Nach jeder Änderung plant der
+  Controller den nächsten Bot-Zug neu (der alte Timer wird verworfen), ein Bot-Dart kann also
+  nie doppelt geworfen werden.
+
 Bust- und Checkout-Regeln sowie der Checkout-Weg kommen aus denselben Bausteinen wie beim
 X01-Solo (`CheckoutRules`, `CheckoutCalculator`).
 

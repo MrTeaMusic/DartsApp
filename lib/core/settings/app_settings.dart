@@ -6,6 +6,7 @@ import '../../features/dart_source/domain/coordinate_calibration.dart';
 import '../../features/dart_source/domain/dart_event.dart';
 import '../../features/sync/domain/sync_role.dart';
 import '../../features/board/presentation/board_style.dart';
+import '../../features/matches/domain/bot_pace.dart';
 import '../../features/progress/domain/daily_goal.dart';
 import '../design/dart_look.dart';
 
@@ -29,6 +30,7 @@ class AppSettings {
     this.doubleZoom = true,
     this.tempoHint = true,
     this.playView = PlayView.arena,
+    this.botPace = BotPace.defaultPace,
     this.themeMode = ThemeMode.system,
     this.sourceKind = DartSourceKind.simulator,
     this.autodartsHost = '127.0.0.1',
@@ -65,6 +67,9 @@ class AppSettings {
 
   /// Aufbau der X01-Spielansichten (Optionen → Darstellung).
   final PlayView playView;
+
+  /// Wie ruhig Bots werfen (Optionen → Darstellung → Bot-Tempo).
+  final BotPace botPace;
 
   /// Helligkeit; gilt nur für Looks mit heller Variante (Clean).
   final ThemeMode themeMode;
@@ -103,6 +108,7 @@ class AppSettings {
     bool? doubleZoom,
     bool? tempoHint,
     PlayView? playView,
+    BotPace? botPace,
     ThemeMode? themeMode,
     DartSourceKind? sourceKind,
     String? autodartsHost,
@@ -125,6 +131,7 @@ class AppSettings {
         doubleZoom: doubleZoom ?? this.doubleZoom,
         tempoHint: tempoHint ?? this.tempoHint,
         playView: playView ?? this.playView,
+        botPace: botPace ?? this.botPace,
         themeMode: themeMode ?? this.themeMode,
         sourceKind: sourceKind ?? this.sourceKind,
         autodartsHost: autodartsHost ?? this.autodartsHost,
@@ -147,6 +154,7 @@ class AppSettings {
   static const _kDoubleZoom = 'settings.doubleZoom';
   static const _kTempoHint = 'settings.tempoHint';
   static const _kPlayView = 'settings.playView';
+  static const _kBotPace = 'settings.botPace';
   static const _kTheme = 'settings.themeMode';
   static const _kSource = 'settings.sourceKind';
   static const _kHost = 'settings.autodartsHost';
@@ -173,6 +181,7 @@ class AppSettings {
       doubleZoom: prefs.getBool(_kDoubleZoom) ?? d.doubleZoom,
       tempoHint: prefs.getBool(_kTempoHint) ?? d.tempoHint,
       playView: PlayView.byName(prefs.getString(_kPlayView)),
+      botPace: BotPace.byName(prefs.getString(_kBotPace)),
       themeMode: byName(ThemeMode.values, prefs.getString(_kTheme), d.themeMode),
       sourceKind: byName(DartSourceKind.values, prefs.getString(_kSource), d.sourceKind),
       autodartsHost: prefs.getString(_kHost) ?? d.autodartsHost,
@@ -197,6 +206,7 @@ class AppSettings {
     await prefs.setBool(_kDoubleZoom, doubleZoom);
     await prefs.setBool(_kTempoHint, tempoHint);
     await prefs.setString(_kPlayView, playView.name);
+    await prefs.setString(_kBotPace, botPace.name);
     await prefs.setString(_kTheme, themeMode.name);
     await prefs.setString(_kSource, sourceKind.name);
     await prefs.setString(_kHost, autodartsHost);
