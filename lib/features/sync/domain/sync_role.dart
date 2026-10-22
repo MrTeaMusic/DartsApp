@@ -12,6 +12,10 @@ enum SyncRole {
 
   /// Dieses Gerät gleicht mit einem Hub ab.
   client,
+
+  /// Dieses Gerät gleicht über den verschlüsselten Cloud-Speicher ab, ohne
+  /// dass ein Rechner laufen muss.
+  cloud,
 }
 
 /// Standard-Port des Hubs.

@@ -82,7 +82,14 @@ Der Worker speichert die Pakete in einer Datenbank namens "D1".
    ```
 
    Dann läuft der Worker. Diese Test-Seite prüft nur den Worker, nicht die Datenbank. Ob die Verbindung zur Datenbank stimmt, zeigt sich, sobald die App zum ersten Mal synchronisiert. Meldet der Server dort den Fehler `db-missing`, dann ist Schritt 5 nicht richtig gespeichert (Variablenname genau `DB`?).
-4. Trage die Adresse (ohne `/v1/hello`) in der DartLab-App ein.
+
+### Schritt 7: In der App einrichten
+
+1. In DartLab: **Optionen › Sync zwischen Geräten › Über die Cloud abgleichen**.
+2. Bei **Adresse des Cloud-Speichers** deine Adresse eintragen (ohne `/v1/hello`, das `https://` kann weg).
+3. Auf dem **ersten** Gerät **Neues Geheimnis erzeugen** tippen. Das sind 26 Zeichen, die gleich die Daten verschlüsseln. **Kopiere sie und bewahre sie gut auf** (Notiz, Passwort-Manager). Geht das Geheimnis verloren, sind die Daten in der Cloud nicht mehr lesbar. Auf den Geräten bleiben sie.
+4. **Jetzt abgleichen** tippen.
+5. Auf jedem weiteren Gerät (iPhone, iPad, PC) dieselbe Adresse und **dasselbe Geheimnis** eintragen und abgleichen. Stimmt das Geheimnis nicht, sagt die App es und speichert nichts.
 
 ---
 
@@ -121,17 +128,11 @@ Deine Daten auf deinen Geräten bleiben davon unberührt. Nur die Cloud-Kopie ve
 
 ---
 
-## 5. Optional: Setup-Key als Sicherheitsnetz
+## 5. Optional: Setup-Key als Sicherheitsnetz (die App kann ihn noch nicht senden)
 
-Die Adresse deines Workers ist nicht geheim. Wer sie errät, könnte theoretisch Müll hochladen und so deinen Gratis-Speicher belegen. Lesen kann er nichts, denn ohne deinen Zugangsschlüssel findet er keine Daten und könnte sie auch nicht entschlüsseln.
+Die Adresse deines Workers ist nicht geheim. Wer sie errät, könnte theoretisch Müll hochladen und so deinen Gratis-Speicher belegen. Lesen kann er nichts, denn ohne dein Geheimnis findet er keine Daten und könnte sie auch nicht entschlüsseln.
 
-Dagegen gibt es den **Setup-Key**, eine Art zweites Passwort für den ganzen Server. Er ist **standardmäßig aus**. Einschalten:
-
-1. Workers & Pages › `dartlab-sync` › **Settings** › **Variables and Secrets** › **Add**.
-2. Typ **Secret**, Name **`SETUP_KEY`**, als Wert ein langes zufälliges Passwort (zum Beispiel aus einem Passwort-Manager). Speichern und **Deploy**.
-3. Danach nimmt der Server **jede** Anfrage nur noch an, wenn sie den Setup-Key mitschickt. Trag denselben Wert in der DartLab-App ein, falls sie ein Feld dafür hat.
-
-Ausschalten: das Secret `SETUP_KEY` wieder löschen. Achtung: Mit eingeschaltetem Setup-Key zeigt auch die Test-Seite im Browser `/v1/hello` nur noch einen Fehler (`unauthorized`), weil der Browser den Key nicht mitschickt. Das ist dann normal.
+Der Server kennt dafür einen **Setup-Key**, eine Art zweites Passwort für den ganzen Server (Variable `SETUP_KEY`, standardmäßig aus). **Schalte ihn nicht ein:** Die DartLab-App schickt ihn noch nicht mit, der Abgleich würde mit der Meldung "Zugang abgelehnt" scheitern. Er ist für den Fall gedacht, dass die App ihn später unterstützt. Ist er aus Versehen eingeschaltet: Workers & Pages › `dartlab-sync` › **Settings** › **Variables and Secrets** › `SETUP_KEY` löschen.
 
 ---
 

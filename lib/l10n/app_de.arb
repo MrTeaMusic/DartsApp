@@ -617,7 +617,31 @@
   },
   "diagBoardEmpty": "Gerade steckt kein Dart, deshalb schickt der Board Manager keine Wurfliste. Einen Dart werfen und erneut testen.",
   "diagQuiet": "Verbunden. Der Board Manager sendet nur, wenn sich am Board etwas ändert.",
-  "syncTitle": "Sync im Heimnetz",
+  "syncTitle": "Sync zwischen Geräten",
+  "syncRoleCloud": "Über die Cloud abgleichen",
+  "syncRoleCloudHint": "Ohne laufenden Rechner und auch unterwegs. Die Daten liegen verschlüsselt in deinem eigenen kostenlosen Cloud-Speicher.",
+  "syncCloudUrl": "Adresse des Cloud-Speichers",
+  "syncCloudUrlInvalid": "Adresse des Cloud-Speichers eintragen",
+  "syncCloudSecret": "Geheimnis",
+  "syncCloudSecretInvalid": "26 Zeichen, genau wie auf dem ersten Gerät",
+  "syncCloudGenerate": "Neues Geheimnis erzeugen",
+  "syncCloudGenerated": "Neues Geheimnis erzeugt. Kopiere es jetzt und bewahre es auf: Nur damit lassen sich die Daten in der Cloud öffnen, und jedes weitere Gerät braucht es.",
+  "syncCloudCopy": "Kopieren",
+  "syncCloudCopied": "Geheimnis kopiert",
+  "syncCloudPrivacy": "Der Cloud-Speicher sieht nur verschlüsselte Daten. Geht das Geheimnis verloren, sind die Daten dort nicht mehr lesbar; auf deinen Geräten bleiben sie erhalten.",
+  "syncErrCloudUnreachable": "Cloud-Speicher nicht erreichbar. Internetverbindung und Adresse prüfen.",
+  "syncErrCloudAuth": "Der Cloud-Speicher lehnt den Zugang ab. Ist ein Setup-Schlüssel eingerichtet?",
+  "syncErrCloudNotDartLab": "Unter dieser Adresse antwortet kein DartLab-Cloud-Speicher. Adresse prüfen.",
+  "syncErrCloudServer": "Der Cloud-Speicher meldet einen Fehler: {detail}. Bei einem Tageslimit klappt es morgen wieder von selbst.",
+  "@syncErrCloudServer": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "syncErrWrongSecret": "Die Daten im Cloud-Speicher lassen sich mit diesem Geheimnis nicht öffnen. Geheimnis vom ersten Gerät prüfen.",
+  "syncErrNoVault": "Mit diesem Geheimnis gibt es im Cloud-Speicher noch keine Daten. Geheimnis und Adresse vom ersten Gerät prüfen; auf dem ersten Gerät muss schon einmal abgeglichen worden sein.",
   "syncRoleOff": "Aus",
   "syncRoleOffHint": "Einträge bleiben nur auf diesem Gerät.",
   "syncRoleHub": "Dieses Gerät ist der Hub",
@@ -2681,10 +2705,10 @@
   "screenPillConnecting": "Verbinde …",
   "screenPillLost": "Getrennt",
   "screenNotConfiguredTitle": "Noch kein PC eingerichtet",
-  "screenNotConfiguredText": "Trag unter Optionen › Sync im Heimnetz die Adresse und den Code des PCs ein. Am PC muss dort „Dieses Gerät ist der Hub“ gewählt sein.",
+  "screenNotConfiguredText": "Trag unter Optionen › Sync zwischen Geräten die Adresse und den Code des PCs ein. Am PC muss dort „Dieses Gerät ist der Hub“ gewählt sein.",
   "screenToSettings": "Zu den Optionen",
   "screenWrongKeyTitle": "Code passt nicht",
-  "screenWrongKeyText": "Der Code steht am PC unter Optionen › Sync im Heimnetz. Trag ihn auf diesem Gerät unter Optionen neu ein.",
+  "screenWrongKeyText": "Der Code steht am PC unter Optionen › Sync zwischen Geräten. Trag ihn auf diesem Gerät unter Optionen neu ein.",
   "screenNotDartLabTitle": "Kein DartLab unter dieser Adresse",
   "screenNotDartLabText": "Unter {host} antwortet etwas anderes als DartLab. Prüfe die Adresse in den Optionen.",
   "@screenNotDartLabText": {

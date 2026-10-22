@@ -43,6 +43,8 @@ class AppSettings {
     this.syncHost = '',
     this.syncPort = defaultSyncPort,
     this.syncKey = '',
+    this.syncCloudUrl = '',
+    this.syncCloudSecret = '',
     this.dailyGoalUnit = DailyGoalUnit.darts,
     this.dailyGoalAmount = 200,
     this.autodartsLiveAutoStart = false,
@@ -92,6 +94,10 @@ class AppSettings {
   final int syncPort;
   final String syncKey;
 
+  /// Adresse des Cloud-Speichers und Geheimnis des Tresors (siehe `cloud/README.md`).
+  final String syncCloudUrl;
+  final String syncCloudSecret;
+
   /// Tagesziel (Startseite, Optionen → Tagesziel): Einheit und Menge.
   final DailyGoalUnit dailyGoalUnit;
   final int dailyGoalAmount;
@@ -121,6 +127,8 @@ class AppSettings {
     String? syncHost,
     int? syncPort,
     String? syncKey,
+    String? syncCloudUrl,
+    String? syncCloudSecret,
     DailyGoalUnit? dailyGoalUnit,
     int? dailyGoalAmount,
     bool? autodartsLiveAutoStart,
@@ -144,6 +152,8 @@ class AppSettings {
         syncHost: syncHost ?? this.syncHost,
         syncPort: syncPort ?? this.syncPort,
         syncKey: syncKey ?? this.syncKey,
+        syncCloudUrl: syncCloudUrl ?? this.syncCloudUrl,
+        syncCloudSecret: syncCloudSecret ?? this.syncCloudSecret,
         dailyGoalUnit: dailyGoalUnit ?? this.dailyGoalUnit,
         dailyGoalAmount: dailyGoalAmount ?? this.dailyGoalAmount,
         autodartsLiveAutoStart: autodartsLiveAutoStart ?? this.autodartsLiveAutoStart,
@@ -167,6 +177,8 @@ class AppSettings {
   static const _kSyncHost = 'sync.host';
   static const _kSyncPort = 'sync.port';
   static const _kSyncKey = 'sync.key';
+  static const _kSyncCloudUrl = 'sync.cloudUrl';
+  static const _kSyncCloudSecret = 'sync.cloudSecret';
   static const _kGoalUnit = 'goals.dailyUnit';
   static const _kGoalAmount = 'goals.dailyAmount';
   static const _kLiveAutoStart = 'settings.autodartsLiveAutoStart';
@@ -194,6 +206,8 @@ class AppSettings {
       syncHost: prefs.getString(_kSyncHost) ?? d.syncHost,
       syncPort: prefs.getInt(_kSyncPort) ?? d.syncPort,
       syncKey: prefs.getString(_kSyncKey) ?? d.syncKey,
+      syncCloudUrl: prefs.getString(_kSyncCloudUrl) ?? d.syncCloudUrl,
+      syncCloudSecret: prefs.getString(_kSyncCloudSecret) ?? d.syncCloudSecret,
       dailyGoalUnit: DailyGoalUnit.byName(prefs.getString(_kGoalUnit)),
       dailyGoalAmount: prefs.getInt(_kGoalAmount) ?? d.dailyGoalAmount,
       autodartsLiveAutoStart: prefs.getBool(_kLiveAutoStart) ?? d.autodartsLiveAutoStart,
@@ -219,6 +233,8 @@ class AppSettings {
     await prefs.setString(_kSyncHost, syncHost);
     await prefs.setInt(_kSyncPort, syncPort);
     await prefs.setString(_kSyncKey, syncKey);
+    await prefs.setString(_kSyncCloudUrl, syncCloudUrl);
+    await prefs.setString(_kSyncCloudSecret, syncCloudSecret);
     await prefs.setString(_kGoalUnit, dailyGoalUnit.name);
     await prefs.setInt(_kGoalAmount, dailyGoalAmount);
     await prefs.setBool(_kLiveAutoStart, autodartsLiveAutoStart);

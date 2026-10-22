@@ -102,7 +102,7 @@ const String screenLoginHtml = '''<!doctype html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DartLab · Zweiter Bildschirm</title><style>$_style</style></head>
 <body><main><div id="idle" style="display:flex">Code vom PC eingeben
-<small>Steht am PC unter Optionen › Sync im Heimnetz.</small>
+<small>Steht am PC unter Optionen › Sync zwischen Geräten.</small>
 <form method="get" action="/screen"><input name="key" inputmode="numeric" autocomplete="off" autofocus> <button>Anzeigen</button></form>
 </div></main></body></html>
 ''';
