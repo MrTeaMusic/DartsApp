@@ -86,6 +86,14 @@ Mit einem bezahlten Developer-Account (99 €/Jahr) gilt das Profil ein Jahr, un
 Exportierte Dateien (Backup, CSV) liegen auf iOS in der Dateien-App unter
 „Auf meinem iPhone › DartLab“.
 
+## Android (DartLab Lite)
+
+Für Android gibt es **DartLab Lite**, eine kleine App nur zum Ansehen der Statistiken. Sie kommt als
+APK aus dem GitHub-Release und nicht aus dem Play Store. Wie man sie installiert und aktualisiert,
+steht in [android-lite.md](android-lite.md). Damit der Release-Workflow die APK überhaupt baut und
+unterschreibt, muss einmalig ein Signierschlüssel bei GitHub hinterlegt werden:
+[android-signierung.md](android-signierung.md).
+
 ## Updates (so kommt eine neue Version auf die Geräte)
 
 Nach jedem gemergten Pull Request baut GitHub die App für Windows und macOS und veröffentlicht
@@ -138,12 +146,14 @@ deshalb ein Handgriff.
 * `.github/workflows/flutter.yml`: `flutter analyze` und alle Tests, bei jedem Pull Request und auf `main`.
 * `.github/workflows/build.yml`: baut Windows, macOS und iOS (iOS ohne Signatur) bei jedem
   Pull Request; manuell startbar unter „Actions › Native Builds › Run workflow“.
-  Die Windows- und macOS-App hängen als Artefakte am Lauf und lassen sich dort herunterladen
+  Außerdem baut ein Job die Android-Lite-APK (zum Testen). Die Windows- und macOS-App hängen als Artefakte am Lauf und lassen sich dort herunterladen
   (für macOS gilt der Gatekeeper-Hinweis oben). Für iOS prüft der Lauf nur, dass der Build
   durchgeht; auf ein Gerät kommt die App über Xcode wie oben beschrieben.
 * `.github/workflows/release.yml`: bei jedem Push auf `main` (außer reinen Doku-Änderungen) Windows
   und macOS bauen und als Release veröffentlichen (siehe „Updates“). Braucht nur das eingebaute
   `GITHUB_TOKEN` mit Schreibrecht auf Inhalte; manuell startbar unter „Actions › Release“.
+  Dazu kommt die Android-Lite-APK, aber nur mit hinterlegtem Signierschlüssel; ohne ihn bleibt sie
+  aus dem Release draußen und Windows und macOS werden trotzdem veröffentlicht.
 
 ## Häufige Probleme
 
