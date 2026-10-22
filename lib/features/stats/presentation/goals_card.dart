@@ -5,6 +5,7 @@ import '../../../core/design/components/components.dart';
 import '../../../core/design/dart_colors.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
+import '../../../core/lite.dart';
 import '../../games/domain/engine/game_display.dart';
 import '../../profiles/presentation/active_player.dart';
 import '../data/stats_repository.dart';
@@ -28,7 +29,8 @@ String _value(GoalKind k, double? v) {
   return v.round().toString();
 }
 
-/// Ziele mit Fortschritt; Antippen zum Ändern, Plus zum Hinzufügen.
+/// Ziele mit Fortschritt; Antippen zum Ändern, Plus zum Hinzufügen. In Lite
+/// nur zum Ansehen.
 class GoalsCard extends ConsumerWidget {
   const GoalsCard({super.key});
 
@@ -40,6 +42,7 @@ class GoalsCard extends ConsumerWidget {
     final progress = ref.watch(goalProgressProvider);
     final used = {for (final p in progress) p.kind};
     final free = [for (final k in GoalKind.values) if (!used.contains(k)) k];
+    final readOnly = ref.watch(liteProvider);
 
     return AppCard(
       key: const Key('goals-card'),
@@ -48,7 +51,7 @@ class GoalsCard extends ConsumerWidget {
         children: [
           SectionHeader(
             l10n.goalsTitle,
-            trailing: free.isEmpty
+            trailing: free.isEmpty || readOnly
                 ? null
                 : IconButton(
                     key: const Key('goal-add'),
@@ -63,7 +66,7 @@ class GoalsCard extends ConsumerWidget {
             InkWell(
               key: Key('goal-${p.kind.name}'),
               borderRadius: BorderRadius.circular(AppRadii.s),
-              onTap: () => _edit(context, ref, existing: p),
+              onTap: readOnly ? null : () => _edit(context, ref, existing: p),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.s),
                 child: Column(

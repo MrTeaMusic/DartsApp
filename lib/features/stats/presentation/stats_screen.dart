@@ -6,11 +6,13 @@ import '../../../core/design/components/components.dart';
 import '../../../core/design/dart_look.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
+import '../../../core/lite.dart';
 import '../../../core/router/app_router.dart';
 import '../../games/domain/game_catalog.dart';
 import '../../games/presentation/game_texts.dart';
 import '../../profiles/presentation/active_player.dart';
 import '../../progress/presentation/achievements_tab.dart';
+import '../../update/presentation/update_banner.dart';
 import '../data/stats_repository.dart';
 import '../domain/game_metrics.dart';
 import '../domain/stats_calculator.dart';
@@ -140,6 +142,12 @@ class StatsScreen extends ConsumerWidget {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // Lite hat keine Startseite: Der Update-Hinweis steht hier.
+                if (ref.watch(liteProvider))
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(pad, AppSpacing.s, pad, 0),
+                    child: const UpdateBanner(bottomGap: AppSpacing.s),
+                  ),
                 // Zeitraum und Spiel gelten nicht für die Erfolge.
                 _HideOnTab(
                   index: _achievementsTab,

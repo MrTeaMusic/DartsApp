@@ -11,6 +11,9 @@ import '../../features/games/presentation/games_screen.dart';
 import '../../features/history/presentation/history_screen.dart';
 import '../../features/history/presentation/session_detail_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/lite/domain/lite_gate.dart';
+import '../../features/lite/presentation/lite_settings_screen.dart';
+import '../../features/lite/presentation/lite_setup_screen.dart';
 import '../../features/matches/presentation/match_routes.dart';
 import '../../features/plans/presentation/plan_routes.dart';
 import '../../features/quiz/presentation/quiz_routes.dart';
@@ -19,6 +22,7 @@ import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/simulator/presentation/board_screen.dart';
 import '../../features/stats/presentation/stats_screen.dart';
 import '../../features/dart_source/domain/dart_event.dart';
+import '../lite.dart';
 import '../settings/app_settings.dart';
 import '../widgets/adaptive_scaffold.dart';
 
@@ -39,9 +43,17 @@ final routerProvider = Provider<GoRouter>((ref) {
   // Optionen › Autodarts: beim Start direkt in Autodarts Live.
   final settings = ref.read(settingsProvider);
   final liveOnStart = settings.autodartsLiveAutoStart && settings.sourceKind == DartSourceKind.autodartsLocal;
+  // Lite: nur Statistik und Optionen, davor die Einrichtung. Die vollständige
+  // Routentabelle bleibt; alles andere führt per Weiterleitung zur Statistik.
+  final lite = ref.read(liteProvider);
+  final connected = ValueNotifier(liteIsConnected(settings));
+  if (lite) ref.listen(settingsProvider, (_, next) => connected.value = liteIsConnected(next));
   final router = GoRouter(
-    initialLocation: liveOnStart ? AutodartsLiveRoutes.live : Routes.home,
+    initialLocation: lite ? Routes.stats : (liveOnStart ? AutodartsLiveRoutes.live : Routes.home),
+    refreshListenable: lite ? connected : null,
+    redirect: lite ? (_, state) => liteRedirect(state.uri.path, connected: connected.value) : null,
     routes: [
+      if (lite) GoRoute(path: LiteRoutes.welcome, builder: (_, _) => const LiteSetupScreen()),
       // Spielansicht ohne Navigation, damit das Board möglichst groß ist.
       GoRoute(path: Routes.play, builder: (_, _) => const GamePlayScreen()),
       matchPlayRoute,
@@ -97,7 +109,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(routes: [
             GoRoute(
               path: Routes.settings,
-              builder: (_, _) => const SettingsScreen(),
+              builder: (_, _) => lite ? const LiteSettingsScreen() : const SettingsScreen(),
               routes: [
                 GoRoute(path: 'debug', builder: (_, _) => const DebugScreen()),
               ],
@@ -108,6 +120,9 @@ final routerProvider = Provider<GoRouter>((ref) {
     ],
     errorBuilder: (context, state) => Scaffold(body: Center(child: Text('${state.error}'))),
   );
-  ref.onDispose(router.dispose);
+  ref.onDispose(() {
+    router.dispose();
+    connected.dispose();
+  });
   return router;
 });

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +10,7 @@ import '../design/dart_colors.dart';
 import '../design/dart_look.dart';
 import '../design/tokens.dart';
 import '../l10n.dart';
+import '../lite.dart';
 import '../settings/app_settings.dart';
 import 'fullscreen_button.dart';
 
@@ -26,16 +29,20 @@ class AdaptiveScaffold extends ConsumerWidget {
     final arenaLive = ref.watch(settingsProvider.select((s) => s.arenaPlay && s.sourceKind == DartSourceKind.autodartsLocal)) &&
         GoRouterState.of(context).uri.path == AutodartsLiveRoutes.live;
     if (arenaLive) return Scaffold(body: shell);
-    final destinations = [
+    final all = [
       (Icons.home_outlined, Icons.home_rounded, l10n.navHome),
       (Icons.sports_esports_outlined, Icons.sports_esports_rounded, l10n.navGames),
       (Icons.adjust_outlined, Icons.adjust_rounded, l10n.navBoard),
       (Icons.insights_outlined, Icons.insights_rounded, l10n.navStats),
       (Icons.settings_outlined, Icons.settings_rounded, l10n.navSettings),
     ];
+    // Lite: nur Statistik und Optionen (Zweig 3 und 4 des Routers).
+    final branches = ref.watch(liteProvider) ? const [3, 4] : const [0, 1, 2, 3, 4];
+    final destinations = [for (final b in branches) all[b]];
+    final selected = math.max(0, branches.indexOf(shell.currentIndex));
     final width = MediaQuery.sizeOf(context).width;
 
-    void go(int index) => shell.goBranch(index, initialLocation: index == shell.currentIndex);
+    void go(int index) => shell.goBranch(branches[index], initialLocation: branches[index] == shell.currentIndex);
 
     if (width < AppBreakpoints.sidebar) {
       final look = context.look;
@@ -48,7 +55,7 @@ class AdaptiveScaffold extends ConsumerWidget {
                 : Border(top: BorderSide(color: Theme.of(context).colorScheme.outline)),
           ),
           child: NavigationBar(
-            selectedIndex: shell.currentIndex,
+            selectedIndex: selected,
             onDestinationSelected: go,
             labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
             destinations: [
@@ -67,7 +74,7 @@ class AdaptiveScaffold extends ConsumerWidget {
           NavigationRail(
             extended: extended,
             minExtendedWidth: context.look.id == DartLookId.lab ? 200 : 228,
-            selectedIndex: shell.currentIndex,
+            selectedIndex: selected,
             onDestinationSelected: go,
             labelType: extended ? NavigationRailLabelType.none : NavigationRailLabelType.all,
             leading: Padding(

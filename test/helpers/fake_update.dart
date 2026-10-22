@@ -20,6 +20,19 @@ http.Response releaseReply({String? tag}) {
   return http.Response.bytes(utf8.encode(body), 200);
 }
 
+/// Das Release wie [releaseReply], dazu mit der APK der Lite-App.
+http.Response releaseWithApkReply({String? tag}) {
+  final t = tag ?? 'v0.10.0-b12';
+  final json = jsonDecode(releaseReply(tag: tag).body) as Map<String, Object?>;
+  (json['assets'] as List<Object?>).add({
+    'name': 'DartLab-Lite-android.apk',
+    'content_type': 'application/vnd.android.package-archive',
+    'size': 31457280,
+    'browser_download_url': 'https://github.com/MrTeaMusic/DartsApp/releases/download/$t/DartLab-Lite-android.apk',
+  });
+  return http.Response.bytes(utf8.encode(jsonEncode(json)), 200);
+}
+
 http.Response rateLimitReply() =>
     http.Response(updateFixture('rate_limited.json'), 403, headers: {'x-ratelimit-remaining': '0'});
 http.Response offlineReply() => throw const SocketException('Failed host lookup');

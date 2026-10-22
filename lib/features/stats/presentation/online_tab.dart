@@ -7,6 +7,7 @@ import '../../../core/design/dart_colors.dart';
 import '../../../core/design/dart_look.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
+import '../../../core/lite.dart';
 import '../../../core/router/app_router.dart';
 import '../../autodarts_live/presentation/autodarts_live_routes.dart';
 import '../../games/domain/engine/game_display.dart';
@@ -33,15 +34,17 @@ const _gap = SectionGap(factor: 0.8);
 /// Reiter „Online“: Matches aus Autodarts Live, Verlauf und der Vergleich
 /// Training gegen Match. Alle Zahlen kommen fertig aus dem
 /// [StatsCalculator] (je Zeitraum zwischengespeichert).
-class OnlineTab extends StatelessWidget {
+class OnlineTab extends ConsumerWidget {
   const OnlineTab({super.key, required this.view, required this.wide, required this.pad});
   final StatsView view;
   final bool wide;
   final double pad;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    // Lite führt nicht zu Autodarts Live.
+    final lite = ref.watch(liteProvider);
     final report = view.calc.onlineReport(view.period);
     final compare = view.calc.onlineComparison(view.period);
     final t = report.totals;
@@ -54,13 +57,15 @@ class OnlineTab extends StatelessWidget {
             key: const Key('online-empty'),
             icon: Icons.public_rounded,
             title: l10n.onlineEmptyTitle,
-            text: l10n.onlineEmptyText,
-            action: FilledButton.icon(
-              key: const Key('online-open-live'),
-              onPressed: () => context.go(AutodartsLiveRoutes.live),
-              icon: const Icon(Icons.sensors_rounded),
-              label: Text(l10n.onlineOpenLive),
-            ),
+            text: lite ? l10n.statsNoData : l10n.onlineEmptyText,
+            action: lite
+                ? null
+                : FilledButton.icon(
+                    key: const Key('online-open-live'),
+                    onPressed: () => context.go(AutodartsLiveRoutes.live),
+                    icon: const Icon(Icons.sensors_rounded),
+                    label: Text(l10n.onlineOpenLive),
+                  ),
           )
         else ...[
           TileGrid(children: [
@@ -255,12 +260,12 @@ class _DiffPill extends StatelessWidget {
 const double _valueWidth = 62;
 const double _diffWidth = 64;
 
-class _CompareCard extends StatelessWidget {
+class _CompareCard extends ConsumerWidget {
   const _CompareCard({required this.compare});
   final OnlineComparison compare;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final notable = [
@@ -317,7 +322,8 @@ class _CompareCard extends StatelessWidget {
               ),
             ],
           ),
-          if (notable.isNotEmpty)
+          // Pläne gibt es in Lite nicht.
+          if (notable.isNotEmpty && !ref.watch(liteProvider))
             Align(
               alignment: Alignment.centerRight,
               child: TextButton.icon(
