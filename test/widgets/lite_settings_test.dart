@@ -33,7 +33,7 @@ void main() {
           overrides: updateOverrides(github: gh, host: FakeUpdateHost(platform: ReleasePlatform.android)));
       await openOptions(tester);
       expect(find.byKey(const Key('lite-settings')), findsOneWidget);
-      expect(find.text('VERBINDUNG'), findsOneWidget);
+      expect(find.text('Verbindung'), findsOneWidget);
       // Bens Adresse und sein Geheimnis, so wie man sie abschreibt.
       expect(tester.widget<TextFormField>(find.byKey(const Key('sync-cloud-url-field'))).controller!.text, 'https://$liteUrl');
       expect(
@@ -54,8 +54,8 @@ void main() {
         300,
         scrollable: find.descendant(of: find.byKey(const Key('lite-settings')), matching: find.byType(Scrollable)).first,
       );
-      expect(find.text('UPDATES'), findsOneWidget);
-      expect(find.text('ÜBER'), findsOneWidget);
+      expect(find.text('Updates'), findsOneWidget);
+      expect(find.text('Über'), findsOneWidget);
       expect(find.text('DartLab Lite'), findsOneWidget);
       expect(find.text('Nur Ansicht. Spielen und Eintragen geschieht in der Haupt-App.'), findsOneWidget);
       expect(tester.widget<Text>(find.byKey(const Key('lite-about-version'))).data, 'Version 0.10.0 · Build 10');
@@ -152,8 +152,13 @@ void main() {
       expect(c.read(activePlayerProvider)!.name, 'Ben');
       expect(find.descendant(of: find.byType(AppBar), matching: find.text('Ben')), findsOneWidget);
       await openOptions(tester);
-      expect(find.text('STATISTIK VON', skipOffstage: false), findsOneWidget);
+      expect(find.text('Statistik von', skipOffstage: false), findsOneWidget);
       final choice = find.byKey(const Key('lite-profile-card'));
+      await tester.scrollUntilVisible(
+        choice,
+        300,
+        scrollable: find.descendant(of: find.byKey(const Key('lite-settings')), matching: find.byType(Scrollable)).first,
+      );
       expect(choice, findsOneWidget);
       expect(find.descendant(of: choice, matching: find.byType(RadioListTile<int>)), findsNWidgets(2));
       // Nur auswählen, nichts anlegen, umbenennen oder löschen.
@@ -172,7 +177,7 @@ void main() {
       final (:c, :cloud, :ben) = await pumpLiteWithBen(tester);
       await openOptions(tester);
       expect(find.byKey(const Key('lite-profile-card')), findsNothing);
-      expect(find.text('STATISTIK VON', skipOffstage: false), findsNothing);
+      expect(find.text('Statistik von', skipOffstage: false), findsNothing);
       await shutdownApp(tester, c);
     });
   });

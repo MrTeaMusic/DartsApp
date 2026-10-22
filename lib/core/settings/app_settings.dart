@@ -9,6 +9,7 @@ import '../../features/board/presentation/board_style.dart';
 import '../../features/matches/domain/bot_pace.dart';
 import '../../features/progress/domain/daily_goal.dart';
 import '../design/dart_look.dart';
+import '../lite.dart';
 
 /// Aufbau der X01-Spielansichten (Match und Solo).
 enum PlayView {
@@ -250,7 +251,12 @@ final settingsProvider = NotifierProvider<SettingsNotifier, AppSettings>(Setting
 
 class SettingsNotifier extends Notifier<AppSettings> {
   @override
-  AppSettings build() => AppSettings.load(ref.watch(sharedPreferencesProvider));
+  AppSettings build() {
+    final loaded = AppSettings.load(ref.watch(sharedPreferencesProvider));
+    // Lite läuft immer im Arena-Look (es gibt dort keine Auswahl); die
+    // Hauptapp behält den gespeicherten Look.
+    return ref.watch(liteProvider) ? loaded.copyWith(look: DartLookId.arena) : loaded;
+  }
 
   Future<void> update(AppSettings Function(AppSettings) change) async {
     state = change(state);

@@ -30,7 +30,7 @@ void main() {
     expect(gh.calls, 1);
     final banner = find.byKey(const Key('update-banner'));
     expect(banner, findsOneWidget);
-    expect(find.descendant(of: banner, matching: find.text('NEUE VERSION VERFÜGBAR')), findsOneWidget);
+    expect(find.descendant(of: banner, matching: find.text('Neue Version verfügbar')), findsOneWidget);
     expect(find.descendant(of: banner, matching: find.text('DartLab Lite 0.10.0 · Build 12')), findsOneWidget);
     // Die Änderungen der Haupt-App gehören nicht dazu.
     expect(find.descendant(of: banner, matching: find.textContaining('Online-Matches')), findsNothing);

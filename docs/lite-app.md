@@ -26,6 +26,16 @@ Ohne `--dart-define=DARTLAB_LITE=true` bleibt die App, wie sie ist. Der Schalter
   nimmt Lite das Profil mit den meisten Sessions. Gibt es mehrere Profile, lässt sich unter
   Optionen „Statistik von“ umstellen.
 
+## Look
+
+Lite läuft immer im **Arena-Look** (Marineblau, dunkle runde Karten, blauer Akzent), auch wenn in den
+Einstellungen etwas anderes gespeichert ist. Dazu setzt `SettingsNotifier` den Look in der
+Lite-Variante auf Arena; Optionen bietet dort keine Look-Auswahl an. Die Hauptapp bleibt bei TV als
+Standard und behält den gewählten Look.
+
+Alle Bilder der Statistik (Heatmap, Streubild je Feld mit Ellipse, Doppel im Fokus mit Scheibe,
+Tempo- und Verlaufsdiagramme) gibt es in Lite wie in der Hauptapp; Lite blendet nur Knöpfe aus.
+
 ## Erster Start
 
 Ohne Einrichtung öffnet sich `/willkommen` (ohne Navigationsleiste):
