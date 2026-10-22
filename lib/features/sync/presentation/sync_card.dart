@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -10,6 +11,9 @@ import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
 import '../../../core/settings/app_settings.dart';
 import '../../second_screen/presentation/second_screen_page.dart';
+import '../data/cloud_api.dart';
+import '../data/cloud_crypto.dart';
+import '../data/cloud_remote.dart';
 import '../data/sync_client.dart';
 import '../domain/sync_role.dart';
 import 'sync_controller.dart';
@@ -32,7 +36,34 @@ String formatSyncTime(DateTime t, [DateTime? now]) {
   return sameDay ? time : '${two(t.day)}.${two(t.month)}. $time';
 }
 
-/// Einstellungen für den Abgleich im Heimnetz.
+/// Text und Farbe der Statuszeile unter den Eingabefeldern.
+(String, Color?) syncStatusText(BuildContext context, SyncState sync) {
+  final l10n = context.l10n;
+  final cloud = sync.role == SyncRole.cloud;
+  if (sync.syncing) return (l10n.syncSyncing, null);
+  final failure = sync.failure;
+  if (failure != null) {
+    return (
+      switch (failure) {
+        SyncFailure.unreachable => cloud ? l10n.syncErrCloudUnreachable : l10n.syncErrUnreachable,
+        SyncFailure.wrongKey => cloud ? l10n.syncErrCloudAuth : l10n.syncErrWrongKey,
+        SyncFailure.notDartLab => cloud ? l10n.syncErrCloudNotDartLab : l10n.syncErrNotDartLab,
+        SyncFailure.server => cloud ? l10n.syncErrCloudServer(sync.failureDetail ?? '') : l10n.syncErrServer(sync.failureDetail ?? ''),
+        SyncFailure.wrongSecret => l10n.syncErrWrongSecret,
+        SyncFailure.noVault => l10n.syncErrNoVault,
+      },
+      context.dartColors.danger,
+    );
+  }
+  final last = sync.lastSync;
+  if (last != null) {
+    final r = sync.lastReport!;
+    return (l10n.syncLast(formatSyncTime(last), r.sent, r.received), null);
+  }
+  return (l10n.syncNever, null);
+}
+
+/// Einstellungen für den Abgleich zwischen Geräten.
 class SyncCard extends ConsumerWidget {
   const SyncCard({super.key});
 
@@ -41,7 +72,7 @@ class SyncCard extends ConsumerWidget {
     final l10n = context.l10n;
     final settings = ref.watch(settingsProvider);
     final notifier = ref.read(settingsProvider.notifier);
-    final roles = [SyncRole.off, if (canBeHub || settings.syncRole == SyncRole.hub) SyncRole.hub, SyncRole.client];
+    final roles = [SyncRole.off, SyncRole.cloud, if (canBeHub || settings.syncRole == SyncRole.hub) SyncRole.hub, SyncRole.client];
 
     return AppCard(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
@@ -63,16 +94,19 @@ class SyncCard extends ConsumerWidget {
                       SyncRole.off => Icons.sync_disabled_rounded,
                       SyncRole.hub => Icons.hub_rounded,
                       SyncRole.client => Icons.sync_rounded,
+                      SyncRole.cloud => Icons.cloud_sync_rounded,
                     }),
                     title: Text(switch (role) {
                       SyncRole.off => l10n.syncRoleOff,
                       SyncRole.hub => l10n.syncRoleHub,
                       SyncRole.client => l10n.syncRoleClient,
+                      SyncRole.cloud => l10n.syncRoleCloud,
                     }),
                     subtitle: Text(switch (role) {
                       SyncRole.off => l10n.syncRoleOffHint,
                       SyncRole.hub => canBeHub ? l10n.syncRoleHubHint : l10n.syncHubOnlyDesktop,
                       SyncRole.client => l10n.syncRoleClientHint,
+                      SyncRole.cloud => l10n.syncRoleCloudHint,
                     }),
                   ),
               ],
@@ -84,6 +118,11 @@ class SyncCard extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(AppSpacing.l, 0, AppSpacing.l, AppSpacing.m),
               child: _ClientPanel(settings: settings),
+            ),
+          if (settings.syncRole == SyncRole.cloud)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(AppSpacing.l, 0, AppSpacing.l, AppSpacing.m),
+              child: _CloudPanel(settings: settings),
             ),
         ],
       ),
@@ -213,24 +252,7 @@ class _ClientPanelState extends ConsumerState<_ClientPanel> {
     final sync = ref.watch(syncControllerProvider);
     final suggestion = _autodartsHost;
 
-    final String statusText;
-    Color? statusColor;
-    if (sync.syncing) {
-      statusText = l10n.syncSyncing;
-    } else if (sync.failure != null) {
-      statusColor = context.dartColors.danger;
-      statusText = switch (sync.failure!) {
-        SyncFailure.unreachable => l10n.syncErrUnreachable,
-        SyncFailure.wrongKey => l10n.syncErrWrongKey,
-        SyncFailure.notDartLab => l10n.syncErrNotDartLab,
-        SyncFailure.server => l10n.syncErrServer(sync.failureDetail ?? ''),
-      };
-    } else if (sync.lastSync != null) {
-      final r = sync.lastReport!;
-      statusText = l10n.syncLast(formatSyncTime(sync.lastSync!), r.sent, r.received);
-    } else {
-      statusText = l10n.syncNever;
-    }
+    final (statusText, statusColor) = syncStatusText(context, sync);
 
     return Form(
       key: _formKey,
@@ -297,6 +319,186 @@ class _ClientPanelState extends ConsumerState<_ClientPanel> {
                 label: Text(l10n.syncNow),
               ),
             ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CloudPanel extends ConsumerStatefulWidget {
+  const _CloudPanel({required this.settings});
+  final AppSettings settings;
+
+  @override
+  ConsumerState<_CloudPanel> createState() => _CloudPanelState();
+}
+
+class _CloudPanelState extends ConsumerState<_CloudPanel> {
+  late final _url = TextEditingController(text: widget.settings.syncCloudUrl);
+  late final _secret = TextEditingController(
+    text: CloudSecret.tryParse(widget.settings.syncCloudSecret)?.display ?? widget.settings.syncCloudSecret,
+  );
+  final _formKey = GlobalKey<FormState>();
+
+  /// Das Geheimnis wurde hier gerade erzeugt: Der Tresor wird neu angelegt.
+  /// Sonst wird zuerst geprüft, ob es ihn gibt (Tippfehler abfangen).
+  bool _generated = false;
+  bool _checking = false;
+  SyncFailure? _error;
+
+  @override
+  void dispose() {
+    _url.dispose();
+    _secret.dispose();
+    super.dispose();
+  }
+
+  void _generate() {
+    setState(() {
+      _secret.text = CloudSecret.generate().display;
+      _generated = true;
+      _error = null;
+    });
+  }
+
+  Future<void> _copy() async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    await Clipboard.setData(ClipboardData(text: _secret.text));
+    messenger.showSnackBar(SnackBar(content: Text(l10n.syncCloudCopied)));
+  }
+
+  /// Prüft Adresse und Tresor, speichert dann und gleicht ab.
+  Future<void> _apply() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    FocusScope.of(context).unfocus();
+    final url = CloudApi.tryParseUrl(_url.text)!.toString();
+    final secret = CloudSecret.tryParse(_secret.text)!;
+    final s = ref.read(settingsProvider);
+    final changed = s.syncCloudUrl != url || s.syncCloudSecret != secret.text;
+    if (!changed) {
+      await ref.read(syncControllerProvider.notifier).syncNow();
+      return;
+    }
+    setState(() {
+      _checking = true;
+      _error = null;
+    });
+    final failure = await _check(url, secret, mustExist: !_generated);
+    if (!mounted) return;
+    setState(() {
+      _checking = false;
+      _error = failure;
+    });
+    if (failure != null) return;
+    // Neue Einstellungen bauen den Abgleich neu auf; der gleicht dann von selbst ab.
+    await ref.read(settingsProvider.notifier).update((x) => x.copyWith(syncCloudUrl: url, syncCloudSecret: secret.text));
+    _generated = false;
+  }
+
+  Future<SyncFailure?> _check(String url, CloudSecret secret, {required bool mustExist}) async {
+    final api = CloudApi(url, (await secret.keys()).token, client: ref.read(cloudHttpClientProvider)());
+    try {
+      await api.hello();
+      if (mustExist && await CloudRemote(api, await secret.keys()).vaultExists() == false) return SyncFailure.noVault;
+      return null;
+    } on SyncException catch (e) {
+      return e.kind;
+    } finally {
+      api.close();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final sync = ref.watch(syncControllerProvider);
+    final saved = widget.settings.syncCloudSecret.isNotEmpty;
+    var (statusText, statusColor) = syncStatusText(context, sync);
+    final error = _error;
+    if (error != null) {
+      statusColor = context.dartColors.danger;
+      statusText = switch (error) {
+        SyncFailure.noVault => l10n.syncErrNoVault,
+        SyncFailure.unreachable => l10n.syncErrCloudUnreachable,
+        SyncFailure.notDartLab => l10n.syncErrCloudNotDartLab,
+        SyncFailure.wrongKey => l10n.syncErrCloudAuth,
+        SyncFailure.wrongSecret => l10n.syncErrWrongSecret,
+        SyncFailure.server => l10n.syncErrCloudServer(''),
+      };
+    } else if (_checking) {
+      statusText = l10n.syncSyncing;
+      statusColor = null;
+    }
+
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Divider(),
+          TextFormField(
+            key: const Key('sync-cloud-url-field'),
+            controller: _url,
+            decoration: InputDecoration(labelText: l10n.syncCloudUrl, hintText: 'dartlab-sync.dein-name.workers.dev'),
+            keyboardType: TextInputType.url,
+            autocorrect: false,
+            validator: (v) => CloudApi.tryParseUrl(v ?? '') == null ? l10n.syncCloudUrlInvalid : null,
+            onFieldSubmitted: (_) => _apply(),
+          ),
+          const SizedBox(height: AppSpacing.m),
+          TextFormField(
+            key: const Key('sync-cloud-secret-field'),
+            controller: _secret,
+            decoration: InputDecoration(
+              labelText: l10n.syncCloudSecret,
+              suffixIcon: IconButton(
+                key: const Key('sync-cloud-copy'),
+                tooltip: l10n.syncCloudCopy,
+                onPressed: _secret.text.isEmpty ? null : _copy,
+                icon: const Icon(Icons.copy_rounded),
+              ),
+            ),
+            style: const TextStyle(fontFeatures: [FontFeature.tabularFigures()], letterSpacing: 1.5),
+            autocorrect: false,
+            enableSuggestions: false,
+            textCapitalization: TextCapitalization.characters,
+            validator: (v) => CloudSecret.tryParse(v ?? '') == null ? l10n.syncCloudSecretInvalid : null,
+            onChanged: (_) => setState(() {
+              _generated = false;
+              _error = null;
+            }),
+            onFieldSubmitted: (_) => _apply(),
+          ),
+          if (!saved || _generated) ...[
+            const SizedBox(height: AppSpacing.xs),
+            TextButton.icon(
+              key: const Key('sync-cloud-generate'),
+              onPressed: _generate,
+              icon: const Icon(Icons.vpn_key_rounded),
+              label: Text(l10n.syncCloudGenerate),
+            ),
+          ],
+          if (_generated)
+            Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.xs),
+              child: Text(l10n.syncCloudGenerated, key: const Key('sync-cloud-generated'), style: theme.textTheme.bodySmall),
+            ),
+          const SizedBox(height: AppSpacing.m),
+          Text(statusText, key: const Key('sync-status'), style: theme.textTheme.bodySmall?.copyWith(color: statusColor)),
+          const SizedBox(height: AppSpacing.xs),
+          Text(l10n.syncCloudPrivacy, style: theme.textTheme.bodySmall?.copyWith(color: context.dartColors.textMuted)),
+          const SizedBox(height: AppSpacing.m),
+          Align(
+            alignment: Alignment.centerRight,
+            child: FilledButton.icon(
+              key: const Key('sync-now'),
+              onPressed: sync.syncing || _checking ? null : _apply,
+              icon: const Icon(Icons.sync_rounded),
+              label: Text(l10n.syncNow),
             ),
           ),
         ],

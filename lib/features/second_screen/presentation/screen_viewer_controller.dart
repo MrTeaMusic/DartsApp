@@ -10,7 +10,7 @@ import '../domain/screen_state.dart';
 
 /// Verbindungsstand des zweiten Bildschirms.
 enum ViewerStatus {
-  /// Adresse oder Code des PCs fehlen (Optionen › Sync im Heimnetz).
+  /// Adresse oder Code des PCs fehlen (Optionen › Sync zwischen Geräten).
   notConfigured,
   connecting,
   connected,

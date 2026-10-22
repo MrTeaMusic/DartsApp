@@ -146,7 +146,7 @@ damit sie in der Statistik erscheint. Beim nächsten Öffnen von Autodarts Live 
 beendete Live-Sessions aus den gespeicherten Darts fertig gerechnet.
 
 Weil die Session nach dem Zwischenspeichern weiterwächst, trägt jeder Schreibvorgang einen neuen Stand
-(`sessions.updated_at`). Der [Sync im Heimnetz](sync.md) überträgt die Session deshalb erneut und
+(`sessions.updated_at`). Der [Sync zwischen Geräten](sync.md) überträgt die Session deshalb erneut und
 ersetzt die ältere Kopie auf dem anderen Gerät, so kommen auch spätere Darts und Korrekturen
 (z. B. bei den Tagesdarts auf dem Hub) an.
 

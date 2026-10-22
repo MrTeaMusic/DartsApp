@@ -6,9 +6,9 @@ Board. Der PC ist dafür der Sync-Hub (siehe [sync.md](sync.md)); der zweite Bil
 
 ## Einrichten
 
-1. Am PC: **Optionen › Sync im Heimnetz › Dieses Gerät ist der Hub**. Die Karte zeigt Code, Adresse
+1. Am PC: **Optionen › Sync zwischen Geräten › Dieses Gerät ist der Hub**. Die Karte zeigt Code, Adresse
    und, sobald einer zuschaut, „Zweiter Bildschirm: 1 Gerät verbunden“.
-2. Auf Tablet oder Handy: unter **Optionen › Sync im Heimnetz** Adresse und Code des PCs eintragen
+2. Auf Tablet oder Handy: unter **Optionen › Sync zwischen Geräten** Adresse und Code des PCs eintragen
    und **Zweiter Bildschirm** antippen. Ist das Gerät als Client eingerichtet, gibt es den Eintrag
    auch auf der Startseite. Der Sync selbst muss dafür nicht eingeschaltet sein; Adresse und Code
    reichen.

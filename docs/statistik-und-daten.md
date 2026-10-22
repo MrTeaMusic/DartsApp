@@ -206,7 +206,7 @@ Dateien im Dokumente-Ordner der App (Dateien-App › Auf meinem iPhone › DartL
 * **Backup (JSON):** alle Profile, Sessions, Würfe (mit Rohdaten), Ziele und eigenen
   [Trainingspläne](trainingsplaene.md), dazu gelöschte Sessions als Markierung (`deletedSessions`).
   Format `{"format": "dartlab-backup", "version": 5, …}`, dasselbe Datenformat wie beim
-  [Sync im Heimnetz](sync.md).
+  [Sync zwischen Geräten](sync.md).
 * **Import:** führt ein Backup mit den vorhandenen Daten zusammen, nach denselben Regeln wie der
   Sync. Sessions mit bekannter ID werden übersprungen, außer die Datei hat einen neueren Stand
   (`updatedAt`, z. B. eine weitergewachsene Live-Session); ein zweiter Import derselben Datei ändert

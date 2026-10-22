@@ -3,10 +3,14 @@ import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 
 import '../../../core/settings/app_settings.dart';
 import '../../second_screen/data/screen_hub.dart';
 import '../../second_screen/presentation/screen_feed.dart';
+import '../data/cloud_api.dart';
+import '../data/cloud_crypto.dart';
+import '../data/cloud_remote.dart';
 import '../data/sync_client.dart';
 import '../data/sync_server.dart';
 import '../data/sync_store.dart';
@@ -70,6 +74,9 @@ class SyncState {
       );
 }
 
+/// Erzeugt die HTTP-Verbindung zum Cloud-Speicher (in Tests ersetzbar).
+final cloudHttpClientProvider = Provider<http.Client Function()>((ref) => http.Client.new);
+
 /// Startet je nach Einstellung den Hub oder gleicht als Client automatisch ab:
 /// beim Start, beim Zurückkehren in die App, kurz nach jeder Änderung
 /// (z. B. Spielende) und zusätzlich alle paar Minuten.
@@ -93,16 +100,23 @@ class SyncController extends Notifier<SyncState> {
   bool _again = false;
   bool _disposed = false;
 
-  ({SyncRole role, String host, int port, String key}) get _config {
+  ({SyncRole role, String host, int port, String key, String cloudUrl, String cloudSecret}) get _config {
     final s = ref.read(settingsProvider);
-    return (role: s.syncRole, host: s.syncHost.trim(), port: s.syncPort, key: s.syncKey);
+    return (
+      role: s.syncRole,
+      host: s.syncHost.trim(),
+      port: s.syncPort,
+      key: s.syncKey,
+      cloudUrl: s.syncCloudUrl.trim(),
+      cloudSecret: s.syncCloudSecret,
+    );
   }
 
   @override
   SyncState build() {
     final role = ref.watch(settingsProvider.select((s) => s.syncRole));
     // Bei geänderter Adresse oder Code neu aufsetzen.
-    ref.watch(settingsProvider.select((s) => (s.syncHost, s.syncPort, s.syncKey)));
+    ref.watch(settingsProvider.select((s) => (s.syncHost, s.syncPort, s.syncKey, s.syncCloudUrl, s.syncCloudSecret)));
     _disposed = false;
     ref.onDispose(_teardown);
     final effective = role == SyncRole.hub && !canBeHub ? SyncRole.off : role;
@@ -110,6 +124,7 @@ class SyncController extends Notifier<SyncState> {
       case SyncRole.hub:
         Future.microtask(_startHub);
       case SyncRole.client:
+      case SyncRole.cloud:
         Future.microtask(_startClient);
       case SyncRole.off:
         break;
@@ -191,8 +206,9 @@ class SyncController extends Notifier<SyncState> {
   /// folgt direkt danach noch einer.
   Future<void> syncNow() async {
     final c = _config;
-    if (_disposed || state.role != SyncRole.client) return;
-    if (c.host.isEmpty || c.key.isEmpty) return;
+    if (_disposed || (state.role != SyncRole.client && state.role != SyncRole.cloud)) return;
+    final cloud = state.role == SyncRole.cloud;
+    if (cloud ? c.cloudUrl.isEmpty || c.cloudSecret.isEmpty : c.host.isEmpty || c.key.isEmpty) return;
     if (state.syncing) {
       _again = true;
       return;
@@ -201,7 +217,8 @@ class SyncController extends Notifier<SyncState> {
     state = state.copyWith(syncing: true);
     final store = ref.read(syncStoreProvider);
     try {
-      final report = await SyncClient(store, host: c.host, port: c.port, key: c.key).sync();
+      final client = cloud ? await _cloudClient(store, c.cloudUrl, c.cloudSecret) : SyncClient(store, host: c.host, port: c.port, key: c.key);
+      final report = await client.sync();
       _lastSignature = await store.signature();
       if (_disposed) return;
       state = state.copyWith(syncing: false, lastSync: DateTime.now(), lastReport: report, clearFailure: true);
@@ -216,6 +233,14 @@ class SyncController extends Notifier<SyncState> {
       _again = false;
       await syncNow();
     }
+  }
+
+  Future<SyncClient> _cloudClient(SyncStore store, String url, String secret) async {
+    final parsed = CloudSecret.tryParse(secret);
+    if (parsed == null || CloudApi.tryParseUrl(url) == null) throw const SyncException(SyncFailure.wrongSecret);
+    final keys = await parsed.keys();
+    final newClient = ref.read(cloudHttpClientProvider);
+    return SyncClient.remote(store, () => CloudRemote(CloudApi(url, keys.token, client: newClient()), keys));
   }
 }
 

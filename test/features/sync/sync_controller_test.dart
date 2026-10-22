@@ -51,6 +51,13 @@ void main() {
     expect(s.syncKey, '424242');
     expect(const AppSettings().syncRole, SyncRole.off);
     expect(newSyncKey(), matches(RegExp(r'^\d{6}$')));
+
+    await const AppSettings(syncRole: SyncRole.cloud, syncCloudUrl: 'https://x.example', syncCloudSecret: 'ABC').save(sp);
+    final c = AppSettings.load(sp);
+    expect(c.syncRole, SyncRole.cloud);
+    expect(c.syncCloudUrl, 'https://x.example');
+    expect(c.syncCloudSecret, 'ABC');
+    expect(const AppSettings().syncCloudUrl, isEmpty);
   });
 
   group('Client', () {
