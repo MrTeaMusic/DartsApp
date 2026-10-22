@@ -3564,8 +3564,6 @@
     }
   },
   "liteSectionConnection": "Verbindung",
-  "liteSectionProfile": "Statistik von",
-  "liteProfileHint": "Wessen Statistik du in der Ansicht siehst.",
   "liteSectionAbout": "Über",
   "liteAboutReadOnly": "Nur Ansicht. Spielen und Eintragen geschieht in der Haupt-App.",
   "liteResetSetup": "Verbindung neu einrichten",

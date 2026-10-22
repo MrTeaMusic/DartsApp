@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/database/app_database.dart';
 import '../../../core/design/components/components.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
 import '../../../core/settings/app_settings.dart';
-import '../../profiles/presentation/active_player.dart';
 import '../../sync/domain/sync_role.dart';
 import '../../sync/presentation/sync_card.dart';
 import '../../update/presentation/update_controller.dart';
@@ -21,7 +19,6 @@ class LiteSettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final settings = ref.watch(settingsProvider);
-    final players = ref.watch(playersProvider).value ?? const <Player>[];
 
     return Scaffold(
       appBar: AppPageBar(maxWidth: 720, title: Text(l10n.navSettings)),
@@ -44,12 +41,6 @@ class LiteSettingsScreen extends ConsumerWidget {
               label: Text(l10n.liteResetSetup),
             ),
           ),
-          // Nur wenn Ben mehrere Profile hat, gibt es etwas zu wählen.
-          if (players.length > 1) ...[
-            const SectionGap(),
-            SectionHeader(l10n.liteSectionProfile),
-            const _ProfileChoice(),
-          ],
           const SectionGap(),
           SectionHeader(l10n.updateTitle),
           const UpdateSettingsCard(),
@@ -85,41 +76,6 @@ class LiteSettingsScreen extends ConsumerWidget {
     await ref
         .read(settingsProvider.notifier)
         .update((s) => s.copyWith(syncRole: SyncRole.off, syncCloudUrl: '', syncCloudSecret: ''));
-  }
-}
-
-/// Auswahl, wessen Statistik gezeigt wird (nur Ansicht, nichts wird geändert).
-class _ProfileChoice extends ConsumerWidget {
-  const _ProfileChoice();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final players = ref.watch(playersProvider).value ?? const <Player>[];
-    final active = ref.watch(activePlayerProvider);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(l10n.liteProfileHint, style: Theme.of(context).textTheme.bodySmall),
-        const SizedBox(height: AppSpacing.s),
-        AppCard(
-          key: const Key('lite-profile-card'),
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-          child: RadioGroup<int>(
-            groupValue: active?.id,
-            onChanged: (id) {
-              if (id != null) ref.read(activePlayerIdProvider.notifier).select(id);
-            },
-            child: Column(
-              children: [
-                for (final p in players)
-                  RadioListTile<int>(key: Key('lite-profile-${p.id}'), value: p.id, title: Text(p.name)),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
   }
 }
 

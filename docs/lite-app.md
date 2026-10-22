@@ -23,8 +23,8 @@ Ohne `--dart-define=DARTLAB_LITE=true` bleibt die App, wie sie ist. Der Schalter
   Planlinks sind ausgeblendet. Die Statistik-Reiter, der Verlauf und die Session-Details sind
   dieselben wie in der Haupt-App.
 * **Welches Profil:** Gezeigt wird Bens Standardprofil (`default-player`). Hat es keine Session,
-  nimmt Lite das Profil mit den meisten Sessions. Gibt es mehrere Profile, lässt sich unter
-  Optionen „Statistik von“ umstellen.
+  nimmt Lite das Profil mit den meisten Sessions. Lite zeigt immer nur dieses eine
+  Profil: Es gibt keine Auswahl, und der Name oben rechts im Statistik-Kopf lässt sich nicht antippen.
 
 ## Look
 

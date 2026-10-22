@@ -143,37 +143,36 @@ void main() {
     });
   });
 
-  group('Mehrere Profile', () {
-    testWidgets('Auswahl in den Optionen, Standard ist Bens Hauptprofil', (tester) async {
+  group('Ein Profil', () {
+    testWidgets('mehrere Profile in Bens Tresor: keine Auswahl, Standardprofil bleibt', (tester) async {
       final (:c, :cloud, :ben) = await pumpLiteWithBen(tester, prepare: (ben) async {
         final anna = await ben.device.profiles.create('Anna');
         await ben.device.play(anna, minute: 7);
       });
       expect(c.read(activePlayerProvider)!.name, 'Ben');
-      expect(find.descendant(of: find.byType(AppBar), matching: find.text('Ben')), findsOneWidget);
-      await openOptions(tester);
-      expect(find.text('Statistik von', skipOffstage: false), findsOneWidget);
-      final choice = find.byKey(const Key('lite-profile-card'));
-      await tester.scrollUntilVisible(
-        choice,
-        300,
-        scrollable: find.descendant(of: find.byKey(const Key('lite-settings')), matching: find.byType(Scrollable)).first,
-      );
-      expect(choice, findsOneWidget);
-      expect(find.descendant(of: choice, matching: find.byType(RadioListTile<int>)), findsNWidgets(2));
-      // Nur auswählen, nichts anlegen, umbenennen oder löschen.
-      expect(find.byKey(const Key('profile-add')), findsNothing);
-      expect(find.byIcon(Icons.more_vert), findsNothing);
-
-      await tapVisible(tester, find.descendant(of: choice, matching: find.text('Anna')));
-      expect(c.read(activePlayerProvider)!.name, 'Anna');
-      await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text('Statistik')));
+      // Oben rechts steht der Name, antippbar ist er nicht.
+      final chip = find.descendant(of: find.byType(AppBar), matching: find.byType(Chip));
+      expect(chip, findsOneWidget);
+      expect(find.descendant(of: chip, matching: find.text('Ben')), findsOneWidget);
+      await tester.tap(chip);
       await tester.pumpAndSettle();
-      expect(find.descendant(of: find.byType(AppBar), matching: find.text('Anna')), findsOneWidget);
+      expect(find.byType(Dialog), findsNothing);
+      expect(find.byType(BottomSheet), findsNothing);
+      expect(find.byType(PopupMenuItem), findsNothing);
+      expect(currentPath(c), '/statistik');
+
+      await openOptions(tester);
+      final list = find.descendant(of: find.byKey(const Key('lite-settings')), matching: find.byType(Scrollable)).first;
+      await tester.scrollUntilVisible(find.byKey(const Key('lite-about-card')), 300, scrollable: list);
+      expect(find.text('Statistik von', skipOffstage: false), findsNothing);
+      expect(find.byKey(const Key('lite-profile-card'), skipOffstage: false), findsNothing);
+      expect(find.byType(RadioListTile<int>, skipOffstage: false), findsNothing);
+      expect(find.byKey(const Key('profile-add')), findsNothing);
+      expect(c.read(activePlayerProvider)!.name, 'Ben');
       await shutdownApp(tester, c);
     });
 
-    testWidgets('mit einem Profil gibt es keine Auswahl', (tester) async {
+    testWidgets('mit einem Profil ebenfalls keine Auswahl', (tester) async {
       final (:c, :cloud, :ben) = await pumpLiteWithBen(tester);
       await openOptions(tester);
       expect(find.byKey(const Key('lite-profile-card')), findsNothing);
