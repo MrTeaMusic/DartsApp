@@ -41,6 +41,18 @@ void main() {
     });
   });
 
+  group('Reiterleiste der Statistik (360 breit)', () {
+    testWidgets('startet bei Offset 0, der erste Reiter hat links Rand', (tester) async {
+      final (:c, :cloud, :ben) = await pumpLiteWithBen(tester);
+      final bar = find.descendant(of: find.byType(TabBar), matching: find.byType(Scrollable)).first;
+      expect(tester.state<ScrollableState>(bar).position.pixels, 0);
+      final first = tester.getTopLeft(find.byKey(const Key('stats-tab-overview'))).dx;
+      expect(first, greaterThan(0), reason: 'Reiter „Überblick“ nicht angeschnitten');
+      expect(first, lessThanOrEqualTo(40));
+      await shutdownApp(tester, c);
+    });
+  });
+
   group('Hauptapp', () {
     testWidgets('bleibt bei TV als Standard', (tester) async {
       final c = await pumpApp(tester);
