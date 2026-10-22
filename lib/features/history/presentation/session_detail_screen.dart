@@ -7,6 +7,7 @@ import '../../../core/design/dart_colors.dart';
 import '../../../core/design/dart_look.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
+import '../../../core/lite.dart';
 import '../../../core/router/app_router.dart';
 import '../../board/presentation/dartboard_view.dart';
 import '../../games/data/game_repository.dart';
@@ -80,18 +81,21 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
       );
     }
     final e = d.entry;
+    // Lite zeigt nur an: nichts löschen, nicht noch einmal spielen.
+    final lite = ref.watch(liteProvider);
     final canReplay = e.isQuiz || (!e.isMatch && GameCatalog.byId(e.gameId) != null);
     return Scaffold(
       appBar: AppPageBar(
         maxWidth: kHistoryMaxWidth,
         title: Text(l10n.histTitle),
         actions: [
-          IconButton(
-            key: const Key('session-delete-action'),
-            tooltip: l10n.histDelete,
-            onPressed: _deleting ? null : () => _delete(d),
-            icon: const Icon(Icons.delete_outline_rounded),
-          ),
+          if (!lite)
+            IconButton(
+              key: const Key('session-delete-action'),
+              tooltip: l10n.histDelete,
+              onPressed: _deleting ? null : () => _delete(d),
+              icon: const Icon(Icons.delete_outline_rounded),
+            ),
         ],
       ),
       body: LayoutBuilder(builder: (context, c) {
@@ -136,30 +140,32 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
               const SizedBox(height: AppSpacing.l),
               Text(l10n.histNoThrows, style: Theme.of(context).textTheme.bodyMedium),
             ],
-            const SectionGap(),
-            Wrap(
-              spacing: AppSpacing.m,
-              runSpacing: AppSpacing.m,
-              children: [
-                if (canReplay)
-                  FilledButton.icon(
-                    key: const Key('session-play-again'),
-                    onPressed: () => context.go(e.isQuiz ? QuizRoutes.setup : Routes.gameSetup(e.gameId)),
-                    icon: const Icon(Icons.replay_rounded),
-                    label: Text(l10n.histPlayAgain),
+            if (!lite) ...[
+              const SectionGap(),
+              Wrap(
+                spacing: AppSpacing.m,
+                runSpacing: AppSpacing.m,
+                children: [
+                  if (canReplay)
+                    FilledButton.icon(
+                      key: const Key('session-play-again'),
+                      onPressed: () => context.go(e.isQuiz ? QuizRoutes.setup : Routes.gameSetup(e.gameId)),
+                      icon: const Icon(Icons.replay_rounded),
+                      label: Text(l10n.histPlayAgain),
+                    ),
+                  OutlinedButton.icon(
+                    key: const Key('session-delete'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: context.dartColors.danger,
+                      side: BorderSide(color: context.dartColors.danger.withValues(alpha: 0.6)),
+                    ),
+                    onPressed: _deleting ? null : () => _delete(d),
+                    icon: const Icon(Icons.delete_outline_rounded),
+                    label: Text(l10n.histDelete),
                   ),
-                OutlinedButton.icon(
-                  key: const Key('session-delete'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: context.dartColors.danger,
-                    side: BorderSide(color: context.dartColors.danger.withValues(alpha: 0.6)),
-                  ),
-                  onPressed: _deleting ? null : () => _delete(d),
-                  icon: const Icon(Icons.delete_outline_rounded),
-                  label: Text(l10n.histDelete),
-                ),
-              ],
-            ),
+                ],
+              ),
+            ],
           ],
         );
       }),
@@ -649,13 +655,19 @@ class _VisitRow extends StatelessWidget {
         children: [
           SizedBox(width: _numberWidth, child: Text('${v.number}', style: theme.textTheme.bodySmall?.copyWith(color: colors.textMuted))),
           Expanded(
-            child: Row(
-              children: [
-                for (final d in v.darts.take(4)) ...[
-                  _DartCell(dart: d),
-                  const SizedBox(width: AppSpacing.xs),
+            // Auf schmalen Handys (360 breit) etwas kleiner statt überzulaufen.
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final d in v.darts.take(4)) ...[
+                    _DartCell(dart: d),
+                    const SizedBox(width: AppSpacing.xs),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
           SizedBox(

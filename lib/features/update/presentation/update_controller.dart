@@ -33,10 +33,11 @@ final updateHostProvider = Provider<UpdateHost>((ref) => const UpdateHost());
 class UpdateHost {
   const UpdateHost();
 
-  /// Plattform mit Zip-Download, sonst `null` (iOS, Linux, Android).
+  /// Plattform mit Download, sonst `null` (iOS, Linux).
   ReleasePlatform? get platform => switch (defaultTargetPlatform) {
         TargetPlatform.windows => ReleasePlatform.windows,
         TargetPlatform.macOS => ReleasePlatform.macos,
+        TargetPlatform.android => ReleasePlatform.android,
         _ => null,
       };
 
@@ -234,7 +235,8 @@ class UpdateController extends Notifier<UpdateState> {
   }
 
   /// Lädt die Zip der eigenen Plattform in den Download-Ordner. Ohne
-  /// passende Datei öffnet sich die Release-Seite im Browser.
+  /// passende Datei öffnet sich die Release-Seite im Browser. Unter Android
+  /// lädt der Browser die APK; der Nutzer öffnet und installiert sie selbst.
   Future<void> download() async {
     final release = state.latest;
     if (release == null || state.downloadPhase == DownloadPhase.running) return;
@@ -243,6 +245,14 @@ class UpdateController extends Notifier<UpdateState> {
     final asset = platform == null ? null : release.assetFor(platform);
     if (platform == null || asset == null) {
       await openReleasePage();
+      return;
+    }
+    if (platform == ReleasePlatform.android) {
+      try {
+        await host.openUrl(asset.url);
+      } catch (e) {
+        debugPrint('Download öffnen: $e');
+      }
       return;
     }
     state = state.copyWith(downloadPhase: DownloadPhase.running, progress: 0, clearFile: true);

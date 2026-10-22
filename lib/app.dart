@@ -9,6 +9,7 @@ import 'core/design/dart_look.dart';
 import 'core/feedback.dart';
 import 'core/fullscreen.dart';
 import 'core/l10n.dart';
+import 'core/lite.dart';
 import 'core/router/app_router.dart';
 import 'core/settings/app_settings.dart';
 import 'features/board/presentation/live_visit_controller.dart';
@@ -33,17 +34,21 @@ class DartLabApp extends ConsumerWidget {
     // Dauerhaft aktiv halten, damit nichts verloren geht, solange der
     // jeweilige Bildschirm nicht offen ist.
     ref
-      ..watch(dartFeedbackProvider)
-      ..watch(trainingGameCallerProvider)
-      ..watch(matchCallerProvider)
-      ..watch(liveVisitProvider.select((_) => null))
-      ..watch(rawLogProvider.select((_) => null))
       ..watch(syncControllerProvider.select((_) => null))
-      ..watch(achievementRecorderProvider.select((_) => null))
-      ..watch(celebrationsProvider.select((_) => null))
-      ..watch(challengeRunProvider.select((_) => null))
       // Sucht beim Start nach Updates (höchstens einmal am Tag).
       ..watch(updateControllerProvider.select((_) => null));
+    // Lite zeigt nur Daten an: kein Spiel, keine Ansagen, keine Erfolge.
+    if (!ref.watch(liteProvider)) {
+      ref
+        ..watch(dartFeedbackProvider)
+        ..watch(trainingGameCallerProvider)
+        ..watch(matchCallerProvider)
+        ..watch(liveVisitProvider.select((_) => null))
+        ..watch(rawLogProvider.select((_) => null))
+        ..watch(achievementRecorderProvider.select((_) => null))
+        ..watch(celebrationsProvider.select((_) => null))
+        ..watch(challengeRunProvider.select((_) => null));
+    }
 
     return MaterialApp.router(
       onGenerateTitle: (context) => context.l10n.appTitle,

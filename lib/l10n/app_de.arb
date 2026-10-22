@@ -3538,5 +3538,55 @@
         "type": "int"
       }
     }
-  }
+  },
+  "liteName": "DartLab Lite",
+  "liteWelcomeTitle": "Willkommen bei DartLab Lite",
+  "liteWelcomeText": "Hier siehst du Bens Darts-Statistiken. Spielen oder etwas eintragen kannst du hier nicht, das geht in der Haupt-App.",
+  "liteWelcomeAsk": "Zum Verbinden brauchst du zwei Angaben. Frag Ben nach der Adresse und dem Geheimnis.",
+  "liteSetupUrlHint": "dartlab-sync.name.workers.dev",
+  "liteSetupSecretHelper": "Du kannst es einfügen. Groß- und Kleinschreibung und Striche sind egal.",
+  "liteSetupPaste": "Einfügen",
+  "liteSetupConnect": "Verbinden",
+  "liteSetupChecking": "Verbindung wird geprüft …",
+  "liteSetupLoading": "Daten werden geladen …",
+  "liteSetupLoadingHint": "Beim ersten Mal kann das einen Moment dauern. Bitte die App offen lassen.",
+  "liteSetupErrUnreachable": "Der Cloud-Speicher ist nicht erreichbar. Prüfe die Internetverbindung und die Adresse.",
+  "liteSetupErrNotDartLab": "Unter dieser Adresse antwortet kein DartLab-Cloud-Speicher. Prüfe die Adresse auf Tippfehler.",
+  "liteSetupErrAuth": "Der Cloud-Speicher lehnt das Geheimnis ab. Prüfe es auf Tippfehler.",
+  "liteSetupErrWrongSecret": "Die Daten lassen sich mit diesem Geheimnis nicht öffnen. Prüfe das Geheimnis auf Tippfehler.",
+  "liteSetupErrNoVault": "Zu diesem Geheimnis gibt es dort keine Daten. Prüfe Adresse und Geheimnis auf Tippfehler. Stimmen beide, muss Ben erst einmal in seiner App abgleichen.",
+  "liteSetupErrServer": "Der Cloud-Speicher meldet einen Fehler: {detail}. Versuche es später noch einmal.",
+  "@liteSetupErrServer": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "liteSectionConnection": "Verbindung",
+  "liteSectionProfile": "Statistik von",
+  "liteProfileHint": "Wessen Statistik du in der Ansicht siehst.",
+  "liteSectionAbout": "Über",
+  "liteAboutReadOnly": "Nur Ansicht. Spielen und Eintragen geschieht in der Haupt-App.",
+  "liteResetSetup": "Verbindung neu einrichten",
+  "liteResetTitle": "Verbindung neu einrichten?",
+  "liteResetText": "Adresse und Geheimnis werden von diesem Gerät entfernt, und du gibst neue ein. Die bereits geladenen Daten bleiben auf dem Gerät.",
+  "liteResetConfirm": "Neu einrichten",
+  "liteUpdateKicker": "Neue Version verfügbar",
+  "liteUpdateTitle": "DartLab Lite {version}",
+  "@liteUpdateTitle": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "liteUpdateSteps": "So installierst du die neue Version:",
+  "liteUpdateSummary": "In drei Schritten: herunterladen, Datei öffnen, installieren.",
+  "liteUpdateHowTo": "So geht’s",
+  "liteUpdateClose": "Schließen",
+  "liteUpdateStep1": "Herunterladen: Tippe auf „Herunterladen“. Der Browser lädt die Datei.",
+  "liteUpdateStep2": "Datei öffnen: Tippe nach dem Download auf die Meldung oder öffne die Datei im Ordner „Downloads“.",
+  "liteUpdateStep3": "Installieren: Tippe auf „Installieren“. Die alte Version wird ersetzt, deine Daten bleiben erhalten.",
+  "liteUpdateAllow": "Beim ersten Mal fragt Android, ob der Browser Apps installieren darf. Erlaube das einmalig, danach geht es ohne Nachfrage."
 }

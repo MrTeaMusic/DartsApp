@@ -6,10 +6,12 @@ import '../../../core/design/dart_colors.dart';
 import '../../../core/design/dart_look.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
+import '../../../core/lite.dart';
 import '../../board/presentation/dartboard_view.dart';
 import '../../games/domain/engine/game_display.dart';
 import '../../games/presentation/game_texts.dart';
 import '../../plans/presentation/auto_plan_screen.dart';
+import '../data/stats_repository.dart';
 import '../domain/game_metrics.dart';
 import '../domain/stats_calculator.dart';
 import 'double_insights.dart';
@@ -45,8 +47,14 @@ class _TabList extends StatelessWidget {
 TextStyle _trailingValue(BuildContext context) =>
     context.look.chipNumber.copyWith(color: Theme.of(context).colorScheme.onSurface, fontSize: (context.look.chipNumber.fontSize ?? 18) + 2);
 
-Widget _empty(BuildContext context) =>
-    ComingSoon(icon: Icons.insights_rounded, title: context.l10n.statsEmptyTitle, text: context.l10n.statsEmptyText);
+Widget _empty(BuildContext context) => Consumer(
+      builder: (context, ref, _) => ComingSoon(
+        icon: Icons.insights_rounded,
+        title: context.l10n.statsEmptyTitle,
+        // Lite spielt nicht selbst: keine Aufforderung zum Training.
+        text: ref.watch(liteProvider) ? context.l10n.statsNoData : context.l10n.statsEmptyText,
+      ),
+    );
 
 const _gap = SectionGap(factor: 0.8);
 
@@ -257,13 +265,13 @@ class _DayParts extends StatelessWidget {
   }
 }
 
-class _StreakAndGoals extends StatelessWidget {
+class _StreakAndGoals extends ConsumerWidget {
   const _StreakAndGoals({required this.streak, required this.wide});
   final Streak streak;
   final bool wide;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final colors = context.dartColors;
@@ -292,6 +300,8 @@ class _StreakAndGoals extends StatelessWidget {
         ],
       ),
     );
+    // Lite kann keine Ziele anlegen: ohne Ziele von Ben gibt es nichts zu zeigen.
+    if (ref.watch(liteProvider) && ref.watch(goalProgressProvider).isEmpty) return streakCard;
     if (!wide) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

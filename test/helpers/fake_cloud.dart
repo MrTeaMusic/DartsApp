@@ -28,6 +28,10 @@ class FakeCloud {
   /// Ersetzt die Antwort, etwa um Fehler zu simulieren.
   http.Response? Function(http.Request)? override;
 
+  /// Hält eine Anfrage an, bis das gelieferte `Future` fertig ist (um einen
+  /// Ablauf mittendrin anzusehen).
+  Future<void>? Function(http.Request)? hold;
+
   FakeVault vault(String token) => vaults.putIfAbsent(token, FakeVault.new);
 
   /// Alles, was auf dem Server liegt, als Text (zum Prüfen, dass kein Klartext dabei ist).
@@ -36,6 +40,7 @@ class FakeCloud {
       ]);
 
   http.Client client() => MockClient((req) async {
+        await hold?.call(req);
         final custom = override?.call(req);
         if (custom != null) return custom;
         return _handle(req);

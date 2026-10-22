@@ -64,12 +64,18 @@ class AppBuild implements Comparable<AppBuild> {
 /// Plattform, für die ein Download angeboten wird.
 enum ReleasePlatform {
   windows('windows'),
-  macos('macos');
+  macos('macos'),
 
-  const ReleasePlatform(this.assetKey);
+  /// Lite-App: `DartLab-Lite-android.apk`.
+  android('lite-android', '.apk');
 
-  /// Teil des Dateinamens, z. B. `DartLab-windows.zip`.
+  const ReleasePlatform(this.assetKey, [this.extension = '.zip']);
+
+  /// Teil des Dateinamens (klein geschrieben), z. B. `DartLab-windows.zip`.
   final String assetKey;
+
+  /// Dateiendung des Downloads.
+  final String extension;
 }
 
 /// Eine Datei am Release.
@@ -156,11 +162,12 @@ class AppRelease {
         'assets': [for (final a in assets) a.toJson()],
       };
 
-  /// Zip-Datei für [platform], z. B. `DartLab-windows.zip`.
+  /// Datei für [platform], z. B. `DartLab-windows.zip` oder
+  /// `DartLab-Lite-android.apk`.
   ReleaseAsset? assetFor(ReleasePlatform platform) {
     final key = platform.assetKey;
     return assets
-        .where((a) => a.name.toLowerCase().contains(key) && a.name.toLowerCase().endsWith('.zip'))
+        .where((a) => a.name.toLowerCase().contains(key) && a.name.toLowerCase().endsWith(platform.extension))
         .firstOrNull;
   }
 

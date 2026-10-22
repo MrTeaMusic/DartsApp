@@ -122,7 +122,7 @@ class SyncCard extends ConsumerWidget {
           if (settings.syncRole == SyncRole.cloud)
             Padding(
               padding: const EdgeInsets.fromLTRB(AppSpacing.l, 0, AppSpacing.l, AppSpacing.m),
-              child: _CloudPanel(settings: settings),
+              child: CloudPanel(settings: settings),
             ),
         ],
       ),
@@ -327,15 +327,19 @@ class _ClientPanelState extends ConsumerState<_ClientPanel> {
   }
 }
 
-class _CloudPanel extends ConsumerStatefulWidget {
-  const _CloudPanel({required this.settings});
+/// Adresse, Geheimnis und Abgleich mit dem Cloud-Speicher. Auch die
+/// Lite-Variante zeigt es in ihren Optionen, dann [compact] (ohne Trennlinie
+/// und ohne neues Geheimnis erzeugen: Lite legt nie einen Tresor an).
+class CloudPanel extends ConsumerStatefulWidget {
+  const CloudPanel({super.key, required this.settings, this.compact = false});
   final AppSettings settings;
+  final bool compact;
 
   @override
-  ConsumerState<_CloudPanel> createState() => _CloudPanelState();
+  ConsumerState<CloudPanel> createState() => _CloudPanelState();
 }
 
-class _CloudPanelState extends ConsumerState<_CloudPanel> {
+class _CloudPanelState extends ConsumerState<CloudPanel> {
   late final _url = TextEditingController(text: widget.settings.syncCloudUrl);
   late final _secret = TextEditingController(
     text: CloudSecret.tryParse(widget.settings.syncCloudSecret)?.display ?? widget.settings.syncCloudSecret,
@@ -439,7 +443,7 @@ class _CloudPanelState extends ConsumerState<_CloudPanel> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Divider(),
+          if (!widget.compact) const Divider(),
           TextFormField(
             key: const Key('sync-cloud-url-field'),
             controller: _url,
@@ -473,7 +477,7 @@ class _CloudPanelState extends ConsumerState<_CloudPanel> {
             }),
             onFieldSubmitted: (_) => _apply(),
           ),
-          if (!saved || _generated) ...[
+          if (!widget.compact && (!saved || _generated)) ...[
             const SizedBox(height: AppSpacing.xs),
             TextButton.icon(
               key: const Key('sync-cloud-generate'),

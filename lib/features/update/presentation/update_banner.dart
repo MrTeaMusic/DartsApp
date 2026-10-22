@@ -7,6 +7,7 @@ import '../../../core/design/dart_colors.dart';
 import '../../../core/design/dart_look.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
+import '../../../core/lite.dart';
 import '../domain/app_release.dart';
 import 'update_controller.dart';
 
@@ -29,8 +30,11 @@ class UpdateBanner extends ConsumerWidget {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final look = context.look;
-    final notes = release.shortNotes();
-    final hidden = release.hiddenNoteCount();
+    // Lite: eigener Text, und die Änderungen der Haupt-App gehen den Leser
+    // dort nichts an.
+    final lite = ref.watch(liteProvider);
+    final notes = lite ? const <String>[] : release.shortNotes();
+    final hidden = lite ? 0 : release.hiddenNoteCount();
 
     return Padding(
       padding: EdgeInsets.only(bottom: bottomGap),
@@ -41,10 +45,12 @@ class UpdateBanner extends ConsumerWidget {
           final text = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Kicker(l10n.updateBannerKicker, color: theme.colorScheme.primary),
+              Kicker(lite ? l10n.liteUpdateKicker : l10n.updateBannerKicker, color: theme.colorScheme.primary),
               const SizedBox(height: AppSpacing.xxs),
               Text(
-                l10n.updateBannerTitle(updateBuildText(context, release.build)),
+                lite
+                    ? l10n.liteUpdateTitle(updateBuildText(context, release.build))
+                    : l10n.updateBannerTitle(updateBuildText(context, release.build)),
                 style: theme.textTheme.titleMedium,
               ),
               if (notes.isNotEmpty) ...[
@@ -73,7 +79,7 @@ class UpdateBanner extends ConsumerWidget {
               ],
             ],
           );
-          final side = wide && idle;
+          final side = wide && idle && !lite;
           final actions = UpdateActions(showLater: true, alignEnd: side);
           if (side) {
             return Row(
@@ -167,6 +173,11 @@ class UpdateActions extends ConsumerWidget {
       );
     }
 
+    // Android: Der Browser lädt die Datei, der Rest ist Handarbeit.
+    if (platform == ReleasePlatform.android && release.assetFor(platform!) != null) {
+      return _AndroidActions(showLater: showLater);
+    }
+
     switch (s.downloadPhase) {
       case DownloadPhase.running:
         final pct = s.progress == null ? null : (s.progress! * 100).floor();
@@ -253,5 +264,153 @@ class UpdateActions extends ConsumerWidget {
           ?later,
         ]);
     }
+  }
+}
+
+/// Android-Update in drei Schritten: Herunterladen, Datei öffnen, Installieren.
+/// Die App installiert nichts selbst; sie öffnet nur den Download-Link.
+/// Im Hinweis ([showLater]) steht nur eine Zeile, die Schritte erklärt ein
+/// Blatt; in den Optionen stehen sie gleich da.
+class _AndroidActions extends ConsumerWidget {
+  const _AndroidActions({required this.showLater});
+  final bool showLater;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final ctrl = ref.read(updateControllerProvider.notifier);
+    return Column(
+      key: const Key('update-android-steps'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (showLater)
+          Text(l10n.liteUpdateSummary, key: const Key('update-android-summary'), style: theme.textTheme.bodyMedium)
+        else
+          const _StepList(),
+        const SizedBox(height: AppSpacing.m),
+        Wrap(
+          spacing: AppSpacing.s,
+          runSpacing: AppSpacing.s,
+          children: [
+            FilledButton.icon(
+              key: const Key('update-download'),
+              style: FilledButton.styleFrom(minimumSize: const Size(48, 52)),
+              onPressed: ctrl.download,
+              icon: const Icon(Icons.download_rounded),
+              label: Text(l10n.updateDownload),
+            ),
+            if (showLater) ...[
+              OutlinedButton(
+                key: const Key('update-android-howto'),
+                style: OutlinedButton.styleFrom(minimumSize: const Size(48, 52)),
+                onPressed: () => _showSteps(context, ctrl),
+                child: Text(l10n.liteUpdateHowTo),
+              ),
+              TextButton(
+                key: const Key('update-later'),
+                style: TextButton.styleFrom(minimumSize: const Size(48, 52)),
+                onPressed: ctrl.later,
+                child: Text(l10n.updateLater),
+              ),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+
+  Future<void> _showSteps(BuildContext context, UpdateController ctrl) {
+    final l10n = context.l10n;
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: SingleChildScrollView(
+          key: const Key('update-android-sheet'),
+          padding: const EdgeInsets.fromLTRB(AppSpacing.page, 0, AppSpacing.page, AppSpacing.l),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const _StepList(),
+              const SizedBox(height: AppSpacing.l),
+              Wrap(
+                spacing: AppSpacing.s,
+                runSpacing: AppSpacing.s,
+                children: [
+                  FilledButton.icon(
+                    style: FilledButton.styleFrom(minimumSize: const Size(48, 52)),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      ctrl.download();
+                    },
+                    icon: const Icon(Icons.download_rounded),
+                    label: Text(l10n.updateDownload),
+                  ),
+                  TextButton(
+                    style: TextButton.styleFrom(minimumSize: const Size(48, 52)),
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(l10n.liteUpdateClose),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Die drei Schritte und der Hinweis auf die einmalige Erlaubnis.
+class _StepList extends StatelessWidget {
+  const _StepList();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final steps = [l10n.liteUpdateStep1, l10n.liteUpdateStep2, l10n.liteUpdateStep3];
+    final base = theme.textTheme.bodyMedium;
+
+    // „Herunterladen: Tippe …“: der Teil vor dem Doppelpunkt fett.
+    Widget step(int number, String text) {
+      final cut = text.indexOf(':');
+      return Padding(
+        padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(width: 22, child: Text('$number.', style: base?.copyWith(fontWeight: FontWeight.w700))),
+            Expanded(
+              child: Text.rich(
+                TextSpan(children: [
+                  TextSpan(text: text.substring(0, cut + 1), style: const TextStyle(fontWeight: FontWeight.w700)),
+                  TextSpan(text: text.substring(cut + 1)),
+                ]),
+                style: base,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(l10n.liteUpdateSteps, style: theme.textTheme.titleSmall),
+        const SizedBox(height: AppSpacing.s),
+        for (final (i, text) in steps.indexed) step(i + 1, text),
+        const SizedBox(height: AppSpacing.xs),
+        Text(
+          l10n.liteUpdateAllow,
+          key: const Key('update-android-allow'),
+          style: theme.textTheme.bodySmall?.copyWith(color: context.dartColors.textMuted),
+        ),
+      ],
+    );
   }
 }

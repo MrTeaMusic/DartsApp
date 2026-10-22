@@ -10,6 +10,9 @@ Challenge-Ergebnisse zwischen den Geräten ab. Es gibt zwei Wege, die sich die R
   weitere Rechner sind **Clients** und gleichen mit dem Hub ab, sobald sie im selben WLAN sind. Ohne
   Cloud und ohne Konto. Nur der Hub liefert auch den [zweiten Bildschirm](zweiter-bildschirm.md).
 
+Die [Lite-Variante](lite-app.md) (nur Ansicht) kennt nur den Cloud-Weg und holt Bens Daten, ohne je
+einen Tresor anzulegen.
+
 Alle Geräte eines Bestands sollten denselben Weg nehmen. Die [Regeln](#regeln) unten gelten für beide.
 
 ## Über die Cloud
