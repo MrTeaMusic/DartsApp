@@ -31,7 +31,7 @@ Future<int?> showWhoAreYouDialog(BuildContext context, ImportedMatch match, {boo
           width: 420,
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(l10n.impWhoText, style: theme.textTheme.bodyMedium),
               const SizedBox(height: AppSpacing.m),
