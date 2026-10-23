@@ -1,4 +1,6 @@
 import 'package:dartlab/core/router/app_router.dart';
+import 'package:dartlab/features/board/domain/segment.dart';
+import 'package:dartlab/features/board/presentation/dartboard_view.dart';
 import 'package:dartlab/features/live_remote/data/live_sink.dart';
 import 'package:dartlab/features/live_remote/presentation/live_viewer_controller.dart';
 import 'package:dartlab/features/second_screen/domain/screen_state.dart';
@@ -353,5 +355,79 @@ void main() {
         await shutdownApp(tester, c);
       });
     }
+  });
+
+  group('Scheibe', () {
+    // Nur Felder, keine Koordinaten (manuelle Eingabe im Training).
+    const ohneKoordinaten = ScreenState(
+      kind: ScreenKind.training,
+      title: 'Around the Clock',
+      subtitle: 'Ben',
+      players: [ScreenPlayer(name: 'Ben', score: '7', scoreLabel: 'Ziel', active: true, darts: 21)],
+      visit: ['S6', 'S7'],
+      hits: [ScreenHit('S6'), ScreenHit('S7')],
+      hitSerial: 21,
+      progress: 6 / 21,
+      progressLabel: '6/21',
+    );
+    const mitLiveKind = ScreenState(
+      kind: ScreenKind.live,
+      title: 'Live-Mitschreiben',
+      players: [ScreenPlayer(name: 'Ben', score: '301', scoreLabel: 'Rest', active: true), ScreenPlayer(name: 'Gegner', score: '251', scoreLabel: 'Rest')],
+      visit: ['T20'],
+      hits: [ScreenHit('T20')],
+      hitSerial: 3,
+    );
+    final states = {
+      'Match': liveMatch,
+      'X01 solo': liveSolo,
+      'Training mit Koordinaten': liveTraining,
+      'Training ohne Koordinaten': ohneKoordinaten,
+      'Live-Mitschreiben ohne Koordinaten': mitLiveKind,
+    };
+
+    for (final size in [const Size(360, 800), const Size(320, 640), const Size(412, 915), const Size(800, 360)]) {
+      testWidgets('jedes laufende Spiel zeigt die Scheibe, ohne Überlauf bei ${size.width.toInt()}x${size.height.toInt()}', (tester) async {
+        final c = await openLite(tester, cloud, wakelock, size: size);
+        for (final e in states.entries) {
+          await bensPacket(tester, cloud, e.value);
+          await openLiveTab(tester);
+          await tick(tester);
+          expect(find.byKey(const Key('live-playing')), findsOneWidget, reason: e.key);
+          expect(find.byKey(const Key('screen-board')), findsOneWidget, reason: e.key);
+          expect(tester.takeException(), isNull, reason: e.key);
+          // Der Dart ohne Koordinaten hebt trotzdem sein Feld hervor.
+          final board = tester.widget<DartboardView>(find.byKey(const Key('screen-board')));
+          expect(board.lastSegment, Segment.tryParse(e.value.hits.last.segment), reason: e.key);
+          final lastHit = e.value.hits.last;
+          if (lastHit.x == null && lastHit.segment != 'MISS') {
+            expect(board.highlighted, contains(Segment.tryParse(lastHit.segment)), reason: '${e.key}: Feld bleibt hervorgehoben');
+          }
+        }
+        await shutdownApp(tester, c);
+      });
+    }
+
+    testWidgets('wenn es eng wird, scrollt die Anzeige (Solo mit Kennzahlen, 360x640)', (tester) async {
+      final c = await openLite(tester, cloud, wakelock, size: const Size(360, 640));
+      await bensPacket(tester, cloud, liveSolo);
+      await openLiveTab(tester);
+      await tick(tester);
+      expect(find.byKey(const Key('screen-scroll')), findsOneWidget);
+      expect(find.byKey(const Key('screen-board')), findsOneWidget);
+      await tester.ensureVisible(find.byKey(const Key('screen-board')));
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+      await shutdownApp(tester, c);
+    });
+
+    testWidgets('Leerlauf zeigt keine Scheibe', (tester) async {
+      final c = await openLite(tester, cloud, wakelock);
+      await bensPacket(tester, cloud, ScreenState.idle);
+      await openLiveTab(tester);
+      await tick(tester, const Duration(seconds: 5));
+      expect(find.byKey(const Key('screen-board')), findsNothing);
+      await shutdownApp(tester, c);
+    });
   });
 }
