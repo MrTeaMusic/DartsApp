@@ -8,6 +8,7 @@ void main() {
   test('die Lite-Pfade sind die der Router-Tabelle', () {
     expect(LiteRoutes.stats, Routes.stats);
     expect(LiteRoutes.settings, Routes.settings);
+    expect(LiteRoutes.watch, Routes.watch);
   });
 
   group('liteIsConnected', () {
@@ -26,13 +27,15 @@ void main() {
   group('liteRedirect', () {
     test('ohne Einrichtung gibt es nur die Einrichtung', () {
       expect(liteRedirect('/willkommen', connected: false), isNull);
-      for (final path in ['/', '/statistik', '/einstellungen', '/training', '/gibt-es-nicht']) {
+      for (final path in ['/', '/statistik', '/zuschauen', '/einstellungen', '/training', '/gibt-es-nicht']) {
         expect(liteRedirect(path, connected: false), '/willkommen', reason: path);
       }
     });
 
-    test('mit Einrichtung nur Statistik, Verlauf, Details und Optionen', () {
+    test('mit Einrichtung nur Live, Statistik, Verlauf, Details und Optionen', () {
       for (final path in [
+        '/zuschauen',
+        '/zuschauen/',
         '/statistik',
         '/statistik/',
         '/statistik/verlauf',
@@ -53,6 +56,8 @@ void main() {
         '/einstellungen/debug',
         '/willkommen',
         '/statistikfremd',
+        '/zuschauen/mehr',
+        '/zuschauenfremd',
         '/statistik/gibt-es-nicht',
         '/statistik/verlauf/12/mehr',
         '/einstellungen/anderes',

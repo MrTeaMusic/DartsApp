@@ -10,6 +10,8 @@ import '../../../core/design/dart_colors.dart';
 import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
 import '../../../core/settings/app_settings.dart';
+import '../../live_remote/data/live_pusher.dart';
+import '../../live_remote/presentation/live_push_controller.dart';
 import '../../second_screen/presentation/second_screen_page.dart';
 import '../data/cloud_api.dart';
 import '../data/cloud_crypto.dart';
@@ -495,6 +497,11 @@ class _CloudPanelState extends ConsumerState<CloudPanel> {
           Text(statusText, key: const Key('sync-status'), style: theme.textTheme.bodySmall?.copyWith(color: statusColor)),
           const SizedBox(height: AppSpacing.xs),
           Text(l10n.syncCloudPrivacy, style: theme.textTheme.bodySmall?.copyWith(color: context.dartColors.textMuted)),
+          if (!widget.compact) ...[
+            const SizedBox(height: AppSpacing.s),
+            const Divider(),
+            const _LiveShare(),
+          ],
           const SizedBox(height: AppSpacing.m),
           Align(
             alignment: Alignment.centerRight,
@@ -507,6 +514,57 @@ class _CloudPanelState extends ConsumerState<CloudPanel> {
           ),
         ],
       ),
+    );
+  }
+}
+
+
+/// Schalter „Live übers Internet zeigen“ mit Statuszeile. Nur in der
+/// Haupt-App (die Lite-App schickt nie etwas); standardmäßig aus.
+class _LiveShare extends ConsumerWidget {
+  const _LiveShare();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final on = ref.watch(settingsProvider.select((s) => s.liveShare));
+    final info = ref.watch(livePushControllerProvider);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SwitchListTile(
+          key: const Key('sync-live-switch'),
+          contentPadding: EdgeInsets.zero,
+          value: on,
+          onChanged: (v) => ref.read(settingsProvider.notifier).update((x) => x.copyWith(liveShare: v)),
+          secondary: const Icon(Icons.sensors_rounded),
+          title: Text(l10n.syncLiveShare),
+          subtitle: Text(l10n.syncLiveShareHint, key: const Key('sync-live-hint')),
+        ),
+        if (on) ...[
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            switch (info.status) {
+              LivePushStatus.off || LivePushStatus.starting => l10n.syncLiveStarting,
+              LivePushStatus.notConfigured => l10n.syncLiveNotConfigured,
+              LivePushStatus.waiting => l10n.syncLiveWaiting,
+              LivePushStatus.ok => info.lastSent == null ? l10n.syncLiveWaiting : l10n.syncLiveOk(formatSyncTime(info.lastSent!)),
+              LivePushStatus.unreachable => l10n.syncLiveErrUnreachable,
+              LivePushStatus.workerTooOld => l10n.syncLiveErrTooOld,
+              LivePushStatus.wrongKey => l10n.syncLiveErrAuth,
+              LivePushStatus.server => l10n.syncLiveErrServer,
+            },
+            key: const Key('sync-live-status'),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: switch (info.status) {
+                LivePushStatus.unreachable || LivePushStatus.workerTooOld || LivePushStatus.wrongKey || LivePushStatus.server || LivePushStatus.notConfigured => context.dartColors.danger,
+                _ => null,
+              },
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

@@ -12,6 +12,7 @@ import '../../features/history/presentation/history_screen.dart';
 import '../../features/history/presentation/session_detail_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/lite/domain/lite_gate.dart';
+import '../../features/live_remote/presentation/live_tab.dart';
 import '../../features/lite/presentation/lite_settings_screen.dart';
 import '../../features/lite/presentation/lite_setup_screen.dart';
 import '../../features/matches/presentation/match_routes.dart';
@@ -34,6 +35,9 @@ abstract final class Routes {
   static const history = '/statistik/verlauf';
   static String session(int id) => '$history/$id';
   static const settings = '/einstellungen';
+
+  /// Live-Reiter der Lite-App (Zuschauen). Die volle App hat ihn nicht.
+  static const watch = '/zuschauen';
   static const debug = '/einstellungen/debug';
   static const play = '/spiel';
   static String gameSetup(String gameId) => '$games/$gameId';
@@ -51,7 +55,10 @@ final routerProvider = Provider<GoRouter>((ref) {
   final router = GoRouter(
     initialLocation: lite ? Routes.stats : (liveOnStart ? AutodartsLiveRoutes.live : Routes.home),
     refreshListenable: lite ? connected : null,
-    redirect: lite ? (_, state) => liteRedirect(state.uri.path, connected: connected.value) : null,
+    redirect: lite
+        ? (_, state) => liteRedirect(state.uri.path, connected: connected.value)
+        // Der Live-Reiter gehört nur zu Lite: In der vollen App führt der Pfad nach Hause.
+        : (_, state) => state.uri.path == Routes.watch ? Routes.home : null,
     routes: [
       if (lite) GoRoute(path: LiteRoutes.welcome, builder: (_, _) => const LiteSetupScreen()),
       // Spielansicht ohne Navigation, damit das Board möglichst groß ist.
@@ -114,6 +121,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                 GoRoute(path: 'debug', builder: (_, _) => const DebugScreen()),
               ],
             ),
+          ]),
+          // Nur Lite zeigt diesen Zweig (Live-Reiter, Zweig 5).
+          StatefulShellBranch(routes: [
+            GoRoute(path: Routes.watch, builder: (_, _) => const LiveTab()),
           ]),
         ],
       ),

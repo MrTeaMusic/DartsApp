@@ -11,7 +11,8 @@ import 'sync_device.dart';
 
 /// Der Cloud-Speicher im Speicher, mit den Regeln aus `cloud/worker.js`:
 /// Tresor je Token, Meta mit Versionszähler (Compare-and-set), Session-Blöcke
-/// mit (Stand, Darts)-Ordnung.
+/// mit (Stand, Darts)-Ordnung, ein Live-Paket je Tresor (`/v1/live`, der
+/// letzte gewinnt, 304 bei `?since=`).
 class FakeCloud {
   final vaults = <String, FakeVault>{};
 
@@ -20,6 +21,20 @@ class FakeCloud {
   int sessionPuts = 0;
   int sessionGets = 0;
   final deleted = <String>[];
+
+  /// Live-Paket (`/v1/live`): Zähler der Zugriffe.
+  int livePuts = 0;
+  int liveGets = 0;
+  int liveNotModified = 0;
+
+  /// Alle Anfragen (auch Hello) in der Reihenfolge, als „METHODE /pfad?query“.
+  final requests = <String>[];
+
+  /// `false` spielt einen alten Worker: `hello` ohne `live`, `/v1/live` unbekannt.
+  bool liveSupported = true;
+
+  /// Alter des Live-Pakets nach der Uhr des Servers (`X-Live-Age`).
+  Duration liveAge = Duration.zero;
 
   /// Wird vor jedem Meta-PUT aufgerufen (um ein anderes Gerät dazwischenfunken
   /// zu lassen).
@@ -36,10 +51,11 @@ class FakeCloud {
 
   /// Alles, was auf dem Server liegt, als Text (zum Prüfen, dass kein Klartext dabei ist).
   String dump() => jsonEncode([
-        for (final v in vaults.values) ...[v.meta, ...v.sessions.values.map((o) => o['body'])],
+        for (final v in vaults.values) ...[v.meta, v.live, ...v.sessions.values.map((o) => o['body'])],
       ]);
 
   http.Client client() => MockClient((req) async {
+        requests.add('${req.method} ${req.url.path}${req.url.query.isEmpty ? '' : '?${req.url.query}'}');
         await hold?.call(req);
         final custom = override?.call(req);
         if (custom != null) return custom;
@@ -51,11 +67,39 @@ class FakeCloud {
 
   Future<http.Response> _handle(http.Request req) async {
     final path = req.url.path;
-    if (path == '/v1/hello') return _json(200, {'app': 'dartlab-cloud', 'version': 1});
+    if (path == '/v1/hello') return _json(200, {'app': 'dartlab-cloud', 'version': 1, if (liveSupported) 'live': 1});
     final auth = req.headers['Authorization'] ?? '';
     if (!auth.startsWith('Bearer ') || auth.length != 7 + 64) return _json(401, {'error': 'unauthorized'});
     final token = auth.substring(7);
     final body = req.body.isEmpty ? <String, Object?>{} : jsonDecode(req.body) as Map<String, Object?>;
+    if (path == '/v1/live') {
+      if (!liveSupported) return _json(404, {'error': 'not-found'});
+      if (req.method == 'PUT') {
+        livePuts++;
+        final b = body['body'];
+        if (b is! String || b.isEmpty) return _json(400, {'error': 'bad-body'});
+        if (b.length > 16384) return _json(413, {'error': 'too-large'});
+        vault(token)
+          ..liveRev += 1
+          ..live = b;
+        return _json(200, {'stored': true});
+      }
+      liveGets++;
+      final v = vaults[token];
+      if (v == null || (v.live == null && v.meta == null)) return _json(404, {'error': 'no-vault'});
+      if (v.live == null) return _json(404, {'error': 'no-live'});
+      final headers = {
+        'content-type': 'application/json',
+        'x-dartlab-cloud': '1',
+        'x-live-age': '${liveAge.inMilliseconds}',
+        'etag': '"${v.liveRev}"',
+      };
+      if ('${v.liveRev}' == req.url.queryParameters['since']) {
+        liveNotModified++;
+        return http.Response('', 304, headers: headers);
+      }
+      return http.Response(jsonEncode({'rev': v.liveRev, 'body': v.live}), 200, headers: headers);
+    }
     if (path == '/v1/meta') {
       if (req.method == 'GET') {
         final m = vaults[token]?.meta;
@@ -98,6 +142,8 @@ class FakeCloud {
 class FakeVault {
   int rev = 0;
   String? meta;
+  int liveRev = 0;
+  String? live;
   final sessions = <String, Map<String, Object?>>{};
 }
 

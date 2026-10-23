@@ -35,9 +35,10 @@ class AdaptiveScaffold extends ConsumerWidget {
       (Icons.adjust_outlined, Icons.adjust_rounded, l10n.navBoard),
       (Icons.insights_outlined, Icons.insights_rounded, l10n.navStats),
       (Icons.settings_outlined, Icons.settings_rounded, l10n.navSettings),
+      (Icons.sensors_outlined, Icons.sensors_rounded, l10n.navLive),
     ];
-    // Lite: nur Statistik und Optionen (Zweig 3 und 4 des Routers).
-    final branches = ref.watch(liteProvider) ? const [3, 4] : const [0, 1, 2, 3, 4];
+    // Lite: Live, Statistik und Optionen (Zweig 5, 3 und 4 des Routers).
+    final branches = ref.watch(liteProvider) ? const [5, 3, 4] : const [0, 1, 2, 3, 4];
     final destinations = [for (final b in branches) all[b]];
     final selected = math.max(0, branches.indexOf(shell.currentIndex));
     final width = MediaQuery.sizeOf(context).width;

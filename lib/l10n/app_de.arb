@@ -3586,5 +3586,37 @@
   "liteUpdateStep1": "Herunterladen: Tippe auf „Herunterladen“. Der Browser lädt die Datei.",
   "liteUpdateStep2": "Datei öffnen: Tippe nach dem Download auf die Meldung oder öffne die Datei im Ordner „Downloads“.",
   "liteUpdateStep3": "Installieren: Tippe auf „Installieren“. Die alte Version wird ersetzt, deine Daten bleiben erhalten.",
-  "liteUpdateAllow": "Beim ersten Mal fragt Android, ob der Browser Apps installieren darf. Erlaube das einmalig, danach geht es ohne Nachfrage."
+  "liteUpdateAllow": "Beim ersten Mal fragt Android, ob der Browser Apps installieren darf. Erlaube das einmalig, danach geht es ohne Nachfrage.",
+  "navLive": "Live",
+  "liveTitle": "Live",
+  "liveConnecting": "Verbinde …",
+  "liveIdleTitle": "Ben spielt gerade nicht",
+  "liveIdleText": "Sobald Ben ein Spiel startet, erscheint es hier von selbst. Du musst nichts tun.",
+  "liveLostTitle": "Verbindung verloren",
+  "liveLostText": "Neuer Versuch läuft. Prüfe, ob dein Handy Internet hat. Der letzte Stand ist abgeblendet zu sehen.",
+  "liveRetry": "Jetzt verbinden",
+  "liveOldWorkerTitle": "Der Cloud-Speicher kennt Live noch nicht",
+  "liveOldWorkerText": "Ben muss seinen Cloud-Speicher einmal aktualisieren. Sag ihm Bescheid, danach erscheint sein Spiel hier von selbst.",
+  "liveWrongSecretTitle": "Geheimnis passt nicht",
+  "liveWrongSecretText": "Prüfe unter Optionen die Adresse und das Geheimnis. Beides gibt es bei Ben.",
+  "liveToSettings": "Zu den Optionen",
+  "livePillLive": "Live",
+  "livePillLost": "Getrennt",
+  "syncLiveShare": "Live übers Internet zeigen",
+  "syncLiveShareHint": "Zuschauer sehen dein laufendes Spiel live, aber nur mit deinem Geheimnis.",
+  "syncLiveStarting": "Live: Der Cloud-Speicher wird geprüft …",
+  "syncLiveWaiting": "Live ist an. Gesendet wird, sobald ein Spiel läuft.",
+  "syncLiveOk": "Live: zuletzt gesendet um {time}",
+  "@syncLiveOk": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "syncLiveNotConfigured": "Live braucht Adresse und Geheimnis des Cloud-Speichers. Trag sie oben ein und gleiche ab.",
+  "syncLiveErrUnreachable": "Live: Keine Verbindung zum Cloud-Speicher. Der Versuch wird wiederholt, das Spiel läuft ungestört weiter.",
+  "syncLiveErrTooOld": "Der Cloud-Speicher muss aktualisiert werden, damit Live geht. Den Worker-Code im Cloudflare-Dashboard neu einfügen (Anleitung: cloud/README.md, Abschnitt 3).",
+  "syncLiveErrAuth": "Live: Der Cloud-Speicher lehnt den Zugang ab. Prüfe das Geheimnis.",
+  "syncLiveErrServer": "Live: Der Cloud-Speicher meldet einen Fehler. Der Versuch wird wiederholt, das Spiel läuft ungestört weiter."
 }

@@ -85,6 +85,9 @@ JSON (Version 1, leere Felder entfallen), gekürzt:
 
 Bildschirm-an hält das Paket `wakelock_plus`, nur solange die Ansicht offen ist.
 
+**Nicht im Heimnetz?** Denselben Stand (dasselbe JSON, dieselbe Anzeigetafel) gibt es auch übers
+Internet für die Lite-App: [live-internet.md](live-internet.md). Der Hub ist dafür nicht nötig.
+
 ## Noch nicht im echten Netz getestet
 
 Alles ist mit Tests auf einem echten lokalen Server geprüft, aber noch nicht in Bens Heimnetz:

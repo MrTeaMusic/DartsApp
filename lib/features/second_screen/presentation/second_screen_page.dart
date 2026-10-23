@@ -71,34 +71,34 @@ class _SecondScreenPageState extends ConsumerState<SecondScreenPage> {
               const SizedBox(height: AppSpacing.m),
               Expanded(
                 child: switch (viewer.status) {
-                  ViewerStatus.notConfigured => _Message(
+                  ViewerStatus.notConfigured => ScreenMessage(
                       key: const Key('screen-not-configured'),
                       icon: Icons.link_off_rounded,
                       title: context.l10n.screenNotConfiguredTitle,
                       text: context.l10n.screenNotConfiguredText,
                       action: _settingsButton(context),
                     ),
-                  ViewerStatus.wrongKey => _Message(
+                  ViewerStatus.wrongKey => ScreenMessage(
                       key: const Key('screen-wrong-key'),
                       icon: Icons.password_rounded,
                       title: context.l10n.screenWrongKeyTitle,
                       text: context.l10n.screenWrongKeyText,
                       action: _settingsButton(context),
                     ),
-                  ViewerStatus.notDartLab => _Message(
+                  ViewerStatus.notDartLab => ScreenMessage(
                       key: const Key('screen-not-dartlab'),
                       icon: Icons.help_outline_rounded,
                       title: context.l10n.screenNotDartLabTitle,
                       text: context.l10n.screenNotDartLabText(viewer.host),
                       action: _settingsButton(context),
                     ),
-                  ViewerStatus.hubTooOld => _Message(
+                  ViewerStatus.hubTooOld => ScreenMessage(
                       key: const Key('screen-hub-old'),
                       icon: Icons.system_update_alt_rounded,
                       title: context.l10n.screenHubTooOldTitle,
                       text: context.l10n.screenHubTooOldText,
                     ),
-                  ViewerStatus.lost when !showBoard => _Message(
+                  ViewerStatus.lost when !showBoard => ScreenMessage(
                       key: const Key('screen-lost'),
                       icon: Icons.wifi_off_rounded,
                       title: context.l10n.screenLostTitle,
@@ -135,14 +135,14 @@ class _SecondScreenPageState extends ConsumerState<SecondScreenPage> {
                         ),
                       ],
                     ),
-                  ViewerStatus.connecting when screen == null => _Message(
+                  ViewerStatus.connecting when screen == null => ScreenMessage(
                       key: const Key('screen-connecting'),
                       icon: Icons.cast_connected_rounded,
                       title: context.l10n.screenConnecting,
                       text: viewer.host,
                       action: const SizedBox(width: 160, child: LinearProgressIndicator()),
                     ),
-                  _ when screen == null || screen.isIdle => _Message(
+                  _ when screen == null || screen.isIdle => ScreenMessage(
                       key: const Key('screen-idle'),
                       icon: Icons.tv_rounded,
                       title: context.l10n.screenIdleTitle,
@@ -241,10 +241,11 @@ class _TopBar extends StatelessWidget {
   }
 }
 
-/// Hinweis mit Symbol (leer, Fehler, Warten). Auf großen Flächen größer,
+/// Hinweis mit Symbol (leer, Fehler, Warten). Öffentlich, damit die Live-Ansicht
+/// der Lite-App ihn mitnutzt. Auf großen Flächen größer,
 /// damit er aus der Entfernung lesbar ist.
-class _Message extends StatelessWidget {
-  const _Message({super.key, required this.icon, required this.title, required this.text, this.action});
+class ScreenMessage extends StatelessWidget {
+  const ScreenMessage({super.key, required this.icon, required this.title, required this.text, this.action});
   final IconData icon;
   final String title;
   final String text;

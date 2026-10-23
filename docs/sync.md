@@ -58,6 +58,13 @@ Verschlüsselte Blöcke und ihre Größe, den Zeitstempel (Stand) jeder Session 
 Autodarts-Live-Sessions die Dartzahl (damit er nicht ältere über neuere Stände schreibt), die Zahl der
 Sessions, die Tresor-ID (Hash) und wann Anfragen kommen. Keine Namen, Würfe oder Ergebnisse.
 
+### Live
+
+Optional und standardmäßig aus: Mit dem Schalter *Live übers Internet zeigen* (Cloud-Rolle) schickt die
+App den laufenden Spielstand als kleines verschlüsseltes Paket (`/v1/live`) an den Speicher, damit die
+Lite-App zuschauen kann. Der Worker braucht dafür die neue Fassung von `worker.js`. Einzelheiten,
+Takt und Kosten: [live-internet.md](live-internet.md).
+
 ### Grenzen
 
 * **Geheimnis verloren = Cloud-Daten unlesbar.** Auf den Geräten bleibt alles. Dann auf einem Gerät ein
