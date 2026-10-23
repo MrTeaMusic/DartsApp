@@ -16,9 +16,13 @@ Ohne `--dart-define=DARTLAB_LITE=true` bleibt die App, wie sie ist. Der Schalter
 
 ## Was Lite zeigt
 
-* **Unten zwei Reiter:** Statistik und Optionen. Die übrigen Seiten der App gibt es als Routen
-  weiter, aber jeder Pfad außerhalb von Statistik, Verlauf, Session-Detail und Optionen leitet auf
+* **Unten drei Reiter:** Live, Statistik und Optionen (in dieser Reihenfolge; die Lite-App startet
+  weiter in der Statistik). Die übrigen Seiten der App gibt es als Routen weiter, aber jeder Pfad
+  außerhalb von Live (`/zuschauen`), Statistik, Verlauf, Session-Detail und Optionen leitet auf
   `/statistik` um (`lib/features/lite/domain/lite_gate.dart`).
+* **Live:** zeigt Bens laufendes Spiel, wenn er es in seiner App freigegeben hat; siehe
+  [live-internet.md](live-internet.md). Der Reiter fragt nur ab, solange er offen und die App im
+  Vordergrund ist, und liest nur.
 * **Nur lesen:** Löschen, Bearbeiten, Importieren, „Nochmal spielen“, Zielanlage, Live- und
   Planlinks sind ausgeblendet. Die Statistik-Reiter, der Verlauf und die Session-Details sind
   dieselben wie in der Haupt-App.

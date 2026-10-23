@@ -220,19 +220,23 @@ class ScorePanel extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Flexible(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: 3),
-                        decoration: BoxDecoration(color: ArenaPalette.badge, borderRadius: BorderRadius.circular(AppRadii.pill)),
-                        child: Text(
-                          label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.titleSmall?.copyWith(color: Colors.white, fontFamily: AppTypography.condensed, fontSize: 16),
+                    // Der Name bekommt den ganzen Platz neben dem Zusatz (auf
+                    // schmalen Handys sonst nur "B…"), bleibt aber linksbündig.
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: 3),
+                          decoration: BoxDecoration(color: ArenaPalette.badge, borderRadius: BorderRadius.circular(AppRadii.pill)),
+                          child: Text(
+                            label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.titleSmall?.copyWith(color: Colors.white, fontFamily: AppTypography.condensed, fontSize: 16),
+                          ),
                         ),
                       ),
                     ),
-                    const Spacer(),
                     ?badge,
                     if (trailing != null)
                       Text(trailing!, style: theme.textTheme.titleMedium?.copyWith(color: lit ? Colors.white : colors.textMuted)),

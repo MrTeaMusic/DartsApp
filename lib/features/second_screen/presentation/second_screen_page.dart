@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -71,34 +73,34 @@ class _SecondScreenPageState extends ConsumerState<SecondScreenPage> {
               const SizedBox(height: AppSpacing.m),
               Expanded(
                 child: switch (viewer.status) {
-                  ViewerStatus.notConfigured => _Message(
+                  ViewerStatus.notConfigured => ScreenMessage(
                       key: const Key('screen-not-configured'),
                       icon: Icons.link_off_rounded,
                       title: context.l10n.screenNotConfiguredTitle,
                       text: context.l10n.screenNotConfiguredText,
                       action: _settingsButton(context),
                     ),
-                  ViewerStatus.wrongKey => _Message(
+                  ViewerStatus.wrongKey => ScreenMessage(
                       key: const Key('screen-wrong-key'),
                       icon: Icons.password_rounded,
                       title: context.l10n.screenWrongKeyTitle,
                       text: context.l10n.screenWrongKeyText,
                       action: _settingsButton(context),
                     ),
-                  ViewerStatus.notDartLab => _Message(
+                  ViewerStatus.notDartLab => ScreenMessage(
                       key: const Key('screen-not-dartlab'),
                       icon: Icons.help_outline_rounded,
                       title: context.l10n.screenNotDartLabTitle,
                       text: context.l10n.screenNotDartLabText(viewer.host),
                       action: _settingsButton(context),
                     ),
-                  ViewerStatus.hubTooOld => _Message(
+                  ViewerStatus.hubTooOld => ScreenMessage(
                       key: const Key('screen-hub-old'),
                       icon: Icons.system_update_alt_rounded,
                       title: context.l10n.screenHubTooOldTitle,
                       text: context.l10n.screenHubTooOldText,
                     ),
-                  ViewerStatus.lost when !showBoard => _Message(
+                  ViewerStatus.lost when !showBoard => ScreenMessage(
                       key: const Key('screen-lost'),
                       icon: Icons.wifi_off_rounded,
                       title: context.l10n.screenLostTitle,
@@ -135,14 +137,14 @@ class _SecondScreenPageState extends ConsumerState<SecondScreenPage> {
                         ),
                       ],
                     ),
-                  ViewerStatus.connecting when screen == null => _Message(
+                  ViewerStatus.connecting when screen == null => ScreenMessage(
                       key: const Key('screen-connecting'),
                       icon: Icons.cast_connected_rounded,
                       title: context.l10n.screenConnecting,
                       text: viewer.host,
                       action: const SizedBox(width: 160, child: LinearProgressIndicator()),
                     ),
-                  _ when screen == null || screen.isIdle => _Message(
+                  _ when screen == null || screen.isIdle => ScreenMessage(
                       key: const Key('screen-idle'),
                       icon: Icons.tv_rounded,
                       title: context.l10n.screenIdleTitle,
@@ -241,10 +243,11 @@ class _TopBar extends StatelessWidget {
   }
 }
 
-/// Hinweis mit Symbol (leer, Fehler, Warten). Auf großen Flächen größer,
+/// Hinweis mit Symbol (leer, Fehler, Warten). Öffentlich, damit die Live-Ansicht
+/// der Lite-App ihn mitnutzt. Auf großen Flächen größer,
 /// damit er aus der Entfernung lesbar ist.
-class _Message extends StatelessWidget {
-  const _Message({super.key, required this.icon, required this.title, required this.text, this.action});
+class ScreenMessage extends StatelessWidget {
+  const ScreenMessage({super.key, required this.icon, required this.title, required this.text, this.action});
   final IconData icon;
   final String title;
   final String text;
@@ -281,12 +284,21 @@ class ScreenScoreboard extends StatelessWidget {
       final banner = _Banner(state: state);
       final bannerHeight = state.banner == null ? 0.0 : 80.0;
 
+      // Das Board gehört zu jedem laufenden Spiel; wo kein Platz ist, steht es
+      // daneben (ein Spieler) oder darunter (scrollbar).
+      final showBoard = !state.isIdle;
+
       // Telefon quer: Aufnahme rechts neben den Tafeln.
       if (landscape && short) {
-        final visitWidth = (c.maxWidth * 0.36).clamp(260.0, 380.0);
-        final playersWidth = c.maxWidth - visitWidth - gap;
         final height = c.maxHeight - bannerHeight;
-        return Column(
+        final sideBoard = showBoard && single ? math.min(height - 12, c.maxWidth * 0.3) : 0.0;
+        final boardWidth = sideBoard >= 120 ? sideBoard : 0.0;
+        final visitWidth = (c.maxWidth * 0.36).clamp(260.0, 380.0) - (boardWidth > 0 ? boardWidth * 0.6 : 0);
+        final playersWidth = c.maxWidth - visitWidth - gap - (boardWidth > 0 ? boardWidth + gap : 0);
+        // Die Aufnahme passt ihre Dart-Felder an die Höhe an (Kopf, Ränder und
+        // Wegzeile brauchen ihren Platz), statt über den Rand zu laufen.
+        final visitChipHeight = (height - AppSpacing.m * 2 - 20 - AppSpacing.s - (state.route.isNotEmpty || state.setupLabel != null ? AppSpacing.s + 22 : 0) - 4).clamp(36.0, 72.0);
+        final content = Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             banner,
@@ -299,11 +311,27 @@ class ScreenScoreboard extends StatelessWidget {
                     child: _Players(state: state, font: _scoreFont(context, state, playersWidth, height, compact: true), compact: true),
                   ),
                   SizedBox(width: gap),
-                  Expanded(child: _VisitStrip(state: state, compact: true)),
+                  Expanded(child: _VisitStrip(state: state, compact: true, chipHeight: visitChipHeight)),
+                  if (boardWidth > 0) ...[
+                    SizedBox(width: gap),
+                    SizedBox(width: boardWidth, child: Center(child: _BoardCard(state: state))),
+                  ],
                 ],
               ),
             ),
           ],
+        );
+        if (!showBoard || boardWidth > 0) return content;
+        // Zwei Spieler: das Board folgt unter den Tafeln.
+        return SingleChildScrollView(
+          key: const Key('screen-scroll'),
+          child: Column(
+            children: [
+              SizedBox(height: c.maxHeight, child: content),
+              SizedBox(height: gap),
+              SizedBox(width: math.min(c.maxWidth, c.maxHeight * 1.1), child: _BoardCard(state: state)),
+            ],
+          ),
         );
       }
 
@@ -332,24 +360,48 @@ class ScreenScoreboard extends StatelessWidget {
       );
 
       if (side == 0) {
-        // Hochkant: übrigen Platz bekommt das Board (nicht neben Kennzahlen,
-        // die füllen ihn schon). Aufteilung nach Anteilen, damit nichts
-        // überläuft, wenn die Schätzung nicht ganz stimmt.
-        final rest = c.maxHeight - bannerHeight - playersHeight - visitHeight - statsHeight - gap * 3;
-        final board = rest >= 180 && statsHeight == 0;
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            banner,
-            Expanded(flex: playersHeight.round(), child: _Players(state: state, font: font)),
-            SizedBox(height: gap),
-            _VisitStrip(state: state, compact: visitHeight < 190),
-            if (statsHeight > 0) ...[SizedBox(height: gap), _StatsCard(stats: state.stats, columns: landscape ? 4 : 2)],
-            if (board) ...[
+        // Hochkant: übrigen Platz bekommt das Board. Aufteilung nach Anteilen,
+        // damit nichts überläuft, wenn die Schätzung nicht ganz stimmt. Reicht
+        // der Platz auch mit kleinster Schrift nicht (Kennzahlen dazu), scrollt
+        // die Anzeige: Tafeln, Aufnahme, Board, Kennzahlen.
+        const boardMin = 180.0;
+        final fixed = bannerHeight + visitHeight + statsHeight + gap * (showBoard ? 3 : 2);
+        final avail = c.maxHeight - fixed;
+        final fits = !showBoard || avail - _panelHeight(state, 64) >= boardMin;
+        if (fits) {
+          final shownFont = !showBoard || playersHeight <= avail - boardMin ? font : _scoreFont(context, state, mainWidth, avail - boardMin);
+          final shownHeight = _panelHeight(state, shownFont);
+          final rest = avail - shownHeight;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              banner,
+              Expanded(flex: shownHeight.round(), child: _Players(state: state, font: shownFont)),
               SizedBox(height: gap),
-              Expanded(flex: rest.round(), child: Center(child: _BoardCard(state: state))),
+              _VisitStrip(state: state, compact: visitHeight < 190),
+              if (statsHeight > 0) ...[SizedBox(height: gap), _StatsCard(stats: state.stats, columns: landscape ? 4 : 2)],
+              if (showBoard) ...[
+                SizedBox(height: gap),
+                Expanded(flex: rest.round(), child: Center(child: _BoardCard(state: state))),
+              ],
             ],
-          ],
+          );
+        }
+        final scrollFont = _scoreFont(context, state, mainWidth, 250);
+        return SingleChildScrollView(
+          key: const Key('screen-scroll'),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              banner,
+              SizedBox(height: _panelHeight(state, scrollFont), child: _Players(state: state, font: scrollFont)),
+              SizedBox(height: gap),
+              _VisitStrip(state: state, compact: visitHeight < 190),
+              SizedBox(height: gap),
+              Center(child: SizedBox(width: math.min(c.maxWidth, 360.0), child: _BoardCard(state: state))),
+              if (state.stats.isNotEmpty && single) ...[SizedBox(height: gap), _StatsCard(stats: state.stats, columns: landscape ? 4 : 2)],
+            ],
+          ),
         );
       }
       return Column(
@@ -678,6 +730,9 @@ class _BoardCard extends StatelessWidget {
     ];
     final last = state.hits.isEmpty ? null : Segment.tryParse(state.hits.last.segment);
     final target = state.route.isEmpty ? null : Segment.tryParse(state.route.first);
+    // Ohne Koordinaten (manuelle Eingabe) gibt es keinen Punkt auf der Scheibe:
+    // dann bleibt das zuletzt getroffene Feld sichtbar hervorgehoben.
+    final lastWithoutPoint = state.hits.isNotEmpty && (state.hits.last.x == null || state.hits.last.y == null) && last != null && !last.isMiss;
     return AppCard(
       padding: const EdgeInsets.all(AppSpacing.m),
       child: AspectRatio(
@@ -687,7 +742,7 @@ class _BoardCard extends StatelessWidget {
           hits: hits,
           lastSegment: last,
           hitSerial: state.hitSerial,
-          highlighted: target == null ? const {} : {target},
+          highlighted: {?target, if (lastWithoutPoint) last},
         ),
       ),
     );

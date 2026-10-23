@@ -26,6 +26,7 @@ final allRoutes = <String>[
   Routes.session(1),
   Routes.session(999999),
   Routes.settings,
+  Routes.watch,
   Routes.debug,
   Routes.play,
   Routes.gameSetup('x01'),
@@ -59,27 +60,36 @@ void main() {
   setUpAll(() => driftRuntimeOptions.dontWarnAboutMultipleDatabases = true);
 
   group('Navigation', () {
-    testWidgets('Handy: genau zwei Ziele, Statistik und Optionen', (tester) async {
+    testWidgets('Handy: genau drei Ziele in der Reihenfolge Live, Statistik, Optionen; Start bleibt die Statistik', (tester) async {
       final (:c, :cloud, :ben) = await pumpLiteWithBen(tester);
       final bar = tester.widget<NavigationBar>(find.byType(NavigationBar));
-      expect(bar.destinations, hasLength(2));
+      expect(bar.destinations, hasLength(3));
       expect(
         find.descendant(of: find.byType(NavigationBar), matching: find.byType(NavigationDestination)),
-        findsNWidgets(2),
+        findsNWidgets(3),
       );
-      for (final label in ['Statistik', 'Optionen']) {
-        expect(find.descendant(of: find.byType(NavigationBar), matching: find.text(label)), findsOneWidget);
-      }
+      final labels = [
+        for (final d in bar.destinations) (d as NavigationDestination).label,
+      ];
+      expect(labels, ['Live', 'Statistik', 'Optionen']);
       for (final label in ['Start', 'Training', 'Board']) {
         expect(find.descendant(of: find.byType(NavigationBar), matching: find.text(label)), findsNothing);
       }
-      expect(bar.selectedIndex, 0);
+      // Gestartet wird in der Statistik (mittlerer Reiter).
+      expect(currentPath(c), '/statistik');
+      expect(bar.selectedIndex, 1);
+
+      await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text('Live')));
+      await tester.pumpAndSettle();
+      expect(currentPath(c), '/zuschauen');
+      expect(find.byKey(const Key('live-tab')), findsOneWidget);
+      expect(tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex, 0);
 
       await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text('Optionen')));
       await tester.pumpAndSettle();
       expect(currentPath(c), '/einstellungen');
       expect(find.byKey(const Key('lite-settings')), findsOneWidget);
-      expect(tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex, 1);
+      expect(tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex, 2);
 
       await tester.tap(find.descendant(of: find.byType(NavigationBar), matching: find.text('Statistik')));
       await tester.pumpAndSettle();
@@ -88,39 +98,50 @@ void main() {
       await shutdownApp(tester, c);
     });
 
-    testWidgets('breit (Tablet): Seitenleiste mit zwei Zielen', (tester) async {
+    testWidgets('breit (Tablet): Seitenleiste mit drei Zielen', (tester) async {
       final (:c, :cloud, :ben) = await pumpLiteWithBen(tester, size: const Size(1280, 900));
       expect(find.byType(NavigationBar), findsNothing);
       final rail = tester.widget<NavigationRail>(find.byType(NavigationRail));
-      expect(rail.destinations, hasLength(2));
-      expect(rail.selectedIndex, 0);
+      expect(rail.destinations, hasLength(3));
+      expect(rail.selectedIndex, 1);
       await tester.tap(find.descendant(of: find.byType(NavigationRail), matching: find.text('Optionen')));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('lite-settings')), findsOneWidget);
-      expect(tester.widget<NavigationRail>(find.byType(NavigationRail)).selectedIndex, 1);
+      expect(tester.widget<NavigationRail>(find.byType(NavigationRail)).selectedIndex, 2);
+      await tester.tap(find.descendant(of: find.byType(NavigationRail), matching: find.text('Live')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('live-tab')), findsOneWidget);
+      expect(tester.widget<NavigationRail>(find.byType(NavigationRail)).selectedIndex, 0);
       await shutdownApp(tester, c);
     });
 
-    testWidgets('die volle App behält ihre fünf Ziele', (tester) async {
-      await pumpApp(tester, size: const Size(360, 800));
+    testWidgets('die volle App behält ihre fünf Ziele, der Live-Reiter gehört nur zu Lite', (tester) async {
+      final c = await pumpApp(tester, size: const Size(360, 800));
       expect(tester.widget<NavigationBar>(find.byType(NavigationBar)).destinations, hasLength(5));
+      expect(find.text('Live'), findsNothing);
+      c.read(routerProvider).go(Routes.watch);
+      await tester.pumpAndSettle();
+      expect(currentPath(c), '/');
+      expect(find.byKey(const Key('live-tab')), findsNothing);
     });
   });
 
   group('Gesperrte Pfade', () {
-    testWidgets('eingerichtet: jeder Pfad endet auf Statistik oder Optionen, nie auf der Fehlerseite', (tester) async {
+    testWidgets('eingerichtet: jeder Pfad endet auf Live, Statistik oder Optionen, nie auf der Fehlerseite', (tester) async {
       final (:c, :cloud, :ben) = await pumpLiteWithBen(tester);
       final router = c.read(routerProvider);
       for (final path in allRoutes) {
         router.go(path);
         await tester.pumpAndSettle();
         final now = currentPath(c);
-        final allowed = now == '/einstellungen' || now == '/statistik' || now.startsWith('/statistik/');
+        final allowed = now == '/einstellungen' || now == '/zuschauen' || now == '/statistik' || now.startsWith('/statistik/');
         expect(allowed, isTrue, reason: '$path → $now');
         expect(errorPage, findsNothing, reason: path);
         expect(find.byType(NavigationBar), findsOneWidget, reason: path);
         if (path == Routes.settings) {
           expect(find.byKey(const Key('lite-settings')), findsOneWidget);
+        } else if (path == Routes.watch) {
+          expect(find.byKey(const Key('live-tab')), findsOneWidget);
         } else if (path == Routes.history) {
           expect(find.byKey(const Key('history-list')), findsOneWidget);
         } else if (path.startsWith('${Routes.history}/')) {
@@ -171,6 +192,8 @@ void main() {
 
       await tester.tap(find.byKey(const Key('stats-history')));
       await tester.pumpAndSettle();
+      // Die Liste kommt aus der Datenbank (echte Zeit); unter Last sonst zu früh geprüft.
+      await settleLite(tester, ms: 300);
       expect(find.byKey(const Key('history-list')), findsOneWidget);
       expect(find.byIcon(Icons.delete_outline_rounded), findsNothing);
       expect(find.byType(Dismissible), findsNothing);

@@ -126,6 +126,9 @@ class CloudKeys {
       throw const CloudDecryptException();
     } on FormatException {
       throw const CloudDecryptException();
+    } on ArgumentError {
+      // Zu kurz, um überhaupt Nonce und Prüfwert zu enthalten.
+      throw const CloudDecryptException();
     }
   }
 }

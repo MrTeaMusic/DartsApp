@@ -17,6 +17,7 @@ import 'features/caller/presentation/training_game_caller.dart';
 import 'features/challenges/presentation/challenge_run_controller.dart';
 import 'features/matches/presentation/match_caller.dart';
 import 'features/dart_source/presentation/dart_source_providers.dart';
+import 'features/live_remote/presentation/live_push_controller.dart';
 import 'features/progress/presentation/celebrations.dart';
 import 'features/progress/presentation/progress_providers.dart';
 import 'features/sync/presentation/sync_controller.dart';
@@ -47,7 +48,10 @@ class DartLabApp extends ConsumerWidget {
         ..watch(rawLogProvider.select((_) => null))
         ..watch(achievementRecorderProvider.select((_) => null))
         ..watch(celebrationsProvider.select((_) => null))
-        ..watch(challengeRunProvider.select((_) => null));
+        ..watch(challengeRunProvider.select((_) => null))
+        // Zeigt das laufende Spiel live im Internet, wenn Ben es eingeschaltet hat
+        // (sonst tut dieser Provider nichts).
+        ..watch(livePushControllerProvider.select((_) => null));
     }
 
     return MaterialApp.router(
