@@ -530,6 +530,8 @@ Future<int> repairLiveSessions(AppDatabase db) async {
   final repo = GameRepository(db);
   var repaired = 0;
   for (final s in sessions) {
+    // Importierte Matches sind fertig und tragen den Gegner im Ergebnis: nie neu rechnen.
+    if (GameRepositoryJson.decode(s.configJson)['import'] is Map) continue;
     if (s.endedAt != null && s.dartCount == (counts[s.id] ?? 0)) continue;
     final rows = await repo.throwsOf(s.id);
     final darts = <RecordedDart>[

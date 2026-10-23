@@ -159,17 +159,17 @@ class HistoryTile extends StatelessWidget {
     final e = entry;
     final minutes = e.duration?.inMinutes;
     final subtitle = [
-      if (e.isMatch && e.opponents.isNotEmpty) l10n.histVs(e.opponents.join(', ')),
+      if (e.hasOpponent && e.opponents.isNotEmpty) l10n.histVs(e.opponents.join(', ')),
       historyTime(e.startedAt),
-      if (e.hasLiveLegs) l10n.onlineLegs(e.legsWon, e.legsLost),
+      if (e.hasLiveLegs && !e.isImported) l10n.onlineLegs(e.legsWon, e.legsLost),
       if (!e.finished) l10n.gameAborted,
       l10n.sessionAmount(e.gameId, e.darts, e.metrics),
       if (minutes != null && minutes > 0) formatMinutes(minutes),
     ].join(' · ');
-    final title = l10n.gameTitle(e.gameId);
+    final title = e.isImported ? l10n.histOnlineMatch : l10n.gameTitle(e.gameId);
 
     final Widget trailing;
-    if (e.isMatch) {
+    if (e.hasOpponent) {
       final won = e.won;
       final color = won == null ? colors.textMuted : (won ? colors.success : colors.danger);
       trailing = Column(

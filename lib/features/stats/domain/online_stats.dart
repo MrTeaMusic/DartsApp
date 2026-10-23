@@ -68,6 +68,8 @@ class OnlineMatch {
     required this.count140,
     required this.count180,
     required this.legs,
+    this.opponent,
+    this.won,
   });
 
   final int sessionId;
@@ -92,6 +94,13 @@ class OnlineMatch {
 
   /// Abgeschlossene Legs in Reihenfolge (leer ohne X01).
   final List<OnlineLeg> legs;
+
+  /// Name des Gegners bei einem importierten Match (aus dem Autodarts-Konto),
+  /// sonst `null`: Live-Sessions kennen ihn nicht.
+  final String? opponent;
+
+  /// Gewonnen (nur importierte, beendete Matches).
+  final bool? won;
 
   /// Aufnahmen mit 100 oder mehr.
   int get tons => count100 + count140 + count180;

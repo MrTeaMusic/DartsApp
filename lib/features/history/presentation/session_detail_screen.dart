@@ -83,7 +83,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
     final e = d.entry;
     // Lite zeigt nur an: nichts löschen, nicht noch einmal spielen.
     final lite = ref.watch(liteProvider);
-    final canReplay = e.isQuiz || (!e.isMatch && GameCatalog.byId(e.gameId) != null);
+    final canReplay = e.isQuiz || (!e.hasOpponent && GameCatalog.byId(e.gameId) != null);
     return Scaffold(
       appBar: AppPageBar(
         maxWidth: kHistoryMaxWidth,
@@ -106,9 +106,9 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
           children: [
             _Header(detail: d),
             const SectionGap(factor: 0.8),
-            if (e.isMatch) _MatchResultCard(detail: d),
+            if (e.hasOpponent) _MatchResultCard(detail: d),
             // Bei Matches stehen die eigenen Kennzahlen schon im Ergebnis.
-            if (!e.isMatch) ...[
+            if (!e.hasOpponent) ...[
               SectionHeader(l10n.histKeyMetrics),
               TileGrid(
                 minTileWidth: 170,
@@ -186,12 +186,12 @@ class _Header extends StatelessWidget {
     final e = detail.entry;
     final minutes = e.duration?.inMinutes;
     final won = e.won;
-    final (String status, Color statusColor) = e.isMatch && won != null
+    final (String status, Color statusColor) = e.hasOpponent && won != null
         ? (won ? l10n.histWon : l10n.histLost, won ? colors.success : colors.danger)
         : e.finished
             ? (l10n.histFinished, colors.success)
             : (l10n.histAborted, colors.textMuted);
-    final format = e.isMatch ? MatchFormat.fromJson(e.details['format'] ?? e.config) : null;
+    final format = e.hasOpponent ? MatchFormat.fromJson(e.details['format'] ?? e.config) : null;
     final me = detail.players.isEmpty ? null : detail.players[detail.me].name;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,7 +208,9 @@ class _Header extends StatelessWidget {
                       '${historyTime(e.startedAt)}'),
                   const SizedBox(height: AppSpacing.xxs),
                   Text(
-                    e.isMatch && e.opponents.isNotEmpty ? l10n.histVs(e.opponents.join(', ')) : l10n.gameTitle(e.gameId),
+                    e.hasOpponent && e.opponents.isNotEmpty
+                        ? l10n.histVs(e.opponents.join(', '))
+                        : l10n.gameTitle(e.gameId),
                     key: const Key('session-title'),
                     style: theme.textTheme.headlineSmall,
                     maxLines: 2,
@@ -495,7 +497,14 @@ class _Visits extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.m),
         ],
-        if (detail.entry.isMatch) ...[
+        if (detail.entry.isImported) ...[
+          Text(
+            l10n.impVisitsNote,
+            key: const Key('session-visits-note'),
+            style: theme.textTheme.bodySmall?.copyWith(color: colors.textMuted),
+          ),
+          const SizedBox(height: AppSpacing.m),
+        ] else if (detail.entry.isMatch) ...[
           Text(
             detail.legsKnown ? l10n.histOwnThrowsOnly : '${l10n.histOwnThrowsOnly} ${l10n.histLegsUnknown}',
             style: theme.textTheme.bodySmall?.copyWith(color: colors.textMuted),
@@ -505,6 +514,7 @@ class _Visits extends StatelessWidget {
         for (final (i, leg) in detail.legs.indexed) ...[
           if (i > 0) const SizedBox(height: AppSpacing.l),
           if (leg.number > 0) _LegHeader(detail: detail, leg: leg),
+          if (leg.others.isNotEmpty) _SideLabel(name: detail.players[detail.me].name),
           AppCard(
             key: Key('session-leg-${leg.number}'),
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
@@ -520,10 +530,37 @@ class _Visits extends StatelessWidget {
               ],
             ),
           ),
+          // Aufnahmen der anderen Spieler (importierte Online-Matches).
+          for (final side in leg.others) ...[
+            const SizedBox(height: AppSpacing.s),
+            _SideLabel(name: detail.players[side.player].name),
+            AppCard(
+              key: Key('session-leg-${leg.number}-opponent'),
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+              child: Column(
+                children: [
+                  _VisitRow.header(afterKey: detail.afterKey, value: detail.value),
+                  for (final v in side.visits) _VisitRow(visit: v, afterKey: detail.afterKey, value: detail.value),
+                ],
+              ),
+            ),
+          ],
         ],
       ],
     );
   }
+}
+
+/// Name über der Aufnahmetabelle eines Spielers.
+class _SideLabel extends StatelessWidget {
+  const _SideLabel({required this.name});
+  final String name;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: AppSpacing.xs, left: AppSpacing.xxs),
+        child: Text(name, style: Theme.of(context).textTheme.titleSmall, maxLines: 1, overflow: TextOverflow.ellipsis),
+      );
 }
 
 class _Legend extends StatelessWidget {
@@ -561,10 +598,10 @@ class _LegHeader extends StatelessWidget {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final colors = context.dartColors;
-    final format = detail.entry.isMatch ? MatchFormat.fromJson(detail.entry.details['format'] ?? detail.entry.config) : null;
+    final format = detail.entry.hasOpponent ? MatchFormat.fromJson(detail.entry.details['format'] ?? detail.entry.config) : null;
     final title = format != null && format.usesSets ? l10n.matchLegSetNumber(leg.set, leg.number) : l10n.matchLegNumber(leg.number);
     final w = leg.winner;
-    final mine = w == null ? null : w == detail.me || !detail.entry.isMatch;
+    final mine = w == null ? null : w == detail.me || !detail.entry.hasOpponent;
     final name = w == null || detail.players.length <= w ? null : detail.players[w].name;
     final String info;
     if (w == null) {

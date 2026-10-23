@@ -15,7 +15,7 @@ void main() {
     await tester.scrollUntilVisible(
       find.byKey(const Key('update-settings-card')),
       300,
-      scrollable: find.byType(Scrollable).last,
+      scrollable: find.byType(Scrollable).first,
     );
     await tester.pumpAndSettle();
   }

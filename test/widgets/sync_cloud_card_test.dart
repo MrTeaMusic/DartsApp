@@ -27,7 +27,7 @@ Future<void> tapVisible(WidgetTester tester, Finder f) async {
 
 Future<void> roleOff(WidgetTester tester) async {
   final off = find.byKey(const Key('sync-role-off'));
-  await tester.scrollUntilVisible(off, -300, scrollable: find.byType(Scrollable).last);
+  await tester.scrollUntilVisible(off, -300, scrollable: find.byType(Scrollable).first);
   await tapVisible(tester, off);
 }
 

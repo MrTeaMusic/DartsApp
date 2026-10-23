@@ -52,6 +52,16 @@ class HistoryEntry {
   /// Online-Match, mitgeschrieben mit Autodarts Live.
   bool get isOnline => isOnlineGame(session.gameId);
 
+  /// Match aus dem Autodarts-Konto (Browser-Skript oder JSON-Import): eine
+  /// Online-Session mit Gegner. Gespeichert sind nur die eigenen Darts; der
+  /// Gegner, die Legs und seine Aufnahmen stehen im Ergebnis.
+  bool get isImported => config['import'] is Map || details['import'] is Map;
+
+  /// Hat Gegner und Legs (Match gegen Bot oder Mensch, oder importiertes
+  /// Online-Match): Dafür gibt es die Match-Ansicht mit Ergebnis beider
+  /// Spieler.
+  bool get hasOpponent => isMatch || isImported;
+
   /// Live-Session mit „X01 mitzählen“ und mindestens einem gewerteten Leg.
   bool get hasLiveLegs => session.gameId == autodartsLiveX01GameId && legsWon + legsLost > 0;
 
@@ -74,7 +84,11 @@ class HistoryEntry {
   bool get tournament => config['tournament'] == true || details['tournamentMatch'] != null;
 
   /// Gewonnen (nur Matches; `null` bei abgebrochenen).
-  bool? get won => !isMatch || !finished ? null : metrics['won'] == 1;
+  bool? get won {
+    if (!hasOpponent || !finished) return null;
+    final w = metrics['won'];
+    return w == null && isImported ? null : w == 1;
+  }
   int get legsWon => metrics['legsWon']?.toInt() ?? 0;
   int get legsLost => metrics['legsLost']?.toInt() ?? 0;
 
@@ -166,7 +180,15 @@ enum VisitValue {
 
 /// Ein Abschnitt der Aufnahmen: ein Leg (X01, Match) oder die ganze Session.
 class HistoryLeg {
-  const HistoryLeg({required this.number, required this.visits, this.set = 1, this.winner, this.winnerDarts, this.checkout});
+  const HistoryLeg({
+    required this.number,
+    required this.visits,
+    this.set = 1,
+    this.winner,
+    this.winnerDarts,
+    this.checkout,
+    this.others = const [],
+  });
 
   /// Leg-Nummer ab 1; 0 = ganze Session ohne Legs.
   final int number;
@@ -180,6 +202,19 @@ class HistoryLeg {
   /// Gezählte Darts des Siegers in diesem Leg.
   final int? winnerDarts;
   final int? checkout;
+
+  /// Aufnahmen der anderen Spieler in diesem Leg (importierte Matches); die
+  /// eigenen stehen in [visits].
+  final List<HistoryLegSide> others;
+}
+
+/// Die Aufnahmen eines anderen Spielers in einem Leg.
+class HistoryLegSide {
+  const HistoryLegSide({required this.player, required this.visits});
+
+  /// Index in [SessionDetail.players].
+  final int player;
+  final List<HistoryVisit> visits;
 }
 
 /// Ergebnis eines Match-Teilnehmers, wie es gespeichert wurde.
@@ -282,6 +317,7 @@ SessionDetail buildSessionDetail(SessionRow session, List<ThrowRow> throws, {Str
       if (t.x != null && t.y != null) BoardPoint(t.x!, t.y!),
   ];
   if (entry.isMatch) return _matchDetail(entry, sorted, positions, playerName);
+  if (entry.isImported) return _importedDetail(entry, sorted, positions);
   if (entry.isQuiz) return _quizDetail(entry);
   return _trainingDetail(entry, sorted, positions) ?? _plainDetail(entry, sorted, positions);
 }
@@ -560,6 +596,74 @@ SessionDetail _matchDetail(HistoryEntry entry, List<ThrowRow> sorted, List<Board
   );
 }
 
+/// Importiertes Online-Match: eigene Darts aus der Datenbank, der Gegner und
+/// seine Aufnahmen aus dem Ergebnis. Legs, Sieger und Finish stammen aus dem
+/// Import (`details['matchLegs']`); Rest, Bust und Darts aufs Finish werden
+/// für beide Spieler nachgerechnet.
+SessionDetail _importedDetail(HistoryEntry entry, List<ThrowRow> sorted, List<BoardPoint> positions) {
+  final format = MatchFormat.fromJson(entry.details['format'] ?? entry.config);
+  final groups = _byVisit(sorted);
+  final players = <MatchPlayerResult>[];
+  final stored = entry.details['players'];
+  if (stored is List) {
+    for (final p in stored) {
+      final m = p is Map ? p : const {};
+      players.add(MatchPlayerResult(
+        name: '${m['name'] ?? '?'}',
+        stats: {for (final e in m.entries) if (e.value is num) '${e.key}': e.value as num},
+      ));
+    }
+  }
+  while (players.length < 2) {
+    players.add(MatchPlayerResult(name: players.isEmpty ? '' : (entry.opponents.firstOrNull ?? '?'), stats: const {}));
+  }
+
+  final legs = <HistoryLeg>[];
+  final storedLegs = entry.details['matchLegs'];
+  var i = 0;
+  if (storedLegs is List) {
+    for (final (n, l) in storedLegs.indexed) {
+      final m = l is Map ? l : const {};
+      final end = (m['visit'] as num?)?.toInt() ?? -1;
+      final own = <List<ThrowRow>>[];
+      while (i < groups.length && groups[i].first.visitIndex <= end) {
+        own.add(groups[i++]);
+      }
+      final oppRaw = m['opp'];
+      final opp = <List<_CalcDart>>[
+        if (oppRaw is List)
+          for (final v in oppRaw)
+            [
+              if (v is List)
+                for (final name in v) (segment: Segment.tryParse('$name'), counted: true, position: null),
+            ],
+      ];
+      legs.add(HistoryLeg(
+        number: n + 1,
+        set: (m['set'] as num?)?.toInt() ?? 1,
+        visits: _x01Visits(own, format),
+        winner: (m['winner'] as num?)?.toInt(),
+        winnerDarts: (m['darts'] as num?)?.toInt(),
+        checkout: (m['checkout'] as num?)?.toInt(),
+        others: opp.isEmpty ? const [] : [HistoryLegSide(player: 1, visits: _x01VisitsOf(opp, format))],
+      ));
+    }
+  }
+  if (i < groups.length) {
+    legs.add(HistoryLeg(number: legs.length + 1, visits: _x01Visits(groups.sublist(i), format)));
+  }
+  return SessionDetail(
+    entry: entry,
+    legs: legs,
+    summary: const [],
+    positions: positions,
+    chart: VisitChart.score,
+    afterKey: 'remaining',
+    players: players,
+    me: 0,
+  );
+}
+
 List<HistoryVisit> _renumber(List<HistoryVisit> visits) => [
       for (final (i, v) in visits.indexed)
         HistoryVisit(
@@ -574,7 +678,20 @@ List<HistoryVisit> _renumber(List<HistoryVisit> visits) => [
 
 /// Rechnet die eigenen Aufnahmen eines Legs nach X01-Regeln durch (wie
 /// `X01Match`): Rest nach jeder Aufnahme, Bust und Darts aufs Finish.
-List<HistoryVisit> _x01Visits(List<List<ThrowRow>> groups, MatchFormat format) {
+List<HistoryVisit> _x01Visits(List<List<ThrowRow>> groups, MatchFormat format) => _x01VisitsOf(
+      [
+        for (final g in groups)
+          [
+            for (final t in g) (segment: segmentOf(t), counted: t.counted, position: _pos(t)),
+          ],
+      ],
+      format,
+    );
+
+/// Ein Dart für die Nachrechnung: Feld (`null` = unlesbar), ob er zählt, Position.
+typedef _CalcDart = ({Segment? segment, bool counted, BoardPoint? position});
+
+List<HistoryVisit> _x01VisitsOf(List<List<_CalcDart>> groups, MatchFormat format) {
   var remaining = format.startScore;
   var opened = !format.doubleIn;
   final out = <HistoryVisit>[];
@@ -586,16 +703,16 @@ List<HistoryVisit> _x01Visits(List<List<ThrowRow>> groups, MatchFormat format) {
     var checkout = false;
     final darts = <HistoryDart>[];
     for (final t in g) {
-      final s = segmentOf(t);
+      final s = t.segment;
       if (s == null) continue;
       if (!t.counted || bust || checkout) {
-        darts.add(HistoryDart(s, counted: false, position: _pos(t)));
+        darts.add(HistoryDart(s, counted: false, position: t.position));
         continue;
       }
       final attempt = opened && CheckoutRules.isCheckout(remaining, darts: 1, out: format.outMode);
       if (!opened) {
         if (!s.isDouble) {
-          darts.add(HistoryDart(s, position: _pos(t)));
+          darts.add(HistoryDart(s, position: t.position));
           continue;
         }
         opened = true;
@@ -605,13 +722,13 @@ List<HistoryVisit> _x01Visits(List<List<ThrowRow>> groups, MatchFormat format) {
         remaining = startRemaining;
         opened = startOpened;
         points = 0;
-        darts.add(HistoryDart(s, finishAttempt: attempt, position: _pos(t)));
+        darts.add(HistoryDart(s, finishAttempt: attempt, position: t.position));
         continue;
       }
       remaining -= s.score;
       points += s.score;
       if (remaining == 0) checkout = true;
-      darts.add(HistoryDart(s, finishAttempt: attempt, hit: attempt && checkout, position: _pos(t)));
+      darts.add(HistoryDart(s, finishAttempt: attempt, hit: attempt && checkout, position: t.position));
     }
     out.add(HistoryVisit(
       number: out.length + 1,

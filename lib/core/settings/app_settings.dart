@@ -50,6 +50,10 @@ class AppSettings {
     this.dailyGoalUnit = DailyGoalUnit.darts,
     this.dailyGoalAmount = 200,
     this.autodartsLiveAutoStart = false,
+    this.autodartsImportEnabled = false,
+    this.autodartsImportPort = 3191,
+    this.autodartsImportKey = '',
+    this.autodartsMyName = '',
   });
 
   /// Gewählter Look (Optionen → Darstellung).
@@ -113,6 +117,21 @@ class AppSettings {
   /// Autodarts).
   final bool autodartsLiveAutoStart;
 
+  /// Online-Matches (Browser-Skript): lokaler Empfänger auf 127.0.0.1. Standard
+  /// aus, damit nichts ohne Wissen lauscht. Nur Desktop-App.
+  final bool autodartsImportEnabled;
+
+  /// Port des Empfängers (der Sync-Hub nutzt 3190).
+  final int autodartsImportPort;
+
+  /// Code des Empfängers (Header `X-DartLab-Key`), beim ersten Einschalten
+  /// zufällig erzeugt. Bleibt auf diesem Gerät.
+  final String autodartsImportKey;
+
+  /// „Mein Autodarts-Name“: erkennt, welcher Spieler eines importierten
+  /// Matches man selbst ist.
+  final String autodartsMyName;
+
   DailyGoal get dailyGoal => DailyGoal(dailyGoalUnit, dailyGoalUnit.clamp(dailyGoalAmount));
 
   AppSettings copyWith({
@@ -140,6 +159,10 @@ class AppSettings {
     DailyGoalUnit? dailyGoalUnit,
     int? dailyGoalAmount,
     bool? autodartsLiveAutoStart,
+    bool? autodartsImportEnabled,
+    int? autodartsImportPort,
+    String? autodartsImportKey,
+    String? autodartsMyName,
   }) =>
       AppSettings(
         look: look ?? this.look,
@@ -166,6 +189,10 @@ class AppSettings {
         dailyGoalUnit: dailyGoalUnit ?? this.dailyGoalUnit,
         dailyGoalAmount: dailyGoalAmount ?? this.dailyGoalAmount,
         autodartsLiveAutoStart: autodartsLiveAutoStart ?? this.autodartsLiveAutoStart,
+        autodartsImportEnabled: autodartsImportEnabled ?? this.autodartsImportEnabled,
+        autodartsImportPort: autodartsImportPort ?? this.autodartsImportPort,
+        autodartsImportKey: autodartsImportKey ?? this.autodartsImportKey,
+        autodartsMyName: autodartsMyName ?? this.autodartsMyName,
       );
 
   static const _kLook = 'settings.look';
@@ -192,6 +219,10 @@ class AppSettings {
   static const _kGoalUnit = 'goals.dailyUnit';
   static const _kGoalAmount = 'goals.dailyAmount';
   static const _kLiveAutoStart = 'settings.autodartsLiveAutoStart';
+  static const _kImportEnabled = 'import.enabled';
+  static const _kImportPort = 'import.port';
+  static const _kImportKey = 'import.key';
+  static const _kMyName = 'import.myName';
 
   static AppSettings load(SharedPreferences prefs) {
     const d = AppSettings();
@@ -222,6 +253,10 @@ class AppSettings {
       dailyGoalUnit: DailyGoalUnit.byName(prefs.getString(_kGoalUnit)),
       dailyGoalAmount: prefs.getInt(_kGoalAmount) ?? d.dailyGoalAmount,
       autodartsLiveAutoStart: prefs.getBool(_kLiveAutoStart) ?? d.autodartsLiveAutoStart,
+      autodartsImportEnabled: prefs.getBool(_kImportEnabled) ?? d.autodartsImportEnabled,
+      autodartsImportPort: prefs.getInt(_kImportPort) ?? d.autodartsImportPort,
+      autodartsImportKey: prefs.getString(_kImportKey) ?? d.autodartsImportKey,
+      autodartsMyName: prefs.getString(_kMyName) ?? d.autodartsMyName,
     );
   }
 
@@ -250,6 +285,10 @@ class AppSettings {
     await prefs.setString(_kGoalUnit, dailyGoalUnit.name);
     await prefs.setInt(_kGoalAmount, dailyGoalAmount);
     await prefs.setBool(_kLiveAutoStart, autodartsLiveAutoStart);
+    await prefs.setBool(_kImportEnabled, autodartsImportEnabled);
+    await prefs.setInt(_kImportPort, autodartsImportPort);
+    await prefs.setString(_kImportKey, autodartsImportKey);
+    await prefs.setString(_kMyName, autodartsMyName);
   }
 }
 

@@ -3618,5 +3618,173 @@
   "syncLiveErrUnreachable": "Live: Keine Verbindung zum Cloud-Speicher. Der Versuch wird wiederholt, das Spiel läuft ungestört weiter.",
   "syncLiveErrTooOld": "Der Cloud-Speicher muss aktualisiert werden, damit Live geht. Den Worker-Code im Cloudflare-Dashboard neu einfügen (Anleitung: cloud/README.md, Abschnitt 3).",
   "syncLiveErrAuth": "Live: Der Cloud-Speicher lehnt den Zugang ab. Prüfe das Geheimnis.",
-  "syncLiveErrServer": "Live: Der Cloud-Speicher meldet einen Fehler. Der Versuch wird wiederholt, das Spiel läuft ungestört weiter."
+  "syncLiveErrServer": "Live: Der Cloud-Speicher meldet einen Fehler. Der Versuch wird wiederholt, das Spiel läuft ungestört weiter.",
+  "impTitle": "Online-Matches (Browser-Skript)",
+  "impIntro": "Nach einem Online-Match schickt ein kleines Skript in deinem Browser das fertige Match an DartLab. Es erscheint mit Gegner, Legs und allen Aufnahmen im Verlauf und in der Statistik „Online“.",
+  "impReceiver": "Empfänger einschalten",
+  "impReceiverHint": "Lauscht nur auf diesem Rechner (127.0.0.1), nicht im Netzwerk.",
+  "impDesktopOnly": "Den Empfänger gibt es nur in der Desktop-App (Windows, macOS). Hier kannst du ein Match als JSON einfügen.",
+  "impPort": "Port",
+  "impPortInvalid": "1024 bis 65535",
+  "impPortApply": "Übernehmen",
+  "impCode": "Code",
+  "impCodeHint": "Diesen Code trägst du im Skript ein (Menü „DartLab einrichten“).",
+  "impCodeCopy": "Code kopieren",
+  "impCodeCopied": "Code kopiert",
+  "impCodeNew": "Neuer Code",
+  "impStatusStarting": "Startet …",
+  "impStatusRunning": "Läuft auf 127.0.0.1:{port}",
+  "@impStatusRunning": {
+    "placeholders": {
+      "port": {
+        "type": "int"
+      }
+    }
+  },
+  "impStatusPortBusy": "Port {port} ist belegt. Wähle einen anderen Port.",
+  "@impStatusPortBusy": {
+    "placeholders": {
+      "port": {
+        "type": "int"
+      }
+    }
+  },
+  "impStatusError": "Der Empfänger startet nicht: {detail}",
+  "@impStatusError": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "impStatusNone": "Noch nichts empfangen.",
+  "impLast": "Letzter Import: {opponent}, {legs}, {time}",
+  "@impLast": {
+    "placeholders": {
+      "opponent": {
+        "type": "String"
+      },
+      "legs": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "impOverlap": "Überschneidet sich mit einer Live-Aufzeichnung ({time}): Die Darts zählen doppelt. Lösche eine der beiden Sessions im Verlauf.",
+  "@impOverlap": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "impPending": "Ein Match wartet: Welcher Spieler bist du?",
+  "impPendingAnswer": "Beantworten",
+  "impMyName": "Mein Autodarts-Name",
+  "impMyNameHint": "So heißt du auf Autodarts. Groß- und Kleinschreibung sind egal. Ohne Namen fragt DartLab einmal nach.",
+  "impPasteButton": "Match-JSON einfügen",
+  "impGuide": "Anleitung zum Skript: tools/autodarts-userscript/README.md im DartLab-Repository auf GitHub.",
+  "impTosNote": "Das Skript liest nur, was die Autodarts-Seite in deinem Browser ohnehin bekommt. Die AGB von Autodarts verbieten Drittsoftware ohne Zustimmung; du nutzt es auf eigenes Risiko.",
+  "impPasteTitle": "Match-JSON einfügen",
+  "impPasteText": "Füge das Match-JSON ein (das Skript legt es über „DartLab: Match kopieren“ in die Zwischenablage) oder wähle eine Datei.",
+  "impPasteField": "Match-JSON",
+  "impPasteClipboard": "Zwischenablage",
+  "impPasteFile": "Datei wählen",
+  "impClipboardEmpty": "Die Zwischenablage ist leer.",
+  "impPreviewEmpty": "Noch nichts eingefügt.",
+  "impPreview": "{me} vs {opponent} · {legs} · {visits} Aufnahmen",
+  "@impPreview": {
+    "placeholders": {
+      "me": {
+        "type": "String"
+      },
+      "opponent": {
+        "type": "String"
+      },
+      "legs": {
+        "type": "String"
+      },
+      "visits": {
+        "type": "int"
+      }
+    }
+  },
+  "impPreviewPlayers": "{a} vs {b} · {legs}",
+  "@impPreviewPlayers": {
+    "placeholders": {
+      "a": {
+        "type": "String"
+      },
+      "b": {
+        "type": "String"
+      },
+      "legs": {
+        "type": "String"
+      }
+    }
+  },
+  "impPreviewAsk": "Wer du bist, fragt DartLab beim Importieren.",
+  "impPreviewFormat": "{start} · {out}",
+  "@impPreviewFormat": {
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "out": {
+        "type": "String"
+      }
+    }
+  },
+  "impPreviewOpen": "Das Match ist nicht zu Ende gespielt.",
+  "impAlready": "Dieses Match ist schon importiert.",
+  "impReplaceHint": "„Ersetzen“ überschreibt die gespeicherten Darts dieses Matches, auch Korrekturen von dir.",
+  "impImport": "Importieren",
+  "impReplace": "Ersetzen",
+  "impClose": "Schließen",
+  "impImported": "Importiert: {opponent}, {legs}",
+  "@impImported": {
+    "placeholders": {
+      "opponent": {
+        "type": "String"
+      },
+      "legs": {
+        "type": "String"
+      }
+    }
+  },
+  "impReplacedDone": "Ersetzt: {opponent}, {legs}",
+  "@impReplacedDone": {
+    "placeholders": {
+      "opponent": {
+        "type": "String"
+      },
+      "legs": {
+        "type": "String"
+      }
+    }
+  },
+  "impDuplicateDone": "Schon importiert, nichts geändert.",
+  "impIgnoredDone": "Nicht importiert: {reason}",
+  "@impIgnoredDone": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "impOverlapNote": "Hinweis: Dieses Match überschneidet sich mit einer Live-Aufzeichnung ({time}). Die Darts zählen doppelt, bis du eine der beiden Sessions im Verlauf löschst.",
+  "@impOverlapNote": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "impWhoTitle": "Welcher Spieler bist du?",
+  "impWhoText": "DartLab merkt sich deine Wahl als „Mein Autodarts-Name“. Danach fragt es nicht mehr nach.",
+  "impWhoLater": "Später",
+  "histOnlineMatch": "Online-Match",
+  "impVisitsNote": "Aufnahmen beider Spieler. In deiner Statistik zählen nur deine eigenen Darts."
 }

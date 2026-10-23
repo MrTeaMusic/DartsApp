@@ -2,7 +2,8 @@
 
 Stand: 15.10.2026.
 
-Matches, die du mit **Autodarts Live** mitschreibst (siehe `docs/autodarts-live.md`), bekommen in der
+Matches, die du mit **Autodarts Live** mitschreibst (siehe `docs/autodarts-live.md`) oder aus dem Autodarts-Konto
+**importierst** (siehe `docs/autodarts-import.md`, mit Gegnername und Legs beider Spieler), bekommen in der
 Statistik einen eigenen Reiter **Online**. Dort stehen deine Online-Matches mit Verlauf und der direkte
 Vergleich mit deinem Training. Was online deutlich schlechter läuft, nimmt der „Plan für mich“ als
 Schwerpunkt auf.

@@ -12,6 +12,8 @@ import 'core/l10n.dart';
 import 'core/lite.dart';
 import 'core/router/app_router.dart';
 import 'core/settings/app_settings.dart';
+import 'features/autodarts_import/presentation/autodarts_import_controller.dart';
+import 'features/autodarts_import/presentation/import_prompt_host.dart';
 import 'features/board/presentation/live_visit_controller.dart';
 import 'features/caller/presentation/training_game_caller.dart';
 import 'features/challenges/presentation/challenge_run_controller.dart';
@@ -39,7 +41,8 @@ class DartLabApp extends ConsumerWidget {
       // Sucht beim Start nach Updates (höchstens einmal am Tag).
       ..watch(updateControllerProvider.select((_) => null));
     // Lite zeigt nur Daten an: kein Spiel, keine Ansagen, keine Erfolge.
-    if (!ref.watch(liteProvider)) {
+    final lite = ref.watch(liteProvider);
+    if (!lite) {
       ref
         ..watch(dartFeedbackProvider)
         ..watch(trainingGameCallerProvider)
@@ -51,7 +54,10 @@ class DartLabApp extends ConsumerWidget {
         ..watch(challengeRunProvider.select((_) => null))
         // Zeigt das laufende Spiel live im Internet, wenn Ben es eingeschaltet hat
         // (sonst tut dieser Provider nichts).
-        ..watch(livePushControllerProvider.select((_) => null));
+        ..watch(livePushControllerProvider.select((_) => null))
+        // Lokaler Empfänger für das Browser-Skript (Online-Matches); startet
+        // nur auf dem Desktop und nur, wenn er in den Optionen an ist.
+        ..watch(autodartsImportControllerProvider.select((_) => null));
     }
 
     return MaterialApp.router(
@@ -63,9 +69,10 @@ class DartLabApp extends ConsumerWidget {
       routerConfig: router,
       builder: (context, child) {
         final app = _FullscreenShortcuts(child: child ?? const SizedBox());
+        final prompted = lite ? app : ImportPromptHost(child: app);
         // Arena: Marineblau mit den Dreiecken hinter allen Seiten (die
         // Scaffolds sind in diesem Look durchsichtig).
-        return look == DartLookId.arena ? ArenaBackground(strip: 8, child: app) : app;
+        return look == DartLookId.arena ? ArenaBackground(strip: 8, child: prompted) : prompted;
       },
       locale: const Locale('de'),
       supportedLocales: AppLocalizations.supportedLocales,

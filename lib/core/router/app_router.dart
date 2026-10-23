@@ -43,6 +43,10 @@ abstract final class Routes {
   static String gameSetup(String gameId) => '$games/$gameId';
 }
 
+/// Schlüssel des obersten Navigators, damit Dialoge von außerhalb der Seiten
+/// aufgehen können (z. B. „Welcher Spieler bist du?“ beim Import).
+final rootNavigatorKeyProvider = Provider<GlobalKey<NavigatorState>>((ref) => GlobalKey<NavigatorState>(debugLabel: 'root'));
+
 final routerProvider = Provider<GoRouter>((ref) {
   // Optionen › Autodarts: beim Start direkt in Autodarts Live.
   final settings = ref.read(settingsProvider);
@@ -53,6 +57,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   final connected = ValueNotifier(liteIsConnected(settings));
   if (lite) ref.listen(settingsProvider, (_, next) => connected.value = liteIsConnected(next));
   final router = GoRouter(
+    navigatorKey: ref.read(rootNavigatorKeyProvider),
     initialLocation: lite ? Routes.stats : (liveOnStart ? AutodartsLiveRoutes.live : Routes.home),
     refreshListenable: lite ? connected : null,
     redirect: lite
