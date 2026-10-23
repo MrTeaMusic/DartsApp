@@ -109,8 +109,11 @@
     if (!Array.isArray(json.players) || !Array.isArray(json.games)) return { ok: false };
     if (json.players.length === 0 || json.games.length === 0) return { ok: false };
     if (kind === 'state') return { ok: json.finished === true };
-    // /stats: wird auch während des Spiels geladen; ein ausdrücklich offenes Match überspringen.
+    // /stats: wird möglicherweise auch während des Spiels geladen. Ein offenes Match überspringen:
+    // `finished: false` oder ein vorhandenes, aber leeres `finishedAt` (an einer echten fertigen
+    // Antwort bestätigt: sie hat `finishedAt`, aber kein `finished`).
     if (json.finished === false) return { ok: false };
+    if ('finishedAt' in json && !json.finishedAt && json.finished !== true) return { ok: false };
     return { ok: true };
   }
 

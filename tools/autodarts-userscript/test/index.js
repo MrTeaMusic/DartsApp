@@ -281,7 +281,7 @@ test('andere Adressen, andere Hosts und unfertige Antworten werden ignoriert', a
     await settle();
     assert.equal(t.calls.length, 0, u);
   }
-  const bad = [{}, [], { players: [], games: [] }, { players: [{}], games: 'x' }, match({ finished: false }), 'kein json', ''];
+  const bad = [{}, [], { players: [], games: [] }, { players: [{}], games: 'x' }, match({ finished: false }), match({ finished: undefined, finishedAt: null }), 'kein json', ''];
   for (const b of bad) {
     const t = setup({ store: configured, onPageFetch: async () => fakeResponse(b) });
     await t.page.fetch(STATS);
@@ -532,6 +532,14 @@ test('Menü „Verbindung testen“ ruft nur /import/ping lokal auf', async () =
   assert.equal(t.calls[0].url, 'http://127.0.0.1:3191/import/ping');
   assert.equal(t.calls[0].init.method, 'GET');
   assert.equal(t.lastShown().state, 'ok');
+});
+
+test('echte Form: fertiges Match hat finishedAt statt finished', async () => {
+  const real = match({ finished: undefined, finishedAt: '2026-10-22T20:49:03.609993Z' });
+  const t = setup({ store: configured, onPageFetch: async () => fakeResponse(real) });
+  await t.page.fetch(STATS);
+  await settle();
+  assert.equal(t.calls.length, 1);
 });
 
 test('Hilfsfunktionen', () => {

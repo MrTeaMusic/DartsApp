@@ -1,6 +1,6 @@
 # Online-Matches aus dem Autodarts-Konto importieren
 
-**Stand:** neu, noch nicht an einer echten Autodarts-Antwort geprüft (siehe „Was nicht geprüft ist“).
+**Stand:** Die Datenform ist an einer echten, fertigen `/stats`-Antwort bestätigt (Stand 2026-10-23). Das Skript im echten Browser und einige Einzelheiten sind noch nicht geprüft (siehe „Was bestätigt ist und was nicht“).
 
 Der lokale Weg über den Board Manager ([Autodarts Live](autodarts-live.md)) sieht nur **deine** Darts: kein
 Gegner, keine Legs des Gegners, kein Match-Ende. Der Import holt das **fertige Match** aus deinem
@@ -98,7 +98,7 @@ Live-Aufzeichnung. Lösche dann eine der beiden Sessions im Verlauf.
 * **Sets** werden nicht ausgewertet; sie zählen als Legs.
 * Position der Darts nur, wenn die Antwort `coords` liefert; passen die Werte nicht zu einer Scheibe mit
   Radius 1, werden sie verworfen (Hinweis), das Match bleibt.
-* Feldnamen der Antwort stehen **an einer einzigen Stelle**:
+* Feldnamen der Antwort stehen **an einer einzigen Stelle** (mit Beispiel der echten Form):
   `lib/features/autodarts_import/domain/autodarts_match_mapping.dart`. Stimmt ein Name nicht, wird nur diese
   Datei angepasst.
 
@@ -152,26 +152,46 @@ Client-ID mit Device Flow, schriftliche Zustimmung nach AGB §6.1). Solange es d
 * **`unsafeWindow`** im Skript: Ohne diese Freigabe kann ein Skript im Sandbox-Modus die Antworten der
   Seite (`fetch`, `XMLHttpRequest`) nicht mitlesen.
 
-## Was nicht geprüft ist
+## Was bestätigt ist und was nicht
 
-Alles hier ist mit **selbst gebauten Daten** getestet. Nicht geprüft:
+**An einer echten Antwort bestätigt** (Stand 2026-10-23): Eine fertige `GET /as/v0/matches/<id>/stats`-Antwort
+eines Online-Matches (501, Double-Out, 3:2 in fünf Legs, 391 KB) lässt sich vollständig lesen und
+importieren. Sie liegt als **anonymisiertes** Fixture im Repository
+(`test/fixtures/autodarts/match-stats-501-online.json`; Namen „Ben“/„Gegner“, erfundene Ids, ohne Avatar und
+Nutzerdaten). Bestätigt sind:
 
-* **Form der echten Antwort.** Die Feldnamen stammen aus Community-Quellcode. Ob `/stats` genau so aussieht
-  (`games`, `turns`, `throws`, `segment`, `coords`, `winnerPlayerId`, `finishedAt`), ist offen.
-* **Koordinaten der Cloud.** Ob dieselbe Skala (Radius 1 = Außenkante Double, y zur 20) gilt wie beim lokalen
-  Board Manager, ist offen. DartLab verwirft offensichtlich unpassende Werte.
-* **Das Skript im echten Browser.** Nicht ausprobiert in Chrome/Edge/Firefox mit Tampermonkey/Violentmonkey:
-  das Einhängen in `fetch`/`XMLHttpRequest` über `unsafeWindow` (in Firefox über `exportFunction`),
-  Seitenregeln (CSP) der Autodarts-Seite, die Erlaubnis-Abfragen für den lokalen Zugriff („Local Network
-  Access“) und die Verbindungsfreigabe von Tampermonkey.
-* **Ob die Seite die Statistik am Matchende überhaupt lädt.** Wenn nicht, kommt nichts an; dann hilft „Match
+* Aufbau (`id`, `players[]` mit Match-Spieler-`id`, `games[]` je Leg mit `winnerPlayerId`, `turns[]`,
+  `throws[]`), `finishedAt` statt `finished`, Einstellungen (`baseScore`, `outMode`, `inMode`).
+* Darts und Aufnahmen je Spieler stimmen mit `matchStats` überein (186 und 191 Darts, je 64 Aufnahmen);
+  Punkte und First-9-Durchschnitt decken sich mit Autodarts.
+* **Koordinaten** haben dieselbe Skala wie der lokale Board Manager (Radius 1 = Außenkante Double, y zur 20):
+  Median-Radius der Doubles 0,97, der Triples 0,60.
+* **Fehlwürfe** kommen als `M<n>` (`Outside`, mit Position) und als `Miss` (ohne Position, `entry:
+  fill_miss`); beides wird ein Fehlwurf. `SingleInner`/`SingleOuter`, `entry: corrected`.
+* Das Feld `winner` und `scores` **je Leg** zählt in Wurfreihenfolge (0 = wer das Leg begann) und wird
+  deshalb **nicht** gelesen; der Sieger kommt aus `winnerPlayerId`. Die Legs im Match-Kopf (`scores[i].legs`)
+  dienen als Gegenprobe (Hinweis bei Abweichung). `leg` und `set` zählen ab 0, DartLab nummeriert die Legs ab 1.
+* **Bust:** Autodarts liefert alle drei Darts der Aufnahme, auch die nach dem Bust, und zählt sie in seinem
+  Durchschnitt mit. DartLab zählt wie bei Live nur die Darts bis zum Bust. Dadurch liegt der Durchschnitt
+  in DartLab etwas höher als bei Autodarts (hier 39,2 statt 37,6 bei 8 Busts), die Punkte sind gleich.
+
+**Weiter nicht bestätigt:**
+
+* **Bull-Namen** (die Datei enthält keinen Bull- oder 25-Dart). Der Parser erkennt `25`, `Bull`, `50`, `SB`,
+  `DB`, `D25` und die Zahl mit Multiplikator.
+* **Sets**, **Double-In**, andere Varianten als X01, Matches mit Aufgabe (`surrenders`) und Turniere.
+* **Ob die Seite am Matchende `/stats` überhaupt lädt**, und ob die Antwort auf `/gs/.../state` dieselben
+  Felder (`players`, `games`, `finished`) hat. Wenn nicht, kommt vom Skript nichts an; dann hilft „Match
   kopieren“ nach dem Öffnen des Matches im Verlauf.
-* **Ob `/gs/.../state` am Ende vollständige Legs enthält.** Deshalb wartet das Skript auf `/stats`.
+* **Das Skript im echten Browser** (Tampermonkey/Violentmonkey, Chrome/Edge/Firefox): das Einhängen in
+  `fetch`/`XMLHttpRequest` über `unsafeWindow` (in Firefox über `exportFunction`), Seitenregeln (CSP), die
+  Erlaubnis-Abfragen für den lokalen Zugriff („Local Network Access“) und die Verbindungsfreigabe von
+  Tampermonkey.
+* Den Empfänger habe ich nur unter Linux getestet, nicht unter Windows und macOS.
 
-**Was zum Prüfen gebraucht wird:** eine echte, **fertige** `/stats`-Antwort eines Online-Matches (aus den
-DevTools der Autodarts-Seite, nur der Antworttext, **ohne** Header, Cookies oder HAR-Datei; Namen dürfen
-geschwärzt werden), möglichst auch die `/state`-Antwort am Matchende und eine kurze Notiz, wie Bull,
-Single Bull und ein Fehlwurf heißen. Das Vorgehen dafür steht als „Test 1“ in der Recherche zum Autodarts-Konto.
+**Zum Prüfen weiterer Fälle gebraucht:** eine fertige Antwort mit Bull-Treffern (Bull und 25), ein Match mit
+Sets, und die `/state`-Antwort am Matchende (nur der Antworttext, ohne Header, Cookies oder HAR; Namen
+dürfen geschwärzt werden). Das Vorgehen steht als „Test 1“ in der Recherche zum Autodarts-Konto.
 
 ## Fehlersuche
 
@@ -182,5 +202,5 @@ Single Bull und ein Fehlwurf heißen. Das Vorgehen dafür steht als „Test 1“
 | Skript: „Falscher Code“ | Code in der Karte ansehen, im Skript-Menü neu eintragen. |
 | Skript sendet nichts | Die Seite hat die Statistik nicht geladen: Match im Verlauf öffnen. Ausweg „DartLab: Match kopieren“. |
 | Antwort `422` | Format der Antwort unbekannt: JSON (ohne Namen) schicken, Feldnamen anpassen. |
-| Vorschau: „Koordinaten wirken unplausibel“ | Die Cloud liefert eine andere Skala; das Match wird ohne Positionen importiert. |
+| Vorschau: „Koordinaten wirken unplausibel“ | Die Skala der Koordinaten weicht ab (an der geprüften Antwort passte sie); das Match wird ohne Positionen importiert. |
 | Darts doppelt in der Statistik | Match auch mit Autodarts Live mitgeschrieben: eine der beiden Sessions löschen. |

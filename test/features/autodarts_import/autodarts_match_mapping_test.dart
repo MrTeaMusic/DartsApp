@@ -118,7 +118,7 @@ void main() {
           'settings': {'startScore': 301, 'outMode': 'Straight'},
           'legs': [
             {
-              'winner': 0,
+              'winnerPlayerId': 0,
               'rounds': [
                 {
                   'player': 0,

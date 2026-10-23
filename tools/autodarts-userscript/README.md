@@ -8,7 +8,8 @@ Verlauf und in der Statistik „Online“.
 > Das Skript liest nur mit, was die Autodarts-Seite in deinem Browser ohnehin bekommt. Die AGB von
 > Autodarts verbieten Drittsoftware ohne ihre Zustimmung. Du nutzt das Skript auf eigenes Risiko.
 >
-> **Stand:** Das Skript wurde noch nicht an einer echten Autodarts-Antwort ausprobiert. Wenn bei dir etwas
+> **Stand:** Die App liest eine echte, fertige Autodarts-Antwort richtig (Stand 23.10.2026). Das Skript selbst
+> wurde aber noch nicht in einem echten Browser mit Tampermonkey ausprobiert. Wenn bei dir etwas
 > nicht ankommt, hilft der Weg über „Match kopieren“ (unten) und ein Blick in `docs/autodarts-import.md`.
 
 ## Was du brauchst

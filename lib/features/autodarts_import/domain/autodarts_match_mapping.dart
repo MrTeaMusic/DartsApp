@@ -1,50 +1,63 @@
 /// DIE EINE STELLE, die die Feldnamen der Autodarts-Antwort kennt.
 ///
-/// ACHTUNG, NICHT AN ECHTEN DATEN GEPRÜFT. Die erwartete Form stammt aus
-/// Community-Quellcode (siehe `docs/autodarts-import.md` und die Recherche
-/// zur Cloud-Antwort `GET /as/v0/matches/<id>/stats`). Alle Fixtures in den
-/// Tests sind selbst gebaut. Stimmt ein Name nicht, wird nur diese Datei
-/// angepasst: Alles dahinter (Auswertung, Speicherung, Anzeige) arbeitet mit
-/// den Klassen aus `imported_match.dart`.
+/// STAND 2026-10-23: Die Datenform von `GET /as/v0/matches/<id>/stats` ist an
+/// EINER echten, fertigen Antwort bestätigt (Online-Match 501, Double-Out,
+/// 3:2 in fünf Legs; als anonymisiertes Fixture
+/// `test/fixtures/autodarts/match-stats-501-online.json`). NICHT bestätigt
+/// sind: Bull-Namen (die Datei enthält keine Bull-/25-Darts), Sets, Double-In,
+/// andere Varianten als X01, die Antwort auf `/gs/.../state` und Matches, die
+/// noch laufen. Stimmt ein Name nicht, wird nur diese Datei angepasst: Alles
+/// dahinter arbeitet mit den Klassen aus `imported_match.dart`.
 ///
-/// Angenommene Form (alles optional, wo nicht anders vermerkt):
+/// Form (so in der echten Antwort gesehen; „auch“ = zusätzlich toleriert, nicht
+/// gesehen):
 ///
 /// ```text
 /// {
-///   "id": "…"                     // Match-Id; sonst die Id aus der Adresse,
-///                                 // sonst ein Abdruck des Inhalts
-///   "variant": "X01"              // fehlt sie, gilt X01 nur mit settings.baseScore
-///   "players": [ {"id": "…", "name": "…"}, … ]        // PFLICHT, genau zwei
+///   "id": "…"                     // Match-Id (sonst Id aus der Adresse, sonst Abdruck)
+///   "variant": "X01",             // fehlt sie, gilt X01 nur mit settings.baseScore
+///   "type": "Match Making", "createdAt": "…",
+///   "finishedAt": "…",            // fertig; es gibt KEIN "finished" (auch toleriert)
+///   "players": [ {"id": "…", "index": 0, "name": "…", "userId": "…", … } ],
+///                                 // PFLICHT, genau zwei; "id" ist die Match-Spieler-Id,
+///                                 // auf die turns[].playerId zeigt
+///   "scores": [ {"sets": 0, "legs": 3}, … ],   // Stand nach Spielerindex (Gegenprobe)
+///   "winner": 0,                  // Spielerindex; wird NICHT gelesen
+///   "settings": { "baseScore": 501, "inMode": "Straight", "outMode": "Double",
+///                 "bullMode": "25/50", "maxRounds": 50 },
 ///   "games": [                    // PFLICHT: ein Eintrag je Leg (auch "legs")
-///     { "set": 1, "leg": 1,
-///       "winnerPlayerId": "…",    // Sieger des Legs (auch "winner": Index/Id)
-///       "settings": { "baseScore": 501, "inMode": "Straight",
-///                     "outMode": "Double" },
+///     { "set": 0, "leg": 0,       // beide 0-basiert; "leg" zählt je Match weiter
+///       "winnerPlayerId": "…",    // Sieger (Match-Spieler-Id). Achtung: das Feld "winner"
+///                                 // und "scores" je Leg gelten in WURFREIHENFOLGE
+///                                 // (0 = wer das Leg begann); sie werden NICHT gelesen
 ///       "turns": [                // auch "rounds"
-///         { "playerId": "…",      // auch "player": Index oder Id
-///           "points": 60, "score": 441,   // werden NICHT gelesen: DartLab
-///                                         // rechnet aus den Darts selbst
+///         { "playerId": "…",
+///           "points": 95, "score": 406,  // werden NICHT gelesen: DartLab rechnet selbst
+///           "busted": false,
 ///           "createdAt": "…", "finishedAt": "…",
-///           "throws": [           // auch "darts"
-///             { "segment": { "name": "T20", "number": 20, "multiplier": 3,
-///                            "bed": "Triple" },     // oder Text "T20"
-///               "coords": { "x": 0.01, "y": 0.61 }, // optional
-///               "entry": "…", "createdAt": "…" } ] } ] } ],
-///   "matchStats": [ … ]           // wird NICHT gelesen
-///   "settings": { "baseScore": 501, "inMode": "…", "outMode": "…" },
-///   "host": { … },                // wird NICHT gelesen
-///   "finishedAt": "…"             // ISO-Text oder Epoch (Sekunden/ms)
+///           "throws": [           // auch "darts"; auch bei einem Bust alle geworfenen Darts
+///             { "throw": 0, "createdAt": "…",
+///               "segment": { "name": "T5", "number": 5, "bed": "Triple",
+///                            "multiplier": 3 },
+///               "coords": { "x": -0.23, "y": 0.56 },   // fehlt bei entry "fill_miss"
+///               "entry": "detected" | "corrected" | "fill_miss" } ] } ] } ],
+///   "matchStats": [ … ], "legStats": [ … ], "surrenders": [], "host": …
+///                                 // werden NICHT gelesen
 /// }
 /// ```
 ///
-/// Segmentnamen: `T20`, `S5`, `D16`, `25` (Single Bull), `Bull`/`50`
-/// (Bullseye), `M12` und `Outside` (Fehlwurf). Koordinaten: wie beim lokalen
-/// Board Manager (Mitte 0/0, Radius 1 = Außenkante Double, y zeigt zur 20);
-/// ob die Cloud dieselben Werte liefert, ist ungeprüft.
+/// Segmentnamen (gesehen): `T20`, `D5`, `S20`, `S1`; `bed` unterscheidet
+/// `SingleInner` und `SingleOuter` (Name bleibt `S<n>`). Ein Fehlwurf ist
+/// entweder `M<n>` (`bed: Outside`, `multiplier: 0`, mit Koordinaten außerhalb
+/// des Doubles) oder `Miss` (Nummer 0, ohne Koordinaten, `entry: fill_miss`).
+/// Bull: nicht gesehen; toleriert werden `25`, `Bull`, `50`, `SB`, `DB`, `D25`.
+/// Koordinaten: wie beim lokalen Board Manager (Mitte 0/0, Radius 1 =
+/// Außenkante Double, y zeigt zur 20); an der echten Antwort nachgerechnet
+/// (Median-Radius Doubles 0,97, Triples 0,60).
 ///
 /// Auch tolerant gegenüber einer Umhüllung (`{"data": {…}}`, `{"match": {…}}`,
 /// `{"stats": {…}}`) und einem Live-Zustand ohne `games`, der die Aufnahmen
-/// flach in `turns` (mit `leg`/`set` je Aufnahme) liefert.
+/// flach in `turns` (mit `leg`/`set` je Aufnahme) liefert (beides ungesehen).
 library;
 
 import '../../board/domain/board_geometry.dart';
@@ -154,10 +167,22 @@ ImportedMatch parseAutodartsMatch(Object? json, {String? externalId}) {
     }
     legs.add(ImportedLeg(
       set: _int(gm['set']) ?? 1,
-      leg: _int(gm['leg']) ?? gi + 1,
-      winner: _playerIndex(gm['winnerPlayerId'] ?? gm['winner'], players),
+      // Legs fortlaufend ab 1 (die Daten zählen ab 0).
+      leg: gi + 1,
+      // Nur `winnerPlayerId`: Das Feld `winner` je Leg zählt in der Reihenfolge der
+      // Würfe (0 = wer das Leg begann), nicht nach Spielerindex.
+      winner: _playerIndex(gm['winnerPlayerId'], players),
       turns: turns,
     ));
+  }
+  // Gegenprobe mit dem Stand im Match-Kopf (`scores[i].legs`, nach Spielerindex).
+  final headScores = _list(root['scores']);
+  if (headScores != null && headScores.length == players.length && legs.every((l) => l.winner != null)) {
+    final head = [for (final sc in headScores) _int(_map(sc)['legs'])];
+    final counted = [for (var i = 0; i < players.length; i++) legs.where((l) => l.winner == i).length];
+    if (!head.contains(null) && !_sameInts(head.cast<int>(), counted)) {
+      warnings.add('Legs laut Match-Kopf (${head.join(':')}) weichen von den Legs im Match (${counted.join(':')}) ab.');
+    }
   }
   if (unknownTurns > 0) warnings.add('$unknownTurns Aufnahmen ohne bekannten Spieler übersprungen.');
   if (unknownDarts > 0) warnings.add('$unknownDarts Darts nicht erkannt, als Fehlwurf gewertet.');
@@ -247,6 +272,14 @@ List<Object?>? _gamesFromFlatTurns(Map<String, Object?> root) {
         'turns': e.value,
       },
   ];
+}
+
+bool _sameInts(List<int> a, List<int> b) {
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) return false;
+  }
+  return true;
 }
 
 Map<String, Object?> _map(Object? v) => v is Map ? {for (final e in v.entries) '${e.key}': e.value} : const {};
