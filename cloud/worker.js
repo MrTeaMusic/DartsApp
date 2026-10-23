@@ -14,14 +14,26 @@
 //   GET    /v1/meta                       PUT /v1/meta  {ifRev, body}
 //   GET    /v1/s/<uid>                    PUT /v1/s/<uid> {stamp, darts, body}
 //   DELETE /v1/s/<uid>
+//   GET    /v1/live[?since=<rev>]         PUT /v1/live {body}
+//
+// /v1/live ist das "Live"-Paket: ein einziges verschluesseltes Paket pro
+// Tresor (der aktuelle Spielstand fuer Zuschauer), das jeder neue Stand
+// einfach ueberschreibt (der letzte gewinnt). Es liegt in der vorhandenen
+// Tabelle unter dem festen Schluessel "live", alte Datenbanken brauchen also
+// keine Aenderung. "hello" meldet dafuer die Faehigkeit "live": 1.
 //
 // Der Tresor ("vault") ist sha256hex(token-als-Text, kleingeschrieben). Das
 // Token selbst wird weder gespeichert noch geloggt.
 
 const VERSION = 1;
+// Faehigkeit "Live" (siehe /v1/live). Alte Worker melden sie nicht.
+const LIVE_VERSION = 1;
 const DEFAULT_MAX_SESSIONS = 50000;
 // Maximale Laenge des base64-Strings eines Objekts (D1-Zeilenlimit: 2 MB).
 const MAX_BODY_CHARS = 1500000;
+// Ein Live-Paket ist klein (ein gepackter Spielstand, meist unter 2 KB);
+// Obergrenze fuer den base64-String: 16 KB.
+const MAX_LIVE_CHARS = 16384;
 // Obergrenze fuer die ganze Anfrage (base64-Body plus JSON-Drumherum).
 const MAX_REQUEST_CHARS = MAX_BODY_CHARS + 4096;
 
@@ -263,6 +275,69 @@ async function deleteSession(db, vault, uid) {
   return json(200, { deleted: changesOf(res) > 0 });
 }
 
+// ---------------------------------------------------------------- Live
+
+const LIVE_KEY = 'live';
+
+// Antwort auf GET /v1/live. "rev" zaehlt hoch, bei jedem Paket um eins. Mit
+// ?since=<rev> (oder If-None-Match) kommt 304 ohne Inhalt, wenn sich nichts
+// geaendert hat. Die Kopfzeile X-Live-Age nennt, wie alt das Paket nach der
+// Uhr des Servers ist (Millisekunden), damit der Zuschauer nicht von der Uhr
+// seines Handys abhaengt.
+async function getLive(db, vault, request) {
+  const row = await db
+    .prepare('SELECT rev, body, updated FROM objects WHERE vault = ? AND key = ?')
+    .bind(vault, LIVE_KEY)
+    .first();
+  if (!row) {
+    // Gibt es den Tresor ueberhaupt? Sonst stimmt das Geheimnis nicht.
+    const meta = await db
+      .prepare("SELECT 1 AS ok FROM objects WHERE vault = ? AND key = 'meta'")
+      .bind(vault)
+      .first();
+    throw new HttpError(404, meta ? 'no-live' : 'no-vault');
+  }
+  const age = String(Math.max(0, Date.now() - row.updated));
+  const url = new URL(request.url);
+  const since = url.searchParams.get('since');
+  const inm = (request.headers.get('If-None-Match') || '').replace(/^W\//, '').replace(/"/g, '');
+  const known = since !== null && since !== '' ? since : inm;
+  const headers = {
+    'Cache-Control': 'no-store',
+    'X-DartLab-Cloud': '1',
+    'X-Live-Age': age,
+    ETag: '"' + row.rev + '"',
+  };
+  if (known !== '' && known === String(row.rev)) {
+    return new Response(null, { status: 304, headers });
+  }
+  const res = json(200, { rev: row.rev, body: row.body });
+  for (const [k, v] of Object.entries(headers)) res.headers.set(k, v);
+  return res;
+}
+
+// Ein einziges Statement (eine geschriebene Zeile): anlegen oder
+// ueberschreiben, Zaehler hoch.
+async function putLive(db, vault, request) {
+  const declared = Number(request.headers.get('Content-Length'));
+  if (Number.isFinite(declared) && declared > MAX_LIVE_CHARS + 1024) {
+    throw new HttpError(413, 'too-large');
+  }
+  const data = await readJsonBody(request);
+  const body = checkBody(data.body);
+  if (body.length > MAX_LIVE_CHARS) throw new HttpError(413, 'too-large');
+  await db
+    .prepare(
+      'INSERT INTO objects (vault, key, rev, stamp, darts, body, updated) ' +
+        'VALUES (?, ?, 1, 0, 0, ?, ?) ' +
+        'ON CONFLICT (vault, key) DO UPDATE SET ' +
+        'rev = rev + 1, body = excluded.body, updated = excluded.updated'
+    )
+    .bind(vault, LIVE_KEY, body, Date.now())
+    .run();
+  return json(200, { stored: true });
+}
+
 // -------------------------------------------------------------- Routing
 
 function parseMaxSessions(env) {
@@ -273,6 +348,7 @@ function parseMaxSessions(env) {
 function matchRoute(pathname) {
   if (pathname === '/v1/hello') return { name: 'hello', methods: ['GET'] };
   if (pathname === '/v1/meta') return { name: 'meta', methods: ['GET', 'PUT'] };
+  if (pathname === '/v1/live') return { name: 'live', methods: ['GET', 'PUT'] };
   if (pathname.startsWith('/v1/s/')) {
     return {
       name: 'session',
@@ -298,7 +374,7 @@ async function handle(request, env) {
   }
 
   if (route.name === 'hello') {
-    return json(200, { app: 'dartlab-cloud', version: VERSION });
+    return json(200, { app: 'dartlab-cloud', version: VERSION, live: LIVE_VERSION });
   }
 
   const match = TOKEN_RE.exec(request.headers.get('Authorization') || '');
@@ -314,6 +390,9 @@ async function handle(request, env) {
 
   const vault = bytesToHex(await sha256(match[1].toLowerCase()));
 
+  if (route.name === 'live') {
+    return request.method === 'GET' ? getLive(db, vault, request) : putLive(db, vault, request);
+  }
   if (route.name === 'meta') {
     return request.method === 'GET' ? getMeta(db, vault) : putMeta(db, vault, request);
   }

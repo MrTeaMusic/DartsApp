@@ -17,6 +17,7 @@ Der Server ist ein **Schließfach-Raum**. Deine App legt dort verschlüsselte Pa
 
 - die verschlüsselten Pakete und wie groß sie sind,
 - den Zeitstempel jeder Session und bei Live-Sessions die Anzahl der Darts,
+- wann zuletzt ein Live-Paket (siehe Abschnitt 3) kam und wie groß es ist, aber nie, was drinsteht,
 - eine **Tresor-ID**. Das ist eine Art Fingerabdruck (Hash) deines Zugangsschlüssels. Aus der ID lässt sich der Schlüssel nicht zurückrechnen,
 - wann und wie oft Anfragen kommen.
 
@@ -78,10 +79,10 @@ Der Worker speichert die Pakete in einer Datenbank namens "D1".
 3. Es muss genau das erscheinen:
 
    ```
-   {"app":"dartlab-cloud","version":1}
+   {"app":"dartlab-cloud","version":1,"live":1}
    ```
 
-   Dann läuft der Worker. Diese Test-Seite prüft nur den Worker, nicht die Datenbank. Ob die Verbindung zur Datenbank stimmt, zeigt sich, sobald die App zum ersten Mal synchronisiert. Meldet der Server dort den Fehler `db-missing`, dann ist Schritt 5 nicht richtig gespeichert (Variablenname genau `DB`?).
+   Dann läuft der Worker. (Steht dort kein `"live":1`, ist es eine ältere Fassung: Abschnitt 3 zeigt, wie du sie aktualisierst.) Diese Test-Seite prüft nur den Worker, nicht die Datenbank. Ob die Verbindung zur Datenbank stimmt, zeigt sich, sobald die App zum ersten Mal synchronisiert. Meldet der Server dort den Fehler `db-missing`, dann ist Schritt 5 nicht richtig gespeichert (Variablenname genau `DB`?).
 
 ### Schritt 7: In der App einrichten
 
@@ -93,7 +94,24 @@ Der Worker speichert die Pakete in einer Datenbank namens "D1".
 
 ---
 
-## 3. Gratis-Grenzen
+## 3. Den Worker aktualisieren (zum Beispiel für "Live")
+
+Manchmal bekommt `worker.js` etwas Neues. Zuletzt war das **Live**: Dein Vater kann dir beim Spielen zuschauen. Die App merkt selbst, wenn der Worker noch die alte Fassung ist, und sagt dann **"Der Cloud-Speicher muss aktualisiert werden"** (bei dir in der Sync-Karte, bei deinem Vater im Reiter Live). Bis dahin läuft alles andere wie gewohnt weiter. Du brauchst auch hier **kein Terminal**, und die Datenbank bleibt, wie sie ist: Es gehen keine Daten verloren, und du musst nichts neu einrichten.
+
+1. Öffne die Datei `worker.js` aus diesem Ordner (zum Beispiel auf GitHub im Browser) und kopiere den **gesamten** Inhalt (alles markieren, kopieren).
+2. Gehe zu <https://dash.cloudflare.com>, links auf **Workers & Pages** und öffne deinen Worker `dartlab-sync`.
+3. Oben auf **Edit code** (Code bearbeiten) klicken. Der Editor öffnet sich.
+4. Den vorhandenen Code **komplett löschen** (im Editor einmal klicken, dann alles markieren und löschen) und den kopierten Code einfügen.
+5. Oben rechts auf **Deploy** klicken (und bestätigen).
+6. Prüfen: Öffne `https://dartlab-sync.<dein-konto>.workers.dev/v1/hello` im Browser. Jetzt muss `{"app":"dartlab-cloud","version":1,"live":1}` dort stehen, mit `"live":1` am Ende.
+
+Die Variable `DB` (Abschnitt 2, Schritt 5) und alle Einstellungen bleiben beim Einfügen erhalten. Danach in DartLab unter **Optionen › Sync zwischen Geräten** den Schalter **Live übers Internet zeigen** einschalten, wenn du willst (er ist standardmäßig aus). Dein Vater muss in seiner App nichts tun.
+
+**Live im Überblick:** Mit dem Schalter schickt deine App den laufenden Spielstand verschlüsselt an deinen Cloud-Speicher, und DartLab Lite zeigt ihn im Reiter Live. Lesen kann ihn nur, wer dein Geheimnis kennt. Ist der Schalter aus, verlässt nichts das Gerät. Wie viele Anfragen das kostet, steht in [docs/live-internet.md](../docs/live-internet.md): rund 10 Prozent der Gratis-Grenze an einem Abend.
+
+---
+
+## 4. Gratis-Grenzen
 
 Alles hier läuft im kostenlosen Tarif. Stand der Cloudflare-Dokumentation vom **22.10.2026**:
 
@@ -107,7 +125,7 @@ Alles hier läuft im kostenlosen Tarif. Stand der Cloudflare-Dokumentation vom *
 
 **Wichtig:** Seit dem 1.9.2026 gilt: Wird ein Tageslimit überschritten, **schlagen weitere Anfragen fehl, bis um 00:00 Uhr UTC** (in Deutschland 01:00 oder 02:00 Uhr, je nach Sommerzeit). Du zahlst dann nichts extra, es geht nur eben nichts mehr durch.
 
-Für eine private Gruppe ist das mehr als genug. Falls es trotzdem passiert: Die App merkt sich, was noch hochgeladen werden muss, und **versucht es später einfach weiter**. Es geht nichts verloren, es dauert nur bis zum nächsten Tag.
+Für eine private Gruppe ist das mehr als genug. Auch ein Abend mit **Live** und einem Zuschauer braucht nur etwa ein Zehntel davon (Rechnung in [docs/live-internet.md](../docs/live-internet.md)). Falls es trotzdem passiert: Die App merkt sich, was noch hochgeladen werden muss, und **versucht es später einfach weiter**. Es geht nichts verloren, es dauert nur bis zum nächsten Tag.
 
 Der Server selbst begrenzt außerdem, damit nichts aus dem Ruder läuft:
 
@@ -116,7 +134,7 @@ Der Server selbst begrenzt außerdem, damit nichts aus dem Ruder läuft:
 
 ---
 
-## 4. Alles wieder löschen
+## 5. Alles wieder löschen
 
 Du kannst jederzeit alles entfernen. Danach ist beim Server nichts mehr von dir vorhanden.
 
@@ -128,7 +146,7 @@ Deine Daten auf deinen Geräten bleiben davon unberührt. Nur die Cloud-Kopie ve
 
 ---
 
-## 5. Optional: Setup-Key als Sicherheitsnetz (die App kann ihn noch nicht senden)
+## 6. Optional: Setup-Key als Sicherheitsnetz (die App kann ihn noch nicht senden)
 
 Die Adresse deines Workers ist nicht geheim. Wer sie errät, könnte theoretisch Müll hochladen und so deinen Gratis-Speicher belegen. Lesen kann er nichts, denn ohne dein Geheimnis findet er keine Daten und könnte sie auch nicht entschlüsseln.
 
@@ -139,6 +157,6 @@ Der Server kennt dafür einen **Setup-Key**, eine Art zweites Passwort für den 
 ## Für Neugierige: technische Eckdaten
 
 - Eine Tabelle `objects` in der D1-Datenbank. Der Worker legt sie bei Bedarf selbst an.
-- Schnittstelle unter `/v1`: `hello`, `meta` (mit Versionsprüfung gegen gleichzeitiges Überschreiben) und `s/<uid>` (Sessions, es gewinnt immer der neuere Stand).
+- Schnittstelle unter `/v1`: `hello` (meldet auch `"live": 1`), `meta` (mit Versionsprüfung gegen gleichzeitiges Überschreiben), `s/<uid>` (Sessions, es gewinnt immer der neuere Stand) und `live` (ein verschlüsseltes Paket pro Tresor, der letzte gewinnt, höchstens 16 KB; `GET /v1/live?since=<Zähler>` antwortet bei unverändertem Stand mit 304). Das Live-Paket liegt in derselben Tabelle `objects` unter dem Schlüssel `live`, die Datenbank braucht also keine Änderung.
 - Weitere optionale Einstellung `MAX_SESSIONS` (Variable, Standard 50000): Höchstzahl Sessions pro Tresor.
 - Tests ohne Cloudflare (Node 22): `node --test cloud/test`

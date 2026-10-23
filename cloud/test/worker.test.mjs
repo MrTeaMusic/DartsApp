@@ -103,7 +103,7 @@ test('hello: ohne Auth, mit Kopfzeile', async () => {
   const { call } = await setup();
   const { status, json, res } = await read(await call('GET', '/v1/hello'));
   assert.equal(status, 200);
-  assert.deepEqual(json, { app: 'dartlab-cloud', version: 1 });
+  assert.deepEqual(json, { app: 'dartlab-cloud', version: 1, live: 1 });
   assert.equal(res.headers.get('X-DartLab-Cloud'), '1');
 });
 
@@ -562,4 +562,174 @@ test('Schema wird nur einmal pro Instanz angelegt', async () => {
   await call('GET', '/v1/meta', { token: T1 });
   await call('GET', '/v1/s/x', { token: T1 });
   assert.equal(db.log.filter((s) => /CREATE TABLE/i.test(s)).length, 1);
+});
+
+// ---------------------------------------------------------------- Live
+
+const LIVE_B64 = (n = 1) => Buffer.from('live-paket-' + n).toString('base64');
+
+test('live: ohne Paket 404 no-vault (kein Tresor) oder no-live (Tresor ohne Paket)', async () => {
+  const { call } = await setup();
+  let r = await read(await call('GET', '/v1/live', { token: T1 }));
+  assert.equal(r.status, 404);
+  assert.deepEqual(r.json, { error: 'no-vault' });
+  await call('PUT', '/v1/meta', { token: T1, body: { ifRev: 0, body: B64 } });
+  r = await read(await call('GET', '/v1/live', { token: T1 }));
+  assert.equal(r.status, 404);
+  assert.deepEqual(r.json, { error: 'no-live' });
+  assert.equal(r.res.headers.get('X-DartLab-Cloud'), '1');
+});
+
+test('live: PUT ueberschreibt, der Zaehler steigt, der letzte gewinnt', async () => {
+  const { call } = await setup();
+  let r = await read(await call('PUT', '/v1/live', { token: T1, body: { body: LIVE_B64(1) } }));
+  assert.equal(r.status, 200);
+  assert.deepEqual(r.json, { stored: true });
+  r = await read(await call('GET', '/v1/live', { token: T1 }));
+  assert.equal(r.status, 200);
+  assert.deepEqual(r.json, { rev: 1, body: LIVE_B64(1) });
+  assert.equal(r.res.headers.get('ETag'), '"1"');
+  assert.equal(r.res.headers.get('Cache-Control'), 'no-store');
+  assert.equal(r.res.headers.get('X-DartLab-Cloud'), '1');
+  assert.match(r.res.headers.get('X-Live-Age'), /^\d+$/);
+
+  await call('PUT', '/v1/live', { token: T1, body: { body: LIVE_B64(2) } });
+  await call('PUT', '/v1/live', { token: T1, body: { body: LIVE_B64(3) } });
+  r = await read(await call('GET', '/v1/live', { token: T1 }));
+  assert.deepEqual(r.json, { rev: 3, body: LIVE_B64(3) });
+});
+
+test('live: ein Paket pro Tresor, andere Tresore sehen es nicht', async () => {
+  const { call, db } = await setup();
+  await call('PUT', '/v1/live', { token: T1, body: { body: LIVE_B64(1) } });
+  await call('PUT', '/v1/live', { token: T2, body: { body: LIVE_B64(2) } });
+  let r = await read(await call('GET', '/v1/live', { token: T2 }));
+  assert.deepEqual(r.json, { rev: 1, body: LIVE_B64(2) });
+  r = await read(await call('GET', '/v1/live', { token: T1 }));
+  assert.deepEqual(r.json, { rev: 1, body: LIVE_B64(1) });
+  const rows = db.sqlite.prepare("SELECT key FROM objects WHERE key = 'live'").all();
+  assert.equal(rows.length, 2);
+});
+
+test('live: bedingte Abfrage mit ?since und If-None-Match -> 304 ohne Inhalt', async () => {
+  const { call } = await setup();
+  await call('PUT', '/v1/live', { token: T1, body: { body: LIVE_B64(1) } });
+  let res = await call('GET', '/v1/live?since=1', { token: T1 });
+  assert.equal(res.status, 304);
+  assert.equal(await res.text(), '');
+  assert.equal(res.headers.get('ETag'), '"1"');
+  assert.equal(res.headers.get('X-DartLab-Cloud'), '1');
+  assert.match(res.headers.get('X-Live-Age'), /^\d+$/);
+
+  res = await call('GET', '/v1/live', { token: T1, headers: { 'If-None-Match': '"1"' } });
+  assert.equal(res.status, 304);
+  res = await call('GET', '/v1/live', { token: T1, headers: { 'If-None-Match': 'W/"1"' } });
+  assert.equal(res.status, 304);
+
+  // Veraltete oder unsinnige Angabe: voller Inhalt.
+  for (const q of ['?since=0', '?since=abc', '?since=', '?since=2']) {
+    res = await call('GET', '/v1/live' + q, { token: T1 });
+    assert.equal(res.status, 200, q);
+  }
+  await call('PUT', '/v1/live', { token: T1, body: { body: LIVE_B64(2) } });
+  res = await call('GET', '/v1/live?since=1', { token: T1 });
+  assert.equal(res.status, 200);
+  assert.equal((await res.json()).rev, 2);
+  res = await call('GET', '/v1/live?since=2', { token: T1 });
+  assert.equal(res.status, 304);
+});
+
+test('live: X-Live-Age zaehlt nach der Uhr des Servers', async () => {
+  const { call, db } = await setup();
+  await call('PUT', '/v1/live', { token: T1, body: { body: LIVE_B64(1) } });
+  db.sqlite.prepare("UPDATE objects SET updated = ? WHERE key = 'live'").run(Date.now() - 45000);
+  const res = await call('GET', '/v1/live', { token: T1 });
+  const age = Number(res.headers.get('X-Live-Age'));
+  assert.ok(age >= 45000 && age < 50000, String(age));
+});
+
+test('live: Grenze 16 KB und Pruefung des Inhalts', async () => {
+  const { call } = await setup();
+  const big = (n) => 'A'.repeat(n);
+  let r = await read(await call('PUT', '/v1/live', { token: T1, body: { body: big(16384) } }));
+  assert.equal(r.status, 200);
+  r = await read(await call('PUT', '/v1/live', { token: T1, body: { body: big(16388) } }));
+  assert.equal(r.status, 413);
+  assert.deepEqual(r.json, { error: 'too-large' });
+  // Das alte Paket bleibt.
+  r = await read(await call('GET', '/v1/live', { token: T1 }));
+  assert.equal(r.json.body.length, 16384);
+
+  for (const body of [{}, { body: 5 }, { body: '' }, { body: 'kein base64!' }, { body: 'ABC' }]) {
+    r = await read(await call('PUT', '/v1/live', { token: T1, body }));
+    assert.equal(r.status, 400, JSON.stringify(body));
+    assert.deepEqual(r.json, { error: 'bad-body' });
+  }
+  r = await read(await call('PUT', '/v1/live', { token: T1, raw: 'kein json' }));
+  assert.equal(r.status, 400);
+  assert.deepEqual(r.json, { error: 'bad-json' });
+});
+
+test('live: Auth, Methoden und Setup-Key wie die anderen Endpunkte', async () => {
+  const { call } = await setup();
+  for (const m of ['GET', 'PUT']) {
+    const r = await read(await call(m, '/v1/live'));
+    assert.equal(r.status, 401, m);
+  }
+  for (const m of ['POST', 'DELETE', 'PATCH']) {
+    const r = await read(await call(m, '/v1/live', { token: T1 }));
+    assert.equal(r.status, 405, m);
+  }
+  assert.equal((await call('GET', '/v1/live/', { token: T1 })).status, 404);
+
+  const keyed = await setup({ SETUP_KEY: 'geheim-123' });
+  let r = await read(await keyed.call('PUT', '/v1/live', { token: T1, body: { body: LIVE_B64() } }));
+  assert.equal(r.status, 401);
+  r = await read(
+    await keyed.call('PUT', '/v1/live', { token: T1, headers: { 'X-Setup-Key': 'geheim-123' }, body: { body: LIVE_B64() } })
+  );
+  assert.equal(r.status, 200);
+});
+
+test('live: braucht kein neues Schema, zaehlt nicht als Session und stoert Meta und Sessions nicht', async () => {
+  const { call, db } = await setup({ MAX_SESSIONS: '1' });
+  await call('PUT', '/v1/meta', { token: T1, body: { ifRev: 0, body: B64 } });
+  await call('PUT', '/v1/live', { token: T1, body: { body: LIVE_B64(1) } });
+  // Das Live-Paket zaehlt nicht gegen MAX_SESSIONS.
+  let r = await read(await call('PUT', '/v1/s/a', { token: T1, body: { stamp: 1, darts: 0, body: B64 } }));
+  assert.equal(r.status, 200);
+  r = await read(await call('PUT', '/v1/s/b', { token: T1, body: { stamp: 1, darts: 0, body: B64 } }));
+  assert.equal(r.status, 413);
+  // Meta und Session sind unberuehrt.
+  assert.equal((await call('GET', '/v1/meta', { token: T1 })).status, 200);
+  assert.equal((await call('GET', '/v1/s/a', { token: T1 })).status, 200);
+  // Weiterhin genau eine Tabelle, einmal angelegt.
+  assert.equal(db.log.filter((s) => /CREATE TABLE/i.test(s)).length, 1);
+  assert.equal(db.sqlite.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all().length, 1);
+  // Eine Session mit der uid "live" ist nicht das Live-Paket.
+  await call('PUT', '/v1/s/live', { token: T1, body: { stamp: 5, darts: 0, body: B64 } });
+  r = await read(await call('GET', '/v1/live', { token: T1 }));
+  assert.equal(r.json.body, LIVE_B64(1));
+});
+
+test('live: eine alte Datenbank (nur Tabelle objects, Altdaten) funktioniert ohne Handarbeit', async () => {
+  const { call, db } = await setup();
+  await call('GET', '/v1/meta', { token: T1 });
+  db.sqlite
+    .prepare("INSERT INTO objects (vault, key, rev, body, updated) VALUES (?, 'meta', 4, 'QUJD', 0)")
+    .run(sha(T1));
+  const r = await read(await call('PUT', '/v1/live', { token: T1, body: { body: LIVE_B64(1) } }));
+  assert.equal(r.status, 200);
+  assert.equal((await call('GET', '/v1/live', { token: T1 })).status, 200);
+  assert.equal((await read(await call('GET', '/v1/meta', { token: T1 }))).json.rev, 4);
+});
+
+test('live: pro Paket genau eine geschriebene Zeile (ein Schreib-Statement)', async () => {
+  const { call, db } = await setup();
+  await call('PUT', '/v1/live', { token: T1, body: { body: LIVE_B64(1) } });
+  const before = db.log.length;
+  await call('PUT', '/v1/live', { token: T1, body: { body: LIVE_B64(2) } });
+  const writes = db.log.slice(before).filter((s) => /^\s*(insert|update|delete)/i.test(s));
+  assert.equal(writes.length, 1);
+  assert.equal(db.log.slice(before).length, 1, 'kein weiteres Statement');
 });
