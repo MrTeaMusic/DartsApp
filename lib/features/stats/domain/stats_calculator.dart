@@ -844,6 +844,8 @@ class StatsCalculator {
       final sc = scoringOf(s);
       final dur = (s.endedAt ?? s.startedAt).difference(s.startedAt);
       final checkoutDarts = x01 ? n('checkoutDarts') : 0;
+      final rawOpponents = details is Map ? details['opponents'] : null;
+      final opponents = rawOpponents is List ? rawOpponents : const [];
       return OnlineMatch(
         sessionId: s.id,
         startedAt: s.startedAt,
@@ -860,6 +862,8 @@ class StatsCalculator {
         count140: n('count140'),
         count180: n('count180'),
         legs: legs,
+        opponent: opponents.isEmpty ? null : '${opponents.first}',
+        won: m['won'] == null ? null : m['won'] == 1,
       );
     });
   }

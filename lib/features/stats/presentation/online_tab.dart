@@ -639,6 +639,7 @@ class _MatchTileState extends State<_MatchTile> {
     final m = widget.match;
     final minutes = m.duration.inMinutes;
     final subtitle = [
+      if (m.opponent != null) l10n.histVs(m.opponent!),
       historyTime(m.startedAt),
       if (m.hasLegs) l10n.onlineLegs(m.legsWon, m.legsLost) else if (!m.x01) l10n.onlineRaw,
       '${m.darts} ${l10n.statDarts}',

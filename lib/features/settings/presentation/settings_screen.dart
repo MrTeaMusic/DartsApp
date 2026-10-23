@@ -9,6 +9,7 @@ import '../../../core/design/tokens.dart';
 import '../../../core/l10n.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/settings/app_settings.dart';
+import '../../autodarts_import/presentation/autodarts_import_card.dart';
 import '../../autodarts_live/presentation/autodarts_live_routes.dart';
 import '../../backup/presentation/backup_card.dart';
 import '../../board/presentation/board_style.dart';
@@ -204,6 +205,9 @@ class SettingsScreen extends ConsumerWidget {
               const SectionGap(),
               SectionHeader(l10n.syncTitle),
               const SyncCard(),
+              const SectionGap(),
+              SectionHeader(l10n.impTitle),
+              const AutodartsImportCard(),
               const SectionGap(),
               SectionHeader(l10n.backupTitle),
               const BackupCard(),

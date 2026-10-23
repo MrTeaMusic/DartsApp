@@ -175,6 +175,9 @@ Multiplikator 0. Der echte Mitschnitt läuft als Test durch Autodarts Live.
 * Ohne „X01 mitzählen“ kein Rest, keine Busts, keine Checkouts, keine Legs, kein Gegner.
 * Mit „X01 mitzählen“ kennt DartLab das Match nur aus deinen Darts: Gegner, Bull-Off, Match-Ende und
   Legs des Gegners musst du selbst mit „Leg verloren“ nachtragen.
-* Der vollständige Match-Import aus dem Autodarts-Konto (Schritt „B“: Gegner, Legs, offizieller Average)
-  ist nicht möglich: Die Anmeldung für Drittanbieter ist abgeschaltet und bräuchte eine offizielle
-  Client-ID, also eine Freigabe durch Autodarts.
+* Den Gegner, die Legs des Gegners und das Match-Ende kennt der lokale Weg nicht. Das fertige Online-Match
+  holt der [Import aus dem Autodarts-Konto](autodarts-import.md) nachträglich: ein Browser-Skript schickt
+  es an die Desktop-App, oder du fügst das Match-JSON von Hand ein. Einen Login bei Autodarts gibt es
+  dafür nicht (die Anmeldung für Drittanbieter ist abgeschaltet und bräuchte eine Freigabe von Autodarts).
+  Schreibst du ein Match mit Live **und** importierst es, zählen die Darts doppelt: dann eine der beiden
+  Sessions löschen.

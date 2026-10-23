@@ -233,7 +233,7 @@ void main() {
     await seed(c);
     await tester.tap(find.text('Optionen').first);
     await tester.pumpAndSettle();
-    final scrollable = find.byType(Scrollable).last;
+    final scrollable = find.byType(Scrollable).first;
 
     await tester.scrollUntilVisible(find.byKey(const Key('export-json')), 300, scrollable: scrollable);
     await tester.ensureVisible(find.byKey(const Key('export-json')));
