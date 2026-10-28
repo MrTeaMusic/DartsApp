@@ -7,12 +7,15 @@ optional gefiltert auf ein Spiel. Grundlage sind abgeschlossene Sessions und ihr
 Darts, die nach einem Bust oder Checkout noch fielen, zählen nicht. Die Berechnung steckt komplett im
 `StatsCalculator` (reine Dart-Klasse ohne Datenbank, mit Unit-Tests).
 
-Die Statistik hat neun Reiter:
+Die Statistik hat zehn Reiter:
 
 * **Überblick:** Serie und Ziele, Kennzahlen mit Vergleich zum Vorzeitraum, Darts pro Tag (bis 30
   Tage) bzw. pro Woche (90 Tage, alles), Trainingsmuster nach Wochentag und Tageszeit.
 * **Online:** Matches aus Autodarts Live mit Legs, Verlauf je Woche und der Vergleich Training gegen
   Match (Average, First 9, Checkout, Doppel einzeln, Punkteverteilung). Siehe `docs/online-matches.md`.
+* **Elo:** „Haus-Elo“ aus den Matches (Bot, Mitspieler, Turnier, Autodarts-Import): Elo mit Trend und
+  Rekord, Verlauf, Gegner mit Haus-Rating, größte Siege und bitterste Niederlagen. Immer über alle
+  Matches, ohne Spielfilter. Siehe `docs/haus-elo.md`.
 * **Scoring:** 3-Dart-Average, First 9, Streuung, Punkteverteilung der Aufnahmen, Average-Verlauf,
   Triple-Quote je Zahl, Heatmap, Treffer je Zahl.
 * **Doppel & Finish:** Checkout- und Double-Quote, stärkstes und schwächstes Double, „Doppel im

@@ -18,6 +18,8 @@ import '../../matches/domain/match_format.dart';
 import '../../quiz/domain/quiz_config.dart';
 import '../../quiz/presentation/quiz_routes.dart';
 import '../../quiz/presentation/quiz_widgets.dart';
+import '../../stats/data/stats_repository.dart';
+import '../../stats/presentation/elo_tab.dart';
 import '../../stats/presentation/stats_charts.dart';
 import '../../stats/presentation/stats_widgets.dart';
 import '../data/history_repository.dart';
@@ -274,12 +276,12 @@ class _Info extends StatelessWidget {
 }
 
 /// Endstand und Kennzahlen aller Teilnehmer, soweit gespeichert.
-class _MatchResultCard extends StatelessWidget {
+class _MatchResultCard extends ConsumerWidget {
   const _MatchResultCard({required this.detail});
   final SessionDetail detail;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final colors = context.dartColors;
@@ -319,6 +321,8 @@ class _MatchResultCard extends StatelessWidget {
     ];
     final won = e.won;
     final winner = won == null ? null : (won ? detail.me : null);
+    // Haus-Elo vor und nach diesem Match, falls es gewertet wird.
+    final elo = ref.watch(houseEloProvider)?.stepOf(e.id);
     return AppCard(
       key: const Key('session-match-result'),
       child: Column(
@@ -391,6 +395,24 @@ class _MatchResultCard extends StatelessWidget {
               ),
             ),
           ),
+          if (elo != null) ...[
+            const Divider(height: AppSpacing.xl),
+            Row(
+              key: const Key('session-match-elo'),
+              children: [
+                Icon(Icons.show_chart_rounded, size: 18, color: colors.textMuted),
+                const SizedBox(width: AppSpacing.s),
+                Expanded(child: Text(l10n.eloHistoryLabel, style: theme.textTheme.bodyMedium)),
+                Flexible(
+                  child: Text(
+                    l10n.eloHistoryValue(elo.before.round(), elo.after.round(), formatEloChange(elo.change)),
+                    textAlign: TextAlign.end,
+                    style: theme.textTheme.titleSmall?.copyWith(color: eloChangeColor(context, elo.change), fontFeatures: DartLooks.tabular),
+                  ),
+                ),
+              ],
+            ),
+          ],
           if (!known) ...[
             const SizedBox(height: AppSpacing.s),
             Text(l10n.histOpponentsUnknown, style: theme.textTheme.bodySmall?.copyWith(color: colors.textMuted)),

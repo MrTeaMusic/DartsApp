@@ -3786,5 +3786,140 @@
   "impWhoText": "DartLab merkt sich deine Wahl als „Mein Autodarts-Name“. Danach fragt es nicht mehr nach.",
   "impWhoLater": "Später",
   "histOnlineMatch": "Online-Match",
-  "impVisitsNote": "Aufnahmen beider Spieler. In deiner Statistik zählen nur deine eigenen Darts."
+  "impVisitsNote": "Aufnahmen beider Spieler. In deiner Statistik zählen nur deine eigenen Darts.",
+  "statsTabElo": "Elo",
+  "eloKpiElo": "Haus-Elo",
+  "eloKpiEloCaption": "seit 30 Tagen",
+  "eloKpiPeak": "Rekord",
+  "eloKpiPeakCaption": "erreicht am {date}",
+  "@eloKpiPeakCaption": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "eloKpiMatches": "Gewertete Matches",
+  "eloKpiMatchesCaption": "{bots} Bots · {online} Online · {local} Mitspieler",
+  "@eloKpiMatchesCaption": {
+    "placeholders": {
+      "bots": {
+        "type": "int"
+      },
+      "online": {
+        "type": "int"
+      },
+      "local": {
+        "type": "int"
+      }
+    }
+  },
+  "eloKpiRecord": "Bilanz",
+  "eloKpiRecordCaption": "{percent} % Siege",
+  "@eloKpiRecordCaption": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "eloEmptyTitle": "Noch kein Elo-Verlauf",
+  "eloEmptyText": "Spiele ein paar Matches gegen Bots, Mitspieler oder online. Ab drei gewerteten Matches zeigt DartLab hier deinen Elo-Verlauf.",
+  "eloEmptyProgress": "{count} von {needed} gewerteten Matches",
+  "@eloEmptyProgress": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "needed": {
+        "type": "int"
+      }
+    }
+  },
+  "eloChartTitle": "Elo-Verlauf",
+  "eloChartHint": "Jeder Punkt ist ein Match, gezeigt wird dein Stand danach.",
+  "eloChartEmpty": "Im gewählten Zeitraum gibt es kein gewertetes Match.",
+  "eloOpponentsTitle": "Gegner",
+  "eloFilterAll": "Alle",
+  "eloFilterOnline": "Online",
+  "eloFilterBots": "Bots",
+  "eloFilterLocal": "Mitspieler",
+  "eloColMatches": "Matches",
+  "eloColRecord": "S–N",
+  "eloColRating": "Rating",
+  "eloColChange": "Elo ±",
+  "eloKindOnline": "Online",
+  "eloKindLocal": "Mitspieler",
+  "eloKindBot": "Bot",
+  "eloKindBotAverage": "Bot · Ø {average}",
+  "@eloKindBotAverage": {
+    "placeholders": {
+      "average": {
+        "type": "String"
+      }
+    }
+  },
+  "eloOpponentsEmpty": "Keine Gegner in dieser Auswahl.",
+  "eloOpponentsMore": "Alle {count} Gegner zeigen",
+  "@eloOpponentsMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "eloOpponentsLess": "Weniger zeigen",
+  "eloOpponentsHint": "Das Rating der Gegner ist DartLabs Schätzung, kein echter Elo. Gezählt werden die Matches im gewählten Zeitraum.",
+  "eloBestTitle": "Größte Siege",
+  "eloWorstTitle": "Bitterste Niederlagen",
+  "eloBestEmpty": "Im Zeitraum noch kein Sieg.",
+  "eloWorstEmpty": "Im Zeitraum noch keine Niederlage.",
+  "eloHighlightLine": "Rating {rating} · {date}",
+  "@eloHighlightLine": {
+    "placeholders": {
+      "rating": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "eloHighlightLineLegs": "Rating {rating} · {legs} · {date}",
+  "@eloHighlightLineLegs": {
+    "placeholders": {
+      "rating": {
+        "type": "int"
+      },
+      "legs": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "eloExplainTitle": "Wie wird das berechnet?",
+  "eloExplainSubtitle": "Haus-Elo in einer Minute erklärt",
+  "eloExplainHeadline": "So rechnet das Haus-Elo",
+  "eloExplain1": "Elo ist ein Punktesystem aus dem Schach: Wer einen Stärkeren schlägt, bekommt viele Punkte, wer gegen einen Schwächeren verliert, gibt viele ab. Gegen einen gleich starken Gegner geht es um 16 Punkte.",
+  "eloExplain2": "Gewertet werden fertig gespielte X01-Matches (Bot, Mitspieler, Turnier, Autodarts-Import). Training, Solo und abgebrochene Matches zählen nicht. Ein Sieg zählt 1, eine Niederlage 0; wie knapp es war, spielt keine Rolle.",
+  "eloExplain3": "Echte Elo-Werte deiner Gegner gibt es nicht. DartLab schätzt jeden neuen Gegner aus seinem 3-Dart-Average im Vergleich zu deinem (12 Punkte je Average-Punkt, höchstens 300) und führt sein Rating danach mit.",
+  "eloExplain4": "Darum heißt es Haus-Elo: Die 1000 ist nur ein Startpunkt, wichtig sind die Unterschiede. Mit wenigen Matches ist es grob, und mit Werten anderer Spieler lässt es sich nicht vergleichen. Alles wird bei jedem Öffnen aus deinen Matches neu berechnet; Namen von Gegnern bleiben auf deinen Geräten.",
+  "eloExplainClose": "Schließen",
+  "eloHistoryLabel": "Haus-Elo",
+  "eloHistoryValue": "{before} → {after} ({change})",
+  "@eloHistoryValue": {
+    "placeholders": {
+      "before": {
+        "type": "int"
+      },
+      "after": {
+        "type": "int"
+      },
+      "change": {
+        "type": "String"
+      }
+    }
+  }
 }
