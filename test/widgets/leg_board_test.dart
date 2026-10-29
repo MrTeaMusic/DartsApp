@@ -205,7 +205,7 @@ void main() {
   testWidgets('Dart-Symbol: Spitze unten links, Flight oben rechts und bleibt im Quadrat', (tester) async {
     for (final size in [16, 20, 24, 48]) {
       final rec = ui.PictureRecorder();
-      DartIconPainter(Colors.white).paint(ui.Canvas(rec), Size(size.toDouble(), size.toDouble()));
+      const DartIconPainter(Colors.white).paint(ui.Canvas(rec), Size(size.toDouble(), size.toDouble()));
       final data = await tester.runAsync(() async {
         final img = await rec.endRecording().toImage(size, size);
         return img.toByteData();
