@@ -73,7 +73,8 @@ class StatsReport {
   /// Durchschnitt der Kennzahl `first9` (X01), falls Spiele sie melden.
   final double? first9Average;
 
-  /// Checkout-Quote aus Checkout-Training und 121.
+  /// Checkout-Quote aus dem Checkout-Training. 121 zählt nicht mit (siehe
+  /// [StatsCalculator.multiVisitFinishGames]).
   final double? checkoutRate;
   final int checkoutAttempts;
   final Map<CheckoutRange, HitCount> checkoutByRange;
@@ -407,8 +408,19 @@ class StatsCalculator {
     return _report(_between(from, since, gameId), from: from, to: since);
   }
 
-  /// Spiele, deren Darts aufs Doppel Checkout-Darts sind.
+  /// Spiele, deren Darts aufs Doppel Checkout-Darts sind (Doppel-Statistik:
+  /// Checkout gegen Training). Hier zählt 121 mit, denn dort wird wirklich
+  /// aufs Doppel geworfen.
   static const Set<String> checkoutGames = {'checkout', 'one_twenty_one'};
+
+  /// Spiele, in denen ein Ziel mehrere Aufnahmen (3, 6 oder 9 Darts) hat. Ihre
+  /// Finishes sind keine normalen 3-Dart-Finishes und zählen deshalb nicht
+  /// zu Rekord „Höchstes Finish“, Checkout-Quote, Ziel „Checkout-Quote“,
+  /// Auto-Plan-Schwächen und Erfolgen. Sie bleiben in der Doppel-Statistik
+  /// ([checkoutGames]) und in der eigenen Wertung des Spiels. Auch mit nur
+  /// einer Aufnahme je Ziel zählt 121 nie als normales Finish: einfach und
+  /// vorhersehbar statt je nach Einstellung.
+  static const Set<String> multiVisitFinishGames = {'one_twenty_one'};
 
   /// X01-Spiele: Checkout-Darts und gewonnene Legs kommen aus den
   /// Kennzahlen `checkoutDarts` und `legsWon` (Matches speichern nur die
@@ -474,7 +486,7 @@ class StatsCalculator {
     }
     final first9 = [for (final s in sessions) ?_metrics(s)['first9']];
 
-    // Checkouts aus Checkout-Training und 121.
+    // Checkouts aus dem Checkout-Training (121 zählt nicht).
     var checkouts = HitCount.zero;
     final byRange = <CheckoutRange, HitCount>{};
     for (final a in _checkoutAttempts(sessions)) {
@@ -614,12 +626,13 @@ class StatsCalculator {
     return darts == 0 ? null : HitCount(darts, hits);
   }
 
-  /// Checkout-Versuche aus Checkout-Training und 121.
+  /// Checkout-Versuche aus dem Checkout-Training. 121 zählt nicht: Dort hat
+  /// ein Ziel mehrere Aufnahmen ([multiVisitFinishGames]).
   Iterable<({int target, bool success, DateTime time})> _checkoutAttempts(List<SessionRow> sessions) sync* {
     for (final s in sessions) {
       final details = _result(s)['details'];
       if (details is! Map) continue;
-      final list = s.gameId == 'checkout' ? details['attempts'] : (s.gameId == 'one_twenty_one' ? details['rounds'] : null);
+      final list = s.gameId == 'checkout' ? details['attempts'] : null;
       if (list is! List) continue;
       for (final a in list) {
         if (a is! Map) continue;
@@ -718,8 +731,9 @@ class StatsCalculator {
       for (final a in _checkoutAttempts(_sessions))
         if (a.success) PersonalRecord(RecordKind.highestCheckout, a.target.toDouble(), date: a.time),
       for (final s in _sessions)
-        if (_metrics(s)['highestCheckout'] case final v?)
-          PersonalRecord(RecordKind.highestCheckout, v.toDouble(), date: s.startedAt, gameId: s.gameId),
+        if (!multiVisitFinishGames.contains(s.gameId))
+          if (_metrics(s)['highestCheckout'] case final v?)
+            PersonalRecord(RecordKind.highestCheckout, v.toDouble(), date: s.startedAt, gameId: s.gameId),
     ]));
     add(bestOf([
       for (final s in _sessions)
