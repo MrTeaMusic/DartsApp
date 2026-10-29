@@ -64,13 +64,13 @@ Der Knopf erscheint auch in der Spielansicht (Match, Solo-Spiele) und im Bildsch
 Datenquelle Autodarts (lokal) und mit Verbindung zum Board Manager; nicht beim Simulator, bei manueller Eingabe
 und in Lite.
 
-### Rahmen um die Scheibe
+### Leuchtring um die Scheibe
 
-Bei der Datenquelle Autodarts (lokal) liegt ein dünner Rahmen mit Statuswort um die Scheibe (Live-Bildschirm,
+Bei der Datenquelle Autodarts (lokal) liegt ein weicher, runder Leuchtring (Glow) mit Statuswort um die Scheibe. Die Scheibe wird dafür leicht verkleinert, die Fläche bleibt gleich (Live-Bildschirm,
 Spielansicht, Board). Die Farbe steht nie allein: Icon und Wort stehen dabei, Screenreader lesen
 „Dartboard: …“.
 
-| Zustand | Rahmen | Wort | Wann |
+| Zustand | Glow | Wort | Wann |
 |---|---|---|---|
 | Bereit | grün | Bereit | verbunden, kein Takeout |
 | Takeout | gelb | Takeout | Board meldet `Takeout started` / `Takeout in progress`, bis `Takeout finished` oder ein neuer Dart |
@@ -78,8 +78,8 @@ Spielansicht, Board). Die Farbe steht nie allein: Icon und Wort stehen dabei, Sc
 | Verbinde | gedämpftes Rot | Verbinde | die Verbindung wird gerade aufgebaut |
 | Offline | rot | Offline | keine Verbindung zum Board Manager (auch während der Wartezeit bis zum nächsten Versuch) |
 
-Ohne Verbindung zählt ein alter Takeout nicht: Nach dem Wiederverbinden steht der Rahmen wieder auf grün, bis der
-Board Manager einen neuen Takeout meldet. Simulator, manuelle Eingabe und Lite haben keinen Rahmen.
+Ohne Verbindung zählt ein alter Takeout nicht: Nach dem Wiederverbinden steht der Glow wieder auf grün, bis der
+Board Manager einen neuen Takeout meldet. Simulator, manuelle Eingabe und Lite haben keinen Glow.
 
 ## Was aufgezeichnet wird
 

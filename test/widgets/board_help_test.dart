@@ -1,6 +1,7 @@
 import 'package:dartlab/core/lite.dart';
 import 'package:dartlab/core/router/app_router.dart';
 import 'package:dartlab/features/autodarts_live/presentation/autodarts_live_routes.dart';
+import 'package:dartlab/features/board/presentation/board_status_frame.dart';
 import 'package:dartlab/features/board/presentation/dartboard_view.dart';
 import 'package:dartlab/features/dart_source/domain/board_control.dart';
 import 'package:dartlab/features/dart_source/domain/dart_event.dart';
@@ -236,7 +237,7 @@ void main() {
   group('Rahmen um die Scheibe', () {
     Future<void> expectFrame(WidgetTester tester, BoardReadiness r, String word) async {
       expect(find.byKey(Key('board-frame-${r.name}')), findsOneWidget, reason: r.name);
-      expect(find.descendant(of: find.byKey(const Key('board-frame')), matching: find.text(word)), findsOneWidget);
+      expect(find.descendant(of: find.byKey(Key('board-frame-${r.name}')), matching: find.text(word)), findsOneWidget);
       expect(find.bySemanticsLabel('Dartboard: $word'), findsOneWidget);
     }
 
@@ -268,19 +269,31 @@ void main() {
       handle.dispose();
     });
 
-    testWidgets('verschiebt das Layout nicht: Rahmen und Scheibe haben dieselbe Fläche, in jedem Zustand', (tester) async {
+    testWidgets('verschiebt das Layout nicht: gleiche Fläche in jedem Zustand, Glow und Scheibe bleiben darin', (tester) async {
       await open(tester, AutodartsLiveRoutes.live);
-      final board = find.byType(DartboardView).first;
-      final before = tester.getRect(board);
+      final area = find.byType(BoardStatusFrame).first;
+      final before = tester.getRect(area);
       for (final s in [
         const SourceStatus(SourcePhase.reconnecting),
         SourceStatus.ready,
       ]) {
         live.setStatus(s);
         await settle(tester);
-        expect(tester.getRect(board), before);
+        expect(tester.getRect(area), before);
+        // Der Glow füllt die Fläche, die (etwas kleinere) Scheibe liegt mittig darin, nichts ragt hinaus.
         expect(tester.getRect(find.byKey(const Key('board-frame'))), before);
+        final disc = tester.getRect(find.byType(DartboardView).first);
+        expect(before.contains(disc.topLeft) && before.contains(disc.bottomRight), isTrue);
+        expect((disc.center - before.center).distance, lessThan(0.5));
+        expect(disc.width, lessThan(before.width));
       }
+    });
+
+    testWidgets('ohne Autodarts bleibt die Scheibe unverkleinert', (tester) async {
+      await open(tester, Routes.board, prefs: const {});
+      final disc = tester.getRect(find.byKey(const Key('dartboard')));
+      expect(find.byType(BoardStatusFrame), findsOneWidget);
+      expect(tester.getRect(find.byType(BoardStatusFrame)), disc);
     });
 
     for (final look in ['tv', 'arena', 'clean', 'lab']) {
