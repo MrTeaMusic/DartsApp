@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:dartlab/core/database/app_database.dart';
 import 'package:dartlab/core/design/dart_icon.dart';
 import 'package:dartlab/core/router/app_router.dart';
@@ -184,19 +186,55 @@ void main() {
     await shutdownApp(tester, c);
   });
 
-  testWidgets('Dart-Symbol: wird in jeder Größe gezeichnet, AppIcon wählt es über AppIcons.dart', (tester) async {
+  testWidgets('Dart-Symbol: alle Stile in jeder Größe, AppIcon wählt es über AppIcons.dart', (tester) async {
     await tester.pumpWidget(MaterialApp(
       home: Scaffold(
-        body: Row(children: [
-          for (final s in [16.0, 18.0, 24.0, 48.0, 160.0]) DartIcon(size: s, color: Colors.white),
+        body: Wrap(children: [
+          for (final st in DartIconStyle.values)
+            for (final s in [16.0, 18.0, 20.0, 24.0, 32.0, 48.0, 160.0]) DartIcon(size: s, color: Colors.white, style: st),
           const AppIcon(AppIcons.dart, size: 20),
           const AppIcon(Icons.adjust_rounded, size: 20),
         ]),
       ),
     ));
     expect(tester.takeException(), isNull);
-    expect(find.byType(DartIcon), findsNWidgets(6));
+    expect(find.byType(DartIcon), findsNWidgets(DartIconStyle.values.length * 7 + 1));
     expect(tester.getSize(find.byType(DartIcon).first), const Size(16, 16));
     expect(find.byIcon(Icons.adjust_rounded), findsOneWidget);
+  });
+
+  testWidgets('Dart-Symbol: Spitze unten links, Flight oben rechts und bleibt im Quadrat', (tester) async {
+    for (final st in DartIconStyle.values) {
+      for (final size in [16, 20, 24, 48]) {
+        final rec = ui.PictureRecorder();
+        DartIconPainter(Colors.white, style: st, accent: Colors.white).paint(ui.Canvas(rec), Size(size.toDouble(), size.toDouble()));
+        final data = await tester.runAsync(() async {
+          final img = await rec.endRecording().toImage(size, size);
+          return img.toByteData();
+        });
+        final bytes = data!;
+        int alpha(int x, int y) => bytes.getUint8((y * size + x) * 4 + 3);
+        int mass(int x0, int y0, int x1, int y1) {
+          var m = 0;
+          for (var y = y0; y < y1; y++) {
+            for (var x = x0; x < x1; x++) {
+              m += alpha(x, y);
+            }
+          }
+          return m;
+        }
+
+        final h = size ~/ 2;
+        final reason = '${st.name} $size px';
+        // Leere Ecken: der Dart liegt auf der Diagonalen von unten links nach oben rechts.
+        expect(mass(0, 0, size ~/ 4, size ~/ 4), 0, reason: 'oben links leer, $reason');
+        expect(mass(size - size ~/ 4, size - size ~/ 4, size, size), 0, reason: 'unten rechts leer, $reason');
+        // Spitze unten links, Flight oben rechts sind gezeichnet.
+        expect(mass(0, h, h, size), greaterThan(0), reason: 'unten links, $reason');
+        expect(mass(h, 0, size, h), greaterThan(0), reason: 'oben rechts, $reason');
+        // Die Flight ist die größte Fläche des Darts (klassische Proportionen).
+        expect(mass(h, 0, size, h), greaterThan(mass(0, h, h, size)), reason: 'Flight größer als der Spitzenteil, $reason');
+      }
+    }
   });
 }

@@ -2,17 +2,36 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-/// Das Dart-Symbol der App: ein Dart schräg im Quadrat, Spitze unten links,
-/// Flight oben rechts. Es steht für „Darts“ (Anzahl, Aufnahme, Wurf), nicht
-/// für die Scheibe.
+/// Zeichenstile des Dart-Symbols. Vorläufig stehen drei Varianten zur Wahl
+/// (Entwurf); nach der Entscheidung bleibt eine übrig.
+enum DartIconStyle {
+  /// Gefüllte Silhouette mit klaren Details (Rillen, Flight-Kante).
+  a,
+
+  /// Linienstil, passend zu den ausgeschnittenen Material-Symbolen.
+  b,
+
+  /// Gefüllt, die Flight in der Akzentfarbe.
+  c,
+}
+
+/// Das Dart-Symbol der App: ein klassischer Dart schräg im Quadrat, Spitze
+/// unten links, Flight oben rechts. Es steht für „Darts“ (Anzahl, Aufnahme,
+/// Wurf), nicht für die Scheibe.
 ///
 /// Gezeichnet wird mit dem Zeichenstift statt mit einer Symbolschrift, damit
-/// es in jeder Größe scharf ist und die Farbe des Looks übernimmt. Ab etwa
-/// 18 px bekommt der Barrel Rillen, ab etwa 44 px mehr davon und eine Kante
-/// im Flight; darunter bleiben nur die klaren Formen (Spitze, Barrel, Schaft,
-/// Flight), die auch bei 16 px noch erkennbar sind.
+/// es in jeder Größe scharf ist und die Farbe des Looks übernimmt. Es wird
+/// nicht nur skaliert: ab etwa 22 px bekommt der Barrel eine Rille, die Spitze
+/// eine Fuge und die Flight eine Kante, ab etwa 36 px kommen weitere Rillen dazu.
+/// Darunter bleiben die klaren Formen (feine Spitze, schlanker Barrel,
+/// dünner Schaft, große Flight) mit Mindeststärken in Pixeln, damit sie auch
+/// bei 16 px noch zu erkennen sind.
 class DartIcon extends StatelessWidget {
-  const DartIcon({super.key, this.size = 24, this.color});
+  const DartIcon({super.key, this.size = 24, this.color, this.style, this.accent});
+
+  /// Stil, den alle Symbole der App ohne eigene Angabe verwenden. Nur der
+  /// Entwurf der Varianten stellt das um.
+  static DartIconStyle standard = DartIconStyle.a;
 
   /// Kantenlänge des Quadrats.
   final double size;
@@ -20,13 +39,22 @@ class DartIcon extends StatelessWidget {
   /// Standard: Farbe des umgebenden Icon-Themes.
   final Color? color;
 
+  /// Standard: [DartIcon.standard].
+  final DartIconStyle? style;
+
+  /// Farbe der Flight bei [DartIconStyle.c]; Standard: Akzent des Themes.
+  final Color? accent;
+
   @override
   Widget build(BuildContext context) {
     final c = color ?? IconTheme.of(context).color ?? Theme.of(context).colorScheme.onSurface;
+    final st = style ?? standard;
     return SizedBox(
       width: size,
       height: size,
-      child: CustomPaint(painter: DartIconPainter(c)),
+      child: CustomPaint(
+        painter: DartIconPainter(c, style: st, accent: st == DartIconStyle.c ? (accent ?? Theme.of(context).colorScheme.primary) : null),
+      ),
     );
   }
 }
@@ -34,119 +62,209 @@ class DartIcon extends StatelessWidget {
 /// Zeichnet das Dart-Symbol in die Fläche (quadratisch, es zählt die
 /// kürzere Seite). Siehe [DartIcon].
 class DartIconPainter extends CustomPainter {
-  const DartIconPainter(this.color);
+  const DartIconPainter(this.color, {this.style = DartIconStyle.a, this.accent});
   final Color color;
+  final DartIconStyle style;
+  final Color? accent;
 
   // Maße als Anteil der Gesamtlänge des Darts, von der Spitze (0) zum
   // Ende des Flights (1).
-  static const double _pointEnd = 0.17;
-  static const double _barrelEnd = 0.53;
-  static const double _shaftEnd = 0.70;
-  static const double _flightStart = 0.60;
-
-  static const double _pointHalf = 0.04;
-  static const double _barrelHalfFront = 0.075;
-  static const double _barrelHalfBack = 0.098;
-  static const double _shaftHalf = 0.042;
+  static const double _tipEnd = 0.11;
+  static const double _barrelStart = 0.125;
+  static const double _barrelEnd = 0.565;
+  static const double _shaftEnd = 0.68;
+  static const double _flightRoot = 0.615;
   static const double _flightHalf = 0.175;
 
   @override
   void paint(Canvas canvas, Size size) {
     final s = math.min(size.width, size.height);
     if (s <= 0) return;
-    // Länge so, dass der schräge Dart samt Flight im Quadrat bleibt.
-    final length = s * 1.04;
+    // Der Dart liegt auf der Diagonalen: Länge und Flight-Breite bestimmen,
+    // wie groß er im Quadrat werden darf.
+    final nominal = _Parts(style, s, 0);
+    final rot = Matrix4.rotationZ(-math.pi / 4);
+    final bounds = nominal.silhouette.transform(rot.storage).getBounds();
+    final pad = math.max(0.5, s * 0.03);
+    final k = (s - 2 * pad) / math.max(bounds.width, bounds.height);
+    final parts = _Parts(style, s, k);
+
     canvas.save();
     canvas.translate(size.width / 2, size.height / 2);
-    // Die Achse zeigt von der Spitze nach rechts oben (45°).
+    canvas.scale(k);
+    canvas.translate(-bounds.center.dx, -bounds.center.dy);
     canvas.rotate(-math.pi / 4);
-    canvas.translate(-length / 2, 0);
-
-    double x(double f) => f * length;
-    double y(double f) => f * length;
-
-    final fill = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill
-      ..isAntiAlias = true;
-    final soft = Paint()
-      ..color = color.withValues(alpha: 0.62)
-      ..style = PaintingStyle.fill
-      ..isAntiAlias = true;
-
-    final grooves = s >= 44 ? 4 : (s >= 18 ? 2 : 0);
-    final fold = s >= 44;
-    if (grooves > 0 || fold) {
-      // Rillen und Kante werden ausgespart: Ebene, in der „löschen“ geht.
-      canvas.saveLayer(Rect.fromLTWH(-length, -length, length * 3, length * 2), Paint());
-    }
-
-    // Spitze: schlanker Kegel, am Ende leicht breiter als an der Spitze.
-    canvas.drawPath(
-      Path()
-        ..moveTo(0, 0)
-        ..lineTo(x(_pointEnd), -y(_pointHalf))
-        ..lineTo(x(_pointEnd), y(_pointHalf))
-        ..close(),
-      fill,
-    );
-
-    // Barrel: vorn schmaler, hinten breiter, leicht gerundete Enden.
-    final r = length * 0.012;
-    canvas.drawPath(
-      Path()
-        ..moveTo(x(_pointEnd), -y(_barrelHalfFront))
-        ..lineTo(x(_barrelEnd), -y(_barrelHalfBack))
-        ..lineTo(x(_barrelEnd), y(_barrelHalfBack))
-        ..lineTo(x(_pointEnd), y(_barrelHalfFront))
-        ..close(),
-      fill,
-    );
-    canvas.drawCircle(Offset(x(_pointEnd), 0), math.max(r, y(_barrelHalfFront) * 0.35), fill);
-
-    // Schaft: dünn, zwischen Barrel und Flight.
-    canvas.drawRect(Rect.fromLTRB(x(_barrelEnd) - 0.5, -y(_shaftHalf), x(_shaftEnd), y(_shaftHalf)), fill);
-
-    // Flight: schmal am Schaft, breit am Ende; die untere Hälfte etwas
-    // heller, damit er räumlich wirkt.
-    final top = Path()
-      ..moveTo(x(_flightStart), 0)
-      ..lineTo(x(0.80), -y(_flightHalf))
-      ..lineTo(x(1.0), -y(_flightHalf * 0.82))
-      ..lineTo(x(1.0), 0)
-      ..close();
-    final bottom = Path()
-      ..moveTo(x(_flightStart), 0)
-      ..lineTo(x(0.80), y(_flightHalf))
-      ..lineTo(x(1.0), y(_flightHalf * 0.82))
-      ..lineTo(x(1.0), 0)
-      ..close();
-    canvas.drawPath(top, fill);
-    canvas.drawPath(bottom, soft);
-
-    if (grooves > 0 || fold) {
-      final clear = Paint()
-        ..blendMode = BlendMode.clear
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = math.max(0.8, length * 0.018)
-        ..isAntiAlias = true;
-      const first = _pointEnd + 0.07;
-      const last = _barrelEnd - 0.06;
-      for (var i = 0; i < grooves; i++) {
-        final f = grooves == 1 ? (first + last) / 2 : first + (last - first) * i / (grooves - 1);
-        final half = _barrelHalfFront + (_barrelHalfBack - _barrelHalfFront) * (f - _pointEnd) / (_barrelEnd - _pointEnd);
-        canvas.drawLine(Offset(x(f), -y(half) - 1), Offset(x(f), y(half) + 1), clear);
-      }
-      if (fold) {
-        canvas.drawLine(Offset(x(_flightStart + 0.07), 0), Offset(x(1.0), 0), clear..strokeWidth = math.max(0.8, length * 0.012));
-      }
-      canvas.restore();
-    }
+    parts.paint(canvas, color, accent ?? color);
     canvas.restore();
   }
 
   @override
-  bool shouldRepaint(covariant DartIconPainter old) => old.color != color;
+  bool shouldRepaint(covariant DartIconPainter old) => old.color != color || old.style != style || old.accent != accent;
+}
+
+/// Die Teile des Darts in Längsrichtung (x von der Spitze zur Flight, y quer).
+/// [px] ist die Zahl der Pixel je Längeneinheit; damit werden Mindeststärken
+/// umgerechnet (0 = ohne Mindeststärke, nur zum Ausmessen).
+class _Parts {
+  _Parts(this.style, this.size, this.px) {
+    final small = size < 22;
+    final outline = style == DartIconStyle.b;
+    grooves = small ? 0 : (size >= 56 ? 3 : (size >= 36 ? 2 : 1));
+    fold = !small;
+    gap = !small;
+    // Linienbreite des Linienstils in Längeneinheiten.
+    stroke = px > 0 ? math.max(1.15, size * 0.055) / px : 0.04;
+    tipHalf = _min(0.026, 0.6);
+    final base = outline ? 0.06 : 0.034;
+    final back = outline ? 0.064 : 0.04;
+    barrelFront = _min(base, small ? 1.05 : 0.9);
+    barrelBack = _min(back, small ? 1.2 : 0.95);
+    shaftHalf = _min(0.02, small ? 0.5 : 0.6);
+    _h = small ? 0.2 : DartIconPainter._flightHalf;
+    // Der Linienstil ist ab 22 px innen hohl, darunter voll.
+    hollow = outline && !small;
+  }
+
+  final DartIconStyle style;
+  final double size;
+  final double px;
+  late final int grooves;
+  late final bool fold;
+  late final bool gap;
+  late final double stroke;
+  late final double tipHalf;
+  late final double barrelFront;
+  late final double barrelBack;
+  late final double shaftHalf;
+  late final bool hollow;
+
+  double _min(double local, double minPx) => px > 0 ? math.max(local, minPx / px) : local;
+
+  static const double _tipEnd = DartIconPainter._tipEnd;
+  static const double _barrelStart = DartIconPainter._barrelStart;
+  static const double _barrelEnd = DartIconPainter._barrelEnd;
+  static const double _shaftEnd = DartIconPainter._shaftEnd;
+  static const double _root = DartIconPainter._flightRoot;
+  late final double _h;
+
+  double _barrelHalf(double x) => barrelFront + (barrelBack - barrelFront) * (x - _barrelStart) / (_barrelEnd - _barrelStart);
+
+  Path get _tip {
+    final end = gap ? _tipEnd : _barrelStart + 0.01;
+    return Path()
+      ..moveTo(0, 0)
+      ..lineTo(end, -tipHalf)
+      ..lineTo(end, tipHalf)
+      ..close();
+  }
+
+  Path _barrelPiece(double a, double b, {double inset = 0}) => Path()
+    ..moveTo(a, -(_barrelHalf(a) - inset))
+    ..lineTo(b, -(_barrelHalf(b) - inset))
+    ..lineTo(b, _barrelHalf(b) - inset)
+    ..lineTo(a, _barrelHalf(a) - inset)
+    ..close();
+
+  /// Barrel in Stücken zwischen den Rillen (gefüllte Stile).
+  List<Path> get _barrel {
+    if (grooves == 0) return [_barrelPiece(_barrelStart, _barrelEnd)];
+    final w = math.max(size >= 36 ? 0.016 : 0.013, px > 0 ? 0.85 / px : 0.0);
+    const first = _barrelStart + 0.105;
+    const last = _barrelEnd - 0.075;
+    final out = <Path>[];
+    var from = _barrelStart;
+    for (var i = 0; i < grooves; i++) {
+      final f = grooves == 1 ? (first + last) / 2 : first + (last - first) * i / (grooves - 1);
+      out.add(_barrelPiece(from, f - w / 2));
+      from = f + w / 2;
+    }
+    out.add(_barrelPiece(from, _barrelEnd));
+    return out;
+  }
+
+  Rect get _shaft => Rect.fromLTRB(_barrelEnd - 0.01, -shaftHalf, _shaftEnd, shaftHalf);
+
+  /// Eine Flügelhälfte der Flight; [sign] -1 oben, +1 unten. Gerade Kanten
+  /// mit klarer Ecke außen: so liest sich die Flight auch klein als Flight
+  /// und nicht als runder Kopf.
+  Path _wing(double sign, {double offset = 0}) => Path()
+    ..moveTo(_root, sign * offset)
+    ..lineTo(_cornerX, sign * _h)
+    ..lineTo(1.0, sign * _h * _tailRatio)
+    ..lineTo(1.0, sign * offset)
+    ..close();
+
+  static const double _cornerX = 0.875;
+  static const double _tailRatio = 0.58;
+
+  Path get _flightOutline => Path()
+    ..moveTo(_root, 0)
+    ..lineTo(_cornerX, -_h)
+    ..lineTo(1.0, -_h * _tailRatio)
+    ..lineTo(1.0, _h * _tailRatio)
+    ..lineTo(_cornerX, _h)
+    ..close();
+
+  /// Alles zusammen, zum Ausmessen.
+  Path get silhouette => Path()
+    ..addPath(_tip, Offset.zero)
+    ..addPath(_barrelPiece(_barrelStart, _barrelEnd), Offset.zero)
+    ..addRect(_shaft)
+    ..addPath(_flightOutline, Offset.zero);
+
+  void paint(Canvas canvas, Color color, Color accent) {
+    if (style == DartIconStyle.b) {
+      _paintOutline(canvas, color);
+    } else {
+      _paintFilled(canvas, color, style == DartIconStyle.c ? accent : color);
+    }
+  }
+
+  void _paintFilled(Canvas canvas, Color color, Color flight) {
+    final body = Paint()
+      ..color = color
+      ..isAntiAlias = true;
+    canvas.drawPath(_tip, body);
+    for (final b in _barrel) {
+      canvas.drawPath(b, body);
+    }
+    canvas.drawRect(_shaft, body);
+    final off = fold ? math.max(0.008, px > 0 ? 0.35 / px : 0.0) : 0.0;
+    // Obere Hälfte voll, untere etwas zurückgenommen: wirkt räumlich.
+    canvas.drawPath(_wing(-1, offset: off), Paint()..color = flight..isAntiAlias = true);
+    canvas.drawPath(_wing(1, offset: off), Paint()..color = flight.withValues(alpha: flight.a * 0.6)..isAntiAlias = true);
+  }
+
+  void _paintOutline(Canvas canvas, Color color) {
+    final fill = Paint()
+      ..color = color
+      ..isAntiAlias = true;
+    final line = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = stroke
+      ..strokeJoin = StrokeJoin.round
+      ..strokeCap = StrokeCap.round
+      ..isAntiAlias = true;
+    canvas.drawPath(_tip, fill);
+    if (hollow) {
+      canvas.drawPath(_barrelPiece(_barrelStart + stroke / 2, _barrelEnd - stroke / 2, inset: stroke / 2), line);
+      if (grooves > 0 && size >= 40) {
+        for (var i = 0; i < grooves; i++) {
+          final f = _barrelStart + 0.1 + (_barrelEnd - _barrelStart - 0.19) * i / math.max(1, grooves - 1);
+          final hw = _barrelHalf(f) - stroke / 2;
+          canvas.drawLine(Offset(f, -hw), Offset(f, hw), line..strokeWidth = stroke * 0.8);
+          line.strokeWidth = stroke;
+        }
+      }
+    } else {
+      canvas.drawPath(_barrelPiece(_barrelStart, _barrelEnd), fill);
+    }
+    canvas.drawRect(_shaft, fill);
+    if (!hollow) canvas.drawPath(_flightOutline, Paint()..color = color.withValues(alpha: color.a * 0.4)..isAntiAlias = true);
+    canvas.drawPath(_flightOutline, line);
+    if (fold) canvas.drawLine(const Offset(_root, 0), const Offset(0.985, 0), line);
+  }
 }
 
 /// Symbole der App, die nicht aus der Material-Schrift kommen. Sie stehen
