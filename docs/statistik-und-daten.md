@@ -37,8 +37,8 @@ Die Statistik hat zehn Reiter:
 |---|---|
 | 3-Dart-Average | Punkte pro Dart × 3. T20-Training, Score-Ziel und Highscore-Jagd aus den Würfen; andere Spiele (z. B. X01) über ihre gemeldete Kennzahl `average`, gewichtet mit ihren Darts. Spiele wie Around the Clock zählen nicht, dort wirft man auf Felder statt auf Punkte. |
 | First 9 | Durchschnitt der Kennzahl `first9` der Sessions, die sie melden (X01). |
-| Checkout-Quote | geschaffte Versuche / alle Versuche aus Checkout-Training und 121 |
-| Checkout-Quote nach Rest | dieselben Versuche, aufgeteilt nach Zielwert: 2–40, 41–60, 61–100, 101–130, 131–170 |
+| Checkout-Quote | geschaffte Versuche / alle Versuche aus dem Checkout-Training. 121 zählt nicht mit (siehe „121 zählt nicht zu normalen Finishes“). |
+| Checkout-Quote nach Rest | dieselben Versuche (ohne 121), aufgeteilt nach Zielwert: 2–40, 41–60, 61–100, 101–130, 131–170 |
 | Double-Quote | Treffer / Darts, bei denen genau ein Double (oder das Bullseye) das Ziel war, siehe „Ziel je Dart“. Gibt es keine solchen Darts, die Quote aus Bob's 27. |
 | Triple-Quote | Treffer / Darts mit genau einem Triple als Ziel (T20-Training, Highscore-Jagd, Score-Ziel, Checkout-Wege über ein Triple). Ohne solche Darts die Quote aus dem T20-Training. |
 | Trefferquote aufs Ziel | alle Darts, für die das Spiel ein Ziel vorgab, und wie viele davon im Ziel landeten |
@@ -126,9 +126,26 @@ besten Average wird hervorgehoben, sobald es in mindestens zwei Tageszeiten Scor
 ### Rekorde
 
 Über alle Daten des aktiven Profils, jeweils mit Datum: bester Average einer Session (ab 9
-Scoring-Darts), beste First 9, höchste Aufnahme, höchstes Finish (Checkout-Training, 121 und die
-Kennzahl `highestCheckout` anderer Spiele), meiste 180er in einer Session, meiste Darts an einem
+Scoring-Darts), beste First 9, höchste Aufnahme, höchstes Finish (Checkout-Training und die
+Kennzahl `highestCheckout` anderer Spiele, aber nicht 121), meiste 180er in einer Session, meiste Darts an einem
 Tag, längste Serie. Dazu der Bestwert der Hauptkennzahl je Spiel.
+
+### 121 zählt nicht zu normalen Finishes
+
+Beim Training „121“ hat jedes Ziel mehrere Aufnahmen (3, 6 oder 9 Darts); ein Finish dort ist kein
+normales 3-Dart-Finish. Deshalb zählen Finishes aus 121 nicht zu:
+
+* Rekord „Höchstes Finish“,
+* Checkout-Quote und Checkout-Quote nach Rest (damit auch nicht zum Ziel „Checkout-Quote“ und zu den
+  Checkout-Schwächen im Auto-Plan),
+* den Erfolgen „Ton-Plus-Finish“, „Big Fish“, „Bull-Finish“ und „Checkout-Routine“.
+
+Sie bleiben erhalten in der eigenen Wertung von 121 (höchstes Finish, Checkouts, Checkout-Quote, Verlauf und
+Bestwert des Spiels, die Challenge „Leiter ab 121“) und in der Doppel-Statistik, denn dort wurde wirklich
+aufs Doppel geworfen. Das gilt auch, wenn nur eine Aufnahme je Ziel eingestellt ist: 121 ist nie ein normales
+Finish, unabhängig von der Einstellung. Alles wird aus den gespeicherten Sessions neu berechnet; bereits
+angezeigte Werte ändern sich ohne Datenbankänderung. Die Liste der betroffenen Spiele steht in
+`StatsCalculator.multiVisitFinishGames`.
 
 ### Hauptkennzahl je Spiel
 

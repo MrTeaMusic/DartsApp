@@ -883,7 +883,7 @@
       }
     }
   },
-  "statsRecordsHint": "Über alle Zeiträume, für das aktive Profil.",
+  "statsRecordsHint": "Über alle Zeiträume, für das aktive Profil. Finishes aus 121 zählen nicht zum höchsten Finish, sie stehen bei den Spielrekorden.",
   "statsRecordBestAverage": "Bester Average einer Session",
   "statsRecordBestFirst9": "Beste First 9",
   "statsRecordHighestVisit": "Höchste Aufnahme",

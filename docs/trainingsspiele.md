@@ -73,7 +73,9 @@ zählen nicht und werden in der Datenbank als „nicht gezählt“ markiert.
   (nie unter den Startwert).
 * Bust und **Double-Out** wie beim Checkout-Training, Wurfvorschlag abschaltbar.
 * Ende nach der eingestellten Zahl an **Zielen** oder nach einem Checkout von 170.
-* Wertung: höchstes Finish, Checkouts, Checkout-Quote.
+* Wertung: höchstes Finish, Checkouts, Checkout-Quote. Diese Finishes zählen nur in der eigenen
+  Wertung von 121 und in der Doppel-Statistik, nicht zu Rekord „Höchstes Finish“, Checkout-Quote, Zielen
+  und Erfolgen (siehe `docs/statistik-und-daten.md`).
 
 ## Bob's 27
 

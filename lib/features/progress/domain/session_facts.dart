@@ -76,8 +76,10 @@ class SessionFacts {
   static const int minAverageDarts = 18;
 }
 
-/// Spiele, in denen ein Checkout-Ereignis ein Finish ist.
-const Set<String> _checkoutGames = {'checkout', 'one_twenty_one', 'catch_40', 'x01'};
+/// Spiele, in denen ein Checkout-Ereignis ein Finish ist. 121 gehört nicht
+/// dazu: Dort hat ein Ziel mehrere Aufnahmen, das Finish ist kein normales
+/// 3-Dart-Finish ([StatsCalculator.multiVisitFinishGames]).
+const Set<String> _checkoutGames = {'checkout', 'catch_40', 'x01'};
 
 /// Kennung des Finales im Turnierbaum.
 const String tournamentFinalId = 'r${Tournament.roundCount - 1}-m0';
