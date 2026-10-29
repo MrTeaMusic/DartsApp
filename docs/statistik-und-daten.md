@@ -166,6 +166,26 @@ Die **Detailansicht** einer Session zeigt:
   Punktestand (z. B. Bob's 27), Marks (Cricket) oder Treffer aufs Ziel (z. B. Around the Clock).
   Checkout-Aufnahmen sind grün.
 * Heatmap, wenn Würfe mit Position gespeichert sind (Simulator, Autodarts).
+* **Legs mit Aufnahmenverlauf** (X01-Matches, importierte Online-Matches und X01-Training; Code in
+  `leg_board.dart` und `leg_board_view.dart`): je Leg ein Liniendiagramm mit dem Rest nach jeder Aufnahme
+  (Startwert bis 0, eine Linie je Spieler, man selbst in der Hauptfarbe der Diagramme, der Gegner in der
+  zweiten) und darunter eine Tabelle mit zwei Spalten. Links die Nummer der Aufnahme, je Spieler die
+  Punkte fett, darunter das Wurfbild („T20 S20 S20“), rechts der Rest danach; der Kopf zeigt Name und
+  Startwert. Aufnahmen ab 100 sind getönt (stärker ab 140 und 180), der Checkout grün mit Rest 0 und
+  grünem Rahmen in der letzten Zeile des Siegers, ein Bust rot. Bei mehreren Legs wählt man oben „Alle
+  Legs“ oder ein einzelnes Leg. Ältere Matches ohne Leg-Angaben zeigen weiter die Aufnahmenliste.
+* **Doppel:** Eine Karte „Doppel“ mit der Doppelquote je Spieler („Doppelquote: 3 von 11 · 27 %“) und den
+  Doppeln, auf die geworfen wurde (D16 2/5 …). In der Tabelle trägt jede Aufnahme mit einem verfehlten
+  Doppel eine kleine rote Marke („D16“, bei mehreren Versuchen „D16 ×2“, breit mit „verpasst“); die
+  Darts stehen im Wurfbild rot (verfehlt) bzw. grün (Finish). Unter der Tabelle steht je Spieler
+  „Doppel 1/4“ für das Leg.
+  **Definition:** genau wie bei der Checkout-Quote der Statistik (`checkoutDarts`): ein gezählter Dart bei
+  einem Rest, der mit einem Dart zu checken ist (bei Double-Out ein Double oder das Bull), nachdem
+  ein nötiger Double-In erfolgt ist; getroffen ist der Versuch, wenn damit das Leg endet. Die eigenen
+  Zahlen stimmen deshalb mit `checkoutDarts` und `legsWon` des Matches überein (im Test geprüft). Das
+  Ziel ist das Feld des Wegvorschlags mit einem Dart (Rest 32 → D16, Rest 50 → Bull). Darts nach Bust
+  oder Checkout zählen nicht. Die Aufschlüsselung je Doppel zeigt nur Doppel (bei Master-Out zählen
+  Triple-Versuche zur Summe, erscheinen aber nicht als Doppel).
 * Jede Aufnahme mit ihren Darts, dem Wert der Aufnahme und – bei Spielen mit Rest oder Punktestand – dem
   Stand danach. Der Wert sind Punkte bei Scoring-Spielen, X01 und Matches, Marks bei Cricket und Treffer
   aufs Ziel bei den übrigen Zielspielen (Around the Clock, Bob's 27 …).
@@ -176,7 +196,11 @@ Die **Detailansicht** einer Session zeigt:
 
 **Matches:** Gespeichert sind nur die eigenen Würfe. Seit dem Spielverlauf enthält das Ergebnis eines
 Matches zusätzlich die Kennzahlen aller Teilnehmer und je Leg Sieger, Checkout, Darts und die Aufnahme,
-mit der es endete. Daraus zeigt die Detailansicht den Endstand, die Tabelle aller Teilnehmer und die
+mit der es endete. Seit dem Aufnahmenverlauf steht bei Matches zu zweit je Leg auch `opp`: die Aufnahmen
+des Gegners als Feldnamen (wie beim Autodarts-Import). Das liegt nur im Ergebnis-JSON (kein neues
+Schema, kein Schema-Bump) und fließt in keine Statistik ein; es sorgt dafür, dass der Verlauf beide
+Spalten und die Doppel des Gegners zeigen kann. Matches von vorher zeigen nur die eigene Spalte mit
+einem Hinweis. Daraus zeigt die Detailansicht den Endstand, die Tabelle aller Teilnehmer und die
 Aufnahmen je Leg mit Rest. Ältere Matches haben das nicht: Von den Gegnern stehen dann nur die Namen da;
 wurden alle Legs selbst gewonnen, lassen sich die Legs trotzdem trennen, sonst stehen die Aufnahmen ohne
 Rest und Bust in einer Liste.

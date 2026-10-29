@@ -124,7 +124,7 @@ Future<int> seedMatch(
   }
   await repo.endSession(
     sid,
-    result: matchResultFor(session.match, 0, setup),
+    result: matchResultFor(session.match, 0, setup, records: session.records),
     finished: true,
     endedAt: start.add(const Duration(minutes: 21)),
   );

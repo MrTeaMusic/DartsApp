@@ -93,7 +93,7 @@ class OverviewTab extends StatelessWidget {
             KpiTile(
               label: l10n.statDarts,
               value: '${r.darts}',
-              icon: Icons.adjust_rounded,
+              icon: AppIcons.dart,
               delta: MetricDelta.of(r.darts.toDouble(), p?.darts.toDouble(), ValueKind.count),
             ),
             KpiTile(
@@ -781,7 +781,7 @@ class RecordsTab extends StatelessWidget {
           RecordKind.highestVisit => Icons.emoji_events_rounded,
           RecordKind.highestCheckout => Icons.flag_rounded,
           RecordKind.most180s => Icons.star_rounded,
-          RecordKind.mostDartsDay => Icons.adjust_rounded,
+          RecordKind.mostDartsDay => AppIcons.dart,
           RecordKind.longestStreak => Icons.local_fire_department_rounded,
         };
     String value(PersonalRecord r) => switch (r.kind) {

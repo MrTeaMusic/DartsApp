@@ -9,7 +9,13 @@ const String matchGameId = 'x01_match';
 
 /// Ergebnis eines Spielers für Speicherung und Statistik. Nur die eigenen
 /// Darts zählen, die des Gegners (Bot oder Mensch) nicht.
-GameResult matchResultFor(X01Match m, int player, MatchSetup setup) {
+///
+/// Mit [records] (alle Darts des Matches, `MatchSession.records`) steht bei
+/// Matches zu zweit je Leg `opp` im Ergebnis: die Aufnahmen des Gegners als
+/// Feldnamen („T20“), wie sie auch der Autodarts-Import ablegt. Damit zeigt
+/// der Spielverlauf beide Spalten und die Doppel des Gegners. Sie fließen
+/// in keine Statistik ein.
+GameResult matchResultFor(X01Match m, int player, MatchSetup setup, {List<MatchDartRecord> records = const []}) {
   final p = m.players[player];
   final avg = p.average;
   final first9 = p.first9Average;
@@ -67,11 +73,30 @@ GameResult matchResultFor(X01Match m, int player, MatchSetup setup) {
           },
       ],
       'legs': [
-        for (final l in m.legs)
-          {'winner': l.winner, 'set': l.set, 'darts': l.darts, 'checkout': l.checkout, 'visit': l.visit},
+        for (final (i, l) in m.legs.indexed)
+          {
+            'winner': l.winner,
+            'set': l.set,
+            'darts': l.darts,
+            'checkout': l.checkout,
+            'visit': l.visit,
+            if (setup.players.length == 2) 'opp': ?_opponentVisits(records, 1 - player, i + 1),
+          },
       ],
     },
   );
+}
+
+/// Aufnahmen von [player] im Leg [leg] (ab 1) als Feldnamen, die älteste
+/// zuerst. `null` ohne Darts (Match ohne [records], Leg nicht gespielt).
+List<List<String>>? _opponentVisits(List<MatchDartRecord> records, int player, int leg) {
+  final visits = <int, List<String>>{};
+  for (final r in records) {
+    if (r.player == player && r.leg == leg) visits.putIfAbsent(r.visitSerial, () => []).add(r.dart.segment.name);
+  }
+  if (visits.isEmpty) return null;
+  final keys = visits.keys.toList()..sort();
+  return [for (final k in keys) visits[k]!];
 }
 
 /// Kennzahlen eines Teilnehmers für das gespeicherte Ergebnis.

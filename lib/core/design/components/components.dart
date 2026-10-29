@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import '../../../features/board/domain/segment.dart';
 import '../arena/arena_palette.dart';
 import '../dart_colors.dart';
+import '../dart_icon.dart';
 import '../dart_look.dart';
 import '../tokens.dart';
 import 'hero_backdrop.dart' show OnGradient;
 
+export '../dart_icon.dart';
 export 'app_page.dart';
 export 'event_banner.dart';
 export 'hero_backdrop.dart';
@@ -209,7 +211,7 @@ class IconBadge extends StatelessWidget {
         border: border,
         borderRadius: BorderRadius.circular(look.pill ? size * 0.3 : look.radiusM),
       ),
-      child: Icon(icon, color: fg, size: size * 0.52),
+      child: AppIcon(icon, color: fg, size: size * 0.52),
     );
   }
 }
@@ -246,7 +248,7 @@ class StatTile extends StatelessWidget {
           Row(
             children: [
               if (icon != null) ...[
-                Icon(icon, size: look.id == DartLookId.lab ? 14 : 16, color: colors.textMuted),
+                AppIcon(icon!, size: look.id == DartLookId.lab ? 14 : 16, color: colors.textMuted),
                 const SizedBox(width: AppSpacing.xs + 2),
               ],
               Expanded(child: Kicker(label, maxLines: 2)),

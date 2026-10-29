@@ -48,10 +48,14 @@ void main() {
     expect(find.text('gegen Gegner'), findsWidgets);
 
     final list = find.descendant(of: find.byKey(const Key('session-detail')), matching: find.byType(Scrollable)).first;
-    await tester.scrollUntilVisible(find.byKey(const Key('session-leg-1-opponent')), 300, scrollable: list);
+    await tester.scrollUntilVisible(find.byKey(const Key('session-leg-1')), 300, scrollable: list);
     await tester.pumpAndSettle();
+    // Eine Tabelle je Leg mit beiden Spielern: Ben links, der Gegner rechts.
     expect(find.byKey(const Key('session-leg-1')), findsOneWidget);
-    expect(find.byKey(const Key('session-leg-1-opponent')), findsOneWidget);
+    expect(find.byKey(const Key('session-leg-1-chart')), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const Key('session-leg-1')), matching: find.text('Ben')), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const Key('session-leg-1')), matching: find.text('Gegner')), findsOneWidget);
+    expect(find.byKey(const Key('leg-1-p1-v1')), findsOneWidget, reason: 'erste Aufnahme des Gegners');
     expect(find.byKey(const Key('session-visits-note')), findsOneWidget);
     expect(find.textContaining('zählen nur deine eigenen Darts'), findsOneWidget);
   });
