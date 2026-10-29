@@ -20,6 +20,11 @@ import '../domain/dart_event.dart';
 /// }
 /// ```
 ///
+/// Neuere Board Manager schreiben die Felder flach (`segmentName`,
+/// `segmentNumber`, `multiplier`, `bed`, `coordsX`, `coordsY`) und Ereignisse in
+/// camelCase (`throwDetected`, `takeoutStarted`, `takeoutFinished`); auch das
+/// wird gelesen (Mitschnitt vom 29.10.2026).
+///
 /// Der Zustand enthält immer alle Darts der laufenden Aufnahme. Neue Darts
 /// werden durch Vergleich mit dem vorherigen Zustand erkannt.
 class AutodartsStateMapper {
@@ -48,7 +53,7 @@ class AutodartsStateMapper {
     final events = <DartEvent>[];
     final current = _parseThrows(state, now);
     final numThrows = _asInt(state['numThrows']) ?? current?.length;
-    final marker = '${state['event'] ?? state['status'] ?? ''}'.toLowerCase();
+    final marker = _normalizeMarker('${state['event'] ?? state['status'] ?? ''}');
 
     final previous = _previous;
     if (previous == null) {
@@ -58,7 +63,7 @@ class AutodartsStateMapper {
       return events;
     }
 
-    if (marker == 'manual reset') {
+    if (marker == 'manualreset') {
       events.add(TurnReset(now));
       _inTakeout = false;
     }
@@ -94,8 +99,11 @@ class AutodartsStateMapper {
 
     final boardEmpty = numThrows == 0;
     final hadDarts = previous.isNotEmpty;
-    if (marker == 'takeout finished' || (boardEmpty && (_inTakeout || hadDarts))) {
-      if (marker != 'manual reset' &&
+    // "event" bleibt im neueren Format stehen, bis der nächste Wurf es ändert:
+    // "takeoutFinished" mit schon wieder steckenden Darts ist kein Ende.
+    final finishedMarker = marker == 'takeoutfinished' && (current?.isEmpty ?? true);
+    if (finishedMarker || (boardEmpty && (_inTakeout || hadDarts))) {
+      if (marker != 'manualreset' &&
           !events.any((e) => e is TakeoutFinished)) {
         events.add(TakeoutFinished(now));
       }
@@ -105,8 +113,11 @@ class AutodartsStateMapper {
     return events;
   }
 
-  static bool _isTakeoutMarker(String marker) =>
-      marker == 'takeout started' || marker == 'takeout in progress';
+  /// "Takeout finished" (BM 2.0.2) und "takeoutFinished" (neueres Format)
+  /// werden gleich behandelt.
+  static String _normalizeMarker(String raw) => raw.toLowerCase().replaceAll(RegExp(r'[\s_\-]'), '');
+
+  static bool _isTakeoutMarker(String marker) => marker == 'takeoutstarted' || marker == 'takeoutinprogress';
 
   List<DartThrow>? _parseThrows(Map<String, Object?> state, DateTime now) {
     final raw = state['throws'];
@@ -122,14 +133,14 @@ class AutodartsStateMapper {
         continue;
       }
       final map = item.cast<String, Object?>();
-      final segment = parseSegment(map['segment']);
+      final segment = parseThrowSegment(map);
       if (segment == null) {
-        warnings.add('Segment nicht erkannt: ${map['segment']}');
+        warnings.add('Segment nicht erkannt: ${map['segment'] ?? map['segmentName']}');
         continue;
       }
       result.add(DartThrow(
         segment: segment,
-        position: switch (parseCoords(map['coords'])) {
+        position: switch (parseThrowCoords(map)) {
           final p? => calibration.apply(p),
           null => null,
         },
@@ -140,6 +151,24 @@ class AutodartsStateMapper {
     }
     return result;
   }
+
+  /// Segment eines Wurfs. Ältere Board Manager liefern ein Objekt `segment`,
+  /// neuere flache Felder (`segmentName`, `segmentNumber`, `multiplier`, `bed`).
+  static Segment? parseThrowSegment(Map<String, Object?> t) {
+    if (t['segment'] == null && (t.containsKey('segmentName') || t.containsKey('segmentNumber'))) {
+      return parseSegment({
+        'name': t['segmentName'],
+        'number': t['segmentNumber'],
+        'bed': t['bed'],
+        'multiplier': t['multiplier'],
+      });
+    }
+    return parseSegment(t['segment']);
+  }
+
+  /// Koordinaten eines Wurfs: `coords: {x, y}` oder flach `coordsX`/`coordsY`.
+  static BoardPoint? parseThrowCoords(Map<String, Object?> t) =>
+      parseCoords(t['coords']) ?? parseCoords({'x': t['coordsX'], 'y': t['coordsY']});
 
   /// Liest ein Segment-Objekt. Bevorzugt Zahl + Multiplikator, nutzt "bed"
   /// zur Unterscheidung innere/äußere Single und fällt auf "name" zurück.
