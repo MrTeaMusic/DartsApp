@@ -24,7 +24,7 @@ Ohne `--dart-define=DARTLAB_LITE=true` bleibt die App, wie sie ist. Der Schalter
   [live-internet.md](live-internet.md). Der Reiter fragt nur ab, solange er offen und die App im
   Vordergrund ist, und liest nur.
 * **Nur lesen:** Löschen, Bearbeiten, Importieren, „Nochmal spielen“, Zielanlage, Live- und
-  Planlinks sind ausgeblendet. Die Statistik-Reiter, der Verlauf und die Session-Details sind
+  Planlinks sind ausgeblendet. Die Statistik-Reiter (auch „Elo“, siehe [haus-elo.md](haus-elo.md)), der Verlauf und die Session-Details sind
   dieselben wie in der Haupt-App.
 * **Welches Profil:** Gezeigt wird Bens Standardprofil (`default-player`). Hat es keine Session,
   nimmt Lite das Profil mit den meisten Sessions. Lite zeigt immer nur dieses eine

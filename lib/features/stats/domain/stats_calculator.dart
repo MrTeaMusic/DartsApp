@@ -11,6 +11,7 @@ import '../../matches/domain/match_format.dart';
 import '../../matches/domain/match_result.dart';
 import 'double_stats.dart';
 import 'game_metrics.dart';
+import 'house_elo.dart';
 import 'online_stats.dart';
 import 'scatter_stats.dart';
 import 'stats_models.dart';
@@ -18,6 +19,7 @@ import 'target_replay.dart';
 import 'tempo_stats.dart';
 
 export 'double_stats.dart';
+export 'house_elo.dart';
 export 'online_stats.dart';
 export 'scatter_stats.dart';
 export 'stats_models.dart';
@@ -157,6 +159,10 @@ class StatsCalculator {
     take(previous._perDayCache, _perDayCache);
     take(previous._liveDoublesCache, _liveDoublesCache);
     take(previous._onlineMatchCache, _onlineMatchCache);
+    // „Zählt nicht“ (`null`) ist hier ein Ergebnis, das ebenfalls übernommen wird.
+    for (final id in unchanged) {
+      if (previous._eloMatchCache.containsKey(id)) _eloMatchCache[id] = previous._eloMatchCache[id];
+    }
     take(previous._scatterCache, _scatterCache);
     take(previous._tempoCache, _tempoCache);
     _days.addAll(previous._days);
@@ -240,6 +246,9 @@ class StatsCalculator {
   /// Gespeichertes Ergebnis einer Session (einmal dekodiert).
   Map<String, Object?> _result(SessionRow s) => _resultCache.putIfAbsent(s.id, () => decode(s.resultJson));
   Map<String, num> _metrics(SessionRow s) => _metricsCache.putIfAbsent(s.id, () => _numbers(_result(s)['metrics']));
+
+  /// Erster Tag des Zeitraums (heute eingeschlossen); `null` bei „Alles“.
+  DateTime? periodStart(StatsPeriod p) => _since(p);
 
   DateTime? _since(StatsPeriod p) => p.days == null ? null : dayOf(now).subtract(Duration(days: p.days! - 1));
 
@@ -888,6 +897,37 @@ class StatsCalculator {
           ],
         );
       });
+
+  // -------------------------------------------------------------------------
+  // Haus-Elo
+  // -------------------------------------------------------------------------
+
+  /// Gewertete Matches je Session (`null` = zählt nicht), einmal dekodiert und
+  /// für unveränderte Sessions aus dem vorigen Rechner übernommen.
+  final Map<int, EloMatch?> _eloMatchCache = {};
+
+  /// Die Session als gewertetes Match fürs Haus-Elo; `null`, wenn sie nicht
+  /// zählt (Regel in [EloMatch.fromSession]). Trainings-Sessions werden nicht
+  /// einmal dekodiert.
+  EloMatch? eloMatchOf(SessionRow s) {
+    if (s.gameId != matchGameId && s.gameId != autodartsLiveX01GameId) return null;
+    if (_eloMatchCache.containsKey(s.id)) return _eloMatchCache[s.id];
+    return _eloMatchCache[s.id] = EloMatch.fromSession(
+      sessionId: s.id,
+      uid: s.uid,
+      gameId: s.gameId,
+      startedAt: s.startedAt,
+      finished: s.finished,
+      config: decode(s.configJson),
+      result: _result(s),
+    );
+  }
+
+  /// Haus-Elo über **alle** Matches des Profils, unabhängig vom Zeitraum
+  /// (siehe `docs/haus-elo.md`). Ein Lauf je Rechner.
+  late final HouseEloReport houseElo = HouseElo.compute([
+    for (final s in _sessions) ?eloMatchOf(s),
+  ]);
 
   /// Training gegen Match im Zeitraum. Welche Spiele für welche Kennzahl
   /// als Training zählen, steht in [TrainingSources].

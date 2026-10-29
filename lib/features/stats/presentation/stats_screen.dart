@@ -16,6 +16,7 @@ import '../../update/presentation/update_banner.dart';
 import '../data/stats_repository.dart';
 import '../domain/game_metrics.dart';
 import '../domain/stats_calculator.dart';
+import 'elo_tab.dart';
 import 'online_tab.dart';
 import 'scatter_tab.dart';
 import 'tempo_tab.dart';
@@ -102,7 +103,7 @@ class StatsScreen extends ConsumerWidget {
       // Reiter bündig mit dem Seitenrand (Label-Abstand 16 abziehen).
       final inset = AppPageBar.contentInset(context, outer.maxWidth, double.infinity);
       return DefaultTabController(
-        length: 9,
+        length: 10,
         child: Scaffold(
           appBar: AppPageBar(
             title: Text(l10n.statsTitle),
@@ -126,6 +127,7 @@ class StatsScreen extends ConsumerWidget {
               tabs: [
                 Tab(key: const Key('stats-tab-overview'), text: l10n.statsTabOverview),
                 Tab(key: const Key('stats-tab-online'), text: l10n.statsTabOnline),
+                Tab(key: const Key('stats-tab-elo'), text: l10n.statsTabElo),
                 Tab(key: const Key('stats-tab-scoring'), text: l10n.statsTabScoring),
                 Tab(key: const Key('stats-tab-doubles'), text: l10n.statsTabDoubles),
                 Tab(key: const Key('stats-tab-scatter'), text: l10n.statsTabScatter),
@@ -150,7 +152,7 @@ class StatsScreen extends ConsumerWidget {
                   ),
                 // Zeitraum und Spiel gelten nicht für die Erfolge.
                 _HideOnTab(
-                  index: _achievementsTab,
+                  indexes: const {_achievementsTab},
                   child: Padding(
                     padding: EdgeInsets.fromLTRB(pad, AppSpacing.m, pad, AppSpacing.s),
                     child: _Filters(view: view),
@@ -163,6 +165,7 @@ class StatsScreen extends ConsumerWidget {
                           children: [
                             OverviewTab(view: view, wide: wide, pad: pad),
                             OnlineTab(view: view, wide: wide, pad: pad),
+                            EloTab(view: view, wide: wide, pad: pad),
                             ScoringTab(view: view, wide: wide, pad: pad),
                             DoublesTab(view: view, wide: wide, pad: pad),
                             ScatterTab(view: view, wide: wide, pad: pad),
@@ -185,13 +188,16 @@ class StatsScreen extends ConsumerWidget {
 /// Index des Reiters „Online“ (gilt für alle Live-Sessions, ohne Spielfilter).
 const int _onlineTab = 1;
 
+/// Index des Reiters „Elo“ (gilt für alle Matches, ohne Spielfilter).
+const int _eloTab = 2;
+
 /// Index des Reiters „Erfolge“.
-const int _achievementsTab = 8;
+const int _achievementsTab = 9;
 
 /// Blendet [child] aus, solange der Reiter [index] gewählt ist.
 class _HideOnTab extends StatelessWidget {
-  const _HideOnTab({required this.index, required this.child, this.inline = false});
-  final int index;
+  const _HideOnTab({required this.indexes, required this.child, this.inline = false});
+  final Set<int> indexes;
   final Widget child;
 
   /// In einer Zeile (ohne volle Breite, wenn ausgeblendet).
@@ -205,7 +211,7 @@ class _HideOnTab extends StatelessWidget {
       builder: (context, child) => AnimatedSize(
         duration: const Duration(milliseconds: 200),
         alignment: Alignment.topCenter,
-        child: controller.index == index ? (inline ? const SizedBox.shrink() : const SizedBox(width: double.infinity)) : child,
+        child: indexes.contains(controller.index) ? (inline ? const SizedBox.shrink() : const SizedBox(width: double.infinity)) : child,
       ),
       child: child,
     );
@@ -252,9 +258,9 @@ class _Filters extends ConsumerWidget {
             ),
             const SizedBox(width: AppSpacing.s),
           ],
-          // Der Reiter „Online“ zeigt immer alle Live-Sessions.
+          // „Online“ zeigt immer alle Live-Sessions, „Elo“ alle Matches.
           _HideOnTab(
-            index: _onlineTab,
+            indexes: const {_onlineTab, _eloTab},
             inline: true,
             child: Row(
               mainAxisSize: MainAxisSize.min,

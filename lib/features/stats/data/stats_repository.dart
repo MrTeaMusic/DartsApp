@@ -180,3 +180,9 @@ final goalProgressProvider = Provider<List<GoalProgress>>((ref) {
   if (calc == null || goals == null) return const [];
   return goalProgress(goals, calc);
 });
+
+/// Haus-Elo des aktiven Profils, aus demselben Rechner wie die Statistik
+/// (die Sessions und ihre Ergebnisse sind dort schon geladen und
+/// zwischengespeichert). `null`, solange der Rechner noch lädt. Die Rechnung
+/// läuft erst, wenn jemand sie liest, und ist ein Durchlauf über die Matches.
+final houseEloProvider = Provider<HouseEloReport?>((ref) => ref.watch(statsCalculatorProvider).value?.houseElo);
