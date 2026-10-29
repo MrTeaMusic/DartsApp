@@ -77,8 +77,8 @@ class SessionFacts {
 }
 
 /// Spiele, in denen ein Checkout-Ereignis ein Finish ist. 121 gehört nicht
-/// dazu: Dort hat ein Ziel mehrere Aufnahmen, das Finish ist kein normales
-/// 3-Dart-Finish ([StatsCalculator.multiVisitFinishGames]).
+/// dazu; Checkout-Training und Catch 40 zählen nur mit höchstens 3 Darts je
+/// Versuch ([StatsCalculator.countsAsNormalFinish]).
 const Set<String> _checkoutGames = {'checkout', 'catch_40', 'x01'};
 
 /// Kennung des Finales im Turnierbaum.
@@ -122,7 +122,9 @@ SessionFacts sessionFacts(StatsCalculator calc, SessionRow s) {
   var checkouts = 0;
   var bull = 0;
   if (_checkoutGames.contains(s.gameId)) {
-    for (final c in replayCheckouts(s, calc.throwsOf(s), config)) {
+    // Mehr als 3 Darts je Versuch: kein normales Finish (leere Schleife).
+    final normal = StatsCalculator.countsAsNormalFinish(s);
+    for (final c in normal ? replayCheckouts(s, calc.throwsOf(s), config) : const <({int value, Segment last})>[]) {
       checkouts++;
       if (c.value > highest) highest = c.value;
       if (c.last == Segment.bull) bull++;

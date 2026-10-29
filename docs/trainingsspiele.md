@@ -22,7 +22,9 @@ zählen nicht und werden in der Datenbank als „nicht gezählt“ markiert.
   ist das der Weg aus der üblichen Checkout-Tabelle (`CheckoutTable`, z. B. 121 T20 T11 D14,
   61 T15 D8, 170 T20 T20 Bull), sonst sucht eine Kostenfunktion: wenige Darts, dann gängige
   Doubles (D20, D16, D8 …), kleine ungerade Doubles (D1, D3, D5 …) nur, wenn es nicht anders geht.
-* Wertung: Checkout-Quote, Darts pro Checkout, höchster Checkout.
+* Wertung: Checkout-Quote, Darts pro Checkout, höchster Checkout. Nur Versuche mit 3 Darts zählen auch zu den
+  normalen Finish-Statistiken und Rekorden, mit 6 oder 9 Darts nur in der Wertung des Spiels (siehe
+  `docs/statistik-und-daten.md`).
 
 ## Around the Clock
 
