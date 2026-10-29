@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../dart_source/presentation/board_help.dart';
+import '../../board/presentation/board_status_frame.dart';
 import '../../../core/design/components/components.dart';
 import '../../../core/design/dart_colors.dart';
 import '../../../core/design/dart_look.dart';
@@ -39,7 +41,8 @@ class _BoardScreenState extends ConsumerState<BoardScreen> {
     final source = ref.watch(dartSourceProvider);
     final live = ref.watch(liveVisitProvider);
 
-    final board = DartboardView(
+    final board = BoardStatusFrame(
+      child: DartboardView(
       key: const Key('dartboard'),
       hits: [for (final d in live.visit) if (d.position != null) d.position!],
       lastSegment: live.lastDart?.segment,
@@ -51,6 +54,7 @@ class _BoardScreenState extends ConsumerState<BoardScreen> {
         ManualSource() => (_, segment) => source.enter(segment),
         _ => null,
       },
+      ),
     );
 
     final panel = _SidePanel(
@@ -63,7 +67,7 @@ class _BoardScreenState extends ConsumerState<BoardScreen> {
     return Scaffold(
       appBar: AppPageBar(
         title: Text(l10n.boardTitle),
-        actions: const [SourceStatusBadge()],
+        actions: const [SourceStatusBadge(), BoardHelpButton()],
       ),
       body: SafeArea(
         child: LayoutBuilder(builder: (context, c) {

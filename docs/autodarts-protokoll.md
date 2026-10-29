@@ -50,6 +50,10 @@ Mitschnitten vom echten Board abgeglichen ist.
 **Befehle** (ha-autodarts): `PUT /api/start`, `PUT /api/stop`, `POST /api/reset`, `POST /api/restart`,
 `POST /api/config/calibration/auto`. Ältere Versionen (darts-caller): `PUT /api/detection/start|stop`.
 
+**Ungeprüft:** `POST /api/restart` und `POST /api/config/calibration/auto` stammen nur aus der Home-Assistant-Integration
+und sind am Board Manager 2.0.2 **noch nicht bestätigt**. DartLab nutzt sie für die Board-Hilfe (siehe unten) und
+zeigt dort den HTTP-Status, den das Board antwortet.
+
 **Board Manager 2** hat zusätzlich `/api/system`, `/api/host`, `/api/version`, `/api/config`.
 Achtung: Diese Antworten enthalten den Board-API-Key. DartLab ruft sie deshalb nicht ab und
 loggt sie nicht.
@@ -77,6 +81,21 @@ Noch nicht gesehen: Bull/25, Doubles, eine Korrektur am Board, ein Dart mit `bou
 Siehe `docs/autodarts-live.md`. Der Modus hört nur zu: Solange er läuft, verweigert die Quelle jeden Befehl
 (`listenOnly`), damit kein Start/Stop/Reset ein laufendes Online-Match stört.
 
+## Board-Hilfe (Befehle bei hängendem Board)
+
+Menü „Board-Hilfe“ in Live-Bildschirm, Spielansicht und Board (Details: `docs/autodarts-live.md`):
+
+| Eintrag | Befehl | Status |
+|---|---|---|
+| Neu kalibrieren | `POST /api/config/calibration/auto` | **nicht bestätigt** (BM 2.0.2) |
+| Dartboard stoppen | `PUT /api/stop` | nicht bestätigt |
+| Dartboard starten | `PUT /api/start` | nicht bestätigt |
+| Refresh | `POST /api/restart`, bei 404/405 ersatzweise `POST /api/reset` | nicht bestätigt |
+
+Jede Aktion fragt vorher nach und zeigt danach den HTTP-Status des Boards (oder den Fehlertext). 2xx heißt
+„angenommen“, nicht „hat gewirkt“. Antwort-Bodys werden nicht gelesen und nicht geloggt. Die Sperre
+`listenOnly` bleibt für Automatisches bestehen; nur ein Knopfdruck (`userInitiated`) umgeht sie.
+
 ## Wie DartLab das umsetzt (`AutodartsLocalSource`)
 
 1. WebSocket `/api/events` öffnen, `state`-Nachrichten auswerten.
@@ -99,7 +118,7 @@ Siehe `docs/autodarts-live.md`. Der Modus hört nur zu: Solange er läuft, verwe
 5. Wie heißen Bull und Single Bull genau (`bed`, `name`)? DartLab verlässt sich primär auf
    `number` (25) und `multiplier` (1/2).
 6. Verlangt der WebSocket bei manchen Versionen eine Anmeldung (HTTP 401/403)? Bei 2.0.2 nicht.
-7. Passen die Befehlspfade (`/api/reset` usw.) zu deiner Version?
+7. Passen die Befehlspfade (`/api/reset`, `/api/restart`, `/api/config/calibration/auto` usw.) zu deiner Version? Die Board-Hilfe zeigt dafür den HTTP-Status; 404/405 heißt „Pfad unbekannt“.
 8. Was bedeutet `bouncer: true` (abgeprallter Dart)? DartLab ignoriert das Feld derzeit und zählt das gemeldete Feld.
 
 ## Werkzeuge in DartLab

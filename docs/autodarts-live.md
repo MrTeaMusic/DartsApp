@@ -30,10 +30,56 @@ Ein Start/Stop/Reset an den Board Manager würde das laufende Online-Match stör
 * Solange der Live-Bildschirm offen ist, steht die Verbindung auf **nur mithören**
   (`AutodartsLocalSource.listenOnly`): Jeder Befehl (`PUT /api/start`, `PUT /api/stop`,
   `POST /api/reset`) wird verweigert, auch die Knöpfe im Debug-Bildschirm. Im Rohdaten-Log steht dann
-  „nicht gesendet: Autodarts Live hört nur mit“.
+  „nicht gesendet: Autodarts Live hört nur mit“. **Einzige Ausnahme:** ein ausdrücklicher Knopfdruck in der
+  Board-Hilfe (nächster Abschnitt).
 * `/api/system` und `/api/config` (enthalten den API-Schlüssel des Boards) werden nie abgefragt.
 * Ein Test spielt den echten Mitschnitt über einen nachgebauten Board Manager ab und prüft, dass nur
   `GET /api/events` bzw. `GET /api/state` ankommt.
+
+## Board-Hilfe: wenn das Board hängt
+
+Hängt das Board (keine Darts erkannt, Kamerabild eingefroren), gibt es oben in der Kopfzeile den Knopf
+**Board-Hilfe** (Schraubenschlüssel-Symbol). Das Menü bietet:
+
+* **Neu kalibrieren**: `POST /api/config/calibration/auto` (ein POST auf diesen Pfad, kein Abruf von `/api/config`).
+* **Dartboard stoppen** bzw. **Dartboard starten**: `PUT /api/stop` bzw. `PUT /api/start`. Welcher Eintrag
+  erscheint, richtet sich nach dem Feld `running` im Board-Zustand.
+* **Refresh**: zuerst `POST /api/restart`. Antwortet das Board mit 404 oder 405, schickt DartLab ersatzweise
+  `POST /api/reset`.
+
+Jede Aktion fragt vorher in einem Dialog nach. Im Live-Bildschirm steht dort zusätzlich die Warnung, dass ein
+laufendes Online-Match gestört werden kann. Danach zeigt ein Hinweis, was das Board geantwortet hat (**HTTP-Status**
+oder der Fehlertext). Ein 2xx heißt nur, dass das Board den Befehl angenommen hat, nicht, dass er gewirkt hat;
+das siehst du am Board.
+
+**Nicht bestätigt:** Diese Pfade stammen aus der Home-Assistant-Integration. Am Board Manager 2.0.2 sind sie
+**noch nicht geprüft**. Antwortet dein Board mit 404/405, kennt es den Pfad nicht; bitte den angezeigten Status
+melden.
+
+Die Sperre „nur mithören“ bleibt für alles Automatische bestehen. Nur ein Knopfdruck in der Board-Hilfe
+(`userInitiated`) darf sie umgehen. Von den Antworten auf die Befehle wird nur der Statuscode gelesen und
+geloggt, nie der Inhalt.
+
+Der Knopf erscheint auch in der Spielansicht (Match, Solo-Spiele) und im Bildschirm „Board“, aber nur bei der
+Datenquelle Autodarts (lokal) und mit Verbindung zum Board Manager; nicht beim Simulator, bei manueller Eingabe
+und in Lite.
+
+### Leuchtring um die Scheibe
+
+Bei der Datenquelle Autodarts (lokal) liegt ein weicher, runder Leuchtring (Glow) mit Statuswort um die Scheibe. Die Scheibe wird dafür leicht verkleinert, die Fläche bleibt gleich (Live-Bildschirm,
+Spielansicht, Board). Die Farbe steht nie allein: Icon und Wort stehen dabei, Screenreader lesen
+„Dartboard: …“.
+
+| Zustand | Glow | Wort | Wann |
+|---|---|---|---|
+| Bereit | grün | Bereit | verbunden, kein Takeout |
+| Takeout | gelb | Takeout | Board meldet `Takeout started` / `Takeout in progress`, bis `Takeout finished` oder ein neuer Dart |
+| Gestoppt | grau | Gestoppt | verbunden, aber der Board-Zustand meldet `running: false` |
+| Verbinde | gedämpftes Rot | Verbinde | die Verbindung wird gerade aufgebaut |
+| Offline | rot | Offline | keine Verbindung zum Board Manager (auch während der Wartezeit bis zum nächsten Versuch) |
+
+Ohne Verbindung zählt ein alter Takeout nicht: Nach dem Wiederverbinden steht der Glow wieder auf grün, bis der
+Board Manager einen neuen Takeout meldet. Simulator, manuelle Eingabe und Lite haben keinen Glow.
 
 ## Was aufgezeichnet wird
 

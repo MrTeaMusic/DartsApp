@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../dart_source/presentation/board_help.dart';
+import '../../board/presentation/board_status_frame.dart';
 import '../../../core/design/arena/arena_palette.dart';
 import '../../../core/design/components/components.dart';
 import '../../../core/design/dart_colors.dart';
@@ -77,6 +79,7 @@ class AutodartsLiveScreen extends ConsumerWidget {
         title: Text(l10n.liveTitle),
         actions: [
           if (live.listening) SourceStatusBadge(compact: narrow),
+          if (live.listening) const BoardHelpButton(),
           if (!narrow) const FullscreenButton(),
         ],
       ),
@@ -579,7 +582,8 @@ class _HeatCard extends StatelessWidget {
             constraints: BoxConstraints(maxHeight: maxHeight),
             child: AspectRatio(
               aspectRatio: 1,
-              child: DartboardView(
+              child: BoardStatusFrame(
+                child: DartboardView(
                 key: const Key('live-heatmap'),
                 heat: live.stats.heat,
                 showHeat: true,
@@ -587,6 +591,7 @@ class _HeatCard extends StatelessWidget {
                 lastSegment: live.current.isEmpty ? null : live.current.last.segment,
                 hitSerial: live.dartSerial,
                 semanticsLabel: l10n.liveHeatmap,
+              ),
               ),
             ),
           ),
