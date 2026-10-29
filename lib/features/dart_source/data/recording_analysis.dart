@@ -141,8 +141,7 @@ class RecordingAnalysis {
       for (final e in mapper.update(state)) {
         switch (e) {
           case DartThrown(:final dart):
-            final raw = dart.raw?['coords'];
-            darts.add(RecordedDart(time: time, segment: dart.segment, rawPoint: AutodartsStateMapper.parseCoords(raw)));
+            darts.add(RecordedDart(time: time, segment: dart.segment, rawPoint: _rawPoint(dart)));
           case DartCorrected(:final index, :final dart):
             corrections++;
             // Korrigierten Dart in der laufenden Aufnahme ersetzen.
@@ -151,7 +150,7 @@ class RecordingAnalysis {
               darts[i] = RecordedDart(
                 time: time,
                 segment: dart.segment,
-                rawPoint: AutodartsStateMapper.parseCoords(dart.raw?['coords']),
+                rawPoint: _rawPoint(dart),
               );
             }
           case DartUndone():
@@ -224,6 +223,11 @@ class RecordingAnalysis {
       sawThrowsField: sawThrows,
       messageTypes: types,
     );
+  }
+
+  static BoardPoint? _rawPoint(DartThrow dart) {
+    final raw = dart.raw;
+    return raw == null ? null : AutodartsStateMapper.parseThrowCoords(raw);
   }
 
   static bool _looksLikeState(Map<String, Object?> m) => m.containsKey('throws') || m.containsKey('numThrows');

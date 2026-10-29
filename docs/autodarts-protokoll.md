@@ -58,6 +58,23 @@ zeigt dort den HTTP-Status, den das Board antwortet.
 Achtung: Diese Antworten enthalten den Board-API-Key. DartLab ruft sie deshalb nicht ab und
 loggt sie nicht.
 
+## Neueres Format (Mitschnitt vom 29.10.2026)
+
+Nach einer Aktualisierung des Board Managers kam ein anderes Format an (Mitschnitt:
+`test/fixtures/autodarts/board-manager-neues-format-2026-10-29.jsonl`, läuft als Regressionstest). Welche Version das ist,
+steht nicht im Mitschnitt. Der WebSocket verpackt es weiter als `{"type": "state", "data": {...}}`:
+
+* Wurf-Felder flach statt verschachtelt: `segmentName` (z. B. `"S12"`), `segmentNumber`, `multiplier`, `bed`,
+  `coordsX`, `coordsY`, dazu `bouncer`, `failed`, `method`. Kein Objekt `segment`, kein Objekt `coords`.
+* `event` und `status` in camelCase: `throwDetected`, `takeoutStarted`, `takeoutFinished`, `takeoutInProgress`,
+  `throw`, `takeout`. Kein `numThrows`.
+* `event` bleibt nach einem Takeout stehen, bis der nächste Wurf es ändert: der erste Dart danach kommt noch mit
+  `event: "takeoutFinished"`. Das darf den Dart nicht wieder löschen.
+* Koordinaten wie zuvor (y zur 20, x nach rechts). Fehlwürfe und Bull in diesem Format sind **nicht** mitgeschnitten und
+  deshalb ungeprüft.
+
+DartLab liest beide Formate (`AutodartsStateMapper.parseThrowSegment` und `parseThrowCoords`).
+
 ## Bestätigt am echten Board (Board Manager 2.0.2, Windows, 11.10.2026)
 
 Mitschnitt: `test/fixtures/autodarts/board-manager-2.0.2-windows.jsonl` (läuft als Regressionstest).

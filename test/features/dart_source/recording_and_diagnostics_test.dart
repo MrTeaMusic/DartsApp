@@ -97,6 +97,32 @@ void main() {
     expect(a.suggestCalibration(), CoordinateCalibration.identity);
   });
 
+  test('echter Mitschnitt: neueres Board-Manager-Format (flache Felder, camelCase), 29.10.2026', () {
+    final a = RecordingAnalysis.analyze(fixture('board-manager-neues-format-2026-10-29.jsonl'));
+    expect(a.warnings, isEmpty);
+    expect(a.darts.map((d) => d.segment.name), ['S12', 'S20', 'S20', 'S5', 'T20', 'S5']);
+    // Der zweite Takeout am Ende zählt, "takeoutFinished" bei steckendem S5 nicht.
+    expect(a.takeouts, 2);
+    expect(a.corrections, 0);
+    expect(a.sawThrowsField, isTrue);
+    expect(a.agreement(CoordinateCalibration.identity), 1.0);
+    expect(a.suggestCalibration(), CoordinateCalibration.identity);
+  });
+
+  test('Mapper: flaches Format liefert Segment, Koordinaten und genau einen Dart je Wurf', () {
+    final m = AutodartsStateMapper();
+    Map<String, Object?> t(String name, int n, int mult, String bed) =>
+        {'segmentName': name, 'segmentNumber': n, 'multiplier': mult, 'bed': bed, 'coordsX': 0.0, 'coordsY': 0.6};
+    m.update({'event': 'takeoutFinished', 'status': 'throw', 'throws': <Object>[]});
+    // Veralteter Event-Name bei schon steckendem Dart darf ihn nicht wieder löschen.
+    final first = m.update({'event': 'takeoutFinished', 'status': 'throw', 'throws': [t('T20', 20, 3, 'Triple')]});
+    expect(first.whereType<DartThrown>().map((e) => e.dart.segment.name), ['T20']);
+    expect((first.single as DartThrown).dart.position, const BoardPoint(0.0, 0.6));
+    final again = m.update({'event': 'throwDetected', 'status': 'throw', 'throws': [t('T20', 20, 3, 'Triple')]});
+    expect(again, isEmpty);
+    expect(m.warnings, isEmpty);
+  });
+
   group('Verbindungstest', () {
     late FakeBoardManager board;
     tearDown(() => board.close());
