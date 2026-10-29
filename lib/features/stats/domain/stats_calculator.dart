@@ -73,8 +73,8 @@ class StatsReport {
   /// Durchschnitt der Kennzahl `first9` (X01), falls Spiele sie melden.
   final double? first9Average;
 
-  /// Checkout-Quote aus dem Checkout-Training. 121 zählt nicht mit (siehe
-  /// [StatsCalculator.multiVisitFinishGames]).
+  /// Checkout-Quote aus dem Checkout-Training mit höchstens 3 Darts je
+  /// Versuch (siehe [StatsCalculator.countsAsNormalFinish]); 121 zählt nicht.
   final double? checkoutRate;
   final int checkoutAttempts;
   final Map<CheckoutRange, HitCount> checkoutByRange;
@@ -413,14 +413,33 @@ class StatsCalculator {
   /// aufs Doppel geworfen.
   static const Set<String> checkoutGames = {'checkout', 'one_twenty_one'};
 
-  /// Spiele, in denen ein Ziel mehrere Aufnahmen (3, 6 oder 9 Darts) hat. Ihre
-  /// Finishes sind keine normalen 3-Dart-Finishes und zählen deshalb nicht
-  /// zu Rekord „Höchstes Finish“, Checkout-Quote, Ziel „Checkout-Quote“,
-  /// Auto-Plan-Schwächen und Erfolgen. Sie bleiben in der Doppel-Statistik
-  /// ([checkoutGames]) und in der eigenen Wertung des Spiels. Auch mit nur
-  /// einer Aufnahme je Ziel zählt 121 nie als normales Finish: einfach und
+  /// Spiele, in denen ein Ziel immer mehrere Aufnahmen hat. 121 zählt nie als
+  /// normales Finish, auch nicht mit nur einer Aufnahme je Ziel: einfach und
   /// vorhersehbar statt je nach Einstellung.
   static const Set<String> multiVisitFinishGames = {'one_twenty_one'};
+
+  /// Ob ein Finish dieser Session ein normales 3-Dart-Finish ist.
+  ///
+  /// Nur Finishes aus Versuchen mit höchstens drei Darts zählen als normal.
+  /// Das gilt für das Checkout-Training (`dartsPerAttempt`, Standard 3) und
+  /// Catch 40 (`dartsPerTarget`, Standard 6) nur bei höchstens 3 Darts je
+  /// Ziel; 121 ([multiVisitFinishGames]) nie. Alle anderen Spiele (X01,
+  /// Matches …) haben keine Dartgrenze je Versuch und zählen.
+  ///
+  /// Betrifft Rekord „Höchstes Finish“, Checkout-Quote (auch nach Rest),
+  /// Ziel „Checkout-Quote“, Auto-Plan-Schwächen und Erfolge. Doppel-Statistik
+  /// ([checkoutGames]) und die eigene Wertung des Spiels bleiben unverändert.
+  static bool countsAsNormalFinish(SessionRow s) {
+    if (multiVisitFinishGames.contains(s.gameId)) return false;
+    final (key, fallback) = switch (s.gameId) {
+      'checkout' => ('dartsPerAttempt', 3),
+      'catch_40' => ('dartsPerTarget', 6),
+      _ => ('', 0),
+    };
+    if (key.isEmpty) return true;
+    final v = decode(s.configJson)[key];
+    return (v is num ? v.toInt() : fallback) <= 3;
+  }
 
   /// X01-Spiele: Checkout-Darts und gewonnene Legs kommen aus den
   /// Kennzahlen `checkoutDarts` und `legsWon` (Matches speichern nur die
@@ -486,7 +505,7 @@ class StatsCalculator {
     }
     final first9 = [for (final s in sessions) ?_metrics(s)['first9']];
 
-    // Checkouts aus dem Checkout-Training (121 zählt nicht).
+    // Checkouts aus dem Checkout-Training mit höchstens 3 Darts je Versuch.
     var checkouts = HitCount.zero;
     final byRange = <CheckoutRange, HitCount>{};
     for (final a in _checkoutAttempts(sessions)) {
@@ -626,10 +645,11 @@ class StatsCalculator {
     return darts == 0 ? null : HitCount(darts, hits);
   }
 
-  /// Checkout-Versuche aus dem Checkout-Training. 121 zählt nicht: Dort hat
-  /// ein Ziel mehrere Aufnahmen ([multiVisitFinishGames]).
+  /// Checkout-Versuche aus dem Checkout-Training mit höchstens 3 Darts je
+  /// Versuch ([countsAsNormalFinish]).
   Iterable<({int target, bool success, DateTime time})> _checkoutAttempts(List<SessionRow> sessions) sync* {
     for (final s in sessions) {
+      if (!countsAsNormalFinish(s)) continue;
       final details = _result(s)['details'];
       if (details is! Map) continue;
       final list = s.gameId == 'checkout' ? details['attempts'] : null;
@@ -731,7 +751,7 @@ class StatsCalculator {
       for (final a in _checkoutAttempts(_sessions))
         if (a.success) PersonalRecord(RecordKind.highestCheckout, a.target.toDouble(), date: a.time),
       for (final s in _sessions)
-        if (!multiVisitFinishGames.contains(s.gameId))
+        if (countsAsNormalFinish(s))
           if (_metrics(s)['highestCheckout'] case final v?)
             PersonalRecord(RecordKind.highestCheckout, v.toDouble(), date: s.startedAt, gameId: s.gameId),
     ]));

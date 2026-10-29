@@ -37,8 +37,8 @@ Die Statistik hat zehn Reiter:
 |---|---|
 | 3-Dart-Average | Punkte pro Dart × 3. T20-Training, Score-Ziel und Highscore-Jagd aus den Würfen; andere Spiele (z. B. X01) über ihre gemeldete Kennzahl `average`, gewichtet mit ihren Darts. Spiele wie Around the Clock zählen nicht, dort wirft man auf Felder statt auf Punkte. |
 | First 9 | Durchschnitt der Kennzahl `first9` der Sessions, die sie melden (X01). |
-| Checkout-Quote | geschaffte Versuche / alle Versuche aus dem Checkout-Training. 121 zählt nicht mit (siehe „121 zählt nicht zu normalen Finishes“). |
-| Checkout-Quote nach Rest | dieselben Versuche (ohne 121), aufgeteilt nach Zielwert: 2–40, 41–60, 61–100, 101–130, 131–170 |
+| Checkout-Quote | geschaffte Versuche / alle Versuche aus dem Checkout-Training mit höchstens 3 Darts pro Versuch (siehe „Finishes mit mehr als 3 Darts zählen nicht“). |
+| Checkout-Quote nach Rest | dieselben Versuche, aufgeteilt nach Zielwert: 2–40, 41–60, 61–100, 101–130, 131–170 |
 | Double-Quote | Treffer / Darts, bei denen genau ein Double (oder das Bullseye) das Ziel war, siehe „Ziel je Dart“. Gibt es keine solchen Darts, die Quote aus Bob's 27. |
 | Triple-Quote | Treffer / Darts mit genau einem Triple als Ziel (T20-Training, Highscore-Jagd, Score-Ziel, Checkout-Wege über ein Triple). Ohne solche Darts die Quote aus dem T20-Training. |
 | Trefferquote aufs Ziel | alle Darts, für die das Spiel ein Ziel vorgab, und wie viele davon im Ziel landeten |
@@ -127,25 +127,31 @@ besten Average wird hervorgehoben, sobald es in mindestens zwei Tageszeiten Scor
 
 Über alle Daten des aktiven Profils, jeweils mit Datum: bester Average einer Session (ab 9
 Scoring-Darts), beste First 9, höchste Aufnahme, höchstes Finish (Checkout-Training und die
-Kennzahl `highestCheckout` anderer Spiele, aber nicht 121), meiste 180er in einer Session, meiste Darts an einem
+Kennzahl `highestCheckout` anderer Spiele, jeweils nur Finishes mit höchstens 3 Darts je Versuch, also nicht 121), meiste 180er in einer Session, meiste Darts an einem
 Tag, längste Serie. Dazu der Bestwert der Hauptkennzahl je Spiel.
 
-### 121 zählt nicht zu normalen Finishes
+### Finishes mit mehr als 3 Darts zählen nicht
 
-Beim Training „121“ hat jedes Ziel mehrere Aufnahmen (3, 6 oder 9 Darts); ein Finish dort ist kein
-normales 3-Dart-Finish. Deshalb zählen Finishes aus 121 nicht zu:
+Als normales Finish gilt nur ein Finish aus einem Versuch mit **höchstens 3 Darts**. Nicht dazu zählen:
+
+* **121** (je Ziel 3, 6 oder 9 Darts): nie, auch nicht mit nur einer Aufnahme je Ziel. Das ist einfacher und
+  vorhersehbar statt je nach Einstellung.
+* **Checkout-Training** mit 6 oder 9 Darts pro Versuch (`dartsPerAttempt`); mit 3 Darts (Standard, auch ohne
+  Angabe in der Konfiguration) zählt es wie bisher.
+* **Catch 40** mit 6 oder 9 Darts je Ziel (`dartsPerTarget`, Standard 6); nur mit 3 Darts zählt es.
+
+Diese Finishes zählen nicht zu:
 
 * Rekord „Höchstes Finish“,
 * Checkout-Quote und Checkout-Quote nach Rest (damit auch nicht zum Ziel „Checkout-Quote“ und zu den
   Checkout-Schwächen im Auto-Plan),
 * den Erfolgen „Ton-Plus-Finish“, „Big Fish“, „Bull-Finish“ und „Checkout-Routine“.
 
-Sie bleiben erhalten in der eigenen Wertung von 121 (höchstes Finish, Checkouts, Checkout-Quote, Verlauf und
-Bestwert des Spiels, die Challenge „Leiter ab 121“) und in der Doppel-Statistik, denn dort wurde wirklich
-aufs Doppel geworfen. Das gilt auch, wenn nur eine Aufnahme je Ziel eingestellt ist: 121 ist nie ein normales
-Finish, unabhängig von der Einstellung. Alles wird aus den gespeicherten Sessions neu berechnet; bereits
-angezeigte Werte ändern sich ohne Datenbankänderung. Die Liste der betroffenen Spiele steht in
-`StatsCalculator.multiVisitFinishGames`.
+Unverändert bleiben die eigene Wertung des Spiels (Kennzahlen wie Checkouts, Checkout-Quote und höchstes
+Finish, Verlauf und Bestwert je Spiel), die Challenges (sie nutzen das Ergebnis des Spiels, z. B. „Leiter ab
+121“ oder „Zwei Aufnahmen“ mit 6 Darts) und die Doppel-Statistik, denn dort wurde wirklich aufs Doppel
+geworfen. Alles wird aus den gespeicherten Sessions neu berechnet; bereits angezeigte Werte ändern sich
+ohne Datenbankänderung. Die Regel steht in `StatsCalculator.countsAsNormalFinish`.
 
 ### Hauptkennzahl je Spiel
 

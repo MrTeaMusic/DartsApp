@@ -90,10 +90,12 @@ Hinweise zur Berechnung:
 - Aufnahmen mit 100/140/180 zählen in allen X01-Spielen und Matches sowie
   in den Scoring-Spielen (T20-Training, Score-Aufgabe, Highscore-Jagd).
 - Checkouts zählen im Checkout-Training, in Catch 40, X01-Solo und
-  in Matches. 121 zählt nicht: Dort hat ein Ziel mehrere Aufnahmen, das ist
-  kein normales 3-Dart-Finish (auch nicht für „Ton-Plus-Finish“, „Big Fish“
-  und „Bull-Finish“) (gewonnene Legs). Ein Bull-Finish im Match wird nur am
+  in Matches (gewonnene Legs). Ein Bull-Finish im Match wird nur am
   letzten Dart des Matches erkannt.
+- Finishes mit mehr als 3 Darts je Versuch sind keine normalen Finishes und
+  zählen für keinen Finish-Erfolg („Ton-Plus-Finish“, „Big Fish“, „Bull-Finish“,
+  „Checkout-Routine“): 121 nie, Checkout-Training mit 6 oder 9 Darts und
+  Catch 40 mit 6 oder 9 Darts (Standard 6) nicht. Challenges sind nicht betroffen.
 - „Doppel-Ziele“ sind Darts, deren Ziel genau ein Doppel war (z. B. in
   Bob's 27, Around the Clock auf Doppel, Doppel-Leiter).
 - Trainingszeit: Dauer jeder Session, höchstens drei Stunden je Session.
