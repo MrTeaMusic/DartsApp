@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import '../../../features/board/domain/segment.dart';
 import '../../l10n.dart';
 import '../app_theme.dart';
+import '../dart_icon.dart';
 import '../components/components.dart' show segmentColor;
 import 'arena_palette.dart';
-import 'arena_player_panel.dart';
 
 /// Ein Platz der Wurfleiste: leer (Dart-Symbol), geworfenes Feld oder der
 /// empfohlene Wurf in Gelb.
@@ -103,10 +103,7 @@ class ArenaDartBar extends StatelessWidget {
                                         style: _style(fontSize, (slot.plannedColor ?? ArenaPalette.hint).withValues(alpha: 0.7)),
                                       ),
                                     )
-                                  : CustomPaint(
-                                      size: Size(height * 0.9, height * 0.3),
-                                      painter: ArenaDartIconPainter(iconColor),
-                                    ),
+                                  : DartIcon(size: height * 0.5, color: iconColor),
                             ),
                             if (slot.edited)
                               Positioned(

@@ -92,7 +92,7 @@ class _Figures extends StatelessWidget {
           label: l10n.tempoPerDart,
           value: a.perDart == null ? '–' : formatSeconds(a.perDart!),
           caption: caption(a.perDart, a.gapCount, l10n.tempoPerDartCaption(a.gapCount)),
-          icon: Icons.adjust_rounded,
+          icon: AppIcons.dart,
         ),
         StatTile(
           key: const Key('tempo-per-visit'),

@@ -574,6 +574,122 @@ class VisitValuesChart extends StatelessWidget {
   }
 }
 
+/// Eine Linie im Aufnahmenverlauf eines Legs: Spieler, Farbe und der Rest
+/// vor der ersten und nach jeder Aufnahme.
+class LegLine {
+  const LegLine({required this.name, required this.color, required this.rests});
+  final String name;
+  final Color color;
+
+  /// Index 0 = Startwert, dann der Rest nach jeder Aufnahme.
+  final List<int> rests;
+}
+
+/// Aufnahmenverlauf eines Legs: Rest (Startwert bis 0) über die Aufnahme,
+/// eine Linie je Spieler. Die Linie eines Spielers, der das Leg nicht
+/// beendet hat, endet bei seiner letzten Aufnahme.
+class LegProgressChart extends StatelessWidget {
+  const LegProgressChart({super.key, required this.lines, required this.startScore, this.visits});
+
+  final List<LegLine> lines;
+  final int startScore;
+
+  /// Länge der Achse in Aufnahmen; Standard: die längste Linie. Mit einem
+  /// festen Wert haben alle Legs einer Ansicht dieselbe Breite.
+  final int? visits;
+
+  /// Abstand der Rasterlinien: 25 bis Start 101, 50 bis 301, sonst 100.
+  static double intervalFor(int startScore) => startScore <= 101 ? 25 : (startScore <= 301 ? 50 : 100);
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.dartColors;
+    final longest = lines.fold<int>(0, (m, l) => math.max(m, l.rests.length - 1));
+    final n = math.max(1, visits ?? longest);
+    if (longest == 0) return const NoDataHint(height: 180);
+    final every = (n / 10).ceil().clamp(1, 1000);
+    final interval = intervalFor(startScore);
+    final top = startScore.toDouble();
+    return Semantics(
+      container: true,
+      label: context.l10n.histLegChartSemantics,
+      child: ExcludeSemantics(
+        child: _LineChart(
+          LineChartData(
+            minX: 0,
+            maxX: n.toDouble(),
+            minY: 0,
+            maxY: top,
+            gridData: FlGridData(
+              horizontalInterval: interval,
+              verticalInterval: every.toDouble(),
+              getDrawingHorizontalLine: (_) => _gridLine(context),
+              getDrawingVerticalLine: (_) => FlLine(color: colors.chartGrid.withValues(alpha: 0.5), strokeWidth: 1),
+            ),
+            borderData: FlBorderData(show: false),
+            lineTouchData: LineTouchData(
+              touchTooltipData: LineTouchTooltipData(
+                getTooltipColor: (_) => _tooltipColor(context),
+                getTooltipItems: (spots) => [
+                  for (final s in spots)
+                    LineTooltipItem(
+                      '${lines[s.barIndex].name.isEmpty ? '' : '${lines[s.barIndex].name}  '}${s.y.round()}',
+                      _tooltip(context).copyWith(color: lines[s.barIndex].color),
+                    ),
+                ],
+              ),
+            ),
+            titlesData: FlTitlesData(
+              topTitles: const AxisTitles(),
+              rightTitles: const AxisTitles(),
+              bottomTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  interval: every.toDouble(),
+                  getTitlesWidget: (v, meta) {
+                    final i = v.round();
+                    if (v != i || i < 1 || i > n) return const SizedBox.shrink();
+                    return Padding(padding: const EdgeInsets.only(top: 4), child: Text('$i', style: _axis(context)));
+                  },
+                ),
+              ),
+              leftTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  reservedSize: 36,
+                  interval: interval,
+                  getTitlesWidget: (v, meta) => v > top || v % interval != 0
+                      ? const SizedBox.shrink()
+                      : Text(v.round().toString(), style: _axis(context)),
+                ),
+              ),
+            ),
+            lineBarsData: [
+              for (final l in lines)
+                LineChartBarData(
+                  spots: [for (final (i, r) in l.rests.indexed) FlSpot(i.toDouble(), r.toDouble())],
+                  color: l.color,
+                  barWidth: 3,
+                  isCurved: true,
+                  preventCurveOverShooting: true,
+                  curveSmoothness: 0.18,
+                  dotData: FlDotData(
+                    show: n <= 24,
+                    getDotPainter: (spot, _, bar, _) => FlDotCirclePainter(
+                      radius: 2.6,
+                      color: bar.color ?? l.color,
+                      strokeWidth: 0,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Animationsdauer von fl_chart zwischen zwei Datenständen (Standard des
 /// Pakets).
 const Duration _chartSwap = Duration(milliseconds: 150);

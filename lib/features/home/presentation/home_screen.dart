@@ -42,7 +42,7 @@ class HomeScreen extends ConsumerWidget {
 
     final look = context.look;
     final sessionStats = [
-      (l10n.homeSessionDarts, '$darts', Icons.adjust_rounded),
+      (l10n.homeSessionDarts, '$darts', AppIcons.dart),
       (l10n.homeSessionAverage, average, Icons.show_chart_rounded),
       (l10n.homeLastDart, live.history.isEmpty ? '–' : live.history.last.segment.name, Icons.history_rounded),
     ];

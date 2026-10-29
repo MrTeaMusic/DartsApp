@@ -2422,6 +2422,114 @@
   "histPlayAgain": "Nochmal spielen",
   "histNoThrows": "Zu dieser Session sind keine Würfe gespeichert.",
   "histChartMarks": "Marks je Aufnahme",
+  "histLegs": "Legs",
+  "histLegsCount": "{count} Legs",
+  "@histLegsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "histLegAll": "Alle Legs",
+  "histLegPick": "Leg wählen",
+  "histLegCourse": "Aufnahmenverlauf",
+  "histLegCourseHint": "Rest nach jeder Aufnahme",
+  "histLegAxisVisit": "Aufnahme",
+  "histLegChartSemantics": "Aufnahmenverlauf: Rest nach jeder Aufnahme, eine Linie je Spieler",
+  "histLegStart": "Start",
+  "histLegVisitNumber": "Nr.",
+  "histLegDoublesShort": "Doppel {hits}/{attempts}",
+  "@histLegDoublesShort": {
+    "placeholders": {
+      "hits": {
+        "type": "int"
+      },
+      "attempts": {
+        "type": "int"
+      }
+    }
+  },
+  "histLegNoOpponent": "Die Würfe des Gegners sind bei diesem Match nicht gespeichert, hier steht nur dein Verlauf.",
+  "histDoubleMissedShort": "verpasst",
+  "histDoubles": "Doppel",
+  "histDoubleRate": "Doppelquote: {hits} von {attempts}",
+  "@histDoubleRate": {
+    "placeholders": {
+      "hits": {
+        "type": "int"
+      },
+      "attempts": {
+        "type": "int"
+      }
+    }
+  },
+  "histDoubleRatePercent": "{hits} von {attempts} · {percent}",
+  "@histDoubleRatePercent": {
+    "placeholders": {
+      "hits": {
+        "type": "int"
+      },
+      "attempts": {
+        "type": "int"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "histDoubleThrownAt": "Geworfen auf",
+  "histDoubleNone": "Keine Darts aufs Doppel",
+  "histDoubleMissed": "{double} verpasst",
+  "@histDoubleMissed": {
+    "placeholders": {
+      "double": {
+        "type": "String"
+      }
+    }
+  },
+  "histDoubleMissedTimes": "{double} {count}× verpasst",
+  "@histDoubleMissedTimes": {
+    "placeholders": {
+      "double": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "histDoubleChip": "{double} {hits}/{attempts}",
+  "@histDoubleChip": {
+    "placeholders": {
+      "double": {
+        "type": "String"
+      },
+      "hits": {
+        "type": "int"
+      },
+      "attempts": {
+        "type": "int"
+      }
+    }
+  },
+  "histDoubleHint": "Gezählt wie die Checkout-Quote: Darts bei einem Rest, der mit einem Dart zu checken ist. Getroffen ist ein Versuch, wenn damit das Leg endet.",
+  "histLegendDoubleMissed": "Doppel verpasst",
+  "histLegendHundred": "100 und mehr",
+  "histLegSemantics": "Aufnahme {number}: {points} Punkte, Rest {rest}",
+  "@histLegSemantics": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      },
+      "points": {
+        "type": "int"
+      },
+      "rest": {
+        "type": "int"
+      }
+    }
+  },
   "liveTitle": "Autodarts Live",
   "liveEntryText": "Online-Match auf play.autodarts.io spielen, DartLab schreibt deine Darts mit.",
   "liveHint": "Spiel dein Match wie gewohnt auf play.autodarts.io – DartLab schreibt mit.",

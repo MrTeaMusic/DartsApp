@@ -23,8 +23,10 @@ import '../../stats/presentation/elo_tab.dart';
 import '../../stats/presentation/stats_charts.dart';
 import '../../stats/presentation/stats_widgets.dart';
 import '../data/history_repository.dart';
+import '../domain/leg_board.dart';
 import '../domain/session_history.dart';
 import 'history_screen.dart';
+import 'leg_board_view.dart';
 
 /// Eine Session im Detail: Kopf, Kennzahlen, Verlauf, Heatmap und jede
 /// Aufnahme; bei Matches Ergebnis aller Teilnehmer und die Legs. Eine falsch
@@ -85,6 +87,7 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
     final e = d.entry;
     // Lite zeigt nur an: nichts löschen, nicht noch einmal spielen.
     final lite = ref.watch(liteProvider);
+    final boards = legBoardsOf(d);
     final canReplay = e.isQuiz || (!e.hasOpponent && GameCatalog.byId(e.gameId) != null);
     return Scaffold(
       appBar: AppPageBar(
@@ -134,10 +137,22 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
                 ),
               ),
             ] else if (d.visits.isNotEmpty) ...[
+              // X01-Matches und -Training: Doppel-Zeile, Legs mit Verlauf und
+              // Tabelle (beide Spieler); sonst die Aufnahmenliste.
+              if (boards != null) ...[
+                if (boards.anyDoubles) ...[
+                  const SectionGap(factor: 0.8),
+                  DoublesSummary(boards: boards),
+                ],
+                const SectionGap(factor: 0.8),
+                LegBoardSection(detail: d, boards: boards),
+              ],
               const SectionGap(factor: 0.8),
               _ChartAndHeat(detail: d, wide: wide),
-              const SectionGap(factor: 0.8),
-              _Visits(detail: d),
+              if (boards == null) ...[
+                const SectionGap(factor: 0.8),
+                _Visits(detail: d),
+              ],
             ] else ...[
               const SizedBox(height: AppSpacing.l),
               Text(l10n.histNoThrows, style: Theme.of(context).textTheme.bodyMedium),
@@ -245,7 +260,7 @@ class _Header extends StatelessWidget {
                 icon: Icons.scoreboard_rounded,
                 text: '${format.startScore} · ${format.usesSets ? l10n.matchFormatSets(format.setsToWin, format.legsToWin) : l10n.matchFormatLegs(format.legsToWin, format.bestOf)}',
               ),
-            _Info(icon: e.isQuiz ? Icons.quiz_rounded : Icons.adjust_rounded, text: l10n.sessionAmount(e.gameId, e.darts, e.metrics)),
+            _Info(icon: e.isQuiz ? Icons.quiz_rounded : AppIcons.dart, text: l10n.sessionAmount(e.gameId, e.darts, e.metrics)),
             if (minutes != null) _Info(icon: Icons.schedule_rounded, text: formatMinutes(minutes < 1 ? 1 : minutes)),
             if (me != null && me.isNotEmpty) _Info(icon: Icons.person_rounded, text: me),
           ],
@@ -266,7 +281,7 @@ class _Info extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 16, color: colors.textMuted),
+        AppIcon(icon, size: 16, color: colors.textMuted),
         const SizedBox(width: AppSpacing.xs),
         Flexible(child: Text(text, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: colors.textMuted))),
         const SizedBox(width: AppSpacing.s),
@@ -535,7 +550,7 @@ class _Visits extends StatelessWidget {
         ],
         for (final (i, leg) in detail.legs.indexed) ...[
           if (i > 0) const SizedBox(height: AppSpacing.l),
-          if (leg.number > 0) _LegHeader(detail: detail, leg: leg),
+          if (leg.number > 0) LegHeader(detail: detail, leg: leg),
           if (leg.others.isNotEmpty) _SideLabel(name: detail.players[detail.me].name),
           AppCard(
             key: Key('session-leg-${leg.number}'),
@@ -607,54 +622,6 @@ class _Legend extends StatelessWidget {
           Text(label, style: Theme.of(context).textTheme.bodySmall),
         ],
       );
-}
-
-/// „Leg 2“ mit Sieger und Checkout.
-class _LegHeader extends StatelessWidget {
-  const _LegHeader({required this.detail, required this.leg});
-  final SessionDetail detail;
-  final HistoryLeg leg;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-    final colors = context.dartColors;
-    final format = detail.entry.hasOpponent ? MatchFormat.fromJson(detail.entry.details['format'] ?? detail.entry.config) : null;
-    final title = format != null && format.usesSets ? l10n.matchLegSetNumber(leg.set, leg.number) : l10n.matchLegNumber(leg.number);
-    final w = leg.winner;
-    final mine = w == null ? null : w == detail.me || !detail.entry.hasOpponent;
-    final name = w == null || detail.players.length <= w ? null : detail.players[w].name;
-    final String info;
-    if (w == null) {
-      info = l10n.histLegOpen;
-    } else if (name != null && leg.checkout != null && leg.winnerDarts != null) {
-      info = l10n.histLegWon(name, leg.checkout!, leg.winnerDarts!);
-    } else {
-      info = name ?? '';
-    }
-    final color = mine == null ? colors.textMuted : (mine ? colors.success : colors.danger);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.s),
-      child: Row(
-        children: [
-          Container(width: 4, height: 18, color: color),
-          const SizedBox(width: AppSpacing.s),
-          Text(title, style: theme.textTheme.titleMedium),
-          const SizedBox(width: AppSpacing.m),
-          Expanded(
-            child: Text(
-              info,
-              key: Key('session-leg-info-${leg.number}'),
-              style: theme.textTheme.bodySmall?.copyWith(color: color),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 /// Eine Aufnahme: Nummer, drei Darts, Punkte und Stand danach.

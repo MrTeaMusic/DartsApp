@@ -369,7 +369,7 @@ class MatchController extends Notifier<MatchState?> {
 
   Future<void> _endSessions(MatchState s, {required bool finished}) {
     for (final e in _sessionIds.entries) {
-      final result = matchResultFor(s.match, e.key, s.setup);
+      final result = matchResultFor(s.match, e.key, s.setup, records: s.session.records);
       final repo = _repo;
       _enqueue(() => repo.endSession(e.value, result: result, finished: finished));
     }

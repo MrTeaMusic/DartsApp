@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../features/matches/domain/visit_history.dart';
 import '../../l10n.dart';
 import '../app_theme.dart';
+import '../dart_icon.dart';
 import 'arena_palette.dart';
 
 /// Größenvariante einer Spielertafel. Jede ist in „Vorlagen-Einheiten“
@@ -338,7 +339,7 @@ class _Upper extends StatelessWidget {
               children: [
                 Tooltip(
                   message: p.dartsLabel ?? l10n.arenaDartsThrown,
-                  child: CustomPaint(size: Size(rowSize * 1.1, rowSize * 0.8), painter: ArenaDartIconPainter(ArenaPalette.text.withValues(alpha: 0.9))),
+                  child: DartIcon(size: rowSize * 1.1, color: ArenaPalette.text.withValues(alpha: 0.9)),
                 ),
                 const SizedBox(width: 8),
                 Text('${p.legDarts}', key: p.dartsKey, style: _text(rowSize, weight: FontWeight.w800)),
@@ -670,37 +671,4 @@ class _Line extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Kleines Dart-Symbol: Spitze links, Schaft, Flügel rechts.
-class ArenaDartIconPainter extends CustomPainter {
-  const ArenaDartIconPainter(this.color);
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-    final cy = h / 2;
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-    // Spitze und Barrel.
-    canvas.drawOval(Rect.fromLTWH(0, cy - h * 0.22, w * 0.30, h * 0.44), paint);
-    // Schaft.
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(Rect.fromLTWH(w * 0.26, cy - h * 0.05, w * 0.55, h * 0.10), Radius.circular(h * 0.05)),
-      paint,
-    );
-    // Flügel.
-    final flight = Path()
-      ..moveTo(w * 0.78, cy)
-      ..lineTo(w, cy - h * 0.32)
-      ..lineTo(w, cy + h * 0.32)
-      ..close();
-    canvas.drawPath(flight, paint..color = color.withValues(alpha: 0.75));
-  }
-
-  @override
-  bool shouldRepaint(covariant ArenaDartIconPainter old) => old.color != color;
 }

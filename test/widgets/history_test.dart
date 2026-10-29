@@ -53,7 +53,7 @@ void main() {
     expect(find.text('X01-Solo'), findsWidgets);
     expect(find.byKey(const Key('session-status')), findsOneWidget);
     await _scrollTo(tester, find.byKey(const Key('session-finish-attempts')));
-    expect(_inDetail(find.textContaining('Darts aufs Finish')), findsOneWidget);
+    expect(_inDetail(find.textContaining('Doppelquote:')), findsOneWidget);
 
     // Löschen mit Rückfrage; Abbrechen ändert nichts.
     await tester.tap(find.byKey(const Key('session-delete-action')));

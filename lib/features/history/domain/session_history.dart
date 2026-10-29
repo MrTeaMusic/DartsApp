@@ -104,7 +104,7 @@ class HistoryEntry {
 
 /// Ein Dart einer Aufnahme.
 class HistoryDart {
-  const HistoryDart(this.segment, {this.counted = true, this.finishAttempt = false, this.hit = false, this.position});
+  const HistoryDart(this.segment, {this.counted = true, this.finishAttempt = false, this.hit = false, this.position, this.aimed});
   final Segment segment;
 
   /// `false`, wenn der Dart nach Bust/Checkout nicht mehr zählte.
@@ -118,6 +118,11 @@ class HistoryDart {
   /// Versuch geschafft (nur bei [finishAttempt]).
   final bool hit;
   final BoardPoint? position;
+
+  /// Das Feld, auf das bei einem [finishAttempt] geworfen wurde: das Double
+  /// (bzw. Bull) des Wegvorschlags; bei Master-Out kann es ein Triple sein.
+  /// `null` ohne Versuch.
+  final Segment? aimed;
 }
 
 /// Eine Aufnahme mit ihren Darts.
@@ -464,6 +469,7 @@ SessionDetail? _trainingDetail(HistoryEntry entry, List<ThrowRow> sorted, List<B
         finishAttempt: counted && aimed != null,
         hit: aimed == seg,
         position: _pos(t),
+        aimed: counted ? aimed : null,
       ));
     }
     flush();
@@ -549,6 +555,9 @@ SessionDetail _matchDetail(HistoryEntry entry, List<ThrowRow> sorted, List<Board
         winner: (m['winner'] as num?)?.toInt(),
         winnerDarts: (m['darts'] as num?)?.toInt(),
         checkout: (m['checkout'] as num?)?.toInt(),
+        // Würfe des Gegners stehen nur bei Matches zu zweit, die mit dem
+        // Spielverlauf der Gegner gespeichert wurden.
+        others: _opponentSide(m['opp'], players.length == 2 ? 1 - self : null, format),
       ));
     }
     if (i < groups.length) {
@@ -629,15 +638,6 @@ SessionDetail _importedDetail(HistoryEntry entry, List<ThrowRow> sorted, List<Bo
       while (i < groups.length && groups[i].first.visitIndex <= end) {
         own.add(groups[i++]);
       }
-      final oppRaw = m['opp'];
-      final opp = <List<_CalcDart>>[
-        if (oppRaw is List)
-          for (final v in oppRaw)
-            [
-              if (v is List)
-                for (final name in v) (segment: Segment.tryParse('$name'), counted: true, position: null),
-            ],
-      ];
       legs.add(HistoryLeg(
         number: n + 1,
         set: (m['set'] as num?)?.toInt() ?? 1,
@@ -645,7 +645,7 @@ SessionDetail _importedDetail(HistoryEntry entry, List<ThrowRow> sorted, List<Bo
         winner: (m['winner'] as num?)?.toInt(),
         winnerDarts: (m['darts'] as num?)?.toInt(),
         checkout: (m['checkout'] as num?)?.toInt(),
-        others: opp.isEmpty ? const [] : [HistoryLegSide(player: 1, visits: _x01VisitsOf(opp, format))],
+        others: _opponentSide(m['opp'], 1, format),
       ));
     }
   }
@@ -662,6 +662,20 @@ SessionDetail _importedDetail(HistoryEntry entry, List<ThrowRow> sorted, List<Bo
     players: players,
     me: 0,
   );
+}
+
+/// Aufnahmen des Gegners aus dem Ergebnis (`opp`: je Aufnahme die Feldnamen),
+/// nachgerechnet wie die eigenen. Leer ohne Angaben oder ohne [player].
+List<HistoryLegSide> _opponentSide(Object? raw, int? player, MatchFormat format) {
+  if (player == null || raw is! List) return const [];
+  final opp = <List<_CalcDart>>[
+    for (final v in raw)
+      [
+        if (v is List)
+          for (final name in v) (segment: Segment.tryParse('$name'), counted: true, position: null),
+      ],
+  ];
+  return opp.isEmpty ? const [] : [HistoryLegSide(player: player, visits: _x01VisitsOf(opp, format))];
 }
 
 List<HistoryVisit> _renumber(List<HistoryVisit> visits) => [
@@ -709,7 +723,9 @@ List<HistoryVisit> _x01VisitsOf(List<List<_CalcDart>> groups, MatchFormat format
         darts.add(HistoryDart(s, counted: false, position: t.position));
         continue;
       }
-      final attempt = opened && CheckoutRules.isCheckout(remaining, darts: 1, out: format.outMode);
+      final path = opened ? CheckoutRules.suggest(remaining, darts: 1, out: format.outMode) : null;
+      final attempt = path != null;
+      final aimed = path?.first;
       if (!opened) {
         if (!s.isDouble) {
           darts.add(HistoryDart(s, position: t.position));
@@ -722,13 +738,13 @@ List<HistoryVisit> _x01VisitsOf(List<List<_CalcDart>> groups, MatchFormat format
         remaining = startRemaining;
         opened = startOpened;
         points = 0;
-        darts.add(HistoryDart(s, finishAttempt: attempt, position: t.position));
+        darts.add(HistoryDart(s, finishAttempt: attempt, position: t.position, aimed: aimed));
         continue;
       }
       remaining -= s.score;
       points += s.score;
       if (remaining == 0) checkout = true;
-      darts.add(HistoryDart(s, finishAttempt: attempt, hit: attempt && checkout, position: t.position));
+      darts.add(HistoryDart(s, finishAttempt: attempt, hit: attempt && checkout, position: t.position, aimed: aimed));
     }
     out.add(HistoryVisit(
       number: out.length + 1,
