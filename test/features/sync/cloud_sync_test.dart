@@ -98,11 +98,16 @@ void main() {
 
     test('ohne Änderungen wird nichts mehr geschrieben', () async {
       await phone.device.play(await phone.device.me(), minute: 1);
-      // Erst ein paar Runden, bis beide Geräte denselben Stand haben (die
-      // Profile "Ich" wurden auf jedem Gerät zu einer anderen Sekunde angelegt).
-      for (final d in [phone, ipad, phone, ipad]) {
-        await d.sync();
+      // Erst Runden, bis beide Geräte denselben Stand haben (die Profile "Ich"
+      // wurden auf jedem Gerät zu einer anderen Sekunde angelegt; ein
+      // Sekundenwechsel mittendrin kostet eine Runde mehr, darum nicht
+      // fest vier Runden).
+      var quiet = 0;
+      for (var i = 0; i < 12 && quiet < 2; i++) {
+        final r = await (i.isEven ? phone : ipad).sync();
+        quiet = r.sent + r.received == 0 ? quiet + 1 : 0;
       }
+      expect(quiet, 2, reason: 'die Geräte kommen nicht zur Ruhe');
       final puts = (cloud.metaPuts, cloud.sessionPuts);
       for (final d in [phone, ipad, phone]) {
         final again = await d.sync();
