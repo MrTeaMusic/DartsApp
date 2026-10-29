@@ -2425,7 +2425,7 @@
   "liveTitle": "Autodarts Live",
   "liveEntryText": "Online-Match auf play.autodarts.io spielen, DartLab schreibt deine Darts mit.",
   "liveHint": "Spiel dein Match wie gewohnt auf play.autodarts.io – DartLab schreibt mit.",
-  "liveHintDetail": "DartLab hört nur zu und sendet nichts an den Board Manager. Jeder Dart auf deinem Board zählt für dich: Wirf also nur selbst.",
+  "liveHintDetail": "DartLab hört nur zu und sendet von selbst nichts an den Board Manager (nur die Board-Hilfe auf Knopfdruck). Jeder Dart auf deinem Board zählt für dich: Wirf also nur selbst.",
   "liveLimits": "Kein Restwert, keine Checkouts, keine Legs – DartLab sieht nur die Darts.",
   "liveVisitCurrent": "Aktuelle Aufnahme",
   "liveVisitLast": "Letzte Aufnahme",
@@ -3918,6 +3918,122 @@
         "type": "int"
       },
       "change": {
+        "type": "String"
+      }
+    }
+  },
+  "boardHelpTitle": "Board-Hilfe",
+  "boardHelpTooltip": "Board-Hilfe, wenn das Board hängt",
+  "boardHelpIntro": "Das Board hängt? Die Befehle gehen direkt an den Board Manager unter {address}.",
+  "@boardHelpIntro": {
+    "placeholders": {
+      "address": {
+        "type": "String"
+      }
+    }
+  },
+  "boardHelpUnverified": "Die Befehle sind an Board Manager 2.0.2 noch nicht bestätigt. Das Board antwortet mit einem HTTP-Status; ob etwas passiert ist, siehst du am Board.",
+  "boardHelpRecalibrate": "Neu kalibrieren",
+  "boardHelpRecalibrateHint": "Startet die automatische Kalibrierung.",
+  "boardHelpStop": "Dartboard stoppen",
+  "boardHelpStopHint": "Hält die Erkennung an.",
+  "boardHelpStart": "Dartboard starten",
+  "boardHelpStartHint": "Startet die Erkennung wieder.",
+  "boardHelpRefresh": "Refresh",
+  "boardHelpRefreshHint": "Startet den Board Manager neu, sonst setzt er das Board zurück.",
+  "boardHelpAskRecalibrate": "DartLab schickt den Befehl zur automatischen Kalibrierung an das Board. Währenddessen erkennt das Board vermutlich keine Darts. Zieh vorher alle Darts aus der Scheibe.",
+  "boardHelpAskStop": "Die Erkennung wird angehalten, bis du sie wieder startest. Solange zählt DartLab keine Darts.",
+  "boardHelpAskStart": "Die Erkennung am Board wird wieder gestartet.",
+  "boardHelpAskRefresh": "Der Board Manager wird neu gestartet. Kennt er den Befehl nicht, setzt DartLab das Board stattdessen zurück. Die Verbindung kann kurz abbrechen.",
+  "boardHelpLiveWarning": "Läuft gerade ein Online-Match auf play.autodarts.io, kann es dadurch gestört werden.",
+  "boardHelpSend": "Senden",
+  "boardHelpCancel": "Abbrechen",
+  "boardHelpSending": "{action} wird gesendet …",
+  "@boardHelpSending": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "boardHelpResultOk": "{action}: Das Board hat mit HTTP {status} geantwortet. Ob es gewirkt hat, siehst du am Board.",
+  "@boardHelpResultOk": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      },
+      "status": {
+        "type": "int"
+      }
+    }
+  },
+  "boardHelpResultRejected": "{action}: Das Board hat mit HTTP {status} geantwortet und den Befehl nicht angenommen. Diese Version kennt ihn vielleicht nicht.",
+  "@boardHelpResultRejected": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      },
+      "status": {
+        "type": "int"
+      }
+    }
+  },
+  "boardHelpResultFallback": "{action}: Neustart war dem Board unbekannt (HTTP {first}), stattdessen Reset gesendet. Antwort: HTTP {second}. Ob es gewirkt hat, siehst du am Board.",
+  "@boardHelpResultFallback": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      },
+      "first": {
+        "type": "int"
+      },
+      "second": {
+        "type": "int"
+      }
+    }
+  },
+  "boardHelpResultFallbackRejected": "{action}: Neustart war dem Board unbekannt (HTTP {first}), der Reset wurde mit HTTP {second} abgelehnt.",
+  "@boardHelpResultFallbackRejected": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      },
+      "first": {
+        "type": "int"
+      },
+      "second": {
+        "type": "int"
+      }
+    }
+  },
+  "boardHelpResultError": "{action}: Das Board wurde nicht erreicht ({error}).",
+  "@boardHelpResultError": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      },
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "boardHelpResultBlocked": "{action}: Nicht gesendet, DartLab hört nur mit.",
+  "@boardHelpResultBlocked": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "boardStateReady": "Bereit",
+  "boardStateTakeout": "Takeout",
+  "boardStateStopped": "Gestoppt",
+  "boardStateConnecting": "Verbinde",
+  "boardStateOffline": "Offline",
+  "boardStateSemantics": "Dartboard: {state}",
+  "@boardStateSemantics": {
+    "placeholders": {
+      "state": {
         "type": "String"
       }
     }

@@ -18,6 +18,15 @@ class FakeBoardManager {
   /// WebSocket schickt nach dem Verbinden nichts von selbst.
   final bool silent;
   int stateStatus = 200;
+
+  /// Antwortcode je Befehl („POST /api/restart“). Ohne Eintrag antwortet nur
+  /// `POST /api/reset` mit 200, alles andere mit 404 (wie ein Board, das den
+  /// Pfad nicht kennt).
+  final commandStatus = <String, int>{};
+
+  /// Wird bei Befehlen als Antwort-Body geschickt (stellt einen Body mit
+  /// Geheimnis nach, der nirgends auftauchen darf).
+  String commandBody = '';
   final sockets = <WebSocket>[];
   final requests = <String>[];
   Map<String, Object?> state = {'connected': true, 'running': true, 'status': 'Throw', 'numThrows': 0, 'throws': <Object>[]};
@@ -40,10 +49,10 @@ class FakeBoardManager {
       req.response.statusCode = stateStatus;
       req.response.headers.contentType = ContentType.json;
       req.response.write(jsonEncode(state));
-    } else if (req.uri.path == '/api/reset' && req.method == 'POST') {
-      req.response.statusCode = 200;
     } else {
-      req.response.statusCode = 404;
+      final key = '${req.method} ${req.uri.path}';
+      req.response.statusCode = commandStatus[key] ?? (key == 'POST /api/reset' ? 200 : 404);
+      if (commandBody.isNotEmpty) req.response.write(commandBody);
     }
     await req.response.close();
   }

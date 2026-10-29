@@ -35,6 +35,7 @@ Würfe kommen live vom Autodarts-Board, aus einem Simulator oder per manueller E
 | Trainingspläne (feste und eigene, Fortschritt merken, Zusammenfassung) | fertig |
 | Sync im Heimnetz (Desktop-App als Hub, iPhone/iPad gleichen automatisch ab) | fertig, am echten Heimnetz noch nicht getestet |
 | Autodarts-Verbindungstest, Mitschnitt-Prüfung, Koordinaten-Kalibrierung | fertig |
+| Board-Hilfe (neu kalibrieren, stoppen/starten, Refresh) und Statusrahmen um die Scheibe | gebaut; die Befehlspfade sind am Board Manager 2.0.2 noch nicht bestätigt |
 | Build-Anleitung, native Builds in GitHub Actions | fertig |
 
 Was über das Autodarts-Protokoll bekannt und was offen ist: [docs/autodarts-protokoll.md](docs/autodarts-protokoll.md).

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../dart_source/presentation/board_help.dart';
+import '../../board/presentation/board_status_frame.dart';
 import '../../../core/design/arena/arena_chrome.dart';
 import '../../../core/design/arena/arena_palette.dart';
 import '../../../core/design/arena/arena_player_panel.dart';
@@ -142,7 +144,8 @@ class _ArenaLiveViewState extends ConsumerState<ArenaLiveView> {
     );
 
     final hits = <BoardPoint>[for (final d in live.current) ?d.position];
-    final board = DartboardView(
+    final board = BoardStatusFrame(
+      child: DartboardView(
       key: const Key('live-board'),
       heat: stats.heat,
       showHeat: _heat,
@@ -150,6 +153,7 @@ class _ArenaLiveViewState extends ConsumerState<ArenaLiveView> {
       lastSegment: live.current.isEmpty ? null : live.current.last.segment,
       hitSerial: live.dartSerial,
       semanticsLabel: l10n.liveHeatmap,
+      ),
     );
 
     final narrow = MediaQuery.sizeOf(context).width < 900;
@@ -164,6 +168,7 @@ class _ArenaLiveViewState extends ConsumerState<ArenaLiveView> {
             : [l10n.liveTitle, l10n.arenaLiveChipPlain],
         trailing: [
           if (live.listening) SourceStatusBadge(compact: narrow),
+          if (live.listening) const BoardHelpButton(),
           const SizedBox(width: AppSpacing.xs),
           // Breit steht die Session in der rechten Spalte, auf dem Telefon im Blatt.
           if (!ArenaScreen.isWide(MediaQuery.sizeOf(context)))

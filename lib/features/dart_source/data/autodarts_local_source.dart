@@ -5,6 +5,7 @@ import 'dart:math' as math;
 import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+import '../domain/board_control.dart';
 import '../domain/coordinate_calibration.dart';
 import '../domain/dart_event.dart';
 import '../domain/dart_source.dart';
@@ -20,11 +21,20 @@ Future<WebSocketChannel> defaultWebSocketConnector(Uri uri) async {
 }
 
 /// Befehle an den Board Manager. Pfade laut Home-Assistant-Integration
-/// (Board Manager 1 und 2), nicht am echten Board geprüft.
+/// (Board Manager 1 und 2), nicht am echten Board geprüft. Das gilt auch für
+/// [restart] und [calibrate]: Am Board Manager 2.0.2 sind sie noch nicht bestätigt.
 enum AutodartsCommand {
   start('PUT', '/api/start'),
   stop('PUT', '/api/stop'),
-  reset('POST', '/api/reset');
+  reset('POST', '/api/reset'),
+
+  /// Board Manager neu starten (Refresh). Kennt eine Version den Pfad nicht,
+  /// antwortet sie mit 404/405; dann nimmt [AutodartsLocalSource.run] [reset].
+  restart('POST', '/api/restart'),
+
+  /// Automatische Kalibrierung starten. Ein POST auf diesen Pfad, kein Abruf
+  /// von `/api/config` (dort steht der API-Schlüssel des Boards).
+  calibrate('POST', '/api/config/calibration/auto');
 
   const AutodartsCommand(this.method, this.path);
   final String method;
@@ -40,7 +50,7 @@ enum AutodartsCommand {
 ///
 /// Das Protokoll ist nicht offiziell dokumentiert und noch nicht am echten
 /// Board getestet. Jede eingehende Nachricht geht roh an [rawMessages].
-class AutodartsLocalSource implements DartSource {
+class AutodartsLocalSource implements DartSource, BoardControl {
   AutodartsLocalSource({
     required this.host,
     this.port = 3180,
@@ -75,7 +85,9 @@ class AutodartsLocalSource implements DartSource {
   final _events = StreamController<DartEvent>.broadcast();
   final _statusCtrl = StreamController<SourceStatus>.broadcast();
   final _raw = StreamController<RawMessage>.broadcast();
+  final _runningCtrl = StreamController<bool?>.broadcast();
 
+  bool? _boardRunning;
   SourceStatus _status = SourceStatus.idle;
   WebSocketChannel? _channel;
   StreamSubscription<dynamic>? _wsSub;
@@ -134,13 +146,16 @@ class AutodartsLocalSource implements DartSource {
     await _events.close();
     await _statusCtrl.close();
     await _raw.close();
+    await _runningCtrl.close();
   }
 
   int _listenOnlyHolds = 0;
 
   /// Nur mithören: Solange ein Halter aktiv ist, verweigert [send] jeden
-  /// Befehl. Autodarts Live nutzt das, weil ein Start/Stop/Reset ein
-  /// laufendes Online-Match auf play.autodarts.io stören würde.
+  /// Befehl, der nicht ausdrücklich vom Nutzer kommt. Autodarts Live nutzt das,
+  /// weil ein Start/Stop/Reset ein laufendes Online-Match auf play.autodarts.io
+  /// stören würde.
+  @override
   bool get listenOnly => _listenOnlyHolds > 0;
 
   /// Schaltet [listenOnly] ein. Die zurückgegebene Funktion gibt den Halter
@@ -155,23 +170,84 @@ class AutodartsLocalSource implements DartSource {
     };
   }
 
-  /// Schickt einen Befehl an den Board Manager (nicht im Modus [listenOnly]).
-  Future<bool> send(AutodartsCommand command) async {
+  @override
+  String get boardAddress => '$host:$port';
+
+  @override
+  bool? get boardRunning => _boardRunning;
+
+  @override
+  Stream<bool?> get boardRunningChanges => _runningCtrl.stream;
+
+  void _setRunning(bool? value) {
+    if (value == _boardRunning) return;
+    _boardRunning = value;
+    if (!_disposed) _runningCtrl.add(value);
+  }
+
+  /// Schickt einen Befehl an den Board Manager. Im Modus [listenOnly] geht er
+  /// nur raus, wenn [userInitiated] gesetzt ist, also ein Knopfdruck des
+  /// Nutzers dahintersteckt. Automatische Aufrufer lassen es auf `false`.
+  Future<bool> send(AutodartsCommand command, {bool userInitiated = false}) async =>
+      (await sendCommand(command, userInitiated: userInitiated)).ok;
+
+  /// Wie [send], liefert aber den HTTP-Status bzw. den Fehlertext. Vom Body
+  /// der Antwort wird nichts gelesen oder geloggt, nur der Statuscode.
+  Future<BoardCommandResult> sendCommand(AutodartsCommand command, {bool userInitiated = false}) async {
     if (listenOnly) {
-      _info('Befehl ${command.name} nicht gesendet: Autodarts Live hört nur mit');
-      return false;
+      if (!userInitiated) {
+        _info('Befehl ${command.name} nicht gesendet: Autodarts Live hört nur mit');
+        return const BoardCommandResult.blocked();
+      }
+      _info('Befehl ${command.name} auf ausdrücklichen Wunsch trotz „nur mithören“');
     }
     final uri = Uri(scheme: 'http', host: host, port: port, path: command.path);
     _log('http ${command.method} ${command.path}', '', incoming: false);
     try {
       final req = http.Request(command.method, uri);
       final res = await _http.send(req).timeout(connectTimeout);
-      final body = await res.stream.bytesToString();
-      _log('http ${res.statusCode} ${command.path}', body);
-      return res.statusCode >= 200 && res.statusCode < 300;
+      // Body wird verworfen: ungelesen, ungeloggt.
+      await res.stream.drain<void>().timeout(connectTimeout);
+      _log('http ${res.statusCode} ${command.path}', '');
+      return BoardCommandResult(statusCode: res.statusCode, path: command.path);
     } catch (e) {
-      _info('Befehl ${command.name} fehlgeschlagen: $e');
-      return false;
+      final text = _short(e);
+      _info('Befehl ${command.name} fehlgeschlagen: $text');
+      return BoardCommandResult(error: text, path: command.path);
+    }
+  }
+
+  static String _short(Object e) {
+    if (e is TimeoutException) return 'Zeitüberschreitung';
+    final text = '$e'.replaceAll(RegExp(r'\s+'), ' ').trim();
+    return text.length > 140 ? '${text.substring(0, 140)}…' : text;
+  }
+
+  @override
+  Future<BoardCommandResult> run(BoardAction action, {bool userInitiated = false}) async {
+    switch (action) {
+      case BoardAction.recalibrate:
+        return sendCommand(AutodartsCommand.calibrate, userInitiated: userInitiated);
+      case BoardAction.stop:
+        final r = await sendCommand(AutodartsCommand.stop, userInitiated: userInitiated);
+        if (r.ok) _setRunning(false);
+        return r;
+      case BoardAction.start:
+        final r = await sendCommand(AutodartsCommand.start, userInitiated: userInitiated);
+        if (r.ok) _setRunning(true);
+        return r;
+      case BoardAction.refresh:
+        final first = await sendCommand(AutodartsCommand.restart, userInitiated: userInitiated);
+        // Nur ein „Pfad unbekannt“ löst den Rückfall aus, kein Verbindungsfehler.
+        if (first.statusCode != 404 && first.statusCode != 405) return first;
+        final second = await sendCommand(AutodartsCommand.reset, userInitiated: userInitiated);
+        return BoardCommandResult(
+          statusCode: second.statusCode,
+          error: second.error,
+          path: second.path,
+          fellBackFrom: first.path,
+          fallbackStatusCode: first.statusCode,
+        );
     }
   }
 
@@ -263,6 +339,8 @@ class AutodartsLocalSource implements DartSource {
   }
 
   void _apply(Map<String, Object?> state) {
+    final running = state['running'];
+    if (running is bool) _setRunning(running);
     final before = _mapper.warnings.length;
     for (final event in _mapper.update(state)) {
       if (!_disposed) _events.add(event);

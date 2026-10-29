@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../dart_source/presentation/board_help.dart';
+import '../../board/presentation/board_status_frame.dart';
 import '../../../core/design/arena/arena_chrome.dart';
 import '../../../core/design/arena/arena_palette.dart';
 import '../../../core/design/arena/arena_player_panel.dart';
@@ -100,13 +102,15 @@ class GamePlayScreen extends ConsumerWidget {
             ManualSource() => (_, segment) => source.enter(segment),
             _ => null,
           };
-    final board = DartboardView(
+    final board = BoardStatusFrame(
+      child: DartboardView(
       key: const Key('game-board'),
       hits: hits,
       lastSegment: live.lastDart?.segment,
       hitSerial: live.history.length,
       highlighted: active.ended ? const {} : game.targets,
       onTap: onTap,
+      ),
     );
     // Nach Bust/Checkout wartet die Aufnahme nur noch auf "Weiter".
     final waiting = active.ended || (game.visitClosed && live.visit.isNotEmpty);
@@ -166,6 +170,7 @@ class GamePlayScreen extends ConsumerWidget {
           title: _gameTitle(context, l10n.gameTitle(active.gameId)),
           actions: [
             SourceStatusBadge(compact: MediaQuery.sizeOf(context).width < 600),
+            const BoardHelpButton(),
             const SizedBox(width: AppSpacing.xs),
             const CallerMuteButton(),
             // Die breite Arena-Schrift lässt auf dem Telefon keinen Platz dafür.
@@ -362,6 +367,7 @@ class _ArenaSoloView extends ConsumerWidget {
         ],
         trailing: [
           SourceStatusBadge(compact: MediaQuery.sizeOf(context).width < 900),
+          const BoardHelpButton(),
           const SizedBox(width: AppSpacing.xs),
           const CallerMuteButton(),
           const FullscreenButton(),

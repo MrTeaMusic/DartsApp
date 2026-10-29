@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../dart_source/presentation/board_help.dart';
+import '../../board/presentation/board_status_frame.dart';
 import '../../../core/design/arena/arena_chrome.dart';
 import '../../../core/design/arena/arena_palette.dart';
 import '../../../core/design/arena/arena_player_panel.dart';
@@ -129,13 +131,15 @@ class MatchPlayScreen extends ConsumerWidget {
             ManualSource() => (_, segment) => source.enter(segment),
             _ => null,
           };
-    final board = DartboardView(
+    final board = BoardStatusFrame(
+      child: DartboardView(
       key: const Key('match-board'),
       hits: hits,
       lastSegment: lastSegment,
       hitSerial: state.session.records.length,
       highlighted: route == null || route.isEmpty ? const {} : {route.first},
       onTap: onTap,
+      ),
     );
     // Breit stehen die Knöpfe fest unten, außer beim Tastenfeld der manuellen Eingabe.
     final pinActions = !state.ended && !(state.acceptsHumanDarts && source is ManualSource);
@@ -203,6 +207,7 @@ class MatchPlayScreen extends ConsumerWidget {
           title: Text(state.ended ? l10n.matchResultTitle : legLabel),
           actions: [
             SourceStatusBadge(compact: MediaQuery.sizeOf(context).width < 600),
+            const BoardHelpButton(),
             const SizedBox(width: AppSpacing.xs),
             const CallerMuteButton(),
             if (!(context.look.isArena && MediaQuery.sizeOf(context).width < 600)) const FullscreenButton(),
@@ -414,6 +419,7 @@ class _ArenaMatchView extends ConsumerWidget {
         ],
         trailing: [
           SourceStatusBadge(compact: MediaQuery.sizeOf(context).width < 900),
+          const BoardHelpButton(),
           const SizedBox(width: AppSpacing.xs),
           const CallerMuteButton(),
           const FullscreenButton(),
