@@ -69,7 +69,7 @@ void main() {
     expect(r.numberHits, {20: 1, 1: 2, 10: 1});
   });
 
-  test('Checkout-Quote aus Checkout-Training und 121', () {
+  test('Checkout-Quote nur aus Checkout-Training, 121 zählt nicht', () {
     final co = session('checkout', now, {}, details: {
       'attempts': [
         {'target': 40, 'success': true, 'darts': 1},
@@ -83,8 +83,8 @@ void main() {
       ],
     });
     final r = StatsCalculator(sessions: [co, ott], throws: const [], now: now).report(StatsPeriod.all);
-    expect(r.checkoutAttempts, 4);
-    expect(r.checkoutRate, 0.75);
+    expect(r.checkoutAttempts, 2);
+    expect(r.checkoutRate, 0.5);
   });
 
   test('Double- und Triple-Quote aus Bob\'s 27 und T20-Training', () {
