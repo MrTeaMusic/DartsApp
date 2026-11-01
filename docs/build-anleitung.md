@@ -144,7 +144,7 @@ deshalb ein Handgriff.
 ## Automatische Builds (GitHub Actions)
 
 * `.github/workflows/flutter.yml`: `flutter analyze` und alle Tests, bei jedem Pull Request und auf `main`.
-* `.github/workflows/build.yml`: baut Windows, macOS und iOS (iOS ohne Signatur) bei jedem
+* `.github/workflows/build.yml`: baut Windows, macOS, iOS (iOS ohne Signatur), Linux x64 und arm64 bei jedem
   Pull Request; manuell startbar unter „Actions › Native Builds › Run workflow“.
   Außerdem baut ein Job die Android-Lite-APK (zum Testen). Die Windows- und macOS-App hängen als Artefakte am Lauf und lassen sich dort herunterladen
   (für macOS gilt der Gatekeeper-Hinweis oben). Für iOS prüft der Lauf nur, dass der Build

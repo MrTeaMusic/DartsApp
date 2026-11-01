@@ -1,6 +1,7 @@
 name: Native Builds
 
-# Baut die App für Windows, macOS, iOS (ohne Signatur) und die Android-Lite-App,
+# Baut die App für Windows, macOS, iOS (ohne Signatur), Linux (x64 und arm64,
+# z. B. Raspberry Pi) und die Android-Lite-App,
 # damit Build-Fehler auf den Zielplattformen früh auffallen. Die Ergebnisse
 # liegen als Artefakte am jeweiligen Lauf.
 on:
@@ -84,3 +85,50 @@ jobs:
           path: build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
           retention-days: 7
+
+  # Linux-Desktop: x64 (PC) und arm64 (Raspberry Pi 4/5 mit 64-Bit-OS). Für
+  # arm64 gibt es kein fertiges Flutter-Archiv, deshalb wird Flutter dort per
+  # git geholt und auf einem arm64-Runner nativ gebaut.
+  linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Linux-Bauwerkzeuge
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev \
+            libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+      - if: matrix.arch == 'x64'
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.7
+          cache: true
+      - if: matrix.arch == 'arm64'
+        name: Flutter (arm64, per git)
+        run: |
+          git clone --depth 1 --branch 3.47.7 https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+      - run: flutter config --enable-linux-desktop
+      - run: flutter pub get
+      - run: flutter build linux --release
+      - name: Bundle packen
+        run: |
+          cp -r build/linux/${{ matrix.arch }}/release/bundle dartlab
+          tar -czf DartLab-linux-${{ matrix.arch }}.tar.gz dartlab
+          file dartlab/dartlab
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dartlab-linux-${{ matrix.arch }}
+          path: DartLab-linux-${{ matrix.arch }}.tar.gz
+          if-no-files-found: error
+          retention-days: 14

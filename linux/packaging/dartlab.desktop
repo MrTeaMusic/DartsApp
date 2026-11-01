@@ -1,0 +1,12 @@
+[Desktop Entry]
+# Vorlage: Das Installationsskript ersetzt @BUNDLE@ durch den Ordner, in den
+# das Linux-Bundle entpackt wurde, und kopiert die Datei nach
+# ~/.local/share/applications/ (Startmenü) bzw. ~/.config/autostart/.
+Type=Application
+Name=DartLab
+Comment=Darts-Training mit Autodarts-Anbindung
+Exec=@BUNDLE@/dartlab
+Icon=@BUNDLE@/data/dartlab.png
+Terminal=false
+Categories=Game;SportsGame;
+StartupWMClass=de.dartlab.dartlab

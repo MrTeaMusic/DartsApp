@@ -9,6 +9,7 @@ analyzer:
     - windows/**
     - macos/**
     - android/**
+    - linux/**
   language:
     strict-casts: true
     strict-raw-types: true
