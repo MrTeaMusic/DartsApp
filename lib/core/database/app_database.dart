@@ -1,6 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'uid.dart';
 
@@ -186,8 +188,19 @@ class ChallengeResults extends Table {
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
-  /// Datenbank im App-Support-Ordner des Geräts.
-  factory AppDatabase.local() => AppDatabase(driftDatabase(name: 'dartlab'));
+  /// Datenbank im Dokumente-Ordner der App (Standard von drift_flutter).
+  ///
+  /// Linux: im App-Daten-Ordner (`~/.local/share/de.dartlab.dartlab`). Den
+  /// Dokumente-Ordner gibt es dort nicht immer (z. B. auf einem Raspberry Pi
+  /// ohne eingerichtete XDG-Ordner), dann startete die App gar nicht. Auf
+  /// den anderen Plattformen bleibt der Ort gleich, sonst wären vorhandene
+  /// Daten weg.
+  factory AppDatabase.local() => AppDatabase(driftDatabase(
+        name: 'dartlab',
+        native: defaultTargetPlatform == TargetPlatform.linux
+            ? const DriftNativeOptions(databaseDirectory: getApplicationSupportDirectory)
+            : null,
+      ));
 
   /// Bei Schemaänderungen erhöhen und in [migration] einen Schritt ergänzen.
   @override

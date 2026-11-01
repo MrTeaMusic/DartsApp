@@ -1,6 +1,7 @@
 # DartLab (Arbeitstitel)
 
-Darts-Trainings-App für **Windows, macOS und iOS** (iPhone und iPad) aus einer Flutter-Codebasis.
+Darts-Trainings-App für **Windows, macOS und iOS** (iPhone und iPad) aus einer Flutter-Codebasis, dazu eine
+Linux-Version (x64 und arm64 für den Raspberry Pi, siehe [docs/linux.md](docs/linux.md)).
 Würfe kommen live vom Autodarts-Board, aus einem Simulator oder per manueller Eingabe.
 
 > Die Datei `index.html` im Repo-Wurzelordner ist der frühere Web-Prototyp und bleibt vorerst

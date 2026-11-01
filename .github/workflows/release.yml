@@ -5,6 +5,8 @@ name: Release
 # Dazu kommt die Android-Lite-App (APK), aber nur, wenn die Signier-Secrets
 # gesetzt sind (siehe docs/android-signierung.md). Der Android-Job blockiert
 # das Release nie: Windows und macOS werden auch ohne APK veröffentlicht.
+# Ebenso die Linux-Bundles (x64 und arm64 für den Raspberry Pi): fehlt eins,
+# erscheint das Release trotzdem.
 # DartLab fragt beim Start nach dem neuesten Release und bietet den Download
 # an (siehe docs/build-anleitung.md, Abschnitt „Updates“).
 #
@@ -191,9 +193,61 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+  linux:
+    needs: meta
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Linux-Bauwerkzeuge
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev \
+            libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+      - if: matrix.arch == 'x64'
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.7
+          cache: true
+      # Für arm64 gibt es kein fertiges Flutter-Archiv.
+      - if: matrix.arch == 'arm64'
+        name: Flutter (arm64, per git)
+        run: |
+          git clone --depth 1 --branch 3.47.7 https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+      - run: flutter config --enable-linux-desktop
+      - run: flutter pub get
+      - name: Bauen
+        run: >-
+          flutter build linux --release
+          --build-name=${{ needs.meta.outputs.version }}
+          --build-number=${{ needs.meta.outputs.build }}
+          --dart-define=DARTLAB_VERSION=${{ needs.meta.outputs.version }}
+          --dart-define=DARTLAB_BUILD=${{ needs.meta.outputs.build }}
+      # Ein Ordner „dartlab“ im Archiv, damit das Installationsskript ihn
+      # einfach austauschen kann.
+      - name: Bundle packen
+        run: |
+          cp -r build/linux/${{ matrix.arch }}/release/bundle dartlab
+          tar -czf DartLab-linux-${{ matrix.arch }}.tar.gz dartlab
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-linux-${{ matrix.arch }}
+          path: DartLab-linux-${{ matrix.arch }}.tar.gz
+          if-no-files-found: error
+
   release:
-    needs: [meta, windows, macos, android]
-    # Läuft auch, wenn der Android-Job fehlschlägt oder übersprungen wird.
+    needs: [meta, windows, macos, android, linux]
+    # Läuft auch, wenn der Android- oder ein Linux-Job fehlschlägt.
     # Windows und macOS müssen aber erfolgreich gewesen sein.
     if: ${{ !cancelled() && needs.meta.result == 'success' && needs.windows.result == 'success' && needs.macos.result == 'success' }}
     runs-on: ubuntu-latest
@@ -247,6 +301,9 @@ jobs:
             if [ -f dist/DartLab-Lite-android.apk ]; then
               echo "> Android (Lite): DartLab-Lite-android.apk herunterladen und installieren; die vorhandene App wird aktualisiert."
             fi
+            if ls dist/DartLab-linux-*.tar.gz >/dev/null 2>&1; then
+              echo "> Linux/Raspberry Pi: DartLab-linux-arm64.tar.gz (Pi 4/5, 64-Bit) bzw. DartLab-linux-x64.tar.gz entpacken und dartlab/dartlab starten (docs/linux.md)."
+            fi
             echo "> iPhone/iPad: auf dem Mac git pull und neu bauen (docs/build-anleitung.md)."
           } >> notes.md
           cat notes.md
@@ -255,6 +312,14 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           files=(dist/DartLab-windows.zip dist/DartLab-macos.zip)
+          # Linux-Bundles, soweit gebaut (blockieren das Release nie).
+          for f in dist/DartLab-linux-x64.tar.gz dist/DartLab-linux-arm64.tar.gz; do
+            if [ -f "$f" ]; then
+              files+=("$f")
+            else
+              echo "::warning::$(basename "$f") fehlt im Release (Linux-Job fehlgeschlagen)."
+            fi
+          done
           # Die Android-APK gibt es nur mit Release-Schlüssel (siehe Android-Job).
           if [ -f dist/DartLab-Lite-android.apk ]; then
             files+=(dist/DartLab-Lite-android.apk)
