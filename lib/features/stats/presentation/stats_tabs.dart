@@ -16,6 +16,7 @@ import '../domain/game_metrics.dart';
 import '../domain/stats_calculator.dart';
 import 'double_insights.dart';
 import 'goals_card.dart';
+import 'period_picker.dart';
 import 'stats_charts.dart';
 import 'stats_screen.dart';
 import 'stats_widgets.dart';
@@ -57,6 +58,21 @@ Widget _empty(BuildContext context) => Consumer(
     );
 
 const _gap = SectionGap(factor: 0.8);
+
+/// Text unter den Pfeilen: gegen B oder gegen den Zeitraum davor.
+String compareHint(BuildContext context, StatsView view) {
+  final l10n = context.l10n;
+  if (view.comparePeriod case final b?) {
+    return l10n.statsCompareHintB(b.days == null ? l10n.statsPeriodAll : formatPeriodRange(b, view.calc.now));
+  }
+  return l10n.statsCompareHint(view.period.days ?? 0);
+}
+
+HitCount _sum(Map<int, HitCount> m) => m.values.fold(HitCount.zero, (a, b) => a + b);
+
+/// Checkout-Versuche eines Zeitraums als Treffer/Versuche.
+HitCount _checkoutCount(StatsReport r) =>
+    HitCount(r.checkoutAttempts, ((r.checkoutRate ?? 0) * r.checkoutAttempts).round());
 
 // ---------------------------------------------------------------------------
 // Überblick
@@ -153,7 +169,28 @@ class OverviewTab extends StatelessWidget {
           ]),
           if (p != null) ...[
             const SizedBox(height: AppSpacing.s),
-            Text(l10n.statsCompareHint(view.period.days!), style: Theme.of(context).textTheme.bodySmall),
+            Text(compareHint(context, view), style: Theme.of(context).textTheme.bodySmall),
+          ],
+          if (view.compareReport case final b?) ...[
+            _gap,
+            PeriodCompareCard(sections: [
+              (l10n.statsCompareSectionGeneral, [
+                CompareRow(label: l10n.statsSessions, a: r.sessions.toDouble(), b: b.sessions.toDouble(), kind: ValueKind.count),
+                CompareRow(label: l10n.statDarts, a: r.darts.toDouble(), b: b.darts.toDouble(), kind: ValueKind.count),
+                CompareRow(
+                    label: l10n.statsPracticeDays, a: r.practiceDays.toDouble(), b: b.practiceDays.toDouble(), kind: ValueKind.count),
+                CompareRow(
+                    label: l10n.statsTrainingTime,
+                    a: r.trainingTime.inMinutes.toDouble(),
+                    b: b.trainingTime.inMinutes.toDouble(),
+                    kind: ValueKind.minutes),
+                CompareRow(label: l10n.statAverage, a: r.scoringAverage, b: b.scoringAverage, kind: ValueKind.decimal),
+                CompareRow(label: l10n.statsFirst9, a: r.first9Average, b: b.first9Average, kind: ValueKind.decimal),
+                CompareRow.rate(l10n.statCheckoutRate, _checkoutCount(r), _checkoutCount(b)),
+                CompareRow.rate(l10n.statDoubleRate, _sum(r.doubles), _sum(b.doubles)),
+                CompareRow.rate(l10n.statTrebleRate, _sum(r.trebles), _sum(b.trebles)),
+              ]),
+            ]),
           ],
           const AutoPlanHint(),
           _gap,
@@ -526,6 +563,14 @@ class DoublesTab extends StatelessWidget {
             ),
           ],
         ]),
+        if (p != null) ...[
+          const SizedBox(height: AppSpacing.s),
+          Text(compareHint(context, view), style: Theme.of(context).textTheme.bodySmall),
+        ],
+        if (view.compareReport case final b?) ...[
+          _gap,
+          _DoublesCompareCard(a: r, b: b, aDoubles: view.doubles, bDoubles: view.compareDoubles!),
+        ],
         _gap,
         DoubleFocusCard(stats: view.doubles, wide: wide),
         _gap,
@@ -551,6 +596,7 @@ class DoublesTab extends StatelessWidget {
         ChartCard(
           key: const Key('stats-checkout-ranges'),
           title: l10n.statsCheckoutByRange,
+          hint: l10n.statsCheckoutByRangeHint,
           child: r.checkoutByRange.isEmpty
               ? const NoDataHint()
               : Column(
@@ -567,6 +613,50 @@ class DoublesTab extends StatelessWidget {
                   ],
                 ),
         ),
+      ],
+    );
+  }
+}
+
+/// Doppel & Finish: A gegen B nebeneinander.
+class _DoublesCompareCard extends StatelessWidget {
+  const _DoublesCompareCard({required this.a, required this.b, required this.aDoubles, required this.bDoubles});
+  final StatsReport a;
+  final StatsReport b;
+  final DoubleStats aDoubles;
+  final DoubleStats bDoubles;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    String name(int n) => n == 25 ? 'BULL' : 'D$n';
+    const min = _minDoubleAttempts;
+    final doubles = {...a.doubles.keys, ...b.doubles.keys}.where((n) =>
+        (a.doubles[n]?.attempts ?? 0) >= min || (b.doubles[n]?.attempts ?? 0) >= min).toList()
+      ..sort((x, y) {
+        final c = (a.doubles[y]?.attempts ?? 0).compareTo(a.doubles[x]?.attempts ?? 0);
+        return c != 0 ? c : (b.doubles[y]?.attempts ?? 0).compareTo(b.doubles[x]?.attempts ?? 0);
+      });
+    return PeriodCompareCard(
+      hint: l10n.statsCompareCardHint(min),
+      sections: [
+        (l10n.statsCompareSectionGeneral, [
+          CompareRow.rate(l10n.statCheckoutRate, _checkoutCount(a), _checkoutCount(b)),
+          CompareRow.rate(l10n.statDoubleRate, _sum(a.doubles), _sum(b.doubles)),
+          CompareRow.rate(l10n.statsCompareCheckoutDarts, aDoubles.checkout, bDoubles.checkout),
+          CompareRow.rate(l10n.statsCompareTrainingDarts, aDoubles.training, bDoubles.training),
+        ]),
+        (l10n.statsCompareSectionRest, [
+          for (final range in CheckoutRange.values)
+            if (a.checkoutByRange[range] != null || b.checkoutByRange[range] != null)
+              CompareRow.rate('${range.min}–${range.max}', a.checkoutByRange[range] ?? HitCount.zero,
+                  b.checkoutByRange[range] ?? HitCount.zero,
+                  minAttempts: min),
+        ]),
+        (l10n.statsCompareSectionDoubles, [
+          for (final n in doubles)
+            CompareRow.rate(name(n), a.doubles[n] ?? HitCount.zero, b.doubles[n] ?? HitCount.zero, minAttempts: min),
+        ]),
       ],
     );
   }

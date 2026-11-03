@@ -1,15 +1,72 @@
 /// Datenklassen der Statistik. Reine Werte, berechnet im `StatsCalculator`.
 library;
 
-/// Zeitraum der Auswertung.
-enum StatsPeriod {
-  week(7),
-  month(30),
-  quarter(90),
-  all(null);
+/// Zeitraum der Auswertung: die festen Zeiträume bis heute (7, 30, 90 Tage,
+/// Alles) oder ein eigener Zeitraum von [from] bis [to] (ganze Tage, beide
+/// eingeschlossen, mindestens ein Tag).
+class StatsPeriod {
+  const StatsPeriod._(this.name, this._days) : from = null, to = null;
 
-  const StatsPeriod(this.days);
-  final int? days;
+  StatsPeriod._custom(DateTime a, DateTime b)
+      : name = 'custom',
+        from = DateTime(a.year, a.month, a.day),
+        to = DateTime(b.year, b.month, b.day),
+        _days = null;
+
+  /// Eigener Zeitraum; die Reihenfolge von [a] und [b] ist egal, die Uhrzeit
+  /// wird ignoriert. Ein Tag ist der kürzeste Zeitraum (von = bis).
+  factory StatsPeriod.custom(DateTime a, DateTime b) => a.isAfter(b) ? StatsPeriod._custom(b, a) : StatsPeriod._custom(a, b);
+
+  static const StatsPeriod week = StatsPeriod._('week', 7);
+  static const StatsPeriod month = StatsPeriod._('month', 30);
+  static const StatsPeriod quarter = StatsPeriod._('quarter', 90);
+  static const StatsPeriod all = StatsPeriod._('all', null);
+
+  /// Die festen Zeiträume in der Reihenfolge der Auswahl.
+  static const List<StatsPeriod> values = [week, month, quarter, all];
+
+  /// `week`, `month`, `quarter`, `all` oder `custom`.
+  final String name;
+  final int? _days;
+
+  /// Erster und letzter Tag eines eigenen Zeitraums (sonst `null`).
+  final DateTime? from;
+  final DateTime? to;
+
+  bool get isCustom => from != null;
+
+  /// Länge in Tagen; `null` bei „Alles“.
+  int? get days {
+    if (from case final f?) {
+      // Über Kalendertage gezählt, damit die Zeitumstellung nicht stört.
+      return DateTime.utc(to!.year, to!.month, to!.day).difference(DateTime.utc(f.year, f.month, f.day)).inDays + 1;
+    }
+    return _days;
+  }
+
+  /// Ein eigener Zeitraum mit denselben Tagen wie [preset] bis [today].
+  static StatsPeriod resolved(StatsPeriod preset, DateTime today) {
+    if (preset.isCustom || preset.days == null) return preset;
+    final t = DateTime(today.year, today.month, today.day);
+    return StatsPeriod.custom(DateTime(t.year, t.month, t.day - preset.days! + 1), t);
+  }
+
+  /// Der gleich lange Zeitraum direkt vor diesem; `null` bei „Alles“.
+  StatsPeriod? before(DateTime today) {
+    final r = resolved(this, today);
+    if (!r.isCustom) return null;
+    final f = r.from!;
+    return StatsPeriod.custom(DateTime(f.year, f.month, f.day - r.days!), DateTime(f.year, f.month, f.day - 1));
+  }
+
+  @override
+  bool operator ==(Object other) => other is StatsPeriod && other.name == name && other.from == from && other.to == to;
+
+  @override
+  int get hashCode => Object.hash(name, from, to);
+
+  @override
+  String toString() => isCustom ? 'StatsPeriod($from–$to)' : 'StatsPeriod.$name';
 }
 
 /// Ein Punkt im Verlauf: Wert einer Session (oder eines Tages, dann ist

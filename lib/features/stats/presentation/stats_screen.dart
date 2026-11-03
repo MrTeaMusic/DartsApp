@@ -18,6 +18,7 @@ import '../domain/game_metrics.dart';
 import '../domain/stats_calculator.dart';
 import 'elo_tab.dart';
 import 'online_tab.dart';
+import 'period_picker.dart';
 import 'scatter_tab.dart';
 import 'tempo_tab.dart';
 import 'stats_tabs.dart';
@@ -26,6 +27,16 @@ import 'stats_widgets.dart';
 /// Gewählter Zeitraum und Spielfilter der Statistik.
 final statsPeriodProvider = NotifierProvider<_PeriodNotifier, StatsPeriod>(_PeriodNotifier.new);
 final statsGameProvider = NotifierProvider<StringChoice, String?>(StringChoice.new);
+
+/// Vergleich mit einem zweiten Zeitraum B (`null` = kein Vergleich, dann
+/// zeigen die Pfeile den gleich langen Zeitraum davor).
+final statsCompareProvider = NotifierProvider<_CompareNotifier, StatsCompare?>(_CompareNotifier.new);
+
+class _CompareNotifier extends Notifier<StatsCompare?> {
+  @override
+  StatsCompare? build() => null;
+  void set(StatsCompare? c) => state = c;
+}
 
 /// Spiel und Kennzahl im Verlauf des Reiters "Spiele".
 final statsTrendGameProvider = NotifierProvider<StringChoice, String?>(StringChoice.new);
@@ -54,6 +65,9 @@ class StatsView {
     required this.doubles,
     required this.period,
     this.gameId,
+    this.comparePeriod,
+    this.compareReport,
+    this.compareDoubles,
   });
   final StatsCalculator calc;
   final StatsReport report;
@@ -61,10 +75,18 @@ class StatsView {
   /// Doppel-Auswertung (Streubild, Daneben-Richtung, Verlauf …).
   final DoubleStats doubles;
 
-  /// Gleich langer Zeitraum davor; `null` bei "Alles" oder ohne Daten.
+  /// Vergleichswerte für die Pfeile: Zeitraum B, wenn verglichen wird, sonst
+  /// der gleich lange Zeitraum davor; `null` bei "Alles" oder ohne Daten.
   final StatsReport? previous;
   final StatsPeriod period;
   final String? gameId;
+
+  /// Zeitraum B und seine Auswertungen, solange verglichen wird.
+  final StatsPeriod? comparePeriod;
+  final StatsReport? compareReport;
+  final DoubleStats? compareDoubles;
+
+  bool get comparing => comparePeriod != null;
 }
 
 final statsViewProvider = Provider<StatsView?>((ref) {
@@ -72,15 +94,20 @@ final statsViewProvider = Provider<StatsView?>((ref) {
   if (calc == null) return null;
   final period = ref.watch(statsPeriodProvider);
   final gameId = ref.watch(statsGameProvider);
-  final previous = calc.previousReport(period, gameId: gameId);
+  final b = ref.watch(statsCompareProvider)?.resolve(period, calc.now);
+  final compareReport = b == null ? null : calc.report(b, gameId: gameId);
+  final previous = compareReport ?? calc.previousReport(period, gameId: gameId);
   return StatsView(
     calc: calc,
     report: calc.report(period, gameId: gameId),
-    // Ohne Training im Zeitraum davor gibt es nichts zu vergleichen.
+    // Ohne Training im Vergleichszeitraum gibt es nichts zu vergleichen.
     previous: previous == null || previous.isEmpty ? null : previous,
     doubles: calc.doubleStats(period, gameId: gameId),
     period: period,
     gameId: gameId,
+    comparePeriod: b,
+    compareReport: compareReport,
+    compareDoubles: b == null ? null : calc.doubleStats(b, gameId: gameId),
   );
 });
 
@@ -158,6 +185,24 @@ class StatsScreen extends ConsumerWidget {
                     child: _Filters(view: view),
                   ),
                 ),
+                if (view?.comparePeriod case final b?)
+                  _HideOnTab(
+                    indexes: const {_onlineTab, _eloTab, _scatterTab, _tempoTab, _gamesTab, _recordsTab, _achievementsTab},
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(pad, 0, pad, AppSpacing.s),
+                      child: CompareBar(
+                        a: view!.period,
+                        b: b,
+                        today: view.calc.now,
+                        onEdit: () async {
+                          final r = await showCompareSheet(context,
+                              a: view.period, current: ref.read(statsCompareProvider), today: view.calc.now);
+                          if (r != null) ref.read(statsCompareProvider.notifier).set(r.compare);
+                        },
+                        onClose: () => ref.read(statsCompareProvider.notifier).set(null),
+                      ),
+                    ),
+                  ),
                 Expanded(
                   child: view == null
                       ? const Center(child: CircularProgressIndicator())
@@ -190,6 +235,12 @@ const int _onlineTab = 1;
 
 /// Index des Reiters „Elo“ (gilt für alle Matches, ohne Spielfilter).
 const int _eloTab = 2;
+
+/// Reiter ohne Vergleich A gegen B.
+const int _scatterTab = 5;
+const int _tempoTab = 6;
+const int _gamesTab = 7;
+const int _recordsTab = 8;
 
 /// Index des Reiters „Erfolge“.
 const int _achievementsTab = 9;
@@ -230,12 +281,25 @@ class _Filters extends ConsumerWidget {
     final l10n = context.l10n;
     final period = ref.watch(statsPeriodProvider);
     final gameId = ref.watch(statsGameProvider);
-    String label(StatsPeriod p) => switch (p) {
-          StatsPeriod.week => l10n.statsPeriodWeek,
-          StatsPeriod.month => l10n.statsPeriodMonth,
-          StatsPeriod.quarter => l10n.statsPeriodQuarter,
-          StatsPeriod.all => l10n.statsPeriodAll,
-        };
+    final today = view?.calc.now ?? DateTime.now();
+    String label(StatsPeriod p) {
+      if (p == StatsPeriod.week) return l10n.statsPeriodWeek;
+      if (p == StatsPeriod.month) return l10n.statsPeriodMonth;
+      if (p == StatsPeriod.quarter) return l10n.statsPeriodQuarter;
+      return l10n.statsPeriodAll;
+    }
+
+    final compare = ref.watch(statsCompareProvider);
+    Future<void> pickCustom() async {
+      final p = await showPeriodSheet(context, initial: period, today: today);
+      if (p != null) ref.read(statsPeriodProvider.notifier).set(p);
+    }
+
+    Future<void> editCompare() async {
+      final r = await showCompareSheet(context, a: period, current: compare, today: today);
+      if (r != null) ref.read(statsCompareProvider.notifier).set(r.compare);
+    }
+
     // Katalog plus Spiele, die nur in den Daten vorkommen (z. B. neuere).
     final ids = [
       for (final d in GameCatalog.all) d.id,
@@ -258,6 +322,33 @@ class _Filters extends ConsumerWidget {
             ),
             const SizedBox(width: AppSpacing.s),
           ],
+          ChoiceChip(
+            key: const Key('period-custom'),
+            avatar: Icon(Icons.date_range_rounded, size: 18, color: period.isCustom ? null : Theme.of(context).colorScheme.onSurfaceVariant),
+            label: Text(period.isCustom ? formatPeriodRange(period, today) : l10n.statsPeriodCustom),
+            selected: period.isCustom,
+            onSelected: (_) => pickCustom(),
+          ),
+          const SizedBox(width: AppSpacing.s),
+          // Elo, Online usw. haben keine Pfeile: Vergleich nur, wo er wirkt.
+          _HideOnTab(
+            indexes: const {_onlineTab, _eloTab, _scatterTab, _tempoTab, _gamesTab, _recordsTab},
+            inline: true,
+            child: Padding(
+              padding: const EdgeInsets.only(right: AppSpacing.s),
+              child: FilterChip(
+                key: const Key('stats-compare'),
+                showCheckmark: false,
+                avatar: const Icon(Icons.compare_arrows_rounded, size: 18),
+                label: Text(switch (view?.comparePeriod) {
+                  final b? => l10n.statsCompareChip(b.days == null ? l10n.statsPeriodAll : formatPeriodRange(b, today)),
+                  null => l10n.statsCompare,
+                }),
+                selected: view?.comparing ?? false,
+                onSelected: (_) => editCompare(),
+              ),
+            ),
+          ),
           // „Online“ zeigt immer alle Live-Sessions, „Elo“ alle Matches.
           _HideOnTab(
             indexes: const {_onlineTab, _eloTab},

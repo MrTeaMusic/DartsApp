@@ -134,6 +134,9 @@ void main() {
     await openStats(tester);
     expect(find.byKey(const Key('stat-average')), findsOneWidget);
 
+    // Die Filterzeile scrollt seitlich (eigener Zeitraum, Vergleich davor).
+    await tester.ensureVisible(find.byKey(const Key('stats-game')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('stats-game')));
     await tester.pumpAndSettle();
     // Mit vielen Spielen ist die Liste länger als das Fenster.
