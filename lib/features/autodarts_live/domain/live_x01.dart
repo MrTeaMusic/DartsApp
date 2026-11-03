@@ -150,6 +150,11 @@ class LiveX01 {
   /// welchem Rest ein Dart als Scoring-Dart gilt).
   final List<int> remainingBefore = [];
 
+  /// Je Aufnahme, die mit einem Rest begann, der sich mit drei Darts checken
+  /// lässt: der Rest und ob die Aufnahme das Leg beendet hat (Checkout-Quote
+  /// nach Rest, wie ein Versuch im Checkout-Training).
+  final List<({int remaining, bool success})> checkoutChances = [];
+
   late int remaining = config.startScore;
 
   /// Gezählte Darts im laufenden Leg.
@@ -243,6 +248,8 @@ class LiveX01 {
   }
 
   bool _visitCounted = false;
+  bool _visitChance = false;
+  int _legChanceStart = 0;
   int _visitPoints = 0;
   int _visitStartLegDarts = 0;
   bool _visitDone = false;
@@ -258,6 +265,7 @@ class LiveX01 {
     visitStartRemaining = remaining;
     _visitPoints = 0;
     _visitDarts = 0;
+    _visitChance = false;
     _visitCounted = false;
     _visitDone = false;
     _visitStartLegDarts = _legPoints.length;
@@ -274,6 +282,10 @@ class LiveX01 {
     }
     counted.add(true);
     aimedDoubles.add(_aimedDouble());
+    if (_visitDarts == 0 && CheckoutRules.suggest(remaining, darts: 3, out: config.outMode) != null) {
+      checkoutChances.add((remaining: remaining, success: false));
+      _visitChance = true;
+    }
     _visitDarts++;
     darts++;
     legDarts++;
@@ -298,6 +310,7 @@ class LiveX01 {
     _visitPoints += s.score;
     _legPoints.add(s.score);
     if (remaining == 0) {
+      if (_visitChance) checkoutChances.last = (remaining: checkoutChances.last.remaining, success: true);
       lastEvent = GameEventType.checkout;
       _closeVisit();
       _addRow(checkout: true);
@@ -362,8 +375,11 @@ class LiveX01 {
         _countVisit();
         _endLeg(won: false, checkout: 0);
       case LegMarkKind.restart:
+        // Der Rest stimmte nicht: Checkout-Chancen dieses Legs zählen nicht.
+        checkoutChances.removeRange(_legChanceStart, checkoutChances.length);
         _resetLeg();
     }
+    _visitChance = false;
     _rows.clear();
     _legClosed = false;
     _rowAdded = false;
@@ -389,6 +405,7 @@ class LiveX01 {
   }
 
   void _resetLeg() {
+    _legChanceStart = checkoutChances.length;
     remaining = config.startScore;
     legDarts = 0;
     _legPoints.clear();

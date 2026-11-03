@@ -861,7 +861,7 @@
   "statsTreblesHint": "Darts, bei denen das Spiel ein Triple als Ziel vorgab, z. B. T20-Training oder Highscore-Jagd. Zahlen ab 3 Versuchen.",
   "statsNoData": "Im Zeitraum gibt es dafür noch keine Daten.",
   "statsDoublesPerNumber": "Doubles im Detail",
-  "statsDoublesHint": "Darts, bei denen genau ein Double das Ziel war: Bob's 27, Around the Clock auf Doubles und Checkout-Darts aufs vorgeschlagene Double.",
+  "statsDoublesHint": "Darts, bei denen genau ein Double das Ziel war: Bob's 27, Around the Clock auf Doubles, Checkout-Darts aufs vorgeschlagene Double und in Online-Matches die Darts aufs Finish-Doppel.",
   "statsStrongestDouble": "Stärkstes Double",
   "statsWeakestDouble": "Schwächstes Double",
   "statsDoublesLegend": "Grün: besser als deine Double-Quote, rot: schlechter. Stärkstes und schwächstes Double zählen ab {count} Versuchen.",
@@ -2204,7 +2204,7 @@
     }
   },
   "statsCheckoutVsTraining": "Checkout gegen Training",
-  "statsCheckoutVsTrainingHint": "Checkout: Darts auf ein Finish-Doppel in X01, Matches, Checkout-Training und 121. Training: Darts aufs Doppel in Bob's 27, Doppel-Spielen und anderen Trainings.",
+  "statsCheckoutVsTrainingHint": "Checkout: Darts auf ein Finish-Doppel in X01, Matches, Online-Matches, Checkout-Training und 121. Training: Darts aufs Doppel in Bob's 27, Doppel-Spielen und anderen Trainings.",
   "statsCheckoutDarts": "Checkout",
   "statsTrainingDarts": "Training",
   "statsDoubleDarts": "{hits} von {attempts} Darts",
@@ -4145,5 +4145,81 @@
         "type": "String"
       }
     }
-  }
+  },
+  "statsPeriodCustom": "Eigener",
+  "statsPeriodPickTitle": "Eigener Zeitraum",
+  "statsPeriodPickBTitle": "Zeitraum B wählen",
+  "statsPeriodFrom": "Von",
+  "statsPeriodTo": "Bis",
+  "statsPeriodDays": "{count, plural, =1{1 Tag} other{{count} Tage}}",
+  "@statsPeriodDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsPeriodApply": "Übernehmen",
+  "statsPeriodCancel": "Abbrechen",
+  "statsPeriodToday": "Heute",
+  "statsPeriodYesterday": "Gestern",
+  "statsPeriodThisWeek": "Diese Woche",
+  "statsPeriodLastWeek": "Letzte Woche",
+  "statsPeriodThisMonth": "Dieser Monat",
+  "statsPeriodLastMonth": "Letzter Monat",
+  "statsPeriodPickHint": "Ein Tag reicht: Von und Bis dürfen gleich sein.",
+  "statsCompare": "Vergleichen",
+  "statsCompareTitle": "Zwei Zeiträume vergleichen",
+  "statsCompareA": "A",
+  "statsCompareB": "B",
+  "statsCompareAText": "Zeitraum A ist der oben gewählte Zeitraum: {range}",
+  "@statsCompareAText": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "statsCompareBefore": "Gleich lang davor",
+  "statsCompareYearAgo": "Ein Jahr davor",
+  "statsCompareCustom": "Eigener Zeitraum",
+  "statsCompareStart": "Vergleichen",
+  "statsCompareStop": "Vergleich beenden",
+  "statsCompareChip": "B: {range}",
+  "@statsCompareChip": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "statsCompareAllHint": "Bei „Alles“ gibt es keinen Zeitraum davor. Wähle B selbst.",
+  "statsCompareHintB": "Pfeile: Vergleich mit Zeitraum B ({range})",
+  "@statsCompareHintB": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "statsCompareCardTitle": "A gegen B",
+  "statsCompareDiff": "Unterschied",
+  "statsCompareCardHint": "Unterschied in Prozentpunkten (Pp). Grün: A besser als B, rot: schlechter. Bei Doppeln und Resten ab {count} Versuchen in beiden Zeiträumen.",
+  "@statsCompareCardHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsCompareNoData": "In einem der beiden Zeiträume gibt es dafür noch keine Daten.",
+  "statsCompareCheckout": "Checkout-Quote",
+  "statsCompareDoubleRate": "Doppelquote",
+  "statsCompareSectionRest": "Checkout nach Rest",
+  "statsCompareSectionDoubles": "Doppel",
+  "statsCompareSectionGeneral": "Allgemein",
+  "statsCheckoutByRangeHint": "Ein Versuch sind bis zu drei Darts auf einen Rest: im Checkout-Training und in Online-Matches jede Aufnahme, die mit einem checkbaren Rest begann. Erfolg, wenn die Aufnahme das Leg beendet.",
+  "statsCompareVs": "gegen",
+  "statsCompareCheckoutDarts": "Darts aufs Finish-Doppel",
+  "statsCompareTrainingDarts": "Doppel im Training"
 }

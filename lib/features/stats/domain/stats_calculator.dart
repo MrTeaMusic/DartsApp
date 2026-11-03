@@ -160,6 +160,9 @@ class StatsCalculator {
     take(previous._perDayCache, _perDayCache);
     take(previous._liveDoublesCache, _liveDoublesCache);
     take(previous._onlineMatchCache, _onlineMatchCache);
+    for (final id in unchanged) {
+      if (previous._liveX01Cache.containsKey(id)) _liveX01Cache[id] = previous._liveX01Cache[id];
+    }
     // „Zählt nicht“ (`null`) ist hier ein Ergebnis, das ebenfalls übernommen wird.
     for (final id in unchanged) {
       if (previous._eloMatchCache.containsKey(id)) _eloMatchCache[id] = previous._eloMatchCache[id];
@@ -251,7 +254,18 @@ class StatsCalculator {
   /// Erster Tag des Zeitraums (heute eingeschlossen); `null` bei „Alles“.
   DateTime? periodStart(StatsPeriod p) => _since(p);
 
-  DateTime? _since(StatsPeriod p) => p.days == null ? null : dayOf(now).subtract(Duration(days: p.days! - 1));
+  DateTime? _since(StatsPeriod p) {
+    if (p.from case final f?) return f;
+    if (p.days == null) return null;
+    final today = dayOf(now);
+    return DateTime(today.year, today.month, today.day - p.days! + 1);
+  }
+
+  /// Erster Tag nach dem Zeitraum (ausgeschlossen); `null` = bis jetzt.
+  DateTime? _until(StatsPeriod p) => p.to == null ? null : DateTime(p.to!.year, p.to!.month, p.to!.day + 1);
+
+  /// Erster Tag nach dem Zeitraum (ausgeschlossen); `null` = bis heute.
+  DateTime? periodEnd(StatsPeriod p) => _until(p);
 
   List<SessionRow> _between(DateTime? from, DateTime? to, String? gameId) => [
         for (final s in _sessions)
@@ -261,7 +275,7 @@ class StatsCalculator {
             s,
       ];
 
-  List<SessionRow> sessionsIn(StatsPeriod period, {String? gameId}) => _between(_since(period), null, gameId);
+  List<SessionRow> sessionsIn(StatsPeriod period, {String? gameId}) => _between(_since(period), _until(period), gameId);
 
   /// Spiel-IDs mit Daten, meistgespielt zuerst (auch unbekannte Spiele).
   List<String> get playedGames {
@@ -390,7 +404,8 @@ class StatsCalculator {
   /// Kennzahlen des gewählten Zeitraums.
   StatsReport report(StatsPeriod period, {String? gameId}) => _reports.putIfAbsent((period, gameId), () {
         final since = _since(period);
-        return _report(_between(since, null, gameId), from: since, to: null);
+        final until = _until(period);
+        return _report(_between(since, until, gameId), from: since, to: until);
       });
 
   /// Kennzahlen des gleich langen Zeitraums davor (für den Vergleich);
@@ -459,6 +474,24 @@ class StatsCalculator {
     Iterable<DoubleAttempt> attemptsOf(List<SessionRow> sessions) sync* {
       for (final s in sessions) {
         final source = sourceOf(s.gameId);
+        // Online-Matches: Finish-Doppel aus dem nachgespielten X01. Die
+        // Checkout-Darts zählen schon über die Kennzahlen (wie X01-Solo).
+        if (_liveX01Of(s) case final x?) {
+          final rows = throwsOf(s);
+          for (var i = 0; i < rows.length && i < x.aimedDoubles.length; i++) {
+            final n = x.aimedDoubles[i];
+            if (n == null) continue;
+            final r = rows[i];
+            yield DoubleAttempt(
+              target: n,
+              landed: segmentOf(r) ?? Segment.miss,
+              time: r.timestamp,
+              position: r.x == null || r.y == null || r.source == 'manual' ? null : BoardPoint(r.x!, r.y!),
+              source: DoubleSource.none,
+            );
+          }
+          continue;
+        }
         for (final a in aimedOf(s)) {
           final n = a.aimedDouble;
           if (n == null) continue;
@@ -508,7 +541,7 @@ class StatsCalculator {
     // Checkouts aus dem Checkout-Training mit höchstens 3 Darts je Versuch.
     var checkouts = HitCount.zero;
     final byRange = <CheckoutRange, HitCount>{};
-    for (final a in _checkoutAttempts(sessions)) {
+    for (final a in [..._checkoutAttempts(sessions), ..._onlineCheckoutAttempts(sessions)]) {
       final h = HitCount(1, a.success ? 1 : 0);
       checkouts += h;
       if (CheckoutRange.of(a.target) case final r?) byRange[r] = (byRange[r] ?? HitCount.zero) + h;
@@ -527,6 +560,11 @@ class StatsCalculator {
         accuracyByGame[s.gameId] = (accuracyByGame[s.gameId] ?? HitCount.zero) + h;
         if (a.aimedDouble case final n?) doubles[n] = (doubles[n] ?? HitCount.zero) + h;
         if (a.aimedTreble case final n?) trebles[n] = (trebles[n] ?? HitCount.zero) + h;
+      }
+      // Online-Matches mit „X01 mitzählen“: Darts aufs Finish-Doppel aus dem
+      // nachgespielten X01 (Ziel geschätzt wie bei X01-Solo).
+      for (final e in liveDoublesOf(s).entries) {
+        doubles[e.key] = (doubles[e.key] ?? HitCount.zero) + e.value;
       }
     }
     final doubleTotal = doubles.values.fold(HitCount.zero, (a, b) => a + b);
@@ -658,6 +696,19 @@ class StatsCalculator {
         if (a is! Map) continue;
         final t = a['target'];
         yield (target: t is num ? t.toInt() : 0, success: a['success'] == true, time: s.startedAt);
+      }
+    }
+  }
+
+  /// Checkout-Chancen aus Online-Matches mit „X01 mitzählen“: jede Aufnahme,
+  /// die mit einem in drei Darts checkbaren Rest begann, ist ein Versuch auf
+  /// diesen Rest (wie im Checkout-Training); Erfolg, wenn sie das Leg beendet.
+  Iterable<({int target, bool success, DateTime time})> _onlineCheckoutAttempts(List<SessionRow> sessions) sync* {
+    for (final s in sessions) {
+      final x = _liveX01Of(s);
+      if (x == null) continue;
+      for (final c in x.checkoutChances) {
+        yield (target: c.remaining, success: c.success, time: s.startedAt);
       }
     }
   }
@@ -853,6 +904,14 @@ class StatsCalculator {
   /// und Leg-Markierungen nachgespielt; `null` für andere Sessions.
   LiveX01? _liveX01Of(SessionRow s) {
     if (s.gameId != autodartsLiveX01GameId) return null;
+    if (_liveX01Cache.containsKey(s.id)) return _liveX01Cache[s.id];
+    return _liveX01Cache[s.id] = _replayLiveX01(s);
+  }
+
+  /// Nachgespielte Live-X01-Sessions (auch `null` wird gemerkt).
+  final Map<int, LiveX01?> _liveX01Cache = {};
+
+  LiveX01? _replayLiveX01(SessionRow s) {
     final config = LiveX01Config.fromJson(decode(s.configJson)['x01']);
     final rows = throwsOf(s);
     if (config == null || rows.isEmpty) return null;
