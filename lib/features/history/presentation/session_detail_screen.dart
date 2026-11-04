@@ -24,6 +24,7 @@ import '../../stats/presentation/stats_charts.dart';
 import '../../stats/presentation/stats_widgets.dart';
 import '../data/history_repository.dart';
 import '../domain/leg_board.dart';
+import '../export/session_pdf_export.dart';
 import '../domain/session_history.dart';
 import 'history_screen.dart';
 import 'leg_board_view.dart';
@@ -94,6 +95,13 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
         maxWidth: kHistoryMaxWidth,
         title: Text(l10n.histTitle),
         actions: [
+          if (!e.isQuiz && d.visits.isNotEmpty)
+            IconButton(
+              key: const Key('session-export-pdf'),
+              tooltip: l10n.histExportPdf,
+              onPressed: () => exportSessionPdf(context, ref, d),
+              icon: const Icon(Icons.picture_as_pdf_rounded),
+            ),
           if (!lite)
             IconButton(
               key: const Key('session-delete-action'),

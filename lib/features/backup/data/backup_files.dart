@@ -12,6 +12,9 @@ abstract class BackupFiles {
   /// Speichert [content] und gibt den Pfad zurück, `null` bei Abbruch.
   Future<String?> save(String fileName, String content, {required String mimeType, required String extension});
 
+  /// Wie [save], für Binärdateien (z. B. PDF).
+  Future<String?> saveBytes(String fileName, Uint8List bytes, {required String mimeType, required String extension});
+
   /// Lässt eine JSON-Datei auswählen und gibt ihren Text zurück, `null`
   /// bei Abbruch.
   Future<String?> openJson();
@@ -24,8 +27,11 @@ abstract class BackupFiles {
 /// (in der Dateien-App unter „Auf meinem iPhone › DartLab“ sichtbar).
 class SystemBackupFiles implements BackupFiles {
   @override
-  Future<String?> save(String fileName, String content, {required String mimeType, required String extension}) async {
-    final bytes = Uint8List.fromList(utf8.encode(content));
+  Future<String?> save(String fileName, String content, {required String mimeType, required String extension}) =>
+      saveBytes(fileName, Uint8List.fromList(utf8.encode(content)), mimeType: mimeType, extension: extension);
+
+  @override
+  Future<String?> saveBytes(String fileName, Uint8List bytes, {required String mimeType, required String extension}) async {
     if (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.android) {
       final dir = await getApplicationDocumentsDirectory();
       final file = File(p.join(dir.path, fileName));
