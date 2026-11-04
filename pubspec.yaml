@@ -55,6 +55,7 @@ dependencies:
   url_launcher: ^6.3.3
   wakelock_plus: ^1.8.1
   cryptography: ^2.9.0
+  pdf: ^3.13.1
 
 dev_dependencies:
   flutter_test:

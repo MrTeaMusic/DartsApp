@@ -23,6 +23,7 @@ import '../../stats/presentation/elo_tab.dart';
 import '../../stats/presentation/stats_charts.dart';
 import '../../stats/presentation/stats_widgets.dart';
 import '../data/history_repository.dart';
+import '../../stats/export/online_pdf_export.dart';
 import '../domain/leg_board.dart';
 import '../domain/session_history.dart';
 import 'history_screen.dart';
@@ -94,6 +95,13 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
         maxWidth: kHistoryMaxWidth,
         title: Text(l10n.histTitle),
         actions: [
+          if (e.isOnline)
+            IconButton(
+              key: const Key('session-export-pdf'),
+              tooltip: l10n.onlineExportPdf,
+              onPressed: () => exportOnlinePdf(context, ref, focusSessionId: e.id),
+              icon: const Icon(Icons.picture_as_pdf_rounded),
+            ),
           if (!lite)
             IconButton(
               key: const Key('session-delete-action'),

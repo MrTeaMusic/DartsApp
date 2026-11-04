@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:dartlab/core/database/app_database.dart';
 import 'package:dartlab/features/backup/data/backup_files.dart';
@@ -20,6 +21,14 @@ class FakeFiles implements BackupFiles {
   @override
   Future<String?> save(String fileName, String content, {required String mimeType, required String extension}) async {
     saved[fileName] = content;
+    return '/tmp/$fileName';
+  }
+
+  final savedBytes = <String, Uint8List>{};
+
+  @override
+  Future<String?> saveBytes(String fileName, Uint8List bytes, {required String mimeType, required String extension}) async {
+    savedBytes[fileName] = bytes;
     return '/tmp/$fileName';
   }
 

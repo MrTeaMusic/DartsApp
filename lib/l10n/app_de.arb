@@ -4221,5 +4221,28 @@
   "statsCheckoutByRangeHint": "Ein Versuch sind bis zu drei Darts auf einen Rest: im Checkout-Training und in Online-Matches jede Aufnahme, die mit einem checkbaren Rest begann. Erfolg, wenn die Aufnahme das Leg beendet.",
   "statsCompareVs": "gegen",
   "statsCompareCheckoutDarts": "Darts aufs Finish-Doppel",
-  "statsCompareTrainingDarts": "Doppel im Training"
+  "statsCompareTrainingDarts": "Doppel im Training",
+  "onlineExportPdf": "Als PDF exportieren",
+  "onlineExportPdfHint": "Die gesamte Online-Statistik als PDF, zum Verschicken.",
+  "onlinePdfTitle": "Online-Statistik",
+  "onlinePdfMeta": "{player} · {period} · erstellt am {date}",
+  "@onlinePdfMeta": {
+    "placeholders": {
+      "player": {"type": "String"},
+      "period": {"type": "String"},
+      "date": {"type": "String"}
+    }
+  },
+  "onlinePdfThisMatch": "Dieses Match",
+  "onlinePdfSummary": "Überblick",
+  "onlinePdfTrend": "Verlauf",
+  "onlinePdfAllMatches": "Alle Matches",
+  "onlinePdfPage": "Seite {page} von {pages}",
+  "@onlinePdfPage": {
+    "placeholders": {
+      "page": {"type": "int"},
+      "pages": {"type": "int"}
+    }
+  },
+  "onlinePdfNoData": "Keine Online-Matches im Zeitraum."
 }
