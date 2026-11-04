@@ -1,2 +1,10 @@
 #include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"
 #include "Generated.xcconfig"
+
+// App-Kennung (Bundle Identifier) und Team für iPhone/iPad.
+// Nicht hier und nicht in Xcode ändern, sondern mit tools/ios/signing.sh in
+// Signing.local.xcconfig eintragen. Die Datei ist von git ausgenommen und
+// übersteht damit jedes git pull. Ändert sich die Kennung, hält iOS die App
+// für eine andere und sie startet ohne Daten und Einstellungen.
+PRODUCT_BUNDLE_IDENTIFIER = de.dartlab.dartlab
+#include? "Signing.local.xcconfig"

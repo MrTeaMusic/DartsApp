@@ -67,16 +67,24 @@ Ein kostenloser Account reicht für die eigenen Geräte.
 4. Links „Runner“ wählen › Target „Runner“ › **Signing & Capabilities**:
    * „Automatically manage signing“ an,
    * bei **Team** die eigene Apple-ID wählen (ggf. erst unter Xcode › Settings › Accounts hinzufügen),
-   * die **Bundle Identifier** auf etwas Eigenes ändern, z. B. `de.<deinname>.dartlab`.
-     Die Vorgabe `de.dartlab.dartlab` kann schon vergeben sein.
-5. Im Terminal:
+   * die **Bundle Identifier** hier **nicht** ändern, Xcode danach schließen.
+5. Eigene App-Kennung einmalig festlegen (die Vorgabe `de.dartlab.dartlab` kann schon vergeben
+   sein):
+   ```bash
+   tools/ios/signing.sh de.<deinname>.dartlab
+   ```
+   Das schreibt `ios/Flutter/Signing.local.xcconfig`. Die Datei ist von git ausgenommen und übersteht
+   jedes `git pull`. **Diese Kennung nie mehr ändern:** iOS ordnet die Daten (Sessions, Einstellungen)
+   der Kennung zu. Eine andere Kennung ist für iOS eine andere App, sie startet leer, die alten Daten
+   bleiben in der alten App.
+6. Im Terminal:
    ```bash
    flutter run -d <iPhone-Name> --release
    ```
    (`flutter devices` zeigt den Namen.)
-6. Beim ersten Start: Einstellungen › Allgemein › VPN & Geräteverwaltung › dem eigenen
+7. Beim ersten Start: Einstellungen › Allgemein › VPN & Geräteverwaltung › dem eigenen
    Entwicklerzertifikat vertrauen.
-7. Für Autodarts fragt iOS beim ersten Verbindungsversuch nach **„Lokales Netzwerk“**: erlauben.
+8. Für Autodarts fragt iOS beim ersten Verbindungsversuch nach **„Lokales Netzwerk“**: erlauben.
    Wurde das abgelehnt: Einstellungen › DartLab › Lokales Netzwerk einschalten.
 
 **Wichtig bei kostenlosem Account:** Das Profil läuft nach **7 Tagen** ab. Danach startet die App
@@ -124,7 +132,11 @@ erscheint ein Hinweis (offline, GitHub bremst, noch kein Release).
   (siehe Gatekeeper oben). Für den Download braucht die Sandbox das Entitlement
   `com.apple.security.files.downloads.read-write`.
 * **iPhone/iPad:** kein Download (ohne bezahlten Account gibt es keinen Weg an Xcode vorbei). Auf dem
-  Mac `git pull` und wie oben unter iOS neu bauen. Die Karte sagt das auch so.
+  Mac `tools/ios/update.sh "<iPhone-Name>"`. Das Skript sichert die eigene App-Kennung, räumt
+  `pubspec.lock` weg (sonst bricht `git pull` ab, sobald sich die Abhängigkeiten ändern), holt den
+  neuen Stand und installiert. Bitte nicht von Hand mit `git reset`, `git checkout .` oder einem
+  neuen Klon „reparieren“: Ging dabei früher die Kennung verloren, startete die App leer
+  (siehe [ios-daten-zurueck.md](ios-daten-zurueck.md)).
 
 **Selbst gebaute Apps** (`flutter run`, `flutter build` ohne die Angaben unten) haben keine
 Build-Nummer und melden nie von sich aus ein Update. „Nach Updates suchen“ zeigt dort nur, welche
