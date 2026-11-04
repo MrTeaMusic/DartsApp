@@ -14,7 +14,6 @@ import '../../games/domain/engine/game_display.dart';
 import '../../history/presentation/history_screen.dart';
 import '../../plans/presentation/plan_routes.dart';
 import '../domain/stats_calculator.dart';
-import '../export/online_pdf_export.dart';
 import 'double_insights.dart';
 import 'stats_charts.dart';
 import 'stats_screen.dart';
@@ -69,15 +68,6 @@ class OnlineTab extends ConsumerWidget {
                   ),
           )
         else ...[
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton.icon(
-              key: const Key('online-export-pdf'),
-              onPressed: () => exportOnlinePdf(context, ref, period: view.period),
-              icon: const Icon(Icons.picture_as_pdf_rounded, size: 18),
-              label: Text(l10n.onlineExportPdf),
-            ),
-          ),
           TileGrid(children: [
             StatTile(
               key: const Key('online-matches'),

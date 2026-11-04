@@ -42,7 +42,7 @@ Würfe kommen live vom Autodarts-Board, aus einem Simulator oder per manueller E
 Was über das Autodarts-Protokoll bekannt und was offen ist: [docs/autodarts-protokoll.md](docs/autodarts-protokoll.md).
 Online-Matches aus dem Autodarts-Konto importieren (Browser-Skript oder JSON einfügen): [docs/autodarts-import.md](docs/autodarts-import.md).
 Haus-Elo, eine eigene Elo-Wertung aus deinen Matches (Statistik › Elo): [docs/haus-elo.md](docs/haus-elo.md).
-Online-Statistik als PDF exportieren und verschicken: [docs/online-pdf-export.md](docs/online-pdf-export.md).
+Ein Match als PDF exportieren und verschicken: [docs/match-pdf.md](docs/match-pdf.md).
 Wie der Sync funktioniert: [docs/sync.md](docs/sync.md).
 Regeln und Optionen der Trainingsspiele: [docs/trainingsspiele.md](docs/trainingsspiele.md).
 Die 13 weiteren Spiele (X01-Solo bis Stellen): [docs/trainingsspiele-erweitert.md](docs/trainingsspiele-erweitert.md).
