@@ -60,6 +60,17 @@ jobs:
       # Ohne Signatur nur zur Kontrolle, dass der Build durchläuft. Auf ein
       # Gerät kommt die App über Xcode (siehe docs/build-anleitung.md).
       - run: flutter build ios --release --no-codesign
+      # Die App-Kennung kommt aus ios/Flutter/*.xcconfig und lässt sich mit
+      # der lokalen Signing.local.xcconfig überschreiben (tools/ios/signing.sh).
+      # Stünde sie wieder fest im Xcode-Projekt, verlöre ein iPhone-Update die
+      # Daten, sobald git die lokale Änderung zurücksetzt.
+      - name: App-Kennung aus xcconfig
+        run: |
+          plutil -extract CFBundleIdentifier raw build/ios/iphoneos/Runner.app/Info.plist | grep -x de.dartlab.dartlab
+          echo "PRODUCT_BUNDLE_IDENTIFIER = de.test.dartlab" > ios/Flutter/Signing.local.xcconfig
+          xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner -configuration Release -showBuildSettings \
+            | grep -E '^ *PRODUCT_BUNDLE_IDENTIFIER = de\.test\.dartlab$'
+          rm ios/Flutter/Signing.local.xcconfig
 
   android:
     runs-on: ubuntu-latest
