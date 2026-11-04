@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app.dart';
 import 'core/fullscreen.dart';
 import 'core/settings/app_settings.dart';
+import 'core/settings/prefs_guard.dart';
 
 /// Startargumente (Desktop):
 /// `--fullscreen` startet direkt im Vollbild, z. B. für einen Raspberry Pi
@@ -13,6 +14,8 @@ import 'core/settings/app_settings.dart';
 Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   await initFullscreenSupport();
+  // Einstellungsdatei vor dem ersten Lesen prüfen und sichern (Windows/Linux).
+  await (await PrefsGuard.forPlatform())?.protect();
   final prefs = await SharedPreferences.getInstance();
   final container = ProviderContainer(
     overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
