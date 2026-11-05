@@ -24,7 +24,9 @@ import '../../stats/presentation/stats_charts.dart';
 import '../../stats/presentation/stats_widgets.dart';
 import '../data/history_repository.dart';
 import '../domain/leg_board.dart';
-import '../export/session_pdf_export.dart';
+import '../share/shared_match.dart';
+import 'session_export_button.dart';
+import 'shared_match_banner.dart';
 import '../domain/session_history.dart';
 import 'history_screen.dart';
 import 'leg_board_view.dart';
@@ -88,20 +90,13 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
     final e = d.entry;
     // Lite zeigt nur an: nichts löschen, nicht noch einmal spielen.
     final lite = ref.watch(liteProvider);
-    final boards = legBoardsOf(d);
     final canReplay = e.isQuiz || (!e.hasOpponent && GameCatalog.byId(e.gameId) != null);
     return Scaffold(
       appBar: AppPageBar(
         maxWidth: kHistoryMaxWidth,
         title: Text(l10n.histTitle),
         actions: [
-          if (!e.isQuiz && d.visits.isNotEmpty)
-            IconButton(
-              key: const Key('session-export-pdf'),
-              tooltip: l10n.histExportPdf,
-              onPressed: () => exportSessionPdf(context, ref, d),
-              icon: const Icon(Icons.picture_as_pdf_rounded),
-            ),
+          if (!e.isQuiz && d.visits.isNotEmpty) SessionExportButton(detail: d),
           if (!lite)
             IconButton(
               key: const Key('session-delete-action'),
@@ -111,15 +106,67 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
             ),
         ],
       ),
-      body: LayoutBuilder(builder: (context, c) {
+      body: SessionDetailBody(
+        detail: d,
+        footer: lite
+            ? null
+            : Wrap(
+                spacing: AppSpacing.m,
+                runSpacing: AppSpacing.m,
+                children: [
+                  if (canReplay)
+                    FilledButton.icon(
+                      key: const Key('session-play-again'),
+                      onPressed: () => context.go(e.isQuiz ? QuizRoutes.setup : Routes.gameSetup(e.gameId)),
+                      icon: const Icon(Icons.replay_rounded),
+                      label: Text(l10n.histPlayAgain),
+                    ),
+                  OutlinedButton.icon(
+                    key: const Key('session-delete'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: context.dartColors.danger,
+                      side: BorderSide(color: context.dartColors.danger.withValues(alpha: 0.6)),
+                    ),
+                    onPressed: _deleting ? null : () => _delete(d),
+                    icon: const Icon(Icons.delete_outline_rounded),
+                    label: Text(l10n.histDelete),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
+/// Inhalt der Detailansicht ohne Kopfleiste. Zeigt auch geteilte Matches
+/// ([shared]), dann mit Hinweis oben und der Elo aus der Datei.
+class SessionDetailBody extends StatelessWidget {
+  const SessionDetailBody({super.key, required this.detail, this.shared, this.footer});
+  final SessionDetail detail;
+  final SharedMatch? shared;
+
+  /// Unter allem, z. B. „Nochmal spielen“ und „Löschen“.
+  final Widget? footer;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final d = detail;
+    final e = d.entry;
+    final boards = legBoardsOf(d);
+    return LayoutBuilder(builder: (context, c) {
         final wide = c.maxWidth >= 900;
         return AppPage(
           maxWidth: kHistoryMaxWidth,
           listKey: const Key('session-detail'),
           children: [
+            if (shared != null) ...[
+              SharedMatchBanner(match: shared!),
+              const SectionGap(factor: 0.8),
+            ],
             _Header(detail: d),
             const SectionGap(factor: 0.8),
-            if (e.hasOpponent) _MatchResultCard(detail: d),
+            if (e.hasOpponent) _MatchResultCard(detail: d, shared: shared),
             // Bei Matches stehen die eigenen Kennzahlen schon im Ergebnis.
             if (!e.hasOpponent) ...[
               SectionHeader(l10n.histKeyMetrics),
@@ -165,36 +212,13 @@ class _SessionDetailScreenState extends ConsumerState<SessionDetailScreen> {
               const SizedBox(height: AppSpacing.l),
               Text(l10n.histNoThrows, style: Theme.of(context).textTheme.bodyMedium),
             ],
-            if (!lite) ...[
+            if (footer != null) ...[
               const SectionGap(),
-              Wrap(
-                spacing: AppSpacing.m,
-                runSpacing: AppSpacing.m,
-                children: [
-                  if (canReplay)
-                    FilledButton.icon(
-                      key: const Key('session-play-again'),
-                      onPressed: () => context.go(e.isQuiz ? QuizRoutes.setup : Routes.gameSetup(e.gameId)),
-                      icon: const Icon(Icons.replay_rounded),
-                      label: Text(l10n.histPlayAgain),
-                    ),
-                  OutlinedButton.icon(
-                    key: const Key('session-delete'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: context.dartColors.danger,
-                      side: BorderSide(color: context.dartColors.danger.withValues(alpha: 0.6)),
-                    ),
-                    onPressed: _deleting ? null : () => _delete(d),
-                    icon: const Icon(Icons.delete_outline_rounded),
-                    label: Text(l10n.histDelete),
-                  ),
-                ],
-              ),
+              footer!,
             ],
           ],
         );
-      }),
-    );
+      });
   }
 }
 
@@ -300,8 +324,9 @@ class _Info extends StatelessWidget {
 
 /// Endstand und Kennzahlen aller Teilnehmer, soweit gespeichert.
 class _MatchResultCard extends ConsumerWidget {
-  const _MatchResultCard({required this.detail});
+  const _MatchResultCard({required this.detail, this.shared});
   final SessionDetail detail;
+  final SharedMatch? shared;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -345,7 +370,13 @@ class _MatchResultCard extends ConsumerWidget {
     final won = e.won;
     final winner = won == null ? null : (won ? detail.me : null);
     // Haus-Elo vor und nach diesem Match, falls es gewertet wird.
-    final elo = ref.watch(houseEloProvider)?.stepOf(e.id);
+    // Geteilte Matches: die Elo des Absenders aus der Datei, nie die eigene.
+    final step = shared == null ? ref.watch(houseEloProvider)?.stepOf(e.id) : null;
+    final elo = shared != null
+        ? shared!.elo
+        : step == null
+            ? null
+            : SharedElo(before: step.before, after: step.after);
     return AppCard(
       key: const Key('session-match-result'),
       child: Column(

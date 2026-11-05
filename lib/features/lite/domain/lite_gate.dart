@@ -12,17 +12,22 @@ abstract final class LiteRoutes {
 
   /// Live-Reiter: Bens Spiel zuschauen.
   static const watch = '/zuschauen';
+
+  /// Geteiltes Match aus einer Datei (wie `Routes.shared`).
+  static const shared = '/geteilt';
 }
 
 /// Ist die Verbindung zum Cloud-Speicher eingerichtet?
 bool liteIsConnected(AppSettings s) =>
     s.syncRole == SyncRole.cloud && s.syncCloudUrl.trim().isNotEmpty && s.syncCloudSecret.isNotEmpty;
 
-/// Weiterleitung der Lite-Variante: Ohne Einrichtung gibt es nur die
+/// Weiterleitung der Lite-Variante: Geteilte Matches gehen immer. Ohne Einrichtung gibt es nur die
 /// Einrichtung, mit Einrichtung nur Live, Statistik (mit Verlauf und Details)
 /// und Optionen. Alle anderen Pfade, auch unbekannte, führen zur Statistik.
 /// `null` heißt: Pfad bleibt.
 String? liteRedirect(String path, {required bool connected}) {
+  // Eine geteilte Datei lässt sich immer ansehen, auch vor der Einrichtung.
+  if (path == LiteRoutes.shared) return null;
   if (!connected) return path == LiteRoutes.welcome ? null : LiteRoutes.welcome;
   if (_allowed(path)) return null;
   return LiteRoutes.stats;

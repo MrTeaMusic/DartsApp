@@ -12,6 +12,7 @@ import '../../games/presentation/game_texts.dart';
 import '../../stats/presentation/stats_widgets.dart';
 import '../data/history_repository.dart';
 import '../domain/session_history.dart';
+import '../share/shared_match_opener.dart';
 
 /// Höchstbreite von Verlauf und Detailansicht.
 const double kHistoryMaxWidth = 860;
@@ -30,7 +31,18 @@ class HistoryScreen extends ConsumerWidget {
     final entries = all == null ? null : [for (final e in all) if (e.matches(filter)) e];
 
     return Scaffold(
-      appBar: AppPageBar(maxWidth: kHistoryMaxWidth, title: Text(l10n.histTitle)),
+      appBar: AppPageBar(
+        maxWidth: kHistoryMaxWidth,
+        title: Text(l10n.histTitle),
+        actions: [
+          IconButton(
+            key: const Key('history-open-shared'),
+            tooltip: l10n.sharedMatchOpen,
+            onPressed: () => pickSharedMatchFile(ref),
+            icon: const Icon(Icons.file_open_rounded),
+          ),
+        ],
+      ),
       body: LayoutBuilder(builder: (context, c) {
         final look = context.look;
         final pad = AppPageBar.contentInset(context, c.maxWidth, kHistoryMaxWidth);
