@@ -10,6 +10,7 @@ import '../../features/games/presentation/game_setup_screen.dart';
 import '../../features/games/presentation/games_screen.dart';
 import '../../features/history/presentation/history_screen.dart';
 import '../../features/history/presentation/session_detail_screen.dart';
+import '../../features/history/presentation/shared_match_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/lite/domain/lite_gate.dart';
 import '../../features/live_remote/presentation/live_tab.dart';
@@ -40,6 +41,9 @@ abstract final class Routes {
   static const watch = '/zuschauen';
   static const debug = '/einstellungen/debug';
   static const play = '/spiel';
+
+  /// Geteiltes Match aus einer `.dartlab`-Datei (nur ansehen).
+  static const shared = '/geteilt';
   static String gameSetup(String gameId) => '$games/$gameId';
 }
 
@@ -70,6 +74,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.play, builder: (_, _) => const GamePlayScreen()),
       matchPlayRoute,
       quizPlayRoute,
+      // Geteiltes Match aus einer Datei, auch in Lite und ohne Einrichtung.
+      GoRoute(path: Routes.shared, builder: (_, _) => const SharedMatchScreen()),
       // Zweiter Bildschirm: Spielstand vom PC, ebenfalls ohne Navigation.
       secondScreenGoRoute,
       StatefulShellRoute.indexedStack(

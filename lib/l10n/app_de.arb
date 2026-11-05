@@ -4229,5 +4229,33 @@
       "page": {"type": "int"},
       "pages": {"type": "int"}
     }
-  }
+  },
+  "sharedMatchTitle": "Geteiltes Match",
+  "sharedMatchSomeone": "jemandem",
+  "sharedMatchFrom": "Geteilt von {name}",
+  "@sharedMatchFrom": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "sharedMatchNotSaved": "Nur zum Ansehen. Dieses Match zählt nicht für deine Statistik und wird nicht gespeichert.",
+  "sharedMatchSaved": "Gespeichert: {path}. Schick die Datei per WhatsApp, Mail oder USB-Stick weiter.",
+  "@sharedMatchSaved": {
+    "placeholders": {
+      "path": {"type": "String"}
+    }
+  },
+  "sharedMatchShareSubject": "DartLab-Match",
+  "sharedMatchMenuTooltip": "Teilen",
+  "sharedMatchShareFile": "Als DartLab-Datei teilen",
+  "sharedMatchShareFileHint": "Öffnet sich in DartLab und DartLab Lite",
+  "sharedMatchPdfHint": "Zum Drucken oder für alle ohne DartLab",
+  "sharedMatchInvalidTitle": "Datei lässt sich nicht öffnen",
+  "sharedMatchInvalidText": "Das ist keine DartLab-Datei oder sie ist beschädigt. Lass dir das Match noch einmal schicken.",
+  "sharedMatchNewerTitle": "DartLab ist zu alt",
+  "sharedMatchNewerText": "Diese Datei kommt aus einer neueren DartLab-Version. Aktualisiere DartLab, dann lässt sie sich öffnen.",
+  "sharedMatchOk": "OK",
+  "sharedMatchClose": "Schließen",
+  "sharedMatchNone": "Keine Datei geöffnet.",
+  "sharedMatchOpen": "Geteilte Datei öffnen"
 }

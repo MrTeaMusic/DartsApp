@@ -156,6 +156,18 @@ void main() {
       await shutdownApp(tester, c);
     });
 
+    testWidgets('geteiltes Match: offen, auch ohne Einrichtung', (tester) async {
+      final c = await pumpLite(tester, cloud: FakeCloud());
+      c.read(routerProvider).go(Routes.shared);
+      await tester.pumpAndSettle();
+      expect(currentPath(c), Routes.shared);
+      expect(find.text('Keine Datei geöffnet.'), findsOneWidget);
+      expect(errorPage, findsNothing);
+      await tester.tap(find.byKey(const Key('shared-match-close')));
+      await tester.pumpAndSettle();
+      expect(currentPath(c), '/willkommen');
+    });
+
     testWidgets('nicht eingerichtet: jeder Pfad endet in der Einrichtung', (tester) async {
       final c = await pumpLite(tester, cloud: FakeCloud());
       final router = c.read(routerProvider);

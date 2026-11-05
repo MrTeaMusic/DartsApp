@@ -19,6 +19,7 @@ import 'features/caller/presentation/training_game_caller.dart';
 import 'features/challenges/presentation/challenge_run_controller.dart';
 import 'features/matches/presentation/match_caller.dart';
 import 'features/dart_source/presentation/dart_source_providers.dart';
+import 'features/history/share/shared_match_opener.dart';
 import 'features/live_remote/presentation/live_push_controller.dart';
 import 'features/progress/presentation/celebrations.dart';
 import 'features/progress/presentation/progress_providers.dart';
@@ -39,7 +40,9 @@ class DartLabApp extends ConsumerWidget {
     ref
       ..watch(syncControllerProvider.select((_) => null))
       // Sucht beim Start nach Updates (höchstens einmal am Tag).
-      ..watch(updateControllerProvider.select((_) => null));
+      ..watch(updateControllerProvider.select((_) => null))
+      // Öffnet .dartlab-Dateien, die das System übergibt (Doppelklick, Teilen).
+      ..watch(sharedMatchOpenerProvider);
     // Lite zeigt nur Daten an: kein Spiel, keine Ansagen, keine Erfolge.
     final lite = ref.watch(liteProvider);
     if (!lite) {

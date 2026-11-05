@@ -9,6 +9,7 @@ void main() {
     expect(LiteRoutes.stats, Routes.stats);
     expect(LiteRoutes.settings, Routes.settings);
     expect(LiteRoutes.watch, Routes.watch);
+    expect(LiteRoutes.shared, Routes.shared);
   });
 
   group('liteIsConnected', () {
@@ -25,6 +26,11 @@ void main() {
   });
 
   group('liteRedirect', () {
+    test('ein geteiltes Match geht immer, auch ohne Einrichtung', () {
+      expect(liteRedirect('/geteilt', connected: false), isNull);
+      expect(liteRedirect('/geteilt', connected: true), isNull);
+    });
+
     test('ohne Einrichtung gibt es nur die Einrichtung', () {
       expect(liteRedirect('/willkommen', connected: false), isNull);
       for (final path in ['/', '/statistik', '/zuschauen', '/einstellungen', '/training', '/gibt-es-nicht']) {
