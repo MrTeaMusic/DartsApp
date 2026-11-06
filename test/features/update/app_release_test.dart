@@ -16,6 +16,18 @@ void main() {
       expect(AppBuild.tryParse(' v1.2.3-b7 '), const AppBuild('1.2.3', 7));
     });
 
+    test('neue SemVer-Tags (v0.11.2+33) erkennen auch schon installierte Apps', () {
+      // Der Code hier ist derselbe wie in den Builds 1 bis 30. Das neue Tag muss
+      // dort als neuer gelten und eine Build-Nummer > 0 haben, sonst bleibt der
+      // Update-Hinweis auf der Startseite aus (showBanner vergleicht die Build-Nummer).
+      final next = AppBuild.tryParse('v0.11.0+31')!;
+      expect(next, const AppBuild('0.11.0', 31));
+      expect(next.isNewerThan(const AppBuild('0.10.0', 30)), isTrue);
+      expect(next.build, greaterThan(30));
+      // Umbenannte alte Releases sind nie das neueste und hätten keine Build-Nummer.
+      expect(AppBuild.tryParse('v0.10.14'), const AppBuild('0.10.14', 0));
+    });
+
     test('lehnt fremde Tags ab', () {
       for (final t in [null, '', 'latest', 'v1.2', 'release-12', 'v1.2.3-beta', 'v1.2.3-b']) {
         expect(AppBuild.tryParse(t), isNull, reason: '$t');

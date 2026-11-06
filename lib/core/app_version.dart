@@ -1,6 +1,6 @@
 /// Angezeigte App-Version. Bei Änderungen auch `version` in pubspec.yaml
 /// anpassen (ein Test prüft, dass beide gleich sind).
-const appVersion = '0.10.0';
+const appVersion = '0.11.0';
 
 /// Version, die der Release-Workflow beim Bauen mitgibt
 /// (`--dart-define=DARTLAB_VERSION=…`). Ohne Angabe gilt [appVersion].
