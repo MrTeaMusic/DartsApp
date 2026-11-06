@@ -10,8 +10,14 @@ name: Release
 # DartLab fragt beim Start nach dem neuesten Release und bietet den Download
 # an (siehe docs/build-anleitung.md, Abschnitt „Updates“).
 #
-# Version: x.y.z aus pubspec.yaml, Build-Nummer = Laufnummer dieses
-# Workflows. Tag: v<x.y.z>-b<Laufnummer>, z. B. v0.10.0-b12.
+# Version (SemVer): x.y kommt aus pubspec.yaml, die letzte Stelle z zählt
+# der Workflow selbst hoch (höchstes vorhandene Tag v<x.y>.z + 1, sonst die
+# Zahl aus pubspec.yaml). Neue Funktionen: y in pubspec.yaml erhöhen, z beginnt
+# dann wieder bei 0. Build-Nummer = Laufnummer dieses Workflows (Android
+# braucht sie als versionCode, sie steigt immer).
+# Tag: v<x.y.z>+<Build>, z. B. v0.15.2+33, Titel „DartLab 0.15.2“. Die Build-
+# Nummer steht im Tag, weil schon installierte Apps (bis Build 30) den
+# Update-Hinweis nur zeigen, wenn sie sie dort finden.
 on:
   push:
     branches: [main]
@@ -42,18 +48,29 @@ jobs:
       - name: Version bestimmen
         id: v
         run: |
-          version=$(sed -nE 's/^version:[[:space:]]*([0-9]+\.[0-9]+\.[0-9]+).*/\1/p' pubspec.yaml | head -n1)
-          if [ -z "$version" ]; then
+          base=$(sed -nE 's/^version:[[:space:]]*([0-9]+\.[0-9]+\.[0-9]+).*/\1/p' pubspec.yaml | head -n1)
+          if [ -z "$base" ]; then
             echo "::error::Keine Version in pubspec.yaml gefunden"
             exit 1
           fi
+          minor="${base%.*}"
+          patch="${base##*.}"
+          # Höchste letzte Stelle unter den Tags v<x.y>.z bzw. v<x.y>.z+<Build>.
+          # Alte Tags wie v0.10.0-b12 passen nicht und zählen nicht mit.
+          last=$(git ls-remote --tags origin "refs/tags/v$minor.*" \
+            | sed -nE "s#^.*refs/tags/v${minor//./\\.}\.([0-9]+)(\+[0-9]+)?\$#\1#p" \
+            | sort -n | tail -n1)
+          if [ -n "$last" ] && [ $((last + 1)) -gt "$patch" ]; then
+            patch=$((last + 1))
+          fi
+          version="$minor.$patch"
           build="${{ github.run_number }}"
           {
             echo "version=$version"
             echo "build=$build"
-            echo "tag=v$version-b$build"
+            echo "tag=v$version+$build"
           } >> "$GITHUB_OUTPUT"
-          echo "DartLab $version, Build $build"
+          echo "DartLab $version, Build $build (Tag v$version+$build)"
 
   windows:
     needs: meta
@@ -269,8 +286,9 @@ jobs:
           merge-multiple: true
       - name: Änderungen seit dem letzten Release
         run: |
-          # Letztes Release-Tag nach Build-Nummer (v0.10.0-b12 → 12).
-          prev=$(git tag --list 'v*-b*' | sed -nE 's/^(.*-b([0-9]+))$/\2 \1/p' | sort -n | tail -n1 | cut -d' ' -f2)
+          # Voriges Release: das nächste Versions-Tag auf main vor diesem Commit
+          # (jedes Release markiert den main-Stand, aus dem es gebaut wurde).
+          prev=$(git describe --tags --abbrev=0 --match 'v[0-9]*' --first-parent "$GITHUB_SHA^" 2>/dev/null || true)
           if [ -n "$prev" ]; then
             range="$prev..$GITHUB_SHA"
             limit=40
@@ -329,6 +347,6 @@ jobs:
           gh release create "$TAG" "${files[@]}" \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
-            --title "DartLab $VERSION (Build $BUILD)" \
+            --title "DartLab $VERSION" \
             --notes-file notes.md \
             --latest

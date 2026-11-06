@@ -109,11 +109,16 @@ sie als **Release**: <https://github.com/MrTeaMusic/DartsApp/releases/latest>. D
 `DartLab-windows.zip` und `DartLab-macos.zip`. Selbst bauen ist für Windows und macOS damit nicht
 mehr nötig.
 
-**Versionsnummer:** `x.y.z` kommt aus `version` in `pubspec.yaml` (und muss zu `appVersion` in
-`lib/core/app_version.dart` passen, ein Test prüft das). Die Build-Nummer ist die Laufnummer des
-Release-Workflows. Das Tag heißt z. B. `v0.10.0-b12`. Die Release-Notizen bestehen aus den Titeln
-der Pull Requests seit dem vorigen Release. Eine neue Version ergibt sich also automatisch; `x.y.z`
-erhöht man nur bei größeren Schritten von Hand.
+**Versionsnummer (SemVer):** `x.y` kommt aus `version` in `pubspec.yaml` (muss zu `appVersion` in
+`lib/core/app_version.dart` passen, ein Test prüft das). Die letzte Stelle `z` zählt der Workflow bei
+jedem Release selbst hoch: 0.15.0, 0.15.1, 0.15.2 … Bei einer Runde mit neuen Funktionen erhöht man
+`y` in `pubspec.yaml` und `app_version.dart` (z. B. auf 0.16.0), dann geht es bei 0.16.0 weiter.
+Die Build-Nummer ist die Laufnummer des Release-Workflows; sie steigt immer und dient Android als
+`versionCode`. Das Tag heißt z. B. `v0.15.2+33` (Version + Build), der Titel „DartLab 0.15.2“. Die
+Build-Nummer steht im Tag, weil Apps bis Build 30 den Update-Hinweis nur damit zeigen. Die alten
+Releases hießen `v0.10.0-b1` bis `v0.10.0-b30` und wurden nachträglich nach Meilensteinen in
+0.10.x bis 0.14.x umbenannt (z. B. `v0.12.2+14` für DartLab Lite). Die
+Release-Notizen bestehen aus den Titeln der Pull Requests seit dem vorigen Release.
 
 **Update-Hinweis in der App:** DartLab fragt beim Start höchstens einmal in 24 Stunden die
 GitHub-API nach dem neuesten Release (öffentlich, ohne Token; GitHub erlaubt 60 Anfragen pro Stunde).
@@ -124,7 +129,7 @@ es eine noch neuere Version gibt). Unter **Optionen › Updates** stehen die lau
 erscheint ein Hinweis (offline, GitHub bremst, noch kein Release).
 
 * **Windows:** „Herunterladen“ speichert die Zip im Download-Ordner
-  (`DartLab-windows-0.10.0-b12.zip`), danach öffnet „Ordner öffnen“ den Explorer. Installieren:
+  (`DartLab-windows-0.15.2-b33.zip`), danach öffnet „Ordner öffnen“ den Explorer. Installieren:
   DartLab schließen, Zip entpacken, den Inhalt in den DartLab-Ordner kopieren und vorhandene Dateien
   ersetzen. Die Daten (Datenbank, Einstellungen) liegen nicht im Programmordner und bleiben erhalten.
 * **macOS:** genauso mit `DartLab-macos.zip`: entpacken, `DartLab.app` in `/Programme` ziehen und
@@ -144,8 +149,8 @@ Version auf GitHub liegt. Das betrifft vor allem den Mac, der aus dem Quellcode 
 iPhone/iPad-Builds. Wer lokal einen Build wie aus dem Workflow will:
 
 ```bash
-flutter build windows --release --build-name=0.10.0 --build-number=12 \
-  --dart-define=DARTLAB_VERSION=0.10.0 --dart-define=DARTLAB_BUILD=12
+flutter build windows --release --build-name=0.15.2 --build-number=33 \
+  --dart-define=DARTLAB_VERSION=0.15.2 --dart-define=DARTLAB_BUILD=33
 ```
 
 **Bewusst nicht enthalten:** ein Updater, der die laufende App selbst ersetzt. Unter Windows kann
