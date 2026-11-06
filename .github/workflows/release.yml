@@ -15,7 +15,7 @@ name: Release
 # Zahl aus pubspec.yaml). Neue Funktionen: y in pubspec.yaml erhöhen, z beginnt
 # dann wieder bei 0. Build-Nummer = Laufnummer dieses Workflows (Android
 # braucht sie als versionCode, sie steigt immer).
-# Tag: v<x.y.z>+<Build>, z. B. v0.11.2+33, Titel „DartLab 0.11.2“. Die Build-
+# Tag: v<x.y.z>+<Build>, z. B. v0.15.2+33, Titel „DartLab 0.15.2“. Die Build-
 # Nummer steht im Tag, weil schon installierte Apps (bis Build 30) den
 # Update-Hinweis nur zeigen, wenn sie sie dort finden.
 on:
